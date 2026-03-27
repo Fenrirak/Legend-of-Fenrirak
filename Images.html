@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Photo Gallery</title>
+
+<!-- Load fonts from Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Allegro&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0;
+        background-color: #121212;
+        font-family: 'Comfortaa', sans-serif;
+    }
+
+    .container {
+        width: 1000px;
+        margin: 40px auto;
+    }
+
+    /* TITLE SECTION */
+    .title {
+        width: 400px;
+        margin: 0 auto 40px auto;
+        background: #121212;
+        text-align: center;
+        padding: 25px;
+        font-family: 'Allegro';
+        font-size: 40px;
+        color: wheat;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 20px;
+    }
+
+    .image {
+        max-width: 480px; /* fits 2 per row nicely */
+        max-height: 600px;
+        position: relative;
+    }
+
+    .image::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 15px;
+        width: 30px;
+        height: 15px;
+        background: white;
+        border-radius: 50%;
+    }
+
+    .text-box {
+        flex: 1 1 100%; /* full width above images */
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        color: white;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    /* LINKS AT THE BOTTOM */
+    .links {
+        margin-top: 60px;
+        text-align: center;
+        font-family: 'Allegro';
+        font-size: 25px;
+    }
+
+    .section {
+        display: block;
+        margin: 10px auto;
+        padding: 15px;
+        width: 250px;
+        background-color: #1e1e1e;
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        font-family: 'Allegro';
+        font-size: 25px;
+        transition: background 0.3s;
+    }
+
+    .section:hover {
+        background-color: #333333;
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <!-- PAGE TITLE -->
+    <div class="title">Photo Gallery</div>
+
+    <!-- LEGEND OF FENRIRAK: THUNDER DRAGON -->
+    <div class="row">
+        <div class="text-box">
+            ~Legend of Fenrirak, the Thunder Dragon~ Board Game
+        </div>
+    </div>
+
+    <div class="row">
+        <img src="LOF1 Horizontal.jpeg" class="image">
+        <img src="LOF1 All.jpeg" class="image">
+    </div>
+
+    <div class="row">
+        <img src="LOF1 Bird.jpeg" class="image">
+    </div>
+
+    <!-- LEGEND OF FENRIRAK: ICE DRAGON -->
+    <div class="row">
+        <div class="text-box">
+            ~Legend of Fenrirak, the Ice Dragon~ Board Game
+        </div>
+    </div>
+
+    <div class="row">
+        <img src="LOF2 Board.jpeg" class="image">
+        <img src="LOF2 Cards.jpeg" class="image">
+    </div>
+
+    <div class="row">
+        <img src="LOF2 Character.jpeg" class="image">
+        <img src="LOF2 Box.jpeg" class="image">
+    </div>
+
+    <!-- LEGEND OF FENRIRAK: ICE DRAGON -->
+    <div class="row">
+        <div class="text-box">
+            ~Legend of Fenrirak, The Forgotten Adventure~ Story
+        </div>
+    </div>
+
+    <div class="row">
+        <img src="Book Cover Reoutline.jpg" class="image">
+    </div>
+
+
+    <!-- LINKS AT BOTTOM -->
+    <div class="links">
+        <a href="index.html" class="section">Back to Home Page</a>
+        <a href="About.html" class="section">About Legend of Fenrirak</a>
+        <a href="Creators.html" class="section">Meet the Creators!</a>
+    </div>
+
+</div> <!-- END CONTAINER -->
+</body>
+</html>

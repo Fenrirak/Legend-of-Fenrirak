@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Legend of Fenrirak</title>
+
+    <style>
+        body {
+            font-family: Allegro;
+            background-color: #121212;
+            text-align: center;
+        }
+
+        h1 {
+            color: darkblue;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>Welcome to the official website for Legend of Fenrirak!</h1>
+    <p>What is Legend of Fenrirak?</p>
+
+</body>
+</html>
