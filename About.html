@@ -12,41 +12,43 @@
             color: white;
             text-align: center;
             margin: 0;
-            font-family: 'Comfortaa', sans-serif; /* default body text */
+            font-family: 'Comfortaa', sans-serif;
         }
 
         .container {
             max-width: 800px;
             margin: 40px auto;
             padding: 20px;
-            /* invisible layout box: no background, no border */
+        }
+
+        .content-block {
+            margin-bottom: 80px;
         }
 
         h1 {
             font-family: 'Allegro';
-            font-size: 45px; 
+            font-size: 45px;
             color: wheat;
         }
 
         p {
             color: #f3f3f3;
             line-height: 1.6;
-            font-family: 'Comfortaa', sans-serif;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
         }
 
-        /* Style for the link boxes */
+        /* Navigation buttons */
         .section {
-            display: block;             /* each link on its own line */
-            margin: 10px auto 0 auto;   /* small gap between links */
+            display: block;
+            margin: 10px auto;
             padding: 15px;
             width: 250px;
             background-color: #1e1e1e;
             color: white;
             text-decoration: none;
             border-radius: 12px;
-            font-family: 'Allegro'; 
-            font-size: 20px; 
+            font-family: 'Allegro';
+            font-size: 20px;
             transition: background 0.3s;
         }
 
@@ -54,20 +56,33 @@
             background-color: #333333;
         }
     </style>
-
 </head>
 
 <body>
 
     <div class="container">
 
-        <h1>About Legend of Fenrirak</h1>
+        <!-- First block -->
+        <div class="content-block">
+            <h1>About Legend of Fenrirak</h1>
+            <p>
+                Legend Of Fenrirak was originally created by four Year 7 students at Murrays Bay Intermediate in New Zealand. Since then, it has continued to grow and evolve into something much larger.
+                <br><br>
+                Currently, Legend of Fenrirak includes 2 board games, 3 in-progress story books, an in-progress online version, and countless future ideas waiting to be developed.
+            </p>
+        </div>
 
-        <p>
-            Legend Of Fenrirak was orginally created by four year 7s at a New Zealand intermediate school called Murrays Bay Intermediate (Learn more about them in the Meet the Creators section!) and we have been upgrading and expanding Legend Of Fenrirak since then. Currently Legend of Fenrirak has 2 board games, 3 in progress story books, 1 in progress online version and countless other plans that haven't been started yet!
-        </p>
+        <!-- Repeated block -->
+        <div class="content-block">
+            <h1>Legend of Fenrirak, The Thunder Dragon</h1>
+            <p>
+                Legend of Fenrirak, The Thunder Dragon is the original board game and the birth of Legend of Fenrirak. 
+                <br><br>
+                The core concept of the board game is that each player (up to six) selects a character class—mage, knight, or archer—and then moves around the board (see Photo Gallery) to collect items, gold, and keys while battling monsters that serve under the command of the final boss, Fenrirak. Through the adventure players have to gather the correct keys to unlock the gate to the boss arena, where they will face Fenrirak, a large, ocean-blue dragon coated in a heavy layer of scales.
+            </p>
+        </div>
 
-        <!-- Sections that link to other pages -->
+        <!-- Navigation -->
         <a href="index.html" class="section">Back to Home Page</a>
         <a href="Creators.html" class="section">Meet the Creators!</a>
         <a href="Images.html" class="section">View Photo Gallery</a>
@@ -75,4 +90,4 @@
     </div>
 
 </body>
-</html> 
+</html>
