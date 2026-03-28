@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Photo Gallery</title>
 
-<!-- Load fonts from Google Fonts -->
+<!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Allegro&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet">
 
@@ -16,22 +16,24 @@
     }
 
     .container {
-        width: 1000px;
+        max-width: 1000px;
         margin: 40px auto;
+        padding: 0 20px;
     }
 
-    /* TITLE SECTION */
+    /* TITLE */
     .title {
-        width: 400px;
+        width: fit-content;
         margin: 0 auto 40px auto;
         background: #121212;
         text-align: center;
-        padding: 25px;
+        padding: 20px 30px;
         font-family: 'Allegro';
         font-size: 40px;
         color: wheat;
     }
 
+    /* ROW LAYOUT */
     .row {
         display: flex;
         flex-wrap: wrap;
@@ -41,35 +43,25 @@
         gap: 20px;
     }
 
+    /* IMAGES */
     .image {
-        max-width: 480px; /* fits 2 per row nicely */
-        max-height: 600px;
-        position: relative;
+        max-width: 480px;
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 10px;
     }
 
-    .image::before {
-        content: "";
-        position: absolute;
-        top: 10px;
-        left: 15px;
-        width: 30px;
-        height: 15px;
-        background: white;
-        border-radius: 50%;
-    }
-
+    /* TEXT LABELS */
     .text-box {
-        flex: 1 1 100%; /* full width above images */
-        min-height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
+        width: 100%;
         color: white;
         font-size: 20px;
         margin-bottom: 10px;
+        text-align: left;
     }
 
-    /* LINKS AT THE BOTTOM */
+    /* LINKS */
     .links {
         margin-top: 60px;
         text-align: center;
@@ -100,10 +92,9 @@
 <body>
 <div class="container">
 
-    <!-- PAGE TITLE -->
     <div class="title">Photo Gallery</div>
 
-    <!-- LEGEND OF FENRIRAK: THUNDER DRAGON -->
+    <!-- THUNDER DRAGON -->
     <div class="row">
         <div class="text-box">
             ~Legend of Fenrirak, the Thunder Dragon~ Board Game:
@@ -119,7 +110,7 @@
         <img src="LOF1 Bird.jpeg" class="image">
     </div>
 
-    <!-- LEGEND OF FENRIRAK: ICE DRAGON -->
+    <!-- ICE DRAGON -->
     <div class="row">
         <div class="text-box">
             ~Legend of Fenrirak, the Ice Dragon~ Board Game:
@@ -136,7 +127,7 @@
         <img src="LOF2 Box.jpeg" class="image">
     </div>
 
-    <!-- LEGEND OF FENRIRAK: The Forgotten Adventure -->
+    <!-- STORY -->
     <div class="row">
         <div class="text-box">
             ~Legend of Fenrirak, The Forgotten Adventure~ Story:
@@ -147,7 +138,7 @@
         <img src="Book Cover Reoutline.jpg" class="image">
     </div>
 
-    <!-- LEGEND OF FENRIRAK: MINECRAFT -->
+    <!-- MINECRAFT -->
     <div class="row">
         <div class="text-box">
             ~Legend of Fenrirak, The Thunder Dragon - MINECRAFT EDITION~ Online Game:
@@ -167,7 +158,7 @@
         <img src="10.png" class="image">
     </div>
 
-    <!-- LEGEND OF FENRIRAK: Timeline -->
+    <!-- TIMELINE -->
     <div class="row">
         <div class="text-box">
             ~The Timeline for Legend of Fenrirak~ (subject to change):
@@ -178,13 +169,13 @@
         <img src="Timeline.png" class="image">
     </div>
 
-    <!-- LINKS AT BOTTOM -->
+    <!-- LINKS -->
     <div class="links">
         <a href="index.html" class="section">Back to Home Page</a>
         <a href="About.html" class="section">About Legend of Fenrirak</a>
         <a href="Creators.html" class="section">Meet the Creators!</a>
     </div>
 
-</div> <!-- END CONTAINER -->
+</div>
 </body>
 </html>
