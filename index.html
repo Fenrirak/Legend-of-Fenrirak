@@ -3,37 +3,70 @@
 
 <head>
     <title>Legend of Fenrirak | Official Website</title>
+
     <link rel="icon" type="image/png" href="Test Favi.png">
 
-    <meta name="The official website for Legend of Fenrirak" content="Official website of Legend of Fenrirak – board game, creators, and about.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<head>
+    <meta name="description"
+        content="Official website of Legend of Fenrirak – board game, creators, and about.">
+
     <style>
         body {
-            font-family: Allegro;
+            font-family: Allegro, serif;
             background-color: #121212;
             text-align: center;
+            margin: 0;
+            padding: 20px;
         }
 
         h1 {
             color: rgb(255, 246, 230);
             font-size: 35px;
+            margin-bottom: 25px;
+        }
+
+        img {
+            width: 710px;
+            max-width: 100%;
+            height: auto;
         }
 
         .section {
             display: block;
             margin: 20px auto;
             padding: 15px;
-            width: 200px;
+
+            /* Similar size on desktop */
+            width: 80%;
+            max-width: 450px;
+
             background-color: #1e1e1e;
             color: white;
             text-decoration: none;
             border-radius: 10px;
+
+            font-size: 20px;
+
+            transition: background-color 0.2s, transform 0.2s;
         }
 
         .section:hover {
             background-color: #333333;
-            font-size: 25px;
+            transform: scale(1.03);
+        }
+
+        /* Smaller text on phones */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 28px;
+            }
+
+            .section {
+                width: 90%;
+                font-size: 18px;
+                padding: 14px;
+            }
         }
     </style>
 
@@ -42,17 +75,24 @@
 <body>
 
     <h1>
-    Welcome to the official website<br>
-    of<br>
-    Legend of Fenrirak™!
-</h1>
-    <img src="Fenrirak.png" alt="Fenrirak" width="710" >
+        Welcome to the official website<br>
+        of<br>
+        Legend of Fenrirak™!
+    </h1>
+
+    <img src="Fenrirak.png" alt="Fenrirak">
 
     <!-- Sections that link to other pages -->
     <a href="About.html" class="section">About Legend of Fenrirak</a>
+
     <a href="Creators.html" class="section">Meet the Creators!</a>
+
     <a href="Images.html" class="section">View Photo Gallery</a>
-    <a href="After Showdowns.html" class="section">Play Legend of Fenrirak Showdowns</a>
+
+    <a href="After Showdowns.html" class="section">
+        Play Legend of Fenrirak Showdowns
+    </a>
 
 </body>
+
 </html>
