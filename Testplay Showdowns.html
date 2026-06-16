@@ -582,9 +582,9 @@
   #outcome-overlay.active { display: flex; }
   #outcome-word {
     font-family: 'Cinzel', serif;
-    font-size: 150px;
+    font-size: 180px;
     font-weight: 900;
-    opacity: 0.7;
+    opacity: 0.8;
     text-align: center;
   }
   #outcome-word.victory { color: #d4af37; }
@@ -2348,7 +2348,7 @@ function triggerVictory(){
   overlay.classList.add('active');
   word.className='victory';
   word.textContent='Victory!';
-  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 15000);
+  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 10000);
 }
 
 function triggerDefeat(){
@@ -2358,7 +2358,7 @@ function triggerDefeat(){
   overlay.classList.add('active');
   word.className='defeat';
   word.textContent='Defeat';
-  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 15000);
+  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 10000);
 }
 
 // ============================================================
