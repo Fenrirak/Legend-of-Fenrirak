@@ -1,0 +1,3023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legend Of Fenrirak™ - Showdowns</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700;900&family=Lato:wght@300;400;700&display=swap');
+
+  :root {
+    --gold: #d4af37;
+    --dark-bg: #0d0d0d;
+    --panel-bg: #1a1208;
+    --panel-border: #3a2a0a;
+    --text: #e8d5a0;
+    --text-dim: #9a8560;
+    --accent: #c4820a;
+    --danger: #c0392b;
+    --success: #2eb674;
+    --high-ground: #4a90d9;
+    --difficult: #e77d22;
+    --starting: #d4af37;
+    --normal: #f0ece0;
+    --partial-cover: #a0956e;
+    --heavy-cover: #555040;
+    --thorny: #6b8a3a;
+    --mage-color: #39b5ff;
+    --knight-color: #b7b7b7;
+    --archer-color: #e77d22;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark-bg);
+    color: var(--text);
+    font-family: 'Lato', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; width: 100%; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+  /* ===== TITLE / RULES SCREEN ===== */
+  #screen-rules {
+    background: radial-gradient(ellipse at center, #1a0f00 0%, #0d0d0d 100%);
+    padding: 40px 20px;
+  }
+  .game-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.8em;
+    font-weight: 900;
+    color: var(--gold);
+    text-align: center;
+    text-shadow: 0 0 30px rgba(212,175,55,0.6);
+    margin-bottom: 8px;
+  }
+  .game-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 1.8em;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .rules-box {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    max-width: 780px;
+    width: 100%;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .rules-box h2 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.2em;
+    margin: 18px 0 8px;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 4px;
+  }
+  .rules-box p, .rules-box li {
+    font-size: 0.88em;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .rules-box ul { padding-left: 18px; }
+  .rules-box::-webkit-scrollbar { width: 6px; }
+  .rules-box::-webkit-scrollbar-track { background: #111; }
+  .rules-box::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 3px; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    background: linear-gradient(135deg, #7a5c0a, #c4820a);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 32px;
+    font-family: 'Cinzel', serif;
+    font-size: 1em;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    margin: 6px;
+  }
+  .btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn.secondary {
+    background: linear-gradient(135deg, #222, #444);
+  }
+  .btn.danger {
+    background: linear-gradient(135deg, #700, #c00);
+  }
+  .btn.success {
+    background: linear-gradient(135deg, #1a5a2a, #2eb674);
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ===== SETUP SCREENS ===== */
+  #screen-name, #screen-board, #screen-class, #screen-weapon, #screen-start-tile, #screen-rollorder {
+    background: radial-gradient(ellipse at center, #1a0f00 0%, #0d0d0d 100%);
+    padding: 40px 20px;
+  }
+  .setup-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6em;
+    color: var(--gold);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .setup-box {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 28px;
+    max-width: 720px;
+    width: 100%;
+  }
+  input[type="text"] {
+    background: #111;
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 1.1em;
+    width: 200px;
+    font-family: 'Lato', sans-serif;
+  }
+  input[type="text"]:focus { outline: none; border-color: var(--gold); }
+
+  .class-cards {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .class-card {
+    background: #111;
+    border: 2px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 18px;
+    width: 210px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .class-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .class-card.selected { border-color: var(--gold); background: #1e1800; }
+  .class-card h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    margin-bottom: 10px;
+    font-size: 1.1em;
+  }
+  .class-card .stat { font-size: 0.82em; color: var(--text-dim); margin: 3px 0; }
+  .class-card .passive { font-size: 0.78em; color: var(--text); margin-top: 8px; font-style: italic; }
+  .class-icon {
+    width: 48px; height: 48px;
+    margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .weapon-cards {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .weapon-card {
+    background: #111;
+    border: 2px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 14px;
+    width: 190px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.82em;
+  }
+  .weapon-card:hover { border-color: var(--gold); }
+  .weapon-card.selected { border-color: var(--gold); background: #1e1800; }
+  .weapon-card h4 { font-family: 'Cinzel', serif; color: var(--accent); margin-bottom: 8px; font-size: 0.95em; }
+  .weapon-card .wstat { color: var(--text-dim); margin: 2px 0; }
+
+  .board-btn-group { display: flex; gap: 16px; }
+
+  /* ===== GAME SCREEN ===== */
+  #screen-game {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 0;
+    min-height: 100vh;
+    background: #0d0d0d;
+  }
+
+  /* Stat panel */
+  #stat-panel {
+    width: 280px;
+    min-width: 280px;
+    background: var(--panel-bg);
+    border-right: 1px solid var(--panel-border);
+    padding: 16px;
+    min-height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .stat-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1em;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 6px 0;
+    font-size: 0.88em;
+  }
+  .stat-label { color: var(--text-dim); }
+  .stat-value { color: var(--text); font-weight: 700; }
+  .section-header {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--panel-border);
+    margin: 12px 0 8px;
+    padding-bottom: 4px;
+  }
+  .attack-name-btn {
+    color: var(--gold);
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: 700;
+    font-family: 'Cinzel', serif;
+    font-size: 0.9em;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .attack-name-btn:hover { color: #fff; }
+  .attack-name-btn:disabled { color: var(--text-dim); cursor: not-allowed; text-decoration: none; }
+
+  .inventory-item {
+    background: #111;
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin: 4px 0;
+    font-size: 0.82em;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .inventory-item:hover { border-color: var(--gold); }
+  .inventory-item.weapon-item { color: var(--accent); }
+
+  #end-turn-btn {
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  /* ===== BOARD AREA ===== */
+  #board-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    min-height: 100vh;
+  }
+  #turn-info {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1em;
+    color: var(--gold);
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  #message-log {
+    width: 100%;
+    max-width: 660px;
+    background: #111;
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 0.8em;
+    max-height: 80px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+  #message-log .msg-line { margin: 1px 0; }
+  #message-log .msg-line.important { color: var(--gold); }
+  #message-log .msg-line.damage { color: #ff6666; }
+  #message-log .msg-line.heal { color: #66ff99; }
+
+  #board-container {
+    position: relative;
+    user-select: none;
+  }
+  #game-board {
+    display: grid;
+    border: 2px solid var(--panel-border);
+    background: #c8bfa0;
+  }
+
+  .tile {
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(0,0,0,0.2);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65em;
+    cursor: default;
+    transition: filter 0.1s;
+  }
+  .tile.normal { background: #e8e2d0; }
+  .tile.starting { background: #d4af37; }
+  .tile.difficult { background: #e77d22; }
+  .tile.high-ground { background: #4a90d9; }
+  .tile.partial-cover { background: #b0a882; }
+  .tile.heavy-cover { background: #554f3c; }
+  .tile.thorny { background: #7a9a44; }
+  .tile.log { background: #7a5533; }
+  .tile.chest { background: #c8a05a; }
+  .tile.chest.opened { background: rgba(200,100,100,0.5) !important; }
+  .tile.hill { background: #c8780a; }
+
+  .tile-label {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    font-size: 0.7em;
+    color: rgba(0,0,0,0.6);
+    font-weight: 700;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .tile.hover-move { filter: brightness(1.3); outline: 2px solid #2eb674; }
+  .tile.hover-attack { outline: 2px solid #ff3535; }
+  .tile.selected-move { background: rgba(46,182,116,0.5) !important; }
+  .tile.selected-attack { background: rgba(255,53,53,0.4) !important; }
+
+  /* Character icons */
+  .char-icon {
+    position: absolute;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6em;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.15s;
+    pointer-events: all;
+    font-family: 'Cinzel', serif;
+    text-align: center;
+    line-height: 1.1;
+  }
+  .char-icon.mage {
+    background: #39b5ff;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+  }
+  .char-icon.knight {
+    background: #b7b7b7;
+    border-radius: 2px;
+  }
+  .char-icon.archer {
+    background: #e77d22;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  }
+  .char-icon.dead { display: none; }
+  .char-icon.active-turn { box-shadow: 0 0 12px 4px gold; }
+
+  /* ===== RIGHT PANEL: Enemies ===== */
+  #right-panel {
+    width: 240px;
+    min-width: 240px;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--panel-border);
+    padding: 16px;
+    min-height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .enemy-card {
+    background: #111;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 12px;
+    font-size: 0.82em;
+  }
+  .enemy-card h4 {
+    font-family: 'Cinzel', serif;
+    color: var(--accent);
+    margin-bottom: 6px;
+    font-size: 0.9em;
+  }
+  .health-bar-bg {
+    background: #333;
+    border-radius: 3px;
+    height: 8px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .health-bar-fill {
+    height: 100%;
+    background: #2eb674;
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+  .health-bar-fill.low { background: #e77d22; }
+  .health-bar-fill.critical { background: #c0392b; }
+
+  /* ===== DICE ===== */
+  #dice-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  #dice-overlay.active { display: flex; }
+  .dice-container {
+    background: var(--panel-bg);
+    border: 2px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 32px 40px;
+    text-align: center;
+    min-width: 320px;
+  }
+  .dice-title {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.3em;
+    margin-bottom: 20px;
+  }
+  #dice-3d {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    perspective: 200px;
+    cursor: pointer;
+  }
+  .dice-face-display {
+    width: 80px;
+    height: 80px;
+    background: #f8f0d8;
+    border: 3px solid #8a6a20;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5em;
+    font-weight: 900;
+    color: #1a0a00;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.6);
+    transition: transform 0.6s;
+    font-family: 'Cinzel', serif;
+  }
+  .dice-face-display.rolling {
+    animation: diceRoll 0.6s ease-out;
+  }
+  @keyframes diceRoll {
+    0% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(90deg) scale(1.1); }
+    50% { transform: rotate(180deg) scale(0.9); }
+    75% { transform: rotate(270deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+  .dice-result-text {
+    color: var(--text);
+    font-size: 0.9em;
+    margin: 10px 0;
+    min-height: 20px;
+  }
+
+  /* ===== ITEM CARD POPUP ===== */
+  #item-popup {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  #item-popup.active { display: flex; }
+  .item-card {
+    background: var(--panel-bg);
+    border: 2px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 28px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+  }
+  .item-card h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.2em;
+    margin-bottom: 12px;
+  }
+  .item-card p {
+    color: var(--text);
+    font-size: 0.9em;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  /* ===== ORDER ROLL SCREEN ===== */
+  .roll-result-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: #111;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  .roll-result-row .char-badge {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    width: 80px;
+  }
+  .roll-result-row .dice-val {
+    font-size: 1.4em;
+    font-weight: 900;
+    color: var(--gold);
+    width: 40px;
+    text-align: center;
+  }
+
+  /* ===== VICTORY / DEFEAT OVERLAY ===== */
+  #outcome-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  #outcome-overlay.active { display: flex; }
+  #outcome-word {
+    font-family: 'Cinzel', serif;
+    font-size: 150px;
+    font-weight: 900;
+    opacity: 0.5;
+    text-align: center;
+  }
+  #outcome-word.victory { color: #d4af37; }
+  #outcome-word.defeat { color: #700000; }
+
+  /* ===== START TILE SELECTION ===== */
+  .tile.valid-start { outline: 3px solid var(--gold) !important; cursor: pointer; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+  /* ===== COMPUTER THINKING INDICATOR ===== */
+  #ai-thinking {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 0.85em;
+    color: var(--text-dim);
+    display: none;
+    z-index: 100;
+  }
+  #ai-thinking.active { display: block; }
+
+  /* scrollbar */
+  #stat-panel::-webkit-scrollbar, #right-panel::-webkit-scrollbar { width: 4px; }
+  #stat-panel::-webkit-scrollbar-thumb, #right-panel::-webkit-scrollbar-thumb { background: #333; }
+
+  .log-sep { border: none; border-top: 1px solid #222; margin: 6px 0; }
+
+  .weapon-equip-box {
+    background: #0d0d0d;
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 6px;
+    font-size: 0.82em;
+  }
+  .weapon-equip-box .we-row { color: var(--text-dim); margin: 2px 0; }
+  .weapon-equip-box .we-row span { color: var(--text); }
+
+  .current-player-tag {
+    font-size: 0.75em;
+    background: var(--gold);
+    color: #000;
+    border-radius: 3px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    font-family: 'Cinzel', serif;
+  }
+
+  /* AOE drag highlight */
+  .tile.aoe-hover { background: rgba(255, 53, 53, 0.45) !important; outline: 2px solid #ff3535; }
+
+  #phase-indicator {
+    font-size: 0.82em;
+    color: var(--text-dim);
+    margin-top: 4px;
+    min-height: 18px;
+    text-align: center;
+  }
+
+  .chest-roll-area { margin-top: 12px; }
+  .multi-dice-display { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .small-die {
+    width: 40px; height: 40px;
+    background: #f8f0d8;
+    border: 2px solid #8a6a20;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3em;
+    font-weight: 900;
+    color: #1a0a00;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== RULES SCREEN ===================== -->
+<div id="screen-rules" class="screen active">
+  <div class="game-title">Legend Of Fenrirak™</div>
+  <div class="game-subtitle">-Showdowns-</div>
+  <div class="rules-box">
+    <h2>Objective</h2>
+    <p>Defeat all other players on the board. If you (the human player) defeat all three computer opponents, you win — even if it's not your turn. If a computer defeats you, the game ends in defeat.</p>
+
+    <h2>Setting Up</h2>
+    <p>All players choose a class (Mage, Knight, or Archer) and a starting weapon. Players then choose a starting tile. Everyone rolls a die — highest to lowest determines turn order. Ties reroll among tied players.</p>
+
+    <h2>Turn Structure</h2>
+    <p>Players may move before attacking but cannot move after attacking. Opening a chest ends the turn immediately. One turn ends when a character has opened a chest, attacked, or clicked End Turn.</p>
+
+    <h2>Movement</h2>
+    <p>Move up to your movement speed in adjacent (non-diagonal) tiles. Difficult Terrain costs 2 tiles per tile (Knights ignore this). Thorny Vines deal 2 damage when passing through and 4 damage if you stop in them, then 3 damage every 2 turn cycles until you leave.</p>
+
+    <h2>Attacks & Hit Throws</h2>
+    <p>Before attacking, roll a Hit Throw. If the total (including modifiers) equals or exceeds the target's Defence, the attack hits. Range is measured as the greater of horizontal or vertical distance.</p>
+    <p>If a straight line from attacker to target passes through 2 tiles of Partial Cover or 1 tile of Heavy Cover, the attack fails.</p>
+
+    <h2>Cover</h2>
+    <ul>
+      <li><strong>Partial Cover (PC):</strong> +1 Defence if directly adjacent (non-diagonally) and between attacker & target. Mages treat PC as Heavy Cover.</li>
+      <li><strong>Heavy Cover (HC):</strong> +2 Defence in same situation (+3 for Knights, who cannot attack over HC). Knights get +3 instead of +2.</li>
+      <li><strong>Chests</strong> count as Partial Cover.</li>
+    </ul>
+
+    <h2>High Ground</h2>
+    <p>Blue tiles are High Ground. Attacker on High Ground gets +1 to Hit Throw.</p>
+
+    <h2>Chests</h2>
+    <p>Opening a chest ends your turn. You must be directly adjacent (non-diagonal). Roll a die for loot. A chest can only be opened once. If a weapon is received, it goes to inventory automatically.</p>
+
+    <h2>Healing & Potions</h2>
+    <p>Can't use Potion of Healing at full health. Can't heal above max health. Potions can be used any time during your turn before it ends.</p>
+
+    <h2>Death</h2>
+    <p>Health reduced to 0 or below = defeated and removed from the game.</p>
+
+    <h2>Classes</h2>
+    <p><strong>Mage:</strong> 65 HP / Defence 3 / Move 4. Passive: All PC becomes HC; Thorny Vines take one extra turn cycle to deal damage.</p>
+    <p><strong>Knight:</strong> 75 HP / Defence 5 / Move 6. Passive: Difficult terrain counts as 1 tile (no movement penalty; damage from Thorny Vines still applies).</p>
+    <p><strong>Archer:</strong> 70 HP / Defence 4 / Move 5. Passive: +1 Hit Throw & +1 Range when target is on lower terrain than the Archer.</p>
+  </div>
+  <button class="btn" onclick="showScreen('screen-name')">Continue</button>
+</div>
+
+<!-- ===================== NAME SCREEN ===================== -->
+<div id="screen-name" class="screen">
+  <div class="setup-title">Enter Your Name</div>
+  <div class="setup-box" style="text-align:center;">
+    <p style="margin-bottom:16px; color:var(--text-dim); font-size:0.9em;">Maximum 5 characters (letters, numbers, symbols, spaces). At least one visible character.</p>
+    <input type="text" id="player-name-input" maxlength="5" placeholder="Name" autocomplete="off" />
+    <br><br>
+    <button class="btn" onclick="submitName()">Continue</button>
+  </div>
+</div>
+
+<!-- ===================== BOARD SCREEN ===================== -->
+<div id="screen-board" class="screen">
+  <div class="setup-title">Choose a Board</div>
+  <div class="setup-box" style="text-align:center;">
+    <div class="board-btn-group" style="justify-content:center;">
+      <button class="btn" onclick="selectBoard(1)">Board 1</button>
+      <button class="btn" onclick="selectBoard(2)">Board 2</button>
+      <button class="btn" onclick="selectBoard(3)">Board 3</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CLASS SCREEN ===================== -->
+<div id="screen-class" class="screen">
+  <div class="setup-title">Choose Your Class</div>
+  <div class="setup-box">
+    <div class="class-cards">
+      <div class="class-card" id="cc-mage" onclick="selectClass('mage')">
+        <div class="class-icon">
+          <svg width="44" height="44" viewBox="0 0 44 44"><polygon points="22,2 42,16 35,40 9,40 2,16" fill="#39b5ff" stroke="#1a6090" stroke-width="2"/></svg>
+        </div>
+        <h3>Mage</h3>
+        <div class="stat">❤️ Health: 65</div>
+        <div class="stat">🛡️ Defence: 3</div>
+        <div class="stat">⚡ Move: 4 tiles</div>
+        <div class="passive">Passive: Magical Barrier — All PC becomes HC; Thorny Vines take one extra turn cycle to deal damage.</div>
+      </div>
+      <div class="class-card" id="cc-knight" onclick="selectClass('knight')">
+        <div class="class-icon">
+          <svg width="44" height="44" viewBox="0 0 44 44"><rect x="4" y="4" width="36" height="36" rx="3" fill="#b7b7b7" stroke="#777" stroke-width="2"/></svg>
+        </div>
+        <h3>Knight</h3>
+        <div class="stat">❤️ Health: 75</div>
+        <div class="stat">🛡️ Defence: 5</div>
+        <div class="stat">⚡ Move: 6 tiles</div>
+        <div class="passive">Passive: Mighty Muscles — Difficult terrain counts as 1 tile of movement (no movement penalty). Thorny Vine damage still applies.</div>
+      </div>
+      <div class="class-card" id="cc-archer" onclick="selectClass('archer')">
+        <div class="class-icon">
+          <svg width="44" height="44" viewBox="0 0 44 44"><polygon points="22,2 42,42 2,42" fill="#e77d22" stroke="#a04010" stroke-width="2"/></svg>
+        </div>
+        <h3>Archer</h3>
+        <div class="stat">❤️ Health: 70</div>
+        <div class="stat">🛡️ Defence: 4</div>
+        <div class="stat">⚡ Move: 5 tiles</div>
+        <div class="passive">Passive: Hunter's Eyes — +1 Hit Throw & +1 Range when attacking a target on lower terrain.</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:20px;">
+      <button class="btn" id="class-continue-btn" disabled onclick="confirmClass()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== WEAPON SCREEN ===================== -->
+<div id="screen-weapon" class="screen">
+  <div class="setup-title">Choose Your Starting Weapon</div>
+  <div class="setup-box">
+    <div class="weapon-cards" id="weapon-options"></div>
+    <div style="text-align:center; margin-top:20px;">
+      <button class="btn" id="weapon-continue-btn" disabled onclick="confirmWeapon()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== START TILE SCREEN ===================== -->
+<div id="screen-start-tile" class="screen">
+  <div class="setup-title" id="start-tile-title">Choose Your Starting Tile</div>
+  <p style="color:var(--text-dim); font-size:0.9em; margin-bottom:12px;">Click a highlighted (gold) tile on the board</p>
+  <div id="start-tile-board-container"></div>
+</div>
+
+<!-- ===================== ROLL ORDER SCREEN ===================== -->
+<div id="screen-rollorder" class="screen">
+  <div class="setup-title">Determining Turn Order</div>
+  <div class="setup-box">
+    <p style="text-align:center; color:var(--text-dim); font-size:0.9em; margin-bottom:16px;">Each player rolls a die. Highest goes first. Ties reroll.</p>
+    <div id="roll-order-results"></div>
+    <div style="text-align:center; margin-top:20px;">
+      <button class="btn" id="roll-order-btn" onclick="doRollOrder()">Roll Your Die</button>
+      <button class="btn success" id="start-game-btn" style="display:none;" onclick="startGame()">Start Game!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== GAME SCREEN ===================== -->
+<div id="screen-game" class="screen">
+  <!-- Left: Player Stats -->
+  <div id="stat-panel">
+    <div class="stat-title">Legend Of Fenrirak™<br><small style="font-size:0.7em; color:var(--text-dim);">-Showdowns-</small></div>
+    <div class="section-header">Class</div>
+    <div id="sp-class" style="font-family:'Cinzel',serif; color:var(--gold); font-size:1em; padding:4px 0;"></div>
+    <div class="stat-row">
+      <span class="stat-label">❤️ Health:</span>
+      <span class="stat-value" id="sp-hp"></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">🛡️ Defence:</span>
+      <span class="stat-value" id="sp-def"></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">⚡ Move:</span>
+      <span class="stat-value" id="sp-move"></span>
+    </div>
+    <div class="section-header">Ability</div>
+    <div id="sp-ability" style="font-size:0.78em; color:var(--text); line-height:1.5;"></div>
+    <div class="section-header">Weapon Equipped</div>
+    <div id="sp-weapon-name" style="font-family:'Cinzel',serif; color:var(--accent); font-size:0.9em; margin-bottom:6px;"></div>
+    <div class="weapon-equip-box" id="sp-weapon-box">
+      <div class="we-row">Attack: <span id="sp-w-attack"></span></div>
+      <div class="we-row">Damage: <span id="sp-w-damage"></span></div>
+      <div class="we-row">Hit Throw: <span id="sp-w-hitthrow"></span></div>
+      <div class="we-row">Effect: <span id="sp-w-effect"></span></div>
+      <div class="we-row">Range: <span id="sp-w-range"></span></div>
+      <div class="we-row">Special: <span id="sp-w-special"></span></div>
+    </div>
+    <div style="margin-top:6px;">
+      <button class="attack-name-btn" id="sp-attack-btn" onclick="playerClickAttack()"></button>
+    </div>
+    <div class="section-header">Inventory</div>
+    <div id="sp-inventory"></div>
+    <button class="btn danger" id="end-turn-btn" onclick="playerEndTurn()">End Turn</button>
+    <div id="phase-indicator"></div>
+  </div>
+
+  <!-- Center: Board -->
+  <div id="board-area">
+    <div id="turn-info">Loading...</div>
+    <div id="message-log"></div>
+    <div id="board-container">
+      <div id="game-board"></div>
+    </div>
+  </div>
+
+  <!-- Right: Enemy info -->
+  <div id="right-panel">
+    <div class="section-header" style="margin-top:0;">Characters</div>
+    <div id="enemy-cards"></div>
+  </div>
+</div>
+
+<!-- ===================== DICE OVERLAY ===================== -->
+<div id="dice-overlay">
+  <div class="dice-container">
+    <div class="dice-title" id="dice-title">Roll the Dice!</div>
+    <div id="dice-3d">
+      <div class="dice-face-display" id="dice-face">?</div>
+    </div>
+    <div class="dice-result-text" id="dice-result-text"></div>
+    <button class="btn" id="dice-roll-btn" onclick="rollTheDice()">Roll!</button>
+    <button class="btn secondary" id="dice-ok-btn" style="display:none;" onclick="diceOk()">OK</button>
+  </div>
+</div>
+
+<!-- ===================== ITEM POPUP ===================== -->
+<div id="item-popup">
+  <div class="item-card">
+    <h3 id="ip-title"></h3>
+    <p id="ip-desc"></p>
+    <button class="btn success" id="ip-use-btn" onclick="useItemConfirm()">Use Item</button>
+    <button class="btn secondary" onclick="closeItemPopup()" style="margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<!-- ===================== OUTCOME OVERLAY ===================== -->
+<div id="outcome-overlay">
+  <div id="outcome-word"></div>
+</div>
+
+<div id="ai-thinking">Computer is thinking...</div>
+
+<script>
+// ============================================================
+//  GAME DATA
+// ============================================================
+
+const WEAPONS = {
+  mage: [
+    {
+      id: 'staff_greater_good', name: 'Staff of Greater Good', class: 'mage',
+      attackName: 'Orb of Power',
+      baseDamage: 12, damageType: 'plus',
+      diceCount: 3, diceCondition: 'even', diceBonus: 3,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 3,
+      desc: '12+ Damage. Roll die 3 times, for every even number, deal 3 extra damage.'
+    },
+    {
+      id: 'staff_might', name: 'Staff of Might', class: 'mage',
+      attackName: 'Celestial Bolt',
+      baseDamage: 15, damageType: 'plus',
+      diceCount: 3, diceCondition: '5or6', diceBonus: 4,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 3,
+      desc: '15+ Damage. Roll die 3 times, for every 5 or 6, deal 4 extra damage.'
+    },
+    {
+      id: 'staff_oceans', name: 'Staff of the Oceans', class: 'mage',
+      attackName: 'Aqueous Torrent',
+      baseDamage: 12, damageType: 'flat',
+      diceCount: 2, diceCondition: 'odd', diceBonus: 1,
+      hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 3,
+      desc: '12 Damage. Roll die 2 times, for every odd number, deal 1 extra damage.'
+    },
+    {
+      id: 'wand_flames', name: 'Wand of Deathly Flames', class: 'mage',
+      attackName: 'Inferno Blast',
+      baseDamage: 22, damageType: 'minus',
+      diceCount: 0, diceCondition: 'distance', diceBonus: 2,
+      hitThrowMod: -1, effect: '1 tile', effectTiles: 1, range: 9,
+      desc: '22- Damage. For every tile away from the Mage, deal 2 less damage.'
+    }
+  ],
+  knight: [
+    {
+      id: 'longsword', name: 'Longsword', class: 'knight',
+      attackName: 'Piercing Thrust',
+      baseDamage: 16, damageType: 'plus',
+      diceCount: 2, diceCondition: 'even', diceBonus: 4,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 1,
+      desc: '16+ Damage. Roll die 2 times, for every even number, deal 4 extra damage.'
+    },
+    {
+      id: 'twin_daggers', name: 'Twin Daggers', class: 'knight',
+      attackName: 'Blade Flurry',
+      baseDamage: 10, damageType: 'plus',
+      diceCount: 6, diceCondition: 'odd', diceBonus: 2,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 0,
+      desc: '10+ Damage. Roll die 6 times, for every odd number, deal 2 extra damage.'
+    },
+    {
+      id: 'greataxe', name: 'Greataxe', class: 'knight',
+      attackName: 'Iron Cleave',
+      baseDamage: 18, damageType: 'plus',
+      diceCount: 1, diceCondition: 'even', diceBonus: 2,
+      hitThrowMod: 1, effect: '2 adjacent tiles (including diagonals)', effectTiles: 2, range: 0,
+      special: 'aoe2adj',
+      desc: '18+ Damage. Roll die once, if even, deal 2 extra damage. Effect: 2 adjacent tiles (incl. diagonals).'
+    },
+    {
+      id: 'sword_buckler', name: 'Sword and Buckler', class: 'knight',
+      attackName: 'Destructive Rush',
+      baseDamage: 22, damageType: 'minus_dmg_taken',
+      diceCount: 0,
+      hitThrowMod: 0, effect: '8 surrounding tiles', effectTiles: 8, range: 0,
+      special: 'aoe8surround',
+      passive: 'Parry: Take 4 less damage if attack deals <18 (before Parry).',
+      desc: '22- Damage. Deal 1 less damage for every damage taken since start of last turn. Minimum 0. Effect: 8 surrounding tiles.'
+    }
+  ],
+  archer: [
+    {
+      id: 'longbow', name: 'Longbow', class: 'archer',
+      attackName: 'Twin Shot',
+      baseDamage: 11, damageType: 'plus',
+      diceCount: 3, diceCondition: '4or6', diceBonus: 7,
+      hitThrowMod: 0, effect: '1 tile', effectTiles: 1, range: 7,
+      desc: '11+ Damage. Roll die 3 times, for every 4 or 6, deal 7 extra damage.'
+    },
+    {
+      id: 'shortbow', name: 'Shortbow', class: 'archer',
+      attackName: 'Reign of Arrows',
+      baseDamage: 10, damageType: 'flat',
+      diceCount: 4, diceCondition: '5or6_spread', diceBonus: 0,
+      hitThrowMod: 1, effect: '1+ tiles (spread on 5/6)', effectTiles: 1, range: 5,
+      special: 'shortbow_spread',
+      desc: '10 Damage. Roll die 4 times; for every 5 or 6, hit an adjacent tile of choice.'
+    },
+    {
+      id: 'horsebow', name: 'Horse-bow', class: 'archer',
+      attackName: 'Blasting Arrow',
+      baseDamage: 13, damageType: 'plus',
+      diceCount: 2, diceCondition: 'odd', diceBonus: 4,
+      hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 5,
+      desc: '13+ Damage. Roll die 2 times, for every odd number, deal 4 extra damage.'
+    },
+    {
+      id: 'crossbow', name: 'Crossbow', class: 'archer',
+      attackName: 'Flaming Arrows',
+      baseDamage: 22, damageType: 'mixed_crossbow',
+      diceCount: 3, diceCondition: 'crossbow',
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6,
+      desc: '22+/- Damage. Roll die 3 times. Every even: -4 damage. Every odd: +1 damage.'
+    }
+  ],
+  // Chest weapons
+  chest: {
+    mage: {
+      id: 'aldamars_staff', name: "Aldemar's Staff", class: 'mage',
+      attackName: 'Fireball',
+      baseDamage: 22, damageType: 'plus',
+      diceCount: 3, diceCondition: 'even', diceBonus: 5,
+      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4,
+      special: 'aoe2x2',
+      desc: '22+ Damage. Roll die 3 times, for every even number, deal 5 more damage. Effect: 4 tiles in a 2×2 area.'
+    },
+    archer: {
+      id: 'sylvias_bow', name: "Sylvia's Bow", class: 'archer',
+      attackName: 'Arrow of Light',
+      baseDamage: 12, damageType: 'plus',
+      diceCount: 2, diceCondition: 'even', diceBonus: 16,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5,
+      desc: '12+ Damage. Roll die 2 times, for every even number, deal 16 more damage.'
+    },
+    knight: {
+      id: 'fenrirak_blade', name: "Fenrirak's Tail Blade", class: 'knight',
+      attackName: 'Lightning Strike',
+      baseDamage: 5, damageType: 'plus_pct_dmg',
+      diceCount: 0,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 2,
+      desc: '5+ damage. +1 damage for every 2 damage target has already taken (round down).'
+    },
+    any: {
+      id: 'helens_staff', name: "Helen's Staff of Pure Oblivion", class: 'any',
+      attackName: 'Blast of Obliviation',
+      baseDamage: 25, damageType: 'oblivion',
+      diceCount: 1, diceCondition: 'odd_50',
+      hitThrowMod: 2, effect: 'Any 2 tiles (reroll each)', effectTiles: 2, range: 7,
+      special: 'helen2tiles',
+      desc: '25+ damage. Roll a die, if odd, deal 50 damage instead. Effect: Any 2 tiles, reroll Hit Throw & damage for each.'
+    }
+  }
+};
+
+const CHEST_LOOT = [
+  null, // 0 unused
+  { roll: 1, name: 'Potion of Healing', type: 'potion', amount: 2, desc: 'Heal 10 health.' },
+  { roll: 2, name: 'Potion of Reach', type: 'potion', amount: 2, desc: 'All attacks this turn have +2 to range.' },
+  { roll: 3, name: 'Vial of Blue Liquid', type: 'potion', amount: 3, desc: 'Roll a die. 1-4: heal 2 HP. 5-6: heal 15 HP.' },
+  { roll: 4, name: 'Vial of Red Liquid', type: 'potion', amount: 3, desc: 'Add 1 to any one dice roll made this turn.' },
+  { roll: 5, name: 'Potion of Godly Strength', type: 'potion', amount: 1, desc: 'All attacks this turn deal 3 extra damage (+5 and +1 range for Knights).' },
+  { roll: 6, name: 'Class Weapon', type: 'weapon', amount: 1, desc: 'Receive the weapon matching your class from the chest.' },
+  { roll: 7, name: "Helen's Staff of Pure Oblivion", type: 'weapon', amount: 1, desc: 'A legendary weapon usable by any class.' }
+];
+
+const BOARD_CONFIGS = {
+  1: {
+    startingTiles: [{x:0,y:0},{x:5,y:0},{x:10,y:0},{x:0,y:8},{x:5,y:8},{x:10,y:8}],
+    tiles: {
+      '1,1':{type:'pc', label:'Rock'},
+      '0,2':{type:'pc', label:'Rock'},
+      '9,3':{type:'pc', label:'Rock'},
+      '4,6':{type:'pc', label:'Rock'},
+      '7,1':{type:'difficult', label:'Mud'},
+      '3,3':{type:'difficult', label:'Mud'},
+      '6,4':{type:'difficult', label:'Mud'},
+      '1,7':{type:'difficult', label:'Mud'},
+      '10,7':{type:'difficult', label:'Mud'},
+      '2,8':{type:'difficult', label:'Mud'},
+      '9,8':{type:'difficult', label:'Mud'},
+      '8,1':{type:'log', label:'Log'},
+      '9,1':{type:'log', label:'Log'},
+      '1,4':{type:'log', label:'Log'},
+      '1,5':{type:'log', label:'Log'},
+      '1,2':{type:'highground'},
+      '8,5':{type:'highground'},
+      '7,6':{type:'highground'},
+      '8,6':{type:'highground'},
+      '2,2':{type:'difficult', label:'Hill'},
+      '1,3':{type:'difficult', label:'Hill'},
+      '8,4':{type:'difficult', label:'Hill'},
+      '7,5':{type:'difficult', label:'Hill'},
+      '8,5':{type:'highground', label:'Hill'},
+      '6,6':{type:'difficult', label:'Hill'},
+      '9,6':{type:'difficult', label:'Hill'},
+      '7,7':{type:'difficult', label:'Hill'},
+      '8,7':{type:'difficult', label:'Hill'},
+      '3,2':{type:'chest', label:'Chest'},
+      '8,6':{type:'chest_hg', label:'Chest'},
+      '2,7':{type:'chest', label:'Chest'},
+      '3,0':{type:'thorny', label:'THV'},
+      '4,2':{type:'thorny', label:'THV'},
+      '7,3':{type:'thorny', label:'THV'},
+      '3,5':{type:'thorny', label:'THV'},
+      '6,2':{type:'hc', label:'HC'},
+    }
+  },
+  2: {
+    startingTiles: [{x:2,y:2},{x:8,y:2},{x:5,y:4},{x:2,y:6},{x:8,y:6}],
+    tiles: {
+      '1,1':{type:'pc', label:'Rock'},
+      '7,4':{type:'pc', label:'Rock'},
+      '10,6':{type:'pc', label:'Rock'},
+      '3,7':{type:'pc', label:'Rock'},
+      '5,1':{type:'difficult', label:'Mud'},
+      '4,5':{type:'difficult', label:'Mud'},
+      '5,7':{type:'difficult', label:'Mud'},
+      '2,0':{type:'log', label:'Log'},
+      '3,0':{type:'log', label:'Log'},
+      '0,8':{type:'highground'},
+      '10,0':{type:'highground'},
+      '9,0':{type:'difficult', label:'Hill'},
+      '10,1':{type:'difficult', label:'Hill'},
+      '0,7':{type:'difficult', label:'Hill'},
+      '1,8':{type:'difficult', label:'Hill'},
+      '0,4':{type:'chest', label:'Chest'},
+      '5,0':{type:'chest', label:'Chest'},
+      '10,4':{type:'chest', label:'Chest'},
+      '5,8':{type:'chest', label:'Chest'},
+      '6,2':{type:'thorny', label:'THV'},
+      '1,4':{type:'thorny', label:'THV'},
+      '9,4':{type:'thorny', label:'THV'},
+      '3,3':{type:'hc', label:'HC'},
+      '9,8':{type:'hc', label:'HC'},
+    }
+  },
+  3: {
+    startingTiles: [{x:2,y:2},{x:8,y:2},{x:5,y:4},{x:2,y:6},{x:8,y:6}],
+    tiles: {
+      '1,1':{type:'pc', label:'Rock'},
+      '10,4':{type:'pc', label:'Rock'},
+      '0,4':{type:'pc', label:'Rock'},
+      '4,4':{type:'pc', label:'Rock'},
+      '6,4':{type:'pc', label:'Rock'},
+      '3,7':{type:'pc', label:'Rock'},
+      '5,1':{type:'difficult', label:'Mud'},
+      '9,0':{type:'difficult', label:'Mud'},
+      '5,7':{type:'difficult', label:'Mud'},
+      '0,7':{type:'difficult', label:'Mud'},
+      '2,0':{type:'log', label:'Log'},
+      '3,0':{type:'log', label:'Log'},
+      '3,4':{type:'highground'},
+      '7,4':{type:'highground'},
+      '3,3':{type:'difficult', label:'Hill'},
+      '7,3':{type:'difficult', label:'Hill'},
+      '2,4':{type:'difficult', label:'Hill'},
+      '8,4':{type:'difficult', label:'Hill'},
+      '3,5':{type:'difficult', label:'Hill'},
+      '7,5':{type:'difficult', label:'Hill'},
+      '5,0':{type:'chest', label:'Chest'},
+      '10,0':{type:'chest', label:'Chest'},
+      '5,8':{type:'chest', label:'Chest'},
+      '0,8':{type:'chest', label:'Chest'},
+      '0,2':{type:'thorny', label:'THV'},
+      '10,1':{type:'thorny', label:'THV'},
+      '1,8':{type:'thorny', label:'THV'},
+      '9,7':{type:'hc', label:'HC'},
+    }
+  }
+};
+
+// Note: Board 1 has some tiles that overlap (highground + chest). Handle chest_hg specially.
+// Fix the board 1 config so (8,6) is chest on highground
+BOARD_CONFIGS[1].tiles['8,6'] = {type:'chest_hg', label:'Chest'};
+BOARD_CONFIGS[1].tiles['8,5'] = {type:'highground', label:'Hill'};
+
+// ============================================================
+//  GAME STATE
+// ============================================================
+let G = {
+  playerName: '',
+  boardId: null,
+  boardConfig: null,
+  playerClass: null,
+  playerWeapon: null,
+  characters: [], // [{id, name, class, weapon, x, y, hp, maxHp, defence, move, alive, isPlayer, inventory, ...}]
+  turnOrder: [],
+  currentTurnIdx: 0,
+  phase: 'setup', // setup, player-move, player-attack, ai-turn, game-over
+  selectedMoveRoute: [],
+  hasMovedThisTurn: false,
+  hasActedThisTurn: false, // attacked or opened chest
+  openedChests: new Set(),
+  diceCallback: null,
+  multiDiceResults: [],
+  pendingAttack: null,
+  pendingChestOpener: null,
+  aoeSelectedTiles: [],
+  activeItemUser: null,
+  activeItem: null,
+  turnEffects: {}, // per-character per-turn effects
+  thornyDmgCounters: {}, // thorny vine damage cycle counters
+  damageTakenThisTurn: {}, // for sword&buckler
+  reachBonusActive: false,
+  godlyStrengthActive: false,
+  redLiquidActive: false,
+  vialBluePending: false,
+};
+
+// ============================================================
+//  UTILITY
+// ============================================================
+function tileKey(x,y){ return `${x},${y}`; }
+function chebyshev(x1,y1,x2,y2){ return Math.max(Math.abs(x2-x1),Math.abs(y2-y1)); }
+function manhattan(x1,y1,x2,y2){ return Math.abs(x2-x1)+Math.abs(y2-y1); }
+function roll(sides=6){ return Math.floor(Math.random()*sides)+1; }
+function clamp(v,mn,mx){ return Math.max(mn,Math.min(mx,v)); }
+
+function getTile(x,y){
+  return G.boardConfig ? G.boardConfig.tiles[tileKey(x,y)] : null;
+}
+function getTileType(x,y){
+  const t = getTile(x,y);
+  if(!t) return 'normal';
+  return t.type;
+}
+function isPassable(x,y){
+  if(x<0||x>10||y<0||y>8) return false;
+  const type = getTileType(x,y);
+  if(['pc','hc','log','chest','chest_hg'].includes(type)) return false;
+  // check if a character occupies it
+  if(G.characters.some(c=>c.alive && c.x===x && c.y===y)) return false;
+  return true;
+}
+function isHighGround(x,y){
+  const t = getTileType(x,y);
+  return t==='highground'||t==='chest_hg';
+}
+function isDifficult(x,y){
+  const t = getTileType(x,y);
+  return ['difficult','thorny','hill'].includes(t) || t==='difficult';
+}
+function isThorny(x,y){
+  return getTileType(x,y)==='thorny';
+}
+function isPCTile(x,y){
+  const t = getTileType(x,y);
+  return ['pc','log','chest','chest_hg'].includes(t);
+}
+function isHCTile(x,y){
+  const t = getTileType(x,y);
+  return t==='hc';
+}
+
+function getChar(id){ return G.characters.find(c=>c.id===id); }
+function getCharAt(x,y){ return G.characters.find(c=>c.alive&&c.x===x&&c.y===y); }
+function getLiveChars(){ return G.characters.filter(c=>c.alive); }
+function getCurrentChar(){ return G.characters[G.turnOrder[G.currentTurnIdx]]; }
+
+// Log message
+function logMsg(text, cls=''){
+  const el = document.getElementById('message-log');
+  const div = document.createElement('div');
+  div.className = 'msg-line' + (cls?' '+cls:'');
+  div.textContent = text;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  // Keep log manageable
+  while(el.children.length > 60) el.removeChild(el.firstChild);
+}
+
+// ============================================================
+//  SCREEN NAV
+// ============================================================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ============================================================
+//  SETUP FLOW
+// ============================================================
+function submitName(){
+  const val = document.getElementById('player-name-input').value;
+  if(!val.trim()){ alert('Please enter a name.'); return; }
+  G.playerName = val.trim().substring(0,5);
+  showScreen('screen-board');
+}
+
+function selectBoard(id){
+  G.boardId = id;
+  G.boardConfig = JSON.parse(JSON.stringify(BOARD_CONFIGS[id]));
+  showScreen('screen-class');
+}
+
+let selectedClassId = null;
+function selectClass(cls){
+  selectedClassId = cls;
+  document.querySelectorAll('.class-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('cc-'+cls).classList.add('selected');
+  document.getElementById('class-continue-btn').disabled = false;
+}
+function confirmClass(){
+  G.playerClass = selectedClassId;
+  showWeaponScreen(G.playerClass);
+  showScreen('screen-weapon');
+}
+function showWeaponScreen(cls){
+  const container = document.getElementById('weapon-options');
+  container.innerHTML = '';
+  selectedWeaponId = null;
+  document.getElementById('weapon-continue-btn').disabled = true;
+  WEAPONS[cls].forEach(w=>{
+    const div = document.createElement('div');
+    div.className = 'weapon-card';
+    div.id = 'wc-'+w.id;
+    div.innerHTML = `<h4>${w.name}</h4><div class="wstat">${w.desc}</div>`;
+    div.onclick = ()=>selectWeapon(w.id);
+    container.appendChild(div);
+  });
+}
+let selectedWeaponId = null;
+function selectWeapon(id){
+  selectedWeaponId = id;
+  document.querySelectorAll('.weapon-card').forEach(c=>c.classList.remove('selected'));
+  const el = document.getElementById('wc-'+id);
+  if(el) el.classList.add('selected');
+  document.getElementById('weapon-continue-btn').disabled = false;
+}
+function confirmWeapon(){
+  G.playerWeapon = WEAPONS[G.playerClass].find(w=>w.id===selectedWeaponId);
+  buildStartTileScreen();
+  showScreen('screen-start-tile');
+}
+
+// ============================================================
+//  START TILE SELECTION
+// ============================================================
+let startTilePhase = 0; // 0=player, 1,2,3=computers
+let takenStartTiles = [];
+let startTileBoardEl = null;
+
+function buildStartTileScreen(){
+  startTilePhase = 0;
+  takenStartTiles = [];
+  document.getElementById('start-tile-title').textContent = `${G.playerName}: Choose Your Starting Tile`;
+  const container = document.getElementById('start-tile-board-container');
+  container.innerHTML = '';
+
+  const boardEl = document.createElement('div');
+  boardEl.id = 'start-tile-board';
+  boardEl.style.display = 'grid';
+  boardEl.style.gridTemplateColumns = `repeat(11, 44px)`;
+  boardEl.style.border = '2px solid #3a2a0a';
+  boardEl.style.background = '#c8bfa0';
+  startTileBoardEl = boardEl;
+
+  // Draw board (y from 8 to 0 top-bottom)
+  for(let row=8; row>=0; row--){
+    for(let col=0; col<=10; col++){
+      const cell = document.createElement('div');
+      cell.style.width='44px'; cell.style.height='44px';
+      cell.style.border='1px solid rgba(0,0,0,0.2)';
+      cell.style.position='relative';
+      cell.style.display='flex';
+      cell.style.alignItems='center';
+      cell.style.justifyContent='center';
+      cell.style.fontSize='0.6em';
+      cell.dataset.x = col; cell.dataset.y = row;
+      applyTileStyle(cell, col, row);
+      cell.id = `st-tile-${col}-${row}`;
+
+      if(G.boardConfig.startingTiles.some(t=>t.x===col&&t.y===row)){
+        cell.classList.add('valid-start-marker');
+        const lbl = document.createElement('div');
+        lbl.style.cssText='position:absolute;bottom:1px;left:1px;font-size:0.65em;color:rgba(0,0,0,0.5);font-weight:700;';
+        lbl.textContent='S';
+        cell.appendChild(lbl);
+      }
+      cell.onclick = ()=>startTileClick(col, row);
+      boardEl.appendChild(cell);
+    }
+  }
+  container.appendChild(boardEl);
+  highlightStartTiles();
+}
+
+function applyTileStyle(cell, x, y){
+  const t = getTile(x,y);
+  const type = t ? t.type : 'normal';
+  const colors = {
+    normal:'#e8e2d0', starting:'#d4af37', difficult:'#e77d22',
+    highground:'#4a90d9', pc:'#b0a882', hc:'#554f3c',
+    thorny:'#7a9a44', log:'#7a5533', chest:'#c8a05a',
+    chest_hg:'#5a8ab0', hill:'#c8780a'
+  };
+  cell.style.background = colors[type] || '#e8e2d0';
+  if(t && t.label){
+    const lbl = document.createElement('div');
+    lbl.style.cssText='position:absolute;bottom:1px;left:1px;font-size:0.6em;color:rgba(0,0,0,0.55);font-weight:700;pointer-events:none;';
+    lbl.textContent=t.label;
+    cell.appendChild(lbl);
+  }
+}
+
+function highlightStartTiles(){
+  G.boardConfig.startingTiles.forEach(t=>{
+    if(!takenStartTiles.some(tt=>tt.x===t.x&&tt.y===t.y)){
+      const el = document.getElementById(`st-tile-${t.x}-${t.y}`);
+      if(el && startTilePhase===0) el.style.outline='3px solid gold';
+    }
+  });
+}
+
+function startTileClick(x,y){
+  if(startTilePhase!==0) return;
+  if(!G.boardConfig.startingTiles.some(t=>t.x===x&&t.y===y)) return;
+  if(takenStartTiles.some(t=>t.x===x&&t.y===y)) return;
+
+  takenStartTiles.push({x,y, charId:'player'});
+  const el = document.getElementById(`st-tile-${x}-${y}`);
+  if(el){ el.style.outline='3px solid #39b5ff'; el.style.background='#39b5ff55'; }
+
+  G.playerStartX = x; G.playerStartY = y;
+  startTilePhase=1;
+  document.getElementById('start-tile-title').textContent = 'Computer 1 choosing...';
+  setTimeout(computerPickStartTile, 600);
+}
+
+function computerPickStartTile(){
+  const available = G.boardConfig.startingTiles.filter(t=>!takenStartTiles.some(tt=>tt.x===t.x&&tt.y===t.y));
+  if(available.length===0){ proceedToRollOrder(); return; }
+  const pick = available[Math.floor(Math.random()*available.length)];
+  const charId = 'computer'+startTilePhase;
+  takenStartTiles.push({x:pick.x, y:pick.y, charId});
+  const el = document.getElementById(`st-tile-${pick.x}-${pick.y}`);
+  const colors=['','#ff885555','#88ff5555','#ff55ff55'];
+  if(el){ el.style.outline='3px solid orange'; el.style.background=colors[startTilePhase]||'#88888855'; }
+
+  if(startTilePhase<3){
+    startTilePhase++;
+    const names=['Computer 1 choosing...','Computer 2 choosing...','Computer 3 choosing...'];
+    document.getElementById('start-tile-title').textContent = names[startTilePhase-1]||'Done';
+    setTimeout(computerPickStartTile, 600);
+  } else {
+    setTimeout(proceedToRollOrder, 600);
+  }
+}
+
+function proceedToRollOrder(){
+  buildCharacters();
+  buildRollOrderScreen();
+  showScreen('screen-rollorder');
+}
+
+// ============================================================
+//  BUILD CHARACTERS
+// ============================================================
+function getClassStats(cls){
+  const stats = {
+    mage:{hp:65,def:3,move:4,passive:'Magical Barrier'},
+    knight:{hp:75,def:5,move:6,passive:'Mighty Muscles'},
+    archer:{hp:70,def:4,move:5,passive:"Hunter's Eyes"}
+  };
+  return stats[cls];
+}
+
+function buildCharacters(){
+  // Computer weapon rolls (4-sided)
+  function rollWeapon(cls){
+    const r = roll(4);
+    return WEAPONS[cls][Math.min(r-1, WEAPONS[cls].length-1)];
+  }
+
+  const compClasses = ['mage','knight','archer'];
+  const allPicks = [
+    {id:'player', name:G.playerName, cls:G.playerClass, weapon:G.playerWeapon, isPlayer:true},
+    {id:'computer1', name:'1', cls:'mage', weapon:rollWeapon('mage'), isPlayer:false},
+    {id:'computer2', name:'2', cls:'knight', weapon:rollWeapon('knight'), isPlayer:false},
+    {id:'computer3', name:'3', cls:'archer', weapon:rollWeapon('archer'), isPlayer:false},
+  ];
+
+  G.characters = allPicks.map((p,i)=>{
+    const startPos = takenStartTiles.find(t=>t.charId===p.id)||{x:0,y:0};
+    const stats = getClassStats(p.cls);
+    return {
+      id: p.id,
+      name: p.name,
+      class: p.cls,
+      weapon: p.weapon,
+      equippedWeapon: p.weapon,
+      x: startPos.x, y: startPos.y,
+      hp: stats.hp, maxHp: stats.hp,
+      defence: stats.def,
+      move: stats.move,
+      alive: true,
+      isPlayer: p.isPlayer,
+      inventory: [],
+      damageTakenLastTurn: 0,
+      damageTakenThisTurn: 0,
+      leftThornyLastTurn: false,
+      thornyCounter: 0,
+    };
+  });
+  G.turnOrder = [0,1,2,3];
+  G.currentTurnIdx = 0;
+}
+
+// ============================================================
+//  ROLL ORDER
+// ============================================================
+let rollResults = {};
+let rollOrderDone = false;
+
+function buildRollOrderScreen(){
+  rollResults = {};
+  rollOrderDone = false;
+  document.getElementById('roll-order-results').innerHTML = '';
+  document.getElementById('roll-order-btn').style.display = 'inline-block';
+  document.getElementById('start-game-btn').style.display = 'none';
+}
+
+function doRollOrder(){
+  document.getElementById('roll-order-btn').disabled = true;
+  // Player rolls via dice overlay
+  openDice('Roll to determine turn order!', (result)=>{
+    rollResults['player'] = result;
+    displayRollResult('player', G.playerName, result);
+    // Computers roll
+    setTimeout(()=>{
+      ['computer1','computer2','computer3'].forEach((id,i)=>{
+        setTimeout(()=>{
+          const r = roll(6);
+          rollResults[id] = r;
+          const char = G.characters.find(c=>c.id===id);
+          displayRollResult(id, char.name, r);
+          if(i===2) setTimeout(finalizeRollOrder, 500);
+        }, i*400);
+      });
+    }, 300);
+  });
+}
+
+function displayRollResult(id, name, val){
+  const container = document.getElementById('roll-order-results');
+  const existing = document.getElementById('rr-'+id);
+  if(existing) existing.remove();
+  const div = document.createElement('div');
+  div.className = 'roll-result-row';
+  div.id = 'rr-'+id;
+  div.innerHTML = `<span class="char-badge">${name}</span><span class="dice-val">${val}</span>`;
+  container.appendChild(div);
+}
+
+function finalizeRollOrder(){
+  // Determine order, handle ties by rerolling
+  let idxMap = {player:0, computer1:1, computer2:2, computer3:3};
+  let order = Object.keys(rollResults).map(id=>({id, val:rollResults[id]}));
+
+  function resolveOrder(group){
+    // Find any ties
+    const valCounts = {};
+    group.forEach(g=>{ valCounts[g.val]=(valCounts[g.val]||0)+1; });
+    const ties = group.filter(g=>valCounts[g.val]>1);
+    if(ties.length===0) return group.sort((a,b)=>b.val-a.val);
+    const nonTies = group.filter(g=>valCounts[g.val]===1);
+    // Reroll tied
+    ties.forEach(t=>{ t.val = roll(6); rollResults[t.id]=t.val; displayRollResult(t.id, G.characters.find(c=>c.id===t.id).name, t.val); });
+    return resolveOrder([...nonTies, ...ties]);
+  }
+
+  const sorted = resolveOrder(order);
+  G.turnOrder = sorted.map(s=>idxMap[s.id]);
+  document.getElementById('start-game-btn').style.display = 'inline-block';
+}
+
+function startGame(){
+  buildGameScreen();
+  showScreen('screen-game');
+  G.phase = 'game';
+  G.currentTurnIdx = 0;
+  startTurn();
+}
+
+// ============================================================
+//  GAME BOARD RENDERING
+// ============================================================
+function buildGameScreen(){
+  const board = document.getElementById('game-board');
+  board.style.gridTemplateColumns = `repeat(11, 52px)`;
+  board.innerHTML = '';
+
+  for(let row=8; row>=0; row--){
+    for(let col=0; col<=10; col++){
+      const cell = document.createElement('div');
+      cell.className = 'tile';
+      cell.dataset.x = col; cell.dataset.y = row;
+      cell.id = `tile-${col}-${row}`;
+      setTileClass(cell, col, row);
+      const t = getTile(col,row);
+      if(t && t.label){
+        const lbl = document.createElement('div');
+        lbl.className = 'tile-label';
+        lbl.textContent = t.label;
+        cell.appendChild(lbl);
+      }
+      board.appendChild(cell);
+    }
+  }
+  // Add character icons
+  G.characters.forEach(c=>{
+    const icon = document.createElement('div');
+    icon.className = `char-icon ${c.class}`;
+    icon.id = `char-icon-${c.id}`;
+    icon.textContent = c.name;
+    icon.dataset.charid = c.id;
+    board.appendChild(icon);
+    positionIcon(c);
+    icon.addEventListener('mousedown', onCharIconMouseDown);
+  });
+
+  // Tile events
+  document.querySelectorAll('.tile').forEach(t=>{
+    t.addEventListener('mouseover', onTileMouseOver);
+    t.addEventListener('click', onTileClick);
+  });
+
+  updateStatPanel();
+  updateEnemyPanel();
+}
+
+function setTileClass(cell, x, y){
+  cell.className = 'tile';
+  const t = getTile(x,y);
+  const type = t ? t.type : 'normal';
+  const classMap = {
+    normal:'normal', difficult:'difficult', hill:'difficult',
+    highground:'high-ground', pc:'partial-cover', hc:'heavy-cover',
+    thorny:'thorny', log:'log', chest:'chest', chest_hg:'high-ground chest',
+    starting:'starting'
+  };
+  if(G.boardConfig.startingTiles.some(s=>s.x===x&&s.y===y) && type==='normal'){
+    cell.classList.add('starting');
+  } else {
+    (classMap[type]||'normal').split(' ').forEach(c=>cell.classList.add(c));
+  }
+  if(G.openedChests.has(tileKey(x,y))){
+    cell.classList.add('opened');
+    cell.style.background='rgba(200,100,100,0.55)';
+  }
+}
+
+function positionIcon(c){
+  const icon = document.getElementById(`char-icon-${c.id}`);
+  if(!icon) return;
+  const tile = document.getElementById(`tile-${c.x}-${c.y}`);
+  if(!tile) return;
+  // Position relative to board grid
+  const col = c.x;
+  const row = 8 - c.y; // grid row from top
+  icon.style.position = 'absolute';
+  icon.style.left = (col * 52 + 7) + 'px';
+  icon.style.top = (row * 52 + 7) + 'px';
+  if(!c.alive) icon.style.display='none';
+}
+
+// ============================================================
+//  STAT PANEL
+// ============================================================
+function updateStatPanel(){
+  const player = G.characters.find(c=>c.isPlayer);
+  if(!player || !player.alive){
+    document.getElementById('sp-class').textContent = player ? player.class : '';
+    return;
+  }
+  document.getElementById('sp-class').textContent = player.class.charAt(0).toUpperCase()+player.class.slice(1);
+  document.getElementById('sp-hp').textContent = `${player.hp}/${player.maxHp}`;
+  document.getElementById('sp-def').textContent = player.defence;
+  document.getElementById('sp-move').textContent = player.move;
+
+  const passives = {
+    mage:'Magical Barrier: All PC becomes HC for you; Thorny Vines take one extra cycle.',
+    knight:'Mighty Muscles: Difficult terrain costs 1 tile (no penalty). Thorny damage still applies.',
+    archer:"Hunter's Eyes: +1 Hit Throw & +1 Range vs targets on lower terrain."
+  };
+  document.getElementById('sp-ability').textContent = passives[player.class]||'';
+
+  const w = player.equippedWeapon;
+  if(w){
+    document.getElementById('sp-weapon-name').textContent = w.name;
+    document.getElementById('sp-w-attack').textContent = w.attackName;
+    document.getElementById('sp-w-damage').textContent = w.desc.split('.')[0];
+    document.getElementById('sp-w-hitthrow').textContent = `Dice + ${w.hitThrowMod>=0?'+':''}${w.hitThrowMod}`.replace('+ +','+').replace('+ -','-');
+    document.getElementById('sp-w-effect').textContent = w.effect;
+    document.getElementById('sp-w-range').textContent = w.range + ' tiles';
+    document.getElementById('sp-w-special').textContent = w.passive||'—';
+    const btn = document.getElementById('sp-attack-btn');
+    btn.textContent = w.attackName;
+    btn.disabled = G.hasActedThisTurn || !getCurrentChar()?.isPlayer;
+  }
+
+  // Inventory
+  const invEl = document.getElementById('sp-inventory');
+  invEl.innerHTML = '';
+  player.inventory.forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className = 'inventory-item' + (item.type==='weapon'?' weapon-item':'');
+    div.textContent = item.name + (item.amount>1?` x${item.amount}`:'');
+    div.onclick = ()=>clickInventoryItem(i);
+    invEl.appendChild(div);
+  });
+
+  const isMyTurn = getCurrentChar()?.isPlayer;
+  document.getElementById('end-turn-btn').disabled = !isMyTurn || G.phase==='game-over';
+  document.getElementById('sp-attack-btn').disabled = G.hasActedThisTurn || !isMyTurn || G.phase==='game-over';
+}
+
+// ============================================================
+//  ENEMY PANEL
+// ============================================================
+function updateEnemyPanel(){
+  const panel = document.getElementById('enemy-cards');
+  panel.innerHTML = '';
+  G.characters.forEach(c=>{
+    const card = document.createElement('div');
+    card.className = 'enemy-card';
+    const pct = c.hp/c.maxHp*100;
+    const fillCls = pct>50?'':'pct>25?low:critical'.split(':')[pct>25?0:1]||'critical';
+    const isCurrentTurn = getCurrentChar()===c;
+    card.innerHTML = `
+      <h4>${c.name} <span style="font-size:0.8em;color:${c.class==='mage'?'#39b5ff':c.class==='knight'?'#b7b7b7':'#e77d22'}">${c.class}</span>${isCurrentTurn?'<span class="current-player-tag">TURN</span>':''}</h4>
+      <div class="stat-row"><span class="stat-label">HP:</span><span class="stat-value">${c.alive?c.hp+'/'+c.maxHp:'DEAD'}</span></div>
+      <div class="health-bar-bg"><div class="health-bar-fill ${pct>50?'':pct>25?'low':'critical'}" style="width:${c.alive?pct:0}%"></div></div>
+      <div style="font-size:0.78em;color:var(--text-dim);margin-top:4px;">${c.alive?`Pos: (${c.x},${c.y})`:''}</div>
+    `;
+    if(!c.alive) card.style.opacity='0.4';
+    panel.appendChild(card);
+  });
+}
+
+// ============================================================
+//  TURN MANAGEMENT
+// ============================================================
+function startTurn(){
+  if(G.phase==='game-over') return;
+  const char = getCurrentChar();
+  if(!char || !char.alive){
+    nextTurn();
+    return;
+  }
+  G.hasMovedThisTurn = false;
+  G.hasActedThisTurn = false;
+  G.selectedMoveRoute = [];
+  G.reachBonusActive = false;
+  G.godlyStrengthActive = false;
+  G.redLiquidActive = false;
+  G.aoeSelectedTiles = [];
+
+  // Record damage taken at start of turn for sword & buckler reset
+  char.damageTakenLastTurn = char.damageTakenThisTurn||0;
+  char.damageTakenThisTurn = 0;
+
+  // Thorny vine start-of-turn damage
+  if(isThorny(char.x, char.y)){
+    char.thornyCounter = (char.thornyCounter||0)+1;
+    const extraCycle = char.class==='mage' ? 1 : 0;
+    if(char.thornyCounter >= 2 + extraCycle){
+      applyDamage(char, 3, false);
+      logMsg(`${char.name} takes 3 thorny vine damage!`, 'damage');
+      char.thornyCounter = 0;
+    }
+  } else {
+    char.thornyCounter = 0;
+  }
+
+  checkWinLose();
+  if(G.phase==='game-over') return;
+
+  document.getElementById('turn-info').textContent = `${char.name}'s Turn (${char.class})`;
+  updateStatPanel();
+  updateEnemyPanel();
+  updateIconHighlights();
+
+  if(char.isPlayer){
+    G.phase = 'player-move';
+    setPhaseText('Click your character and drag to move. Click an attack to attack.');
+    updateStatPanel();
+  } else {
+    G.phase = 'ai-turn';
+    document.getElementById('ai-thinking').classList.add('active');
+    setTimeout(()=>runAITurn(char), 800);
+  }
+}
+
+function nextTurn(){
+  G.currentTurnIdx = (G.currentTurnIdx+1) % G.turnOrder.length;
+  // Skip dead
+  let attempts = 0;
+  while(!G.characters[G.turnOrder[G.currentTurnIdx]].alive && attempts<4){
+    G.currentTurnIdx = (G.currentTurnIdx+1) % G.turnOrder.length;
+    attempts++;
+  }
+  startTurn();
+}
+
+function playerEndTurn(){
+  if(!getCurrentChar()?.isPlayer) return;
+  if(G.phase==='game-over') return;
+  logMsg(`${G.playerName} ends their turn.`);
+  clearMoveHighlights();
+  nextTurn();
+}
+
+function setPhaseText(t){
+  document.getElementById('phase-indicator').textContent = t;
+}
+
+function updateIconHighlights(){
+  G.characters.forEach(c=>{
+    const icon = document.getElementById(`char-icon-${c.id}`);
+    if(icon){
+      icon.classList.toggle('active-turn', c===getCurrentChar());
+    }
+  });
+}
+
+// ============================================================
+//  MOVEMENT - PLAYER
+// ============================================================
+let isDraggingMove = false;
+let moveStartChar = null;
+let moveRoute = [];
+let moveUsed = 0;
+
+function onCharIconMouseDown(e){
+  if(G.phase !== 'player-move') return;
+  const char = G.characters.find(c=>c.id===e.target.dataset.charid);
+  if(!char || !char.isPlayer || !char.alive) return;
+  if(G.hasMovedThisTurn) return;
+  e.preventDefault();
+  isDraggingMove = true;
+  moveStartChar = char;
+  moveRoute = [{x:char.x, y:char.y}];
+  moveUsed = 0;
+
+  document.addEventListener('mouseup', onMouseUp, {once:true});
+  document.addEventListener('touchend', onMouseUp, {once:true});
+}
+
+function onTileMouseOver(e){
+  if(!isDraggingMove || !moveStartChar) return;
+  const x = parseInt(e.target.dataset.x);
+  const y = parseInt(e.target.dataset.y);
+  if(isNaN(x)||isNaN(y)) return;
+
+  const last = moveRoute[moveRoute.length-1];
+  if(last.x===x && last.y===y) return;
+
+  // Check adjacency (no diagonals)
+  const dx = Math.abs(x-last.x), dy = Math.abs(y-last.y);
+  if(dx+dy!==1) return;
+
+  // Check if passable (allow movement through, just don't stop on occupied)
+  const t = getTileType(x,y);
+  if(['pc','hc','log','chest','chest_hg'].includes(t)) return;
+  if(getCharAt(x,y) && !(x===moveStartChar.x&&y===moveStartChar.y)) return;
+
+  // Calculate cost
+  const char = moveStartChar;
+  let cost = 1;
+  if(isDifficultForChar(char, x, y)) cost = 2;
+  // Check if leaving a thorny/difficult tile costs extra (leaving difficult = 1)
+  // (entering difficult = 2, leaving = 1 already accounted for by entering)
+  if(moveUsed+cost > char.move) return;
+
+  // Allow backtracking
+  const prev = moveRoute.findIndex(r=>r.x===x&&r.y===y);
+  if(prev>=0){
+    // Backtrack: recalculate
+    const removed = moveRoute.splice(prev+1);
+    recalcMoveUsed();
+  } else {
+    moveRoute.push({x,y});
+    moveUsed += cost;
+  }
+  renderMoveRoute();
+}
+
+function isDifficultForChar(char, x, y){
+  if(char.class==='knight') return false; // Mighty Muscles
+  const t = getTileType(x,y);
+  return ['difficult','thorny','hill'].includes(t)||t==='difficult';
+}
+
+function recalcMoveUsed(){
+  const char = moveStartChar;
+  moveUsed = 0;
+  for(let i=1;i<moveRoute.length;i++){
+    let cost=1;
+    if(isDifficultForChar(char, moveRoute[i].x, moveRoute[i].y)) cost=2;
+    moveUsed+=cost;
+  }
+}
+
+function renderMoveRoute(){
+  clearMoveHighlights();
+  moveRoute.slice(1).forEach(t=>{
+    const tile = document.getElementById(`tile-${t.x}-${t.y}`);
+    if(tile) tile.classList.add('selected-move');
+  });
+}
+
+function clearMoveHighlights(){
+  document.querySelectorAll('.tile.selected-move').forEach(t=>t.classList.remove('selected-move'));
+  document.querySelectorAll('.tile.selected-attack').forEach(t=>t.classList.remove('selected-attack'));
+  document.querySelectorAll('.tile.aoe-hover').forEach(t=>t.classList.remove('aoe-hover'));
+}
+
+function onMouseUp(e){
+  if(!isDraggingMove) return;
+  isDraggingMove = false;
+  if(moveRoute.length>1){
+    executePlayerMove(moveRoute);
+  }
+  moveRoute = [];
+  moveUsed = 0;
+}
+
+async function executePlayerMove(route){
+  const char = moveStartChar;
+  G.hasMovedThisTurn = true;
+  clearMoveHighlights();
+
+  for(let i=1;i<route.length;i++){
+    const step = route[i];
+    // Thorny vine damage on passing through
+    if(isThorny(step.x, step.y) && i < route.length-1){
+      applyDamage(char, 2, false);
+      logMsg(`${char.name} takes 2 damage from thorny vines!`, 'damage');
+    }
+    char.x = step.x; char.y = step.y;
+    positionIcon(char);
+    await sleep(250);
+  }
+
+  // Stopping on thorny vine
+  const finalStep = route[route.length-1];
+  if(isThorny(finalStep.x, finalStep.y)){
+    applyDamage(char, 4, false);
+    logMsg(`${char.name} stops in thorny vines and takes 4 damage!`, 'damage');
+  }
+
+  checkWinLose();
+  if(G.phase==='game-over') return;
+
+  // Check if adjacent to chest and not acted
+  checkAdjacentChestAutoOpen(char);
+
+  updateStatPanel();
+  updateEnemyPanel();
+  setPhaseText('Movement done. Click an attack name or end your turn.');
+}
+
+function checkAdjacentChestAutoOpen(char){
+  if(G.hasActedThisTurn) return;
+  const adj = getAdjacentTiles(char.x, char.y, false);
+  for(const t of adj){
+    const type = getTileType(t.x,t.y);
+    if((type==='chest'||type==='chest_hg') && !G.openedChests.has(tileKey(t.x,t.y))){
+      if(!G.hasMovedThisTurn) return; // Only auto-open if they moved to adjacent, not start of turn (start-of-turn handled below)
+    }
+  }
+}
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+function getAdjacentTiles(x,y, includeDiag=false){
+  const dirs = includeDiag?
+    [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]:
+    [[-1,0],[1,0],[0,-1],[0,1]];
+  return dirs.map(([dx,dy])=>({x:x+dx,y:y+dy})).filter(t=>t.x>=0&&t.x<=10&&t.y>=0&&t.y<=8);
+}
+
+// ============================================================
+//  TILE CLICK (Attack target selection)
+// ============================================================
+let pendingAttackMode = false;
+let selectedAttackWeapon = null;
+let aoeMode = false;
+let aoeSelectCallback = null;
+
+function onTileClick(e){
+  const x = parseInt(e.target.dataset.x);
+  const y = parseInt(e.target.dataset.y);
+  if(isNaN(x)||isNaN(y)) return;
+
+  if(aoeMode && aoeSelectCallback){
+    aoeSelectCallback(x,y);
+    return;
+  }
+}
+
+function playerClickAttack(){
+  if(G.hasActedThisTurn) return;
+  if(!getCurrentChar()?.isPlayer) return;
+  const player = G.characters.find(c=>c.isPlayer && c.alive);
+  if(!player) return;
+
+  G.phase = 'player-attack-targeting';
+  G.hasMovedThisTurn = true; // Can't move after attacking
+  setPhaseText('Click an enemy character to attack!');
+  selectedAttackWeapon = player.equippedWeapon;
+
+  // Highlight valid targets
+  highlightAttackTargets(player);
+}
+
+function highlightAttackTargets(attacker){
+  clearMoveHighlights();
+  const w = attacker.equippedWeapon;
+  let range = w.range;
+  if(G.reachBonusActive) range += 2;
+
+  G.characters.filter(c=>c.alive&&!c.isPlayer).forEach(target=>{
+    if(inRange(attacker, target, range)){
+      const icon = document.getElementById(`char-icon-${target.id}`);
+      if(icon) icon.style.outline='3px solid #ff3535';
+    }
+  });
+}
+
+function clearAttackHighlights(){
+  G.characters.forEach(c=>{
+    const icon = document.getElementById(`char-icon-${c.id}`);
+    if(icon) icon.style.outline='';
+  });
+}
+
+// Character icon clicked during attack targeting
+document.addEventListener('click', e=>{
+  if(G.phase!=='player-attack-targeting') return;
+  const icon = e.target.closest('.char-icon');
+  if(!icon) return;
+  const charId = icon.dataset.charid;
+  const target = G.characters.find(c=>c.id===charId);
+  if(!target||!target.alive) return;
+  const attacker = G.characters.find(c=>c.isPlayer&&c.alive);
+  if(!attacker) return;
+  if(target===attacker) return; // can't attack self with targeted
+  clearAttackHighlights();
+  G.phase = 'game';
+  initiatePlayerAttack(attacker, target, selectedAttackWeapon);
+});
+
+function inRange(attacker, target, range){
+  return chebyshev(attacker.x, attacker.y, target.x, target.y) <= range;
+}
+
+// ============================================================
+//  COMBAT
+// ============================================================
+function getDefenceWithCover(attacker, target, weapon){
+  let def = target.defence;
+  // High ground bonus for attacker
+  if(isHighGround(attacker.x, attacker.y)) {
+    // +1 to hit throw, handled in hit throw calc
+  }
+  // Hunter's Eyes
+  if(attacker.class==='archer'){
+    const attackerTerrain = getTerrainLevel(attacker.x, attacker.y);
+    const targetTerrain = getTerrainLevel(target.x, target.y);
+    if(targetTerrain < attackerTerrain) def -= 0; // bonus applied to throw, not defence
+  }
+  // Cover check - line from attacker to target
+  const coverResult = checkCoverLOS(attacker.x,attacker.y, target.x,target.y, attacker, target);
+  if(coverResult.blocked) return {def: def, blocked: true};
+  def += coverResult.defBonus;
+  return {def, blocked: false};
+}
+
+function getTerrainLevel(x,y){
+  if(isHighGround(x,y)) return 2;
+  if(isDifficult(x,y)) return 0; // rough terrain = lower
+  return 1;
+}
+
+function checkCoverLOS(ax,ay,tx,ty, attacker, target){
+  // Draw line from (ax,ay) center to (tx,ty) center
+  // Check all tiles the line passes through (not attacker or target tile)
+  const TILE_SIZE = 1;
+  let pcCount = 0; let hcCount = 0;
+  let defBonus = 0;
+
+  // Get tiles along line using Bresenham-like approach
+  const tiles = getTilesAlongLine(ax,ay,tx,ty);
+
+  // Remove attacker and target tiles
+  const midTiles = tiles.filter(t=>!(t.x===ax&&t.y===ay)&&!(t.x===tx&&t.y===ty));
+
+  for(const t of midTiles){
+    let isCoverTile = false;
+    // Mage passive: PC becomes HC
+    if(isPCTile(t.x,t.y)){
+      if(attacker && attacker.class==='mage') { hcCount++; isCoverTile=true; }
+      else { pcCount++; isCoverTile=true; }
+    }
+    if(isHCTile(t.x,t.y)){ hcCount++; isCoverTile=true; }
+
+    if(pcCount>=2 || hcCount>=1) return {blocked:true, defBonus:0};
+  }
+
+  // Check if target is directly behind cover from attacker's perspective
+  const adjToTarget = getAdjacentTiles(tx,ty,false);
+  for(const adj of adjToTarget){
+    if(isPCTile(adj.x,adj.y) || isHCTile(adj.x,adj.y)){
+      // Is this tile between attacker and target?
+      if(isBetween(ax,ay,adj.x,adj.y,tx,ty)){
+        // Check if attacker is adjacent to this cover tile too
+        const adjToAttacker = getAdjacentTiles(ax,ay,false);
+        const attackerAdjToCover = adjToAttacker.some(a=>a.x===adj.x&&a.y===adj.y);
+        if(!attackerAdjToCover){
+          // Target on difficult terrain can't benefit from PC
+          if(isPCTile(adj.x,adj.y)){
+            const onDiff = isDifficult(tx,ty);
+            if(!onDiff){
+              // Check mage passive
+              if(attacker && attacker.class==='mage'){
+                defBonus = Math.max(defBonus, 2);
+              } else {
+                defBonus = Math.max(defBonus, 1);
+              }
+            }
+          }
+          if(isHCTile(adj.x,adj.y)){
+            const onDiff = isDifficult(tx,ty);
+            if(target && target.class==='knight'){
+              defBonus = Math.max(defBonus, 3);
+            } else if(onDiff){
+              defBonus = Math.max(defBonus, 1);
+            } else {
+              defBonus = Math.max(defBonus, 2);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return {blocked:false, defBonus};
+}
+
+function getTilesAlongLine(x1,y1,x2,y2){
+  const tiles = [];
+  const dx = x2-x1, dy = y2-y1;
+  const steps = Math.max(Math.abs(dx),Math.abs(dy))*10;
+  const visited = new Set();
+  for(let i=0;i<=steps;i++){
+    const t = i/steps;
+    const x = Math.round(x1+dx*t);
+    const y = Math.round(y1+dy*t);
+    const k = tileKey(x,y);
+    if(!visited.has(k)){ visited.add(k); tiles.push({x,y}); }
+  }
+  return tiles;
+}
+
+function isBetween(ax,ay, mx,my, tx,ty){
+  // Is (mx,my) between (ax,ay) and (tx,ty)?
+  const dotAM = (mx-ax)*(tx-ax)+(my-ay)*(ty-ay);
+  const dotAT = (tx-ax)*(tx-ax)+(ty-ay)*(ty-ay);
+  return dotAM>0 && dotAM<=dotAT;
+}
+
+async function initiatePlayerAttack(attacker, target, weapon){
+  const w = weapon;
+  if(!w) return;
+
+  // Check range
+  let range = w.range;
+  if(G.reachBonusActive) range += 2;
+  if(!inRange(attacker, target, range)){
+    logMsg('Target out of range!');
+    G.phase='player-move';
+    G.hasMovedThisTurn = true;
+    return;
+  }
+
+  // AOE weapons
+  if(w.special==='aoe2adj'){
+    await playerAOEGreataxe(attacker, target, w);
+    return;
+  }
+  if(w.special==='aoe8surround'){
+    await playerAOESurrounding(attacker, w);
+    return;
+  }
+  if(w.special==='aoe2x2'){
+    await playerAOE2x2(attacker, target, w);
+    return;
+  }
+  if(w.special==='helen2tiles'){
+    await playerHelentiles(attacker, w);
+    return;
+  }
+  if(w.special==='shortbow_spread'){
+    await playerShortbowAttack(attacker, target, w);
+    return;
+  }
+
+  // Single target
+  await doAttack(attacker, target, w, true);
+  G.hasActedThisTurn = true;
+  G.phase = 'game';
+  checkWinLose();
+  updateStatPanel();
+  updateEnemyPanel();
+  if(G.phase!=='game-over') setPhaseText('Attack done. End your turn.');
+}
+
+async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOverride=null){
+  const w = weapon;
+  let range = rangeOverride !== null ? rangeOverride : w.range;
+  if(isPlayer && G.reachBonusActive) range += 2;
+
+  // LOS and cover
+  const coverRes = checkCoverLOS(attacker.x,attacker.y,target.x,target.y,attacker,target);
+  if(coverRes.blocked){
+    logMsg(`${attacker.name}'s attack on ${target.name} blocked by cover!`);
+    return false;
+  }
+
+  // Hit throw
+  let hitRoll = roll(6);
+  if(G.redLiquidActive && isPlayer) hitRoll = Math.min(6, hitRoll+1);
+  let hitMod = w.hitThrowMod;
+  // High ground bonus
+  if(isHighGround(attacker.x,attacker.y)) hitMod += 1;
+  // Hunter's Eyes
+  if(attacker.class==='archer'){
+    const al = getTerrainLevel(attacker.x,attacker.y);
+    const tl = getTerrainLevel(target.x,target.y);
+    if(tl < al) hitMod += 1;
+  }
+  // Potion of Reach doesn't affect hit throw, just range
+  const totalHit = hitRoll + hitMod;
+  let targetDef = target.defence + coverRes.defBonus;
+
+  logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
+
+  if(totalHit < targetDef){
+    logMsg(`Miss!`);
+    return false;
+  }
+
+  // Calculate damage
+  let dmg = calcWeaponDamage(w, attacker, target, isPlayer);
+  dmg += extraDmg;
+  if(isPlayer && G.godlyStrengthActive){
+    dmg += attacker.class==='knight' ? 5 : 3;
+  }
+  // Sword and Buckler Parry on target
+  if(target.equippedWeapon?.id==='sword_buckler' && dmg > 0 && dmg < 18){
+    dmg = Math.max(0, dmg-4);
+    logMsg(`${target.name}'s Parry reduces damage by 4!`);
+  }
+
+  applyDamage(target, dmg, true);
+  logMsg(`${attacker.name} deals ${dmg} damage to ${target.name}! (${target.hp}/${target.maxHp} HP remaining)`, 'damage');
+  updateEnemyPanel();
+  updateStatPanel();
+  return true;
+}
+
+function calcWeaponDamage(w, attacker, target, isPlayer){
+  let dmg = w.baseDamage;
+  const cond = w.diceCondition;
+
+  if(cond==='distance'){
+    // Inferno Blast: 22 - 2 per tile away
+    const dist = chebyshev(attacker.x,attacker.y,target.x,target.y);
+    dmg = Math.max(0, 22 - dist*2);
+  } else if(cond==='crossbow'){
+    // 22 +/- based on rolls
+    for(let i=0;i<w.diceCount;i++){
+      const r = roll(6);
+      if(r%2===0) dmg -= 4;
+      else dmg += 1;
+    }
+  } else if(cond==='5or6_spread'){
+    // Handled separately (shortbow)
+  } else if(cond==='minus_dmg_taken'){
+    // Destructive Rush
+    const taken = attacker.damageTakenLastTurn||0;
+    dmg = Math.max(0, 22 - taken);
+  } else if(cond==='plus_pct_dmg'){
+    // Fenrirak's Tail Blade: 5 + 1 per 2 damage taken
+    const damageTaken = target.maxHp - target.hp;
+    dmg = 5 + Math.floor(damageTaken/2);
+  } else if(cond==='oblivion'){
+    // Helen's Staff: 25+, if odd roll 50
+    const r = roll(6);
+    dmg = r%2!==0 ? 50 : 25;
+    // Extra dice from the weapon
+  } else {
+    // Standard extra dice
+    for(let i=0;i<w.diceCount;i++){
+      const r = roll(6);
+      let matches = false;
+      if(cond==='even') matches = r%2===0;
+      else if(cond==='odd') matches = r%2!==0;
+      else if(cond==='5or6') matches = r>=5;
+      else if(cond==='4or6') matches = r===4||r===6;
+      if(matches) dmg += w.diceBonus||0;
+    }
+  }
+
+  return Math.max(0, dmg);
+}
+
+function applyDamage(char, dmg, trackTurn=false){
+  char.hp = Math.max(0, char.hp - dmg);
+  if(trackTurn) char.damageTakenThisTurn = (char.damageTakenThisTurn||0) + dmg;
+  if(char.hp <= 0) killChar(char);
+  positionIcon(char);
+  updateEnemyPanel();
+  updateStatPanel();
+}
+
+function killChar(char){
+  char.alive = false;
+  char.hp = 0;
+  const icon = document.getElementById(`char-icon-${char.id}`);
+  if(icon) icon.style.display='none';
+  logMsg(`${char.name} has been defeated!`, 'important');
+  checkWinLose();
+}
+
+function checkWinLose(){
+  const player = G.characters.find(c=>c.isPlayer);
+  if(!player) return;
+  if(!player.alive){
+    triggerDefeat();
+    return;
+  }
+  const aiAlive = G.characters.filter(c=>!c.isPlayer&&c.alive);
+  if(aiAlive.length===0){
+    triggerVictory();
+  }
+}
+
+function triggerVictory(){
+  G.phase='game-over';
+  const overlay = document.getElementById('outcome-overlay');
+  const word = document.getElementById('outcome-word');
+  overlay.classList.add('active');
+  word.className='victory';
+  word.textContent='Victory!';
+  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 15000);
+}
+
+function triggerDefeat(){
+  G.phase='game-over';
+  const overlay = document.getElementById('outcome-overlay');
+  const word = document.getElementById('outcome-word');
+  overlay.classList.add('active');
+  word.className='defeat';
+  word.textContent='Defeat';
+  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 15000);
+}
+
+// ============================================================
+//  CHEST SYSTEM
+// ============================================================
+function tryOpenChest(char, cx, cy){
+  if(G.openedChests.has(tileKey(cx,cy))){
+    logMsg('Chest has already been opened!');
+    return false;
+  }
+  const adj = getAdjacentTiles(char.x, char.y, false);
+  if(!adj.some(t=>t.x===cx&&t.y===cy)){
+    logMsg('Must be directly adjacent to the chest!');
+    return false;
+  }
+  return true;
+}
+
+function openChest(char, cx, cy, callback){
+  G.openedChests.add(tileKey(cx,cy));
+  // Mark chest as opened
+  const tile = document.getElementById(`tile-${cx}-${cy}`);
+  if(tile){ tile.classList.add('opened'); tile.style.background='rgba(200,100,100,0.55)'; }
+  logMsg(`${char.name} opens the chest!`);
+
+  // Show dice roll
+  openDice(`${char.name}: Roll for chest loot!`, (rollResult)=>{
+    const loot = CHEST_LOOT[rollResult];
+    if(!loot){ callback(); return; }
+    grantChestLoot(char, loot, callback);
+  });
+}
+
+function grantChestLoot(char, loot, callback){
+  if(loot.type==='weapon'){
+    let weapon = null;
+    if(loot.roll===7){
+      weapon = {...WEAPONS.chest.any};
+    } else {
+      // Roll 6: class weapon
+      weapon = {...WEAPONS.chest[char.class]} || {...WEAPONS.chest.any};
+    }
+    if(weapon){
+      addToInventory(char, {name:weapon.name, type:'weapon', weapon:weapon, amount:1});
+      logMsg(`${char.name} receives ${weapon.name}!`, 'important');
+      if(!char.isPlayer){
+        // Auto-equip for computers
+        char.equippedWeapon = weapon;
+        logMsg(`${char.name} equips ${weapon.name}.`);
+      }
+    }
+  } else {
+    // Potion or vial
+    for(let i=0;i<loot.amount;i++){
+      addToInventory(char, {...loot, amount:1});
+    }
+    logMsg(`${char.name} receives ${loot.amount}x ${loot.name}!`, 'important');
+  }
+  updateStatPanel();
+  updateEnemyPanel();
+  if(callback) callback();
+}
+
+function addToInventory(char, item){
+  if(char.inventory.length>=5){
+    // Discard oldest
+    char.inventory.shift();
+  }
+  char.inventory.push(item);
+}
+
+// ============================================================
+//  INVENTORY / ITEM USE
+// ============================================================
+function clickInventoryItem(idx){
+  const player = G.characters.find(c=>c.isPlayer&&c.alive);
+  if(!player) return;
+  if(!getCurrentChar()?.isPlayer) return;
+  const item = player.inventory[idx];
+  if(!item) return;
+
+  if(item.type==='weapon'){
+    // Equip weapon
+    player.equippedWeapon = item.weapon;
+    player.inventory.splice(idx,1);
+    logMsg(`${player.name} equips ${item.name}!`, 'important');
+    updateStatPanel();
+    return;
+  }
+
+  // Show item popup
+  G.activeItemUser = player;
+  G.activeItem = {item, idx};
+  document.getElementById('ip-title').textContent = item.name;
+  document.getElementById('ip-desc').textContent = item.desc;
+  document.getElementById('item-popup').classList.add('active');
+}
+
+function closeItemPopup(){
+  document.getElementById('item-popup').classList.remove('active');
+  G.activeItem = null; G.activeItemUser = null;
+}
+
+async function useItemConfirm(){
+  closeItemPopup();
+  const player = G.activeItemUser || G.characters.find(c=>c.isPlayer&&c.alive);
+  const {item, idx} = G.activeItem || {};
+  if(!item||!player) return;
+  useItem(player, item, idx, true);
+}
+
+async function useItem(char, item, idx, isPlayer){
+  if(item.name==='Potion of Healing'){
+    if(char.hp>=char.maxHp){ logMsg("Can't use Potion of Healing at full health!"); return; }
+    const healed = Math.min(10, char.maxHp-char.hp);
+    char.hp = Math.min(char.maxHp, char.hp+10);
+    logMsg(`${char.name} uses Potion of Healing, healing ${healed} HP!`, 'heal');
+    char.inventory.splice(idx,1);
+  } else if(item.name==='Potion of Reach'){
+    G.reachBonusActive = true;
+    logMsg(`${char.name} uses Potion of Reach! +2 range this turn.`, 'heal');
+    char.inventory.splice(idx,1);
+  } else if(item.name==='Vial of Blue Liquid'){
+    openDice(`${char.name}: Roll for Vial of Blue Liquid!`, (r)=>{
+      let healed;
+      if(r<=4){ healed=Math.min(2,char.maxHp-char.hp); char.hp=Math.min(char.maxHp,char.hp+2); }
+      else { healed=Math.min(15,char.maxHp-char.hp); char.hp=Math.min(char.maxHp,char.hp+15); }
+      logMsg(`${char.name} uses Vial of Blue Liquid! Healed ${healed} HP.`, 'heal');
+    });
+    char.inventory.splice(idx,1);
+  } else if(item.name==='Vial of Red Liquid'){
+    G.redLiquidActive = true;
+    logMsg(`${char.name} uses Vial of Red Liquid! Next roll +1.`, 'heal');
+    char.inventory.splice(idx,1);
+  } else if(item.name==='Potion of Godly Strength'){
+    G.godlyStrengthActive = true;
+    logMsg(`${char.name} uses Potion of Godly Strength! Extra damage this turn.`, 'heal');
+    if(char.class==='knight') logMsg(`Knight bonus: +5 damage and +1 range!`);
+    char.inventory.splice(idx,1);
+  }
+  updateStatPanel();
+  updateEnemyPanel();
+}
+
+// ============================================================
+//  AOE ATTACKS - PLAYER
+// ============================================================
+async function playerAOEGreataxe(attacker, primaryTarget, weapon){
+  // Player must choose 2 adjacent tiles to the knight (including diagonals)
+  const validTiles = getAdjacentTiles(attacker.x, attacker.y, true).filter(t=>{
+    return t.x>=0&&t.x<=10&&t.y>=0&&t.y<=8;
+  });
+  logMsg('Greataxe: Select 2 adjacent tiles (including diagonals) to attack!');
+  const selected = [];
+  aoeMode = true;
+  setPhaseText('Click 2 adjacent tiles to attack with Greataxe!');
+
+  return new Promise(resolve=>{
+    aoeSelectCallback = (x,y)=>{
+      if(!validTiles.some(t=>t.x===x&&t.y===y)) return;
+      if(selected.some(t=>t.x===x&&t.y===y)) return;
+      selected.push({x,y});
+      const tile = document.getElementById(`tile-${x}-${y}`);
+      if(tile) tile.classList.add('aoe-hover');
+
+      if(selected.length>=2){
+        aoeMode=false; aoeSelectCallback=null;
+        clearMoveHighlights();
+        // Attack each selected tile
+        Promise.all(selected.map(t=>{
+          const tgt = getCharAt(t.x,t.y);
+          if(tgt&&tgt!==attacker) return doAttack(attacker,tgt,weapon,true);
+        })).then(()=>{
+          G.hasActedThisTurn=true; G.phase='game';
+          checkWinLose(); updateStatPanel(); updateEnemyPanel();
+          resolve();
+        });
+      }
+    };
+  });
+}
+
+async function playerAOESurrounding(attacker, weapon){
+  // Destructive Rush: hits all 8 surrounding squares automatically
+  logMsg(`${attacker.name} uses Destructive Rush on all surrounding tiles!`);
+  const surrounding = getAdjacentTiles(attacker.x, attacker.y, true);
+  for(const t of surrounding){
+    const tgt = getCharAt(t.x,t.y);
+    if(tgt && tgt!==attacker) await doAttack(attacker,tgt,weapon,true);
+  }
+  G.hasActedThisTurn=true; G.phase='game';
+  checkWinLose(); updateStatPanel(); updateEnemyPanel();
+}
+
+async function playerAOE2x2(attacker, primaryTarget, weapon){
+  // Choose a 2x2 area that includes the target
+  logMsg('Aldemar\'s Staff: Select a 2×2 area (click top-left corner of the 2×2)!');
+  aoeMode=true;
+  setPhaseText('Click to choose 2×2 area origin!');
+  return new Promise(resolve=>{
+    aoeSelectCallback=(x,y)=>{
+      // 2x2 from (x,y) to (x+1,y+1)
+      const tiles=[{x,y},{x:x+1,y},{x,y:y+1},{x:x+1,y:y+1}].filter(t=>t.x<=10&&t.y<=8&&t.x>=0&&t.y>=0);
+      aoeMode=false; aoeSelectCallback=null;
+      tiles.forEach(t=>{ const el=document.getElementById(`tile-${t.x}-${t.y}`); if(el)el.classList.add('aoe-hover'); });
+      setTimeout(async ()=>{
+        clearMoveHighlights();
+        for(const t of tiles){
+          const tgt=getCharAt(t.x,t.y);
+          if(tgt) await doAttack(attacker,tgt,weapon,true);
+        }
+        G.hasActedThisTurn=true; G.phase='game';
+        checkWinLose(); updateStatPanel(); updateEnemyPanel();
+        resolve();
+      },500);
+    };
+  });
+}
+
+async function playerHelentiles(attacker, weapon){
+  // Any 2 tiles within range 7, reroll each
+  let range = weapon.range;
+  if(G.reachBonusActive) range += 2;
+  const selected=[];
+  aoeMode=true;
+  setPhaseText('Helen\'s Staff: Click 2 different tiles to target!');
+  return new Promise(resolve=>{
+    aoeSelectCallback=(x,y)=>{
+      if(chebyshev(attacker.x,attacker.y,x,y)>range) return;
+      if(selected.some(t=>t.x===x&&t.y===y)) return;
+      selected.push({x,y});
+      const tile=document.getElementById(`tile-${x}-${y}`); if(tile)tile.classList.add('aoe-hover');
+      if(selected.length>=2){
+        aoeMode=false; aoeSelectCallback=null; clearMoveHighlights();
+        (async()=>{
+          for(const t of selected){
+            const tgt=getCharAt(t.x,t.y);
+            if(tgt) await doAttack(attacker,tgt,weapon,true);
+          }
+          G.hasActedThisTurn=true; G.phase='game';
+          checkWinLose(); updateStatPanel(); updateEnemyPanel();
+          resolve();
+        })();
+      }
+    };
+  });
+}
+
+async function playerShortbowAttack(attacker, target, weapon){
+  // Hit primary target, then roll 4 dice, on 5/6 player chooses adjacent tile
+  await doAttack(attacker, target, weapon, true);
+  // Roll 4 dice for spread
+  const rolls=[];
+  for(let i=0;i<4;i++) rolls.push(roll(6));
+  const spreads=rolls.filter(r=>r>=5).length;
+  logMsg(`Shortbow spread rolls: [${rolls.join(',')}] - ${spreads} additional hits possible`);
+  for(let s=0;s<spreads;s++){
+    await new Promise(resolve=>{
+      aoeMode=true;
+      setPhaseText(`Select an adjacent tile to spread shot ${s+1}!`);
+      aoeSelectCallback=(x,y)=>{
+        if(manhattan(target.x,target.y,x,y)!==1) return;
+        if(x===target.x&&y===target.y) return;
+        aoeMode=false; aoeSelectCallback=null;
+        const tgt=getCharAt(x,y);
+        if(tgt) doAttack(attacker,tgt,weapon,true).then(resolve);
+        else resolve();
+      };
+    });
+  }
+  G.hasActedThisTurn=true; G.phase='game';
+  checkWinLose(); updateStatPanel(); updateEnemyPanel();
+}
+
+// ============================================================
+//  CHEST INTERACTION - PLAYER TILE CLICK
+// ============================================================
+// Add chest click handling
+document.addEventListener('click', e=>{
+  if(G.phase==='game-over'||G.phase==='ai-turn') return;
+  if(!getCurrentChar()?.isPlayer) return;
+  if(G.hasActedThisTurn) return;
+  if(aoeMode) return;
+  if(G.phase==='player-attack-targeting') return;
+
+  const tileEl = e.target.closest('.tile');
+  if(!tileEl) return;
+  const x=parseInt(tileEl.dataset.x), y=parseInt(tileEl.dataset.y);
+  if(isNaN(x)||isNaN(y)) return;
+  const t=getTileType(x,y);
+  if(t!=='chest'&&t!=='chest_hg') return;
+
+  const player=G.characters.find(c=>c.isPlayer&&c.alive);
+  if(!player) return;
+  const adj=getAdjacentTiles(player.x,player.y,false);
+  if(!adj.some(a=>a.x===x&&a.y===y)){ logMsg('Must be directly adjacent to open a chest.'); return; }
+  if(G.openedChests.has(tileKey(x,y))){ logMsg('Chest has already been opened!'); return; }
+
+  openChest(player, x, y, ()=>{
+    G.hasActedThisTurn=true;
+    logMsg(`${player.name}'s turn ends (opened chest).`);
+    updateStatPanel();
+    nextTurn();
+  });
+});
+
+// ============================================================
+//  AI TURN
+// ============================================================
+async function runAITurn(char){
+  await sleep(600);
+  const player = G.characters.find(c=>c.isPlayer&&c.alive);
+  if(!player){ document.getElementById('ai-thinking').classList.remove('active'); nextTurn(); return; }
+
+  // AI turn effects reset
+  let aiReachBonus = false;
+  let aiGodlyStrength = false;
+
+  // Priority list:
+  // 1. Kill enemy if possible
+  // 2. Open chest if adjacent
+  // 3. Move to high ground (not knight)
+  // 4. Move toward nearest enemy
+  // 5. End turn
+
+  // Use potions first if beneficial
+  await aiUsePotions(char);
+
+  // Check if can kill someone
+  const killTarget = findKillTarget(char);
+  if(killTarget){
+    logMsg(`${char.name} attacks ${killTarget.name}!`);
+    await aiDoAttack(char, killTarget);
+    document.getElementById('ai-thinking').classList.remove('active');
+    updateEnemyPanel(); updateStatPanel();
+    checkWinLose();
+    if(G.phase!=='game-over') nextTurn();
+    return;
+  }
+
+  // Check adjacent chest
+  const adjChest = findAdjacentChest(char);
+  const weapon = char.equippedWeapon;
+  const expectedDmg = estimateDamage(char, weapon, player);
+
+  if(adjChest && expectedDmg < 18){
+    logMsg(`${char.name} opens a chest!`);
+    await new Promise(resolve=>{
+      openChest(char, adjChest.x, adjChest.y, resolve);
+    });
+    document.getElementById('ai-thinking').classList.remove('active');
+    nextTurn(); return;
+  }
+
+  // Can attack? (with current position)
+  const attackTarget = findBestTarget(char);
+  if(attackTarget){
+    logMsg(`${char.name} attacks ${attackTarget.name}!`);
+    await aiDoAttack(char, attackTarget);
+    document.getElementById('ai-thinking').classList.remove('active');
+    updateEnemyPanel(); updateStatPanel();
+    checkWinLose();
+    if(G.phase!=='game-over') nextTurn();
+    return;
+  }
+
+  // Move
+  let moved = false;
+  // High ground (not knight)
+  if(char.class !== 'knight'){
+    const hgMove = findHighGroundMove(char);
+    if(hgMove){
+      await aiMoveAlongPath(char, hgMove);
+      moved = true;
+    }
+  }
+
+  if(!moved){
+    // Move toward nearest enemy
+    const nearestEnemy = findNearestEnemy(char);
+    if(nearestEnemy){
+      const path = findPathTo(char, nearestEnemy.x, nearestEnemy.y);
+      if(path && path.length>1){
+        await aiMoveAlongPath(char, path);
+        moved=true;
+      }
+    }
+  }
+
+  // After moving, check if can attack
+  const attackTarget2 = findBestTarget(char);
+  if(attackTarget2){
+    logMsg(`${char.name} attacks ${attackTarget2.name}!`);
+    await aiDoAttack(char, attackTarget2);
+    document.getElementById('ai-thinking').classList.remove('active');
+    updateEnemyPanel(); updateStatPanel();
+    checkWinLose();
+    if(G.phase!=='game-over') nextTurn();
+    return;
+  }
+
+  // After moving, check chest
+  const adjChest2 = findAdjacentChest(char);
+  if(adjChest2){
+    const expDmg2 = estimateDamage(char, weapon, player);
+    if(expDmg2<18){
+      logMsg(`${char.name} opens a chest!`);
+      await new Promise(resolve=>{ openChest(char, adjChest2.x, adjChest2.y, resolve); });
+      document.getElementById('ai-thinking').classList.remove('active');
+      nextTurn(); return;
+    }
+  }
+
+  logMsg(`${char.name} ends their turn.`);
+  document.getElementById('ai-thinking').classList.remove('active');
+  nextTurn();
+}
+
+async function aiUsePotions(char){
+  // Use godly strength if HP > 20
+  const gsIdx = char.inventory.findIndex(i=>i.name==='Potion of Godly Strength');
+  if(gsIdx>=0 && char.hp > 20){
+    useItem(char, char.inventory[gsIdx], gsIdx, false);
+    G.godlyStrengthActive = true;
+    await sleep(300);
+  }
+  // Heal if HP < 30
+  if(char.hp < 30){
+    const healIdx = char.inventory.findIndex(i=>i.name==='Potion of Healing'||i.name==='Vial of Blue Liquid');
+    if(healIdx>=0) { useItem(char, char.inventory[healIdx], healIdx, false); await sleep(300); }
+  }
+}
+
+function findKillTarget(char){
+  const enemies = getLiveChars().filter(c=>c!==char);
+  const w = char.equippedWeapon;
+  for(const e of enemies){
+    const dmg = estimateDamage(char, w, e);
+    if(dmg >= e.hp && inRange(char, e, w.range)) return e;
+  }
+  return null;
+}
+
+function findBestTarget(char){
+  const w = char.equippedWeapon;
+  const enemies = getLiveChars().filter(c=>c!==char);
+  const inRangeEnemies = enemies.filter(e=>inRange(char, e, w.range));
+  if(inRangeEnemies.length===0) return null;
+  // Pick lowest HP, tiebreak closest
+  inRangeEnemies.sort((a,b)=>{
+    if(a.hp!==b.hp) return a.hp-b.hp;
+    return chebyshev(char.x,char.y,a.x,a.y)-chebyshev(char.x,char.y,b.x,b.y);
+  });
+  return inRangeEnemies[0];
+}
+
+function findNearestEnemy(char){
+  const enemies = getLiveChars().filter(c=>c!==char);
+  if(!enemies.length) return null;
+  enemies.sort((a,b)=>chebyshev(char.x,char.y,a.x,a.y)-chebyshev(char.x,char.y,b.x,b.y));
+  return enemies[0];
+}
+
+function findAdjacentChest(char){
+  const adj = getAdjacentTiles(char.x,char.y,false);
+  for(const t of adj){
+    const type=getTileType(t.x,t.y);
+    if((type==='chest'||type==='chest_hg') && !G.openedChests.has(tileKey(t.x,t.y))) return t;
+  }
+  return null;
+}
+
+function estimateDamage(char, weapon, target){
+  if(!weapon) return 0;
+  const w = weapon;
+  let dmg = w.baseDamage;
+  // Rough average
+  if(w.diceCondition==='even') dmg += w.diceCount * w.diceBonus * 0.5;
+  else if(w.diceCondition==='odd') dmg += w.diceCount * w.diceBonus * 0.5;
+  else if(w.diceCondition==='5or6') dmg += w.diceCount * w.diceBonus * (2/6);
+  else if(w.diceCondition==='4or6') dmg += w.diceCount * w.diceBonus * (2/6);
+  else if(w.diceCondition==='distance') dmg = Math.max(0, 22 - chebyshev(char.x,char.y,target.x,target.y)*2);
+  return Math.round(dmg);
+}
+
+function findHighGroundMove(char){
+  const hgTiles = [];
+  for(let x=0;x<=10;x++) for(let y=0;y<=8;y++){
+    if(isHighGround(x,y) && !getCharAt(x,y)) hgTiles.push({x,y});
+  }
+  if(!hgTiles.length) return null;
+  hgTiles.sort((a,b)=>chebyshev(char.x,char.y,a.x,a.y)-chebyshev(char.x,char.y,b.x,b.y));
+  for(const hg of hgTiles){
+    const path = findPathTo(char, hg.x, hg.y);
+    if(path && path.length>1) return path;
+  }
+  return null;
+}
+
+function findPathTo(char, tx, ty){
+  // Simple BFS respecting movement cost
+  const maxMove = char.move;
+  const start = {x:char.x, y:char.y};
+  const queue = [{x:start.x,y:start.y,cost:0,path:[{x:start.x,y:start.y}]}];
+  const visited = {};
+  visited[tileKey(start.x,start.y)] = 0;
+  let best = null;
+  let bestDist = Infinity;
+
+  while(queue.length){
+    const cur = queue.shift();
+    const dist = chebyshev(cur.x,cur.y,tx,ty);
+    if(dist < bestDist){ bestDist=dist; best=cur; }
+    if(cur.x===tx&&cur.y===ty) break;
+    if(cur.cost>=maxMove) continue;
+
+    for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      const nx=cur.x+dx, ny=cur.y+dy;
+      if(nx<0||nx>10||ny<0||ny>8) continue;
+      const type=getTileType(nx,ny);
+      if(['pc','hc','log','chest','chest_hg'].includes(type)) continue;
+      if(getCharAt(nx,ny)&&!(nx===tx&&ny===ty)) continue;
+      let cost=1;
+      if(char.class!=='knight' && ['difficult','thorny','hill'].includes(type)) cost=2;
+      const newCost=cur.cost+cost;
+      const k=tileKey(nx,ny);
+      if(newCost<=maxMove && (visited[k]===undefined||newCost<visited[k])){
+        visited[k]=newCost;
+        queue.push({x:nx,y:ny,cost:newCost,path:[...cur.path,{x:nx,y:ny}]});
+      }
+    }
+  }
+  return best ? best.path : null;
+}
+
+async function aiMoveAlongPath(char, path){
+  if(!path||path.length<=1) return;
+  for(let i=1;i<path.length;i++){
+    const step=path[i];
+    if(isThorny(step.x,step.y) && i<path.length-1){
+      applyDamage(char,2,false);
+      logMsg(`${char.name} takes 2 damage from thorny vines!`,'damage');
+    }
+    char.x=step.x; char.y=step.y;
+    positionIcon(char);
+    await sleep(250);
+  }
+  const last=path[path.length-1];
+  if(isThorny(last.x,last.y)){
+    applyDamage(char,4,false);
+    logMsg(`${char.name} stops in thorny vines and takes 4 damage!`,'damage');
+  }
+  updateEnemyPanel();
+}
+
+async function aiDoAttack(char, target){
+  const w = char.equippedWeapon;
+  if(!w) return;
+
+  if(w.special==='aoe2adj'){
+    // Choose 2 best adjacent tiles
+    const adjTiles = getAdjacentTiles(char.x,char.y,true);
+    const targets = adjTiles.map(t=>({...t, char:getCharAt(t.x,t.y)})).filter(t=>t.char&&t.char!==char);
+    targets.sort((a,b)=>a.char.hp-b.char.hp);
+    const chosen = targets.slice(0,2);
+    if(chosen.length===0){ logMsg(`${char.name} has no adjacent targets for Iron Cleave.`); return; }
+    for(const t of chosen) await doAttack(char,t.char,w,false);
+  } else if(w.special==='aoe8surround'){
+    const surrounding=getAdjacentTiles(char.x,char.y,true);
+    for(const t of surrounding){ const tgt=getCharAt(t.x,t.y); if(tgt&&tgt!==char) await doAttack(char,tgt,w,false); }
+  } else if(w.special==='aoe2x2'){
+    // Choose 2x2 area that hits most enemies
+    let bestArea=null, bestCount=-1;
+    for(let x=0;x<=9;x++) for(let y=0;y<=7;y++){
+      if(chebyshev(char.x,char.y,x,y)>w.range) continue;
+      const area=[{x,y},{x:x+1,y},{x,y:y+1},{x:x+1,y:y+1}];
+      const hitCount=area.filter(t=>getCharAt(t.x,t.y)&&getCharAt(t.x,t.y)!==char).length;
+      if(hitCount>bestCount){ bestCount=hitCount; bestArea=area; }
+    }
+    if(bestArea) for(const t of bestArea){ const tgt=getCharAt(t.x,t.y); if(tgt) await doAttack(char,tgt,w,false); }
+  } else if(w.special==='helen2tiles'){
+    const enemies=getLiveChars().filter(c=>c!==char);
+    const inRangeE=enemies.filter(e=>chebyshev(char.x,char.y,e.x,e.y)<=w.range);
+    inRangeE.sort((a,b)=>a.hp-b.hp);
+    for(const e of inRangeE.slice(0,2)) await doAttack(char,e,w,false);
+  } else if(w.special==='shortbow_spread'){
+    await doAttack(char,target,w,false);
+    const rolls=[];
+    for(let i=0;i<4;i++) rolls.push(roll(6));
+    const spreads=rolls.filter(r=>r>=5).length;
+    for(let s=0;s<spreads;s++){
+      const adj=getAdjacentTiles(target.x,target.y,false);
+      const adjChars=adj.map(t=>getCharAt(t.x,t.y)).filter(Boolean).filter(c=>c!==char);
+      if(adjChars.length>0){
+        adjChars.sort((a,b)=>a.hp-b.hp);
+        await doAttack(char,adjChars[0],w,false);
+      }
+    }
+  } else {
+    await doAttack(char, target, w, false);
+  }
+}
+
+// ============================================================
+//  DICE OVERLAY
+// ============================================================
+let diceResolve = null;
+let diceHasRolled = false;
+
+function openDice(title, callback){
+  diceResolve = callback;
+  diceHasRolled = false;
+  document.getElementById('dice-title').textContent = title;
+  document.getElementById('dice-face').textContent = '?';
+  document.getElementById('dice-result-text').textContent = '';
+  document.getElementById('dice-roll-btn').style.display = 'inline-block';
+  document.getElementById('dice-roll-btn').disabled = false;
+  document.getElementById('dice-ok-btn').style.display = 'none';
+  document.getElementById('dice-overlay').classList.add('active');
+}
+
+function rollTheDice(){
+  if(diceHasRolled) return;
+  const face = document.getElementById('dice-face');
+  face.classList.add('rolling');
+  face.textContent = '?';
+  document.getElementById('dice-roll-btn').disabled = true;
+  document.getElementById('dice-result-text').textContent = 'Rolling...';
+
+  // Animate then reveal
+  let flicker = 0;
+  const flickerInt = setInterval(()=>{
+    face.textContent = roll(6);
+    if(++flicker>8) clearInterval(flickerInt);
+  }, 60);
+
+  setTimeout(()=>{
+    const result = roll(6);
+    face.textContent = result;
+    face.classList.remove('rolling');
+    document.getElementById('dice-result-text').textContent = `You rolled: ${result}`;
+    document.getElementById('dice-ok-btn').style.display = 'inline-block';
+    diceHasRolled = true;
+    G._lastDiceResult = result;
+  }, 700);
+}
+
+function diceOk(){
+  const result = G._lastDiceResult;
+  document.getElementById('dice-overlay').classList.remove('active');
+  if(diceResolve) diceResolve(result);
+  diceResolve = null;
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+// Make sure page starts fresh
+window.addEventListener('beforeunload', ()=>{ G = {}; });
+</script>
+</body>
+</html>
