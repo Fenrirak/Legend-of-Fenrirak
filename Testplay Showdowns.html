@@ -715,6 +715,14 @@
     font-weight: 900;
     color: #1a0a00;
   }
+
+  /* ===== TOUCH SCREEN SUPPORT ===== */
+  @media (pointer: coarse) {
+    .tile, .char-icon {
+      touch-action: manipulation;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -3227,6 +3235,38 @@ function diceOk(){
 //  INIT
 // ============================================================
 // Make sure page starts fresh
+
+// ============================================================
+//  TOUCH SCREEN SUPPORT
+// ============================================================
+function getTouchTile(touch){
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  return el ? el.closest('.tile') : null;
+}
+
+function onTouchMove(e){
+  if(!isDraggingMove || !moveStartChar) return;
+  const tile = getTouchTile(e.touches[0]);
+  if(!tile) return;
+  onTileMouseOver({target: tile});
+}
+
+document.addEventListener('touchstart', e=>{
+  const icon = e.target.closest('.char-icon');
+  if(!icon) return;
+  onCharIconMouseDown({
+    target: icon,
+    preventDefault(){ e.preventDefault(); }
+  });
+},{passive:false});
+
+document.addEventListener('touchmove', onTouchMove, {passive:false});
+
+document.addEventListener('touchend', e=>{
+  if(!isDraggingMove) return;
+  onMouseUp(e);
+});
+
 window.addEventListener('beforeunload', ()=>{ G = {}; });
 </script>
 </body>
