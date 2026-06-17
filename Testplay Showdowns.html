@@ -2011,8 +2011,7 @@ function playerClickAttack(){
 function highlightAttackTargets(attacker){
   clearMoveHighlights();
   const w = attacker.equippedWeapon;
-  let range = w.range;
-  if(G.reachBonusActive) range += 2;
+  let range = getEffectiveRange(attacker, w, null, true);
 
   G.characters.filter(c=>c.alive&&!c.isPlayer).forEach(target=>{
     if(inRange(attacker, target, range)){
@@ -2044,6 +2043,26 @@ document.addEventListener('click', e=>{
   G.phase = 'game';
   initiatePlayerAttack(attacker, target, selectedAttackWeapon);
 });
+
+function getEffectiveRange(attacker, weapon, target=null, isPlayer=false){
+  let range = weapon.range;
+
+  if(isPlayer && G.reachBonusActive) range += 2;
+
+  // Archer passive: +1 range against lower terrain
+  if(attacker.class==='archer' && target){
+    const attackerTerrain = getTerrainLevel(attacker.x, attacker.y);
+    const targetTerrain = getTerrainLevel(target.x, target.y);
+    if(targetTerrain < attackerTerrain) range += 1;
+  }
+
+  // Knight Potion of Godly Strength bonus
+  if(isPlayer && G.godlyStrengthActive && attacker.class==='knight'){
+    range += 1;
+  }
+
+  return range;
+}
 
 function inRange(attacker, target, range){
   return chebyshev(attacker.x, attacker.y, target.x, target.y) <= range;
@@ -2212,8 +2231,13 @@ async function initiatePlayerAttack(attacker, target, weapon){
 
 async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOverride=null){
   const w = weapon;
-  let range = rangeOverride !== null ? rangeOverride : w.range;
-  if(isPlayer && G.reachBonusActive) range += 2;
+  let range = rangeOverride !== null ? rangeOverride : getEffectiveRange(attacker, w, target, isPlayer);
+
+  // Hard range validation for all attacks (player + AI)
+  if(!inRange(attacker, target, range)){
+    logMsg(`${attacker.name}'s attack on ${target.name} failed: target out of range!`);
+    return false;
+  }
 
   // LOS and cover
   const coverRes = checkCoverLOS(attacker.x,attacker.y,target.x,target.y,attacker,target);
@@ -2805,7 +2829,14 @@ function findKillTarget(char){
 function findBestTarget(char){
   const w = char.equippedWeapon;
   const enemies = getLiveChars().filter(c=>c!==char);
-  const inRangeEnemies = enemies.filter(e=>inRange(char, e, w.range));
+  const inRangeEnemies = enemies.filter(e=>{
+    const range = getEffectiveRange(char, w, e, false);
+    if(!inRange(char, e, range)) return false;
+
+    // AI cannot shoot through Heavy Cover / blocked LOS
+    const coverRes = checkCoverLOS(char.x, char.y, e.x, e.y, char, e);
+    return !coverRes.blocked;
+  });
   if(inRangeEnemies.length===0) return null;
   // Pick lowest HP, tiebreak closest
   inRangeEnemies.sort((a,b)=>{
@@ -2898,6 +2929,13 @@ async function aiMoveAlongPath(char, path){
   if(!path||path.length<=1) return;
   for(let i=1;i<path.length;i++){
     const step=path[i];
+
+    // Prevent multiple characters occupying the same tile
+    const occupied = getCharAt(step.x, step.y);
+    if(occupied && occupied !== char){
+      logMsg(`${char.name} stops moving because ${occupied.name} is blocking the tile.`);
+      break;
+    }
     if(isThorny(step.x,step.y) && i<path.length-1){
       applyDamage(char,2,false);
       logMsg(`${char.name} takes 2 damage from thorny vines!`,'damage');
