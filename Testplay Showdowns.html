@@ -22,7 +22,7 @@
     --starting: #d4af37;
     --normal: #f0ece0;
     --partial-cover: #a0956e;
-    --heavy-cover: #555040;
+    --heavy-cover: #092409;
     --thorny: #6b8a3a;
     --mage-color: #39b5ff;
     --knight-color: #b7b7b7;
@@ -362,7 +362,7 @@
   .tile.difficult { background: #e77d22; }
   .tile.high-ground { background: #4a90d9; }
   .tile.partial-cover { background: #b0a882; }
-  .tile.heavy-cover { background: #554f3c; }
+  .tile.heavy-cover { background: #092409; }
   .tile.thorny { background: #7a9a44; }
   .tile.log { background: #7a5533; }
   .tile.chest { background: #c8a05a; }
@@ -373,7 +373,7 @@
     position: absolute;
     bottom: 2px;
     left: 2px;
-    font-size: 0.7em;
+    font-size: 0.85em;
     color: rgba(0,0,0,0.6);
     font-weight: 700;
     pointer-events: none;
@@ -416,6 +416,8 @@
   .char-icon.archer {
     background: #e77d22;
     clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    align-items: flex-end;
+    padding-bottom: 3px;
   }
   .char-icon.dead { display: none; }
   .char-icon.active-turn { box-shadow: 0 0 12px 4px gold; }
@@ -771,13 +773,13 @@
 
     <h2>Attacks & Hit Throws</h2>
     <p>Before attacking, roll a Hit Throw. If the total (including modifiers) equals or exceeds the target's Defence, the attack hits. Range is measured as the greater of horizontal or vertical distance.</p>
-    <p>If a straight line from attacker to target passes through 2 tiles of Partial Cover or 1 tile of Heavy Cover, the attack fails.</p>
+    <p>If a straight line from attacker to target passes through 2 tiles of Partial Cover, the attack fails. Mages' spells are stopped by even a single tile of Partial Cover (their magic treats it as severely as Heavy Cover). Heavy Cover no longer blocks a shot outright - it still grants a defence bonus, it just doesn't stop the attack from passing through.</p>
 
     <h2>Cover</h2>
     <ul>
-      <li><strong>Partial Cover (PC):</strong> +1 Defence if directly adjacent (non-diagonally) and between attacker & target. Mages treat PC as Heavy Cover.</li>
-      <li><strong>Heavy Cover (HC):</strong> +2 Defence in same situation (+3 for Knights, who cannot attack over HC). Knights get +3 instead of +2.</li>
-      <li><strong>Chests</strong> count as Partial Cover.</li>
+      <li><strong>Partial Cover (PC):</strong> +1 Defence if it's directly adjacent (non-diagonally) to the target AND the attacker's line of fire actually passes through it on the way to the target. Cover next to the target that the shot isn't coming through (e.g. an attack from behind) gives no bonus. Mages treat PC as Heavy Cover for this bonus too.</li>
+      <li><strong>Heavy Cover (HC):</strong> +2 Defence in the same situation (+3 if the target is a Knight).</li>
+      <li><strong>Chests and Logs</strong> count as Partial Cover.</li>
     </ul>
 
     <h2>High Ground</h2>
@@ -1186,7 +1188,7 @@ const BOARD_CONFIGS = {
       '4,2':{type:'thorny', label:'THV'},
       '7,3':{type:'thorny', label:'THV'},
       '3,5':{type:'thorny', label:'THV'},
-      '6,2':{type:'hc', label:'HC'},
+      '6,2':{type:'hc', label:'Tree'},
     }
   },
   2: {
@@ -1214,8 +1216,8 @@ const BOARD_CONFIGS = {
       '6,2':{type:'thorny', label:'THV'},
       '1,4':{type:'thorny', label:'THV'},
       '9,4':{type:'thorny', label:'THV'},
-      '3,3':{type:'hc', label:'HC'},
-      '9,8':{type:'hc', label:'HC'},
+      '3,3':{type:'hc', label:'Tree'},
+      '9,8':{type:'hc', label:'Tree'},
     }
   },
   3: {
@@ -1248,7 +1250,7 @@ const BOARD_CONFIGS = {
       '0,2':{type:'thorny', label:'THV'},
       '10,1':{type:'thorny', label:'THV'},
       '1,8':{type:'thorny', label:'THV'},
-      '9,7':{type:'hc', label:'HC'},
+      '9,7':{type:'hc', label:'Tree'},
     }
   }
 };
@@ -1504,7 +1506,7 @@ function buildStartTileScreen(){
   const boardEl = document.createElement('div');
   boardEl.id = 'start-tile-board';
   boardEl.style.display = 'grid';
-  boardEl.style.gridTemplateColumns = `repeat(11, 44px)`;
+  boardEl.style.gridTemplateColumns = `repeat(11, 58px)`;
   boardEl.style.border = '2px solid #3a2a0a';
   boardEl.style.background = '#c8bfa0';
   startTileBoardEl = boardEl;
@@ -1513,13 +1515,13 @@ function buildStartTileScreen(){
   for(let row=8; row>=0; row--){
     for(let col=0; col<=10; col++){
       const cell = document.createElement('div');
-      cell.style.width='44px'; cell.style.height='44px';
+      cell.style.width='58px'; cell.style.height='58px';
       cell.style.border='1px solid rgba(0,0,0,0.2)';
       cell.style.position='relative';
       cell.style.display='flex';
       cell.style.alignItems='center';
       cell.style.justifyContent='center';
-      cell.style.fontSize='0.6em';
+      cell.style.fontSize='0.75em';
       cell.dataset.x = col; cell.dataset.y = row;
       applyTileStyle(cell, col, row);
       cell.id = `st-tile-${col}-${row}`;
@@ -1527,7 +1529,7 @@ function buildStartTileScreen(){
       if(G.boardConfig.startingTiles.some(t=>t.x===col&&t.y===row)){
         cell.classList.add('valid-start-marker');
         const lbl = document.createElement('div');
-        lbl.style.cssText='position:absolute;bottom:1px;left:1px;font-size:0.65em;color:rgba(0,0,0,0.5);font-weight:700;';
+        lbl.style.cssText='position:absolute;bottom:1px;left:1px;font-size:0.78em;color:rgba(0,0,0,0.5);font-weight:700;';
         lbl.textContent='S';
         cell.appendChild(lbl);
       }
@@ -1544,14 +1546,14 @@ function applyTileStyle(cell, x, y){
   const type = t ? t.type : 'normal';
   const colors = {
     normal:'#e8e2d0', starting:'#d4af37', difficult:'#e77d22',
-    highground:'#4a90d9', pc:'#b0a882', hc:'#554f3c',
+    highground:'#4a90d9', pc:'#b0a882', hc:'#092409',
     thorny:'#7a9a44', log:'#7a5533', chest:'#c8a05a',
     chest_hg:'#5a8ab0', hill:'#c8780a'
   };
   cell.style.background = colors[type] || '#e8e2d0';
   if(t && t.label){
     const lbl = document.createElement('div');
-    lbl.style.cssText='position:absolute;bottom:1px;left:1px;font-size:0.6em;color:rgba(0,0,0,0.55);font-weight:700;pointer-events:none;';
+    lbl.style.cssText='position:absolute;bottom:1px;left:1px;font-size:0.72em;color:rgba(0,0,0,0.55);font-weight:700;pointer-events:none;';
     lbl.textContent=t.label;
     cell.appendChild(lbl);
   }
@@ -2260,8 +2262,7 @@ function getTerrainLevel(x,y){
 function checkCoverLOS(ax,ay,tx,ty, attacker, target){
   // Draw line from (ax,ay) center to (tx,ty) center
   // Check all tiles the line passes through (not attacker or target tile)
-  const TILE_SIZE = 1;
-  let pcCount = 0; let hcCount = 0;
+  let pcCount = 0;
   let defBonus = 0;
 
   // Get tiles along line using Bresenham-like approach
@@ -2271,48 +2272,50 @@ function checkCoverLOS(ax,ay,tx,ty, attacker, target){
   const midTiles = tiles.filter(t=>!(t.x===ax&&t.y===ay)&&!(t.x===tx&&t.y===ty));
 
   for(const t of midTiles){
-    let isCoverTile = false;
-    // Mage passive: PC becomes HC
     if(isPCTile(t.x,t.y)){
-      if(attacker && attacker.class==='mage') { hcCount++; isCoverTile=true; }
-      else { pcCount++; isCoverTile=true; }
+      // Mage passive: a mage's spells are stopped by even minor cover -
+      // count each Partial Cover tile as double (as severe as Heavy
+      // Cover used to be), so a single PC tile is enough to block them.
+      pcCount += (attacker && attacker.class==='mage') ? 2 : 1;
     }
-    if(isHCTile(t.x,t.y)){ hcCount++; isCoverTile=true; }
-
-    if(pcCount>=2 || hcCount>=1) return {blocked:true, defBonus:0};
+    // Heavy Cover no longer blocks a shot outright - it still grants a
+    // defence bonus (handled below), it just doesn't stop the attack.
+    if(pcCount>=2) return {blocked:true, defBonus:0};
   }
 
-  // Check if target is directly behind cover from attacker's perspective
-  const adjToTarget = getAdjacentTiles(tx,ty,false);
-  for(const adj of adjToTarget){
-    if(isPCTile(adj.x,adj.y) || isHCTile(adj.x,adj.y)){
-      // Is this tile between attacker and target?
-      if(isBetween(ax,ay,adj.x,adj.y,tx,ty)){
-        // Check if attacker is adjacent to this cover tile too
-        const adjToAttacker = getAdjacentTiles(ax,ay,false);
-        const attackerAdjToCover = adjToAttacker.some(a=>a.x===adj.x&&a.y===adj.y);
-        if(!attackerAdjToCover){
+  // Cover only grants a defence bonus if the attacker's actual line of
+  // fire passes through a cover tile immediately adjacent to the target,
+  // right before reaching them - i.e. the cover is genuinely between the
+  // attacker and the target at this attack's angle. Cover sitting next to
+  // the target on a side the shot isn't coming from/through (e.g. an
+  // attack from behind the target) gives no bonus.
+  const approachTile = tiles.length>=2 ? tiles[tiles.length-2] : null;
+  if(approachTile && !(approachTile.x===ax&&approachTile.y===ay)){
+    const isAdjToTarget = Math.abs(approachTile.x-tx)+Math.abs(approachTile.y-ty)===1;
+    if(isAdjToTarget && (isPCTile(approachTile.x,approachTile.y) || isHCTile(approachTile.x,approachTile.y))){
+      // Cover gives no bonus if the attacker is standing right next to
+      // that same cover tile (point-blank, on the other side of it).
+      const attackerAdjToCover = Math.abs(approachTile.x-ax)+Math.abs(approachTile.y-ay)===1;
+      if(!attackerAdjToCover){
+        if(isPCTile(approachTile.x,approachTile.y)){
           // Target on difficult terrain can't benefit from PC
-          if(isPCTile(adj.x,adj.y)){
-            const onDiff = isDifficult(tx,ty);
-            if(!onDiff){
-              // Check mage passive
-              if(attacker && attacker.class==='mage'){
-                defBonus = Math.max(defBonus, 2);
-              } else {
-                defBonus = Math.max(defBonus, 1);
-              }
+          const onDiff = isDifficult(tx,ty);
+          if(!onDiff){
+            if(attacker && attacker.class==='mage'){
+              defBonus = Math.max(defBonus, 2);
+            } else {
+              defBonus = Math.max(defBonus, 1);
             }
           }
-          if(isHCTile(adj.x,adj.y)){
-            const onDiff = isDifficult(tx,ty);
-            if(target && target.class==='knight'){
-              defBonus = Math.max(defBonus, 3);
-            } else if(onDiff){
-              defBonus = Math.max(defBonus, 1);
-            } else {
-              defBonus = Math.max(defBonus, 2);
-            }
+        }
+        if(isHCTile(approachTile.x,approachTile.y)){
+          const onDiff = isDifficult(tx,ty);
+          if(target && target.class==='knight'){
+            defBonus = Math.max(defBonus, 3);
+          } else if(onDiff){
+            defBonus = Math.max(defBonus, 1);
+          } else {
+            defBonus = Math.max(defBonus, 2);
           }
         }
       }
@@ -2335,13 +2338,6 @@ function getTilesAlongLine(x1,y1,x2,y2){
     if(!visited.has(k)){ visited.add(k); tiles.push({x,y}); }
   }
   return tiles;
-}
-
-function isBetween(ax,ay, mx,my, tx,ty){
-  // Is (mx,my) between (ax,ay) and (tx,ty)?
-  const dotAM = (mx-ax)*(tx-ax)+(my-ay)*(ty-ay);
-  const dotAT = (tx-ax)*(tx-ax)+(ty-ay)*(ty-ay);
-  return dotAM>0 && dotAM<=dotAT;
 }
 
 async function initiatePlayerAttack(attacker, target, weapon){
