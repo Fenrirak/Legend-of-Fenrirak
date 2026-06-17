@@ -906,7 +906,7 @@ const WEAPONS = {
       attackName: 'Orb of Power',
       baseDamage: 12, damageType: 'plus',
       diceCount: 3, diceCondition: 'even', diceBonus: 3,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 3,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 4,
       desc: '12+ Damage. Roll die 3 times, for every even number, deal 3 extra damage.'
     },
     {
@@ -914,7 +914,7 @@ const WEAPONS = {
       attackName: 'Celestial Bolt',
       baseDamage: 15, damageType: 'plus',
       diceCount: 3, diceCondition: '5or6', diceBonus: 4,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 3,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 4,
       desc: '15+ Damage. Roll die 3 times, for every 5 or 6, deal 4 extra damage.'
     },
     {
@@ -922,7 +922,7 @@ const WEAPONS = {
       attackName: 'Aqueous Torrent',
       baseDamage: 12, damageType: 'flat',
       diceCount: 2, diceCondition: 'odd', diceBonus: 1,
-      hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 3,
+      hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 4,
       desc: '12 Damage. Roll die 2 times, for every odd number, deal 1 extra damage.'
     },
     {
@@ -930,7 +930,7 @@ const WEAPONS = {
       attackName: 'Inferno Blast',
       baseDamage: 22, damageType: 'minus',
       diceCount: 0, diceCondition: 'distance', diceBonus: 2,
-      hitThrowMod: -1, effect: '1 tile', effectTiles: 1, range: 9,
+      hitThrowMod: -1, effect: '1 tile', effectTiles: 1, range: 10,
       desc: '22- Damage. For every tile away from the Mage, deal 2 less damage.'
     }
   ],
@@ -940,7 +940,7 @@ const WEAPONS = {
       attackName: 'Piercing Thrust',
       baseDamage: 16, damageType: 'plus',
       diceCount: 2, diceCondition: 'even', diceBonus: 4,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 1,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 2,
       desc: '16+ Damage. Roll die 2 times, for every even number, deal 4 extra damage.'
     },
     {
@@ -948,7 +948,7 @@ const WEAPONS = {
       attackName: 'Blade Flurry',
       baseDamage: 10, damageType: 'plus',
       diceCount: 6, diceCondition: 'odd', diceBonus: 2,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 0,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 1,
       desc: '10+ Damage. Roll die 6 times, for every odd number, deal 2 extra damage.'
     },
     {
@@ -956,7 +956,7 @@ const WEAPONS = {
       attackName: 'Iron Cleave',
       baseDamage: 18, damageType: 'plus',
       diceCount: 1, diceCondition: 'even', diceBonus: 2,
-      hitThrowMod: 1, effect: '2 adjacent tiles (including diagonals)', effectTiles: 2, range: 0,
+      hitThrowMod: 1, effect: '2 adjacent tiles (including diagonals)', effectTiles: 2, range: 1,
       special: 'aoe2adj',
       desc: '18+ Damage. Roll die once, if even, deal 2 extra damage. Effect: 2 adjacent tiles (incl. diagonals).'
     },
@@ -965,7 +965,7 @@ const WEAPONS = {
       attackName: 'Destructive Rush',
       baseDamage: 22, damageType: 'minus_dmg_taken',
       diceCount: 0,
-      hitThrowMod: 0, effect: '8 surrounding tiles', effectTiles: 8, range: 0,
+      hitThrowMod: 0, effect: '8 surrounding tiles', effectTiles: 8, range: 1,
       special: 'aoe8surround',
       passive: 'Parry: Take 4 less damage if attack deals <18 (before Parry).',
       desc: '22- Damage. Deal 1 less damage for every damage taken since start of last turn. Minimum 0. Effect: 8 surrounding tiles.'
@@ -977,7 +977,7 @@ const WEAPONS = {
       attackName: 'Twin Shot',
       baseDamage: 11, damageType: 'plus',
       diceCount: 3, diceCondition: '4or6', diceBonus: 7,
-      hitThrowMod: 0, effect: '1 tile', effectTiles: 1, range: 7,
+      hitThrowMod: 0, effect: '1 tile', effectTiles: 1, range: 8,
       desc: '11+ Damage. Roll die 3 times, for every 4 or 6, deal 7 extra damage.'
     },
     {
@@ -985,7 +985,7 @@ const WEAPONS = {
       attackName: 'Reign of Arrows',
       baseDamage: 10, damageType: 'flat',
       diceCount: 4, diceCondition: '5or6_spread', diceBonus: 0,
-      hitThrowMod: 1, effect: '1+ tiles (spread on 5/6)', effectTiles: 1, range: 5,
+      hitThrowMod: 1, effect: '1+ tiles (spread on 5/6)', effectTiles: 1, range: 6,
       special: 'shortbow_spread',
       desc: '10 Damage. Roll die 4 times; for every 5 or 6, hit an adjacent tile of choice.'
     },
@@ -994,7 +994,7 @@ const WEAPONS = {
       attackName: 'Blasting Arrow',
       baseDamage: 13, damageType: 'plus',
       diceCount: 2, diceCondition: 'odd', diceBonus: 4,
-      hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 5,
+      hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 6,
       desc: '13+ Damage. Roll die 2 times, for every odd number, deal 4 extra damage.'
     },
     {
@@ -1002,7 +1002,7 @@ const WEAPONS = {
       attackName: 'Flaming Arrows',
       baseDamage: 22, damageType: 'mixed_crossbow',
       diceCount: 3, diceCondition: 'crossbow',
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 7,
       desc: '22+/- Damage. Roll die 3 times. Every even: -4 damage. Every odd: +1 damage.'
     }
   ],
@@ -1013,7 +1013,7 @@ const WEAPONS = {
       attackName: 'Fireball',
       baseDamage: 22, damageType: 'plus',
       diceCount: 3, diceCondition: 'even', diceBonus: 5,
-      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4,
+      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 5,
       special: 'aoe2x2',
       desc: '22+ Damage. Roll die 3 times, for every even number, deal 5 more damage. Effect: 4 tiles in a 2×2 area.'
     },
@@ -1022,7 +1022,7 @@ const WEAPONS = {
       attackName: 'Arrow of Light',
       baseDamage: 12, damageType: 'plus',
       diceCount: 2, diceCondition: 'even', diceBonus: 16,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6,
       desc: '12+ Damage. Roll die 2 times, for every even number, deal 16 more damage.'
     },
     knight: {
@@ -1030,7 +1030,7 @@ const WEAPONS = {
       attackName: 'Lightning Strike',
       baseDamage: 5, damageType: 'plus_pct_dmg',
       diceCount: 0,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 2,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 3,
       desc: '5+ damage. +1 damage for every 2 damage target has already taken (round down).'
     },
     any: {
@@ -1038,7 +1038,7 @@ const WEAPONS = {
       attackName: 'Blast of Obliviation',
       baseDamage: 25, damageType: 'oblivion',
       diceCount: 1, diceCondition: 'odd_50',
-      hitThrowMod: 2, effect: 'Any 2 tiles (reroll each)', effectTiles: 2, range: 7,
+      hitThrowMod: 2, effect: 'Any 2 tiles (reroll each)', effectTiles: 2, range: 8,
       special: 'helen2tiles',
       desc: '25+ damage. Roll a die, if odd, deal 50 damage instead. Effect: Any 2 tiles, reroll Hit Throw & damage for each.'
     }
@@ -2890,20 +2890,34 @@ function findHighGroundMove(char){
 }
 
 function findPathTo(char, tx, ty){
-  // Simple BFS respecting movement cost
+  // Dijkstra-style search (always expands the cheapest-so-far tile next).
+  // This guarantees the AI finds the true lowest-cost route to a tile and
+  // will naturally path AROUND a blocking character/obstacle by trying the
+  // other open directions, rather than simply giving up when the direct
+  // line toward the target is blocked.
   const maxMove = char.move;
   const start = {x:char.x, y:char.y};
-  const queue = [{x:start.x,y:start.y,cost:0,path:[{x:start.x,y:start.y}]}];
-  const visited = {};
-  visited[tileKey(start.x,start.y)] = 0;
-  let best = null;
-  let bestDist = Infinity;
+  const startKey = tileKey(start.x,start.y);
+  const costSoFar = {}; costSoFar[startKey] = 0;
+  const cameFrom = {};
+  const frontier = [{x:start.x,y:start.y,cost:0}];
 
-  while(queue.length){
-    const cur = queue.shift();
+  let best = {x:start.x,y:start.y};
+  let bestDist = chebyshev(start.x,start.y,tx,ty);
+  let bestCost = 0;
+
+  while(frontier.length){
+    // Pull the lowest-cost frontier node (priority queue behavior).
+    frontier.sort((a,b)=>a.cost-b.cost);
+    const cur = frontier.shift();
+    const curKey = tileKey(cur.x,cur.y);
+    if(cur.cost > costSoFar[curKey]) continue; // stale entry, skip
+
     const dist = chebyshev(cur.x,cur.y,tx,ty);
-    if(dist < bestDist){ bestDist=dist; best=cur; }
-    if(cur.x===tx&&cur.y===ty) break;
+    if(dist < bestDist || (dist===bestDist && cur.cost < bestCost)){
+      bestDist = dist; bestCost = cur.cost; best = {x:cur.x,y:cur.y};
+    }
+    if(cur.x===tx && cur.y===ty) break;
     if(cur.cost>=maxMove) continue;
 
     for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]){
@@ -2911,31 +2925,70 @@ function findPathTo(char, tx, ty){
       if(nx<0||nx>10||ny<0||ny>8) continue;
       const type=getTileType(nx,ny);
       if(['pc','hc','log','chest','chest_hg'].includes(type)) continue;
-      if(getCharAt(nx,ny)&&!(nx===tx&&ny===ty)) continue;
+      // Tiles occupied by another character are treated as impassable,
+      // forcing the search to route around them - except the exact
+      // destination tile itself (the caller stops one tile short of it,
+      // e.g. when closing in on an enemy's square).
+      const occupant = getCharAt(nx,ny);
+      if(occupant && occupant!==char && !(nx===tx&&ny===ty)) continue;
+
       let cost=1;
       if(char.class!=='knight' && ['difficult','thorny','hill'].includes(type)) cost=2;
-      const newCost=cur.cost+cost;
-      const k=tileKey(nx,ny);
-      if(newCost<=maxMove && (visited[k]===undefined||newCost<visited[k])){
-        visited[k]=newCost;
-        queue.push({x:nx,y:ny,cost:newCost,path:[...cur.path,{x:nx,y:ny}]});
+      const newCost = cur.cost + cost;
+      if(newCost>maxMove) continue;
+      const nk = tileKey(nx,ny);
+      if(costSoFar[nk]===undefined || newCost<costSoFar[nk]){
+        costSoFar[nk] = newCost;
+        cameFrom[nk] = curKey;
+        frontier.push({x:nx,y:ny,cost:newCost});
       }
     }
   }
-  return best ? best.path : null;
+
+  // Reconstruct the path by walking back from the best reachable tile.
+  const path = [{x:best.x,y:best.y}];
+  let k = tileKey(best.x,best.y);
+  while(k!==startKey && cameFrom[k]!==undefined){
+    const prevKey = cameFrom[k];
+    const [px,py] = prevKey.split(',').map(Number);
+    path.push({x:px,y:py});
+    k = prevKey;
+  }
+  path.reverse();
+  return path.length>1 ? path : null;
 }
 
 async function aiMoveAlongPath(char, path){
   if(!path||path.length<=1) return;
-  for(let i=1;i<path.length;i++){
-    const step=path[i];
+  // Remember the original intended destination so that, if a tile along
+  // the way turns out to be blocked, we can search for a different
+  // logical route to the same place instead of simply giving up.
+  const destination = path[path.length-1];
 
-    // Prevent multiple characters occupying the same tile
+  let i = 1;
+  while(i < path.length){
+    const step = path[i];
     const occupied = getCharAt(step.x, step.y);
+
     if(occupied && occupied !== char){
+      // If the blocked tile IS the actual destination (e.g. an enemy's
+      // square), stopping one tile short of it is correct - not a problem
+      // that needs re-routing.
+      if(step.x===destination.x && step.y===destination.y) break;
+
+      // Otherwise, the tile is unexpectedly occupied - try to draw a new
+      // route around it toward the same destination.
+      const reroute = findPathTo(char, destination.x, destination.y);
+      if(reroute && reroute.length>1 && !(reroute[1].x===step.x && reroute[1].y===step.y)){
+        logMsg(`${char.name} routes around ${occupied.name}.`);
+        path = reroute;
+        i = 1;
+        continue;
+      }
       logMsg(`${char.name} stops moving because ${occupied.name} is blocking the tile.`);
       break;
     }
+
     if(isThorny(step.x,step.y) && i<path.length-1){
       applyDamage(char,2,false);
       logMsg(`${char.name} takes 2 damage from thorny vines!`,'damage');
@@ -2943,8 +2996,9 @@ async function aiMoveAlongPath(char, path){
     char.x=step.x; char.y=step.y;
     positionIcon(char);
     await sleep(250);
+    i++;
   }
-  const last=path[path.length-1];
+  const last = {x:char.x, y:char.y};
   if(isThorny(last.x,last.y)){
     applyDamage(char,4,false);
     logMsg(`${char.name} stops in thorny vines and takes 4 damage!`,'damage');
