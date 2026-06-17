@@ -1083,9 +1083,10 @@ const BOARD_CONFIGS = {
       '1,3':{type:'difficult', label:'Hill'},
       '8,4':{type:'difficult', label:'Hill'},
       '7,5':{type:'difficult', label:'Hill'},
-      '8,5':{type:'highground', label:'Hill'},
+      '8,5':{type:'highground'},
       '6,6':{type:'difficult', label:'Hill'},
       '9,6':{type:'difficult', label:'Hill'},
+      '9,5':{type:'difficult', label:'Hill'},
       '7,7':{type:'difficult', label:'Hill'},
       '8,7':{type:'difficult', label:'Hill'},
       '3,2':{type:'chest', label:'Chest'},
@@ -1165,7 +1166,7 @@ const BOARD_CONFIGS = {
 // Note: Board 1 has some tiles that overlap (highground + chest). Handle chest_hg specially.
 // Fix the board 1 config so (8,6) is chest on highground
 BOARD_CONFIGS[1].tiles['8,6'] = {type:'chest_hg', label:'Chest'};
-BOARD_CONFIGS[1].tiles['8,5'] = {type:'highground', label:'Hill'};
+BOARD_CONFIGS[1].tiles['8,5'] = {type:'highground'};
 
 // ============================================================
 //  GAME STATE
@@ -2372,7 +2373,7 @@ function triggerVictory(){
   overlay.classList.add('active');
   word.className='victory';
   word.textContent='Victory!';
-  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 10000);
+  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 5000);
 }
 
 function triggerDefeat(){
@@ -2382,7 +2383,7 @@ function triggerDefeat(){
   overlay.classList.add('active');
   word.className='defeat';
   word.textContent='Defeat';
-  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 10000);
+  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 5000);
 }
 
 // ============================================================
@@ -2408,12 +2409,22 @@ function openChest(char, cx, cy, callback){
   if(tile){ tile.classList.add('opened'); tile.style.background='rgba(200,100,100,0.55)'; }
   logMsg(`${char.name} opens the chest!`);
 
-  // Show dice roll
-  openDice(`${char.name}: Roll for chest loot!`, (rollResult)=>{
+  if(char.isPlayer){
+    // The player rolls for their own loot interactively.
+    openDice(`${char.name}: Roll for chest loot!`, (rollResult)=>{
+      const loot = CHEST_LOOT[rollResult];
+      if(!loot){ callback(); return; }
+      grantChestLoot(char, loot, callback);
+    });
+  } else {
+    // AI characters roll for their own loot automatically - the human
+    // player shouldn't be asked to manually roll dice for the AI's chest.
+    const rollResult = roll(6);
+    logMsg(`${char.name} rolls a ${rollResult} for chest loot!`);
     const loot = CHEST_LOOT[rollResult];
     if(!loot){ callback(); return; }
     grantChestLoot(char, loot, callback);
-  });
+  }
 }
 
 function grantChestLoot(char, loot, callback){
@@ -2487,9 +2498,9 @@ function closeItemPopup(){
 }
 
 async function useItemConfirm(){
-  closeItemPopup();
   const player = G.activeItemUser || G.characters.find(c=>c.isPlayer&&c.alive);
   const {item, idx} = G.activeItem || {};
+  closeItemPopup();
   if(!item||!player) return;
   useItem(player, item, idx, true);
 }
@@ -2819,11 +2830,25 @@ async function aiUsePotions(char){
 function findKillTarget(char){
   const enemies = getLiveChars().filter(c=>c!==char);
   const w = char.equippedWeapon;
-  for(const e of enemies){
-    const dmg = estimateDamage(char, w, e);
-    if(dmg >= e.hp && inRange(char, e, w.range)) return e;
+  const killable = enemies.filter(e=> inRange(char, e, w.range) && estimateDamage(char, w, e) >= e.hp);
+  if(!killable.length) return null;
+  return preferPlayerTarget(char, killable);
+}
+
+// If the human player is among the candidate targets and is at least as
+// close as whichever target the AI's normal priority would otherwise pick,
+// attack the player instead. AI-vs-AI priority/ordering is left untouched.
+function preferPlayerTarget(char, candidates){
+  if(!candidates.length) return null;
+  const best = candidates[0];
+  if(best.isPlayer) return best;
+  const player = candidates.find(c=>c.isPlayer);
+  if(player){
+    const playerDist = chebyshev(char.x,char.y,player.x,player.y);
+    const bestDist = chebyshev(char.x,char.y,best.x,best.y);
+    if(playerDist <= bestDist) return player;
   }
-  return null;
+  return best;
 }
 
 function findBestTarget(char){
@@ -2843,7 +2868,7 @@ function findBestTarget(char){
     if(a.hp!==b.hp) return a.hp-b.hp;
     return chebyshev(char.x,char.y,a.x,a.y)-chebyshev(char.x,char.y,b.x,b.y);
   });
-  return inRangeEnemies[0];
+  return preferPlayerTarget(char, inRangeEnemies);
 }
 
 function findNearestEnemy(char){
