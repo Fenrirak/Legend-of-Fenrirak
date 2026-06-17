@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Legend Of Fenrirak™ - Showdowns</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700;900&family=Lato:wght@300;400;700&display=swap');
@@ -207,16 +207,19 @@
   .board-btn-group { display: flex; gap: 16px; }
 
   /* ===== GAME SCREEN ===== */
+  /* Default (mouse/desktop): fill the window width via fitGameScreen()'s
+     transform scale; top-anchored so that if the scaled layout ends up a
+     little taller than the window, the page scrolls down cleanly instead
+     of clipping the top of the board. A touch-primary override below
+     switches this to a fully-contained, non-scrolling, centered layout. */
   #screen-game {
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     padding: 0;
-    width: 100vw;
-    height: 100vh;
-    min-height: 0;
+    width: 100%;
+    min-height: 100vh;
     background: #0d0d0d;
-    overflow: hidden;
   }
 
   /* Fixed-size inner layout that gets transform-scaled to fit the
@@ -718,8 +721,21 @@
 
   /* ===== TOUCH SCREEN SUPPORT ===== */
   @media (pointer: coarse) {
-    .tile, .char-icon {
-      touch-action: manipulation;
+    /* Let our own JS handle all dragging/tapping on the board - stop the
+       browser from trying to scroll or zoom while a finger is on it. */
+    .tile, .char-icon, #game-board, #board-container {
+      touch-action: none;
+    }
+    /* Phones/tablets: the layout is scaled (by fitGameScreen()) to fit
+       entirely within the screen, so it should sit centered with no
+       page scrolling, rather than the desktop's top-anchored/scrollable
+       behavior. */
+    #screen-game {
+      height: 100vh;
+      min-height: 0;
+      width: 100vw;
+      align-items: center;
+      overflow: hidden;
     }
   }
 
@@ -1347,13 +1363,33 @@ function showScreen(id){
 }
 
 // ============================================================
-//  RESPONSIVE SCALING - fit the fixed-size game layout into
-//  whatever landscape viewport the device provides
+//  RESPONSIVE SCALING
+//  The whole game layout (#game-scale-inner) has a fixed natural size in
+//  CSS pixels, and is scaled as a single unit with a CSS transform to fit
+//  whatever screen it's shown on. The behavior differs by input type:
+//
+//   - Touch-primary devices (phones/tablets): the layout is scaled to fit
+//     ENTIRELY within the screen in both directions (shrinking on small
+//     screens, enlarging on big tablets) so the whole game is visible at
+//     once with no page scrolling - important since dragging to move a
+//     character needs the whole board reachable without scrolling under
+//     your finger.
+//
+//   - Mouse-primary devices (desktops/laptops): the layout is scaled to
+//     fill (almost) the full window width. If that makes the page a
+//     little taller than the window, a small amount of vertical scroll
+//     is allowed rather than shrinking the whole UI down just to avoid
+//     any scrolling at all.
 // ============================================================
+function isTouchPrimaryDevice(){
+  return window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+}
+
 function fitGameScreen(){
   const inner = document.getElementById('game-scale-inner');
   const screenEl = document.getElementById('screen-game');
   if(!inner || !screenEl || !screenEl.classList.contains('active')) return;
+
   // Measure the natural (unscaled) size of the layout. Reading
   // offsetWidth/offsetHeight is unaffected by any CSS transform already
   // applied, so this stays accurate across repeated calls.
@@ -1361,16 +1397,39 @@ function fitGameScreen(){
   const naturalW = inner.offsetWidth;
   const naturalH = inner.offsetHeight;
   if(!naturalW || !naturalH) return;
+
   const availW = window.innerWidth;
   const availH = window.innerHeight;
-  let scale = Math.min(availW / naturalW, availH / naturalH);
-  // Don't blow the board up too large on big monitors, and never go to 0.
-  scale = Math.max(0.1, Math.min(scale, 1.4));
+  let scale, origin;
+
+  if(isTouchPrimaryDevice()){
+    // Fit completely on screen in both dimensions - no scrolling.
+    scale = Math.min(availW / naturalW, availH / naturalH);
+    scale = Math.max(0.25, Math.min(scale, 2.2));
+    origin = 'center center';
+  } else {
+    // Fill the window width. Only back off from that if it would make
+    // the page noticeably taller than the window - a little overflow
+    // (and a little scrolling) is fine, a lot is not.
+    scale = availW / naturalW;
+    const maxOverflowH = availH * 1.15;
+    if(naturalH * scale > maxOverflowH) scale = maxOverflowH / naturalH;
+    scale = Math.max(0.4, Math.min(scale, 1.8));
+    origin = 'top center';
+  }
+
+  inner.style.transformOrigin = origin;
   inner.style.transform = `scale(${scale})`;
 }
 
 window.addEventListener('resize', fitGameScreen);
 window.addEventListener('orientationchange', ()=>setTimeout(fitGameScreen, 200));
+// If the device's primary pointer type changes mid-session (e.g. a
+// convertible laptop folding into tablet mode), re-fit the layout.
+if(window.matchMedia){
+  const pointerQuery = window.matchMedia('(pointer: coarse)');
+  if(pointerQuery.addEventListener) pointerQuery.addEventListener('change', fitGameScreen);
+}
 
 // ============================================================
 //  SETUP FLOW
@@ -3246,11 +3305,19 @@ function getTouchTile(touch){
 
 function onTouchMove(e){
   if(!isDraggingMove || !moveStartChar) return;
+  if(!e.touches || !e.touches.length) return;
+  // Stop the page itself from scrolling/bouncing while a move is being
+  // dragged out across the board.
+  e.preventDefault();
   const tile = getTouchTile(e.touches[0]);
   if(!tile) return;
   onTileMouseOver({target: tile});
 }
 
+// Starting a drag: tapping and holding a character icon behaves the same
+// as a mousedown on it. onCharIconMouseDown itself also registers a
+// one-time 'touchend' listener (alongside 'mouseup') to end the drag, so
+// no separate touchend handler is needed here.
 document.addEventListener('touchstart', e=>{
   const icon = e.target.closest('.char-icon');
   if(!icon) return;
@@ -3261,11 +3328,6 @@ document.addEventListener('touchstart', e=>{
 },{passive:false});
 
 document.addEventListener('touchmove', onTouchMove, {passive:false});
-
-document.addEventListener('touchend', e=>{
-  if(!isDraggingMove) return;
-  onMouseUp(e);
-});
 
 window.addEventListener('beforeunload', ()=>{ G = {}; });
 </script>
