@@ -715,6 +715,60 @@
     font-weight: 900;
     color: #1a0a00;
   }
+
+/* ===== RESPONSIVE / TOUCH UPGRADE ===== */
+html, body {
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+}
+
+.btn, .class-card, .weapon-card, .tile, .char-icon, .inventory-item {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#screen-game {
+  width: 100%;
+  height: 100vh;
+}
+
+#game-scale-inner {
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1400px) {
+  #stat-panel { width: 320px; min-width: 320px; height: 100vh; }
+  #right-panel { width: 280px; min-width: 280px; height: 100vh; }
+  #board-area { height: 100vh; }
+}
+
+@media (max-width: 1024px) {
+  #stat-panel { width: 240px; min-width: 240px; }
+  #right-panel { width: 200px; min-width: 200px; }
+  .tile { width: 44px; height: 44px; }
+}
+
+@media (max-width: 768px) {
+  .setup-box,
+  .rules-box {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .class-card,
+  .weapon-card {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .btn {
+    min-height: 48px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1342,22 +1396,29 @@ function showScreen(id){
 //  RESPONSIVE SCALING - fit the fixed-size game layout into
 //  whatever landscape viewport the device provides
 // ============================================================
+
+window.addEventListener('touchstart', function(){}, {passive:true});
+
 function fitGameScreen(){
   const inner = document.getElementById('game-scale-inner');
   const screenEl = document.getElementById('screen-game');
   if(!inner || !screenEl || !screenEl.classList.contains('active')) return;
-  // Measure the natural (unscaled) size of the layout. Reading
-  // offsetWidth/offsetHeight is unaffected by any CSS transform already
-  // applied, so this stays accurate across repeated calls.
+
+  if(window.innerWidth >= 1200){
+    inner.style.transform = 'none';
+    inner.style.width = '100%';
+    return;
+  }
+
   inner.style.transform = 'none';
   const naturalW = inner.offsetWidth;
   const naturalH = inner.offsetHeight;
-  if(!naturalW || !naturalH) return;
-  const availW = window.innerWidth;
-  const availH = window.innerHeight;
-  let scale = Math.min(availW / naturalW, availH / naturalH);
-  // Don't blow the board up too large on big monitors, and never go to 0.
-  scale = Math.max(0.1, Math.min(scale, 1.4));
+
+  const scale = Math.max(
+    0.5,
+    Math.min(window.innerWidth / naturalW, window.innerHeight / naturalH, 1)
+  );
+
   inner.style.transform = `scale(${scale})`;
 }
 
