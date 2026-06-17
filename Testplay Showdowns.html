@@ -209,11 +209,26 @@
   /* ===== GAME SCREEN ===== */
   #screen-game {
     flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    min-height: 0;
+    background: #0d0d0d;
+    overflow: hidden;
+  }
+
+  /* Fixed-size inner layout that gets transform-scaled to fit the
+     available viewport (see fitGameScreen() in the script). Keeping this
+     at a constant natural size makes the scale calculation deterministic
+     across devices. */
+  #game-scale-inner {
+    display: flex;
+    flex-direction: row;
     align-items: flex-start;
     justify-content: flex-start;
-    padding: 0;
-    min-height: 100vh;
-    background: #0d0d0d;
+    flex-shrink: 0;
   }
 
   /* Stat panel */
@@ -223,7 +238,7 @@
     background: var(--panel-bg);
     border-right: 1px solid var(--panel-border);
     padding: 16px;
-    min-height: 100vh;
+    height: 650px;
     overflow-y: auto;
     flex-shrink: 0;
   }
@@ -290,7 +305,7 @@
     flex-direction: column;
     align-items: center;
     padding: 16px;
-    min-height: 100vh;
+    height: 650px;
   }
   #turn-info {
     font-family: 'Cinzel', serif;
@@ -409,7 +424,7 @@
     background: var(--panel-bg);
     border-left: 1px solid var(--panel-border);
     padding: 16px;
-    min-height: 100vh;
+    height: 650px;
     overflow-y: auto;
     flex-shrink: 0;
   }
@@ -442,6 +457,46 @@
   }
   .health-bar-fill.low { background: #e77d22; }
   .health-bar-fill.critical { background: #c0392b; }
+
+  /* ===== ROTATE DEVICE OVERLAY ===== */
+  #rotate-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(ellipse at center, #1a0f00 0%, #0d0d0d 100%);
+    z-index: 100000;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  @media (orientation: portrait) {
+    #rotate-overlay { display: flex; }
+  }
+  .rotate-card { max-width: 380px; }
+  .rotate-icon {
+    font-size: 3.2em;
+    margin-bottom: 16px;
+    display: inline-block;
+    animation: rotate-hint 1.6s ease-in-out infinite;
+  }
+  @keyframes rotate-hint {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(90deg); }
+  }
+  .rotate-card h2 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.3em;
+    margin-bottom: 12px;
+  }
+  .rotate-card p {
+    color: var(--text);
+    font-size: 0.95em;
+    line-height: 1.6;
+  }
 
   /* ===== DICE ===== */
   #dice-overlay {
@@ -664,6 +719,15 @@
 </head>
 <body>
 
+<!-- ===================== ROTATE DEVICE OVERLAY ===================== -->
+<div id="rotate-overlay">
+  <div class="rotate-card">
+    <div class="rotate-icon">🔄</div>
+    <h2>Please Rotate Your Device</h2>
+    <p>Legend Of Fenrirak™ - Showdowns is designed for landscape orientation. Please rotate your screen to continue playing.</p>
+  </div>
+</div>
+
 <!-- ===================== RULES SCREEN ===================== -->
 <div id="screen-rules" class="screen active">
   <div class="game-title">Legend Of Fenrirak™</div>
@@ -810,6 +874,7 @@
 
 <!-- ===================== GAME SCREEN ===================== -->
 <div id="screen-game" class="screen">
+ <div id="game-scale-inner">
   <!-- Left: Player Stats -->
   <div id="stat-panel">
     <div class="stat-title">Legend Of Fenrirak™<br><small style="font-size:0.7em; color:var(--text-dim);">-Showdowns-</small></div>
@@ -862,6 +927,7 @@
     <div class="section-header" style="margin-top:0;">Characters</div>
     <div id="enemy-cards"></div>
   </div>
+ </div>
 </div>
 
 <!-- ===================== DICE OVERLAY ===================== -->
@@ -1269,7 +1335,34 @@ function logMsg(text, cls=''){
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if(id==='screen-game') fitGameScreen();
 }
+
+// ============================================================
+//  RESPONSIVE SCALING - fit the fixed-size game layout into
+//  whatever landscape viewport the device provides
+// ============================================================
+function fitGameScreen(){
+  const inner = document.getElementById('game-scale-inner');
+  const screenEl = document.getElementById('screen-game');
+  if(!inner || !screenEl || !screenEl.classList.contains('active')) return;
+  // Measure the natural (unscaled) size of the layout. Reading
+  // offsetWidth/offsetHeight is unaffected by any CSS transform already
+  // applied, so this stays accurate across repeated calls.
+  inner.style.transform = 'none';
+  const naturalW = inner.offsetWidth;
+  const naturalH = inner.offsetHeight;
+  if(!naturalW || !naturalH) return;
+  const availW = window.innerWidth;
+  const availH = window.innerHeight;
+  let scale = Math.min(availW / naturalW, availH / naturalH);
+  // Don't blow the board up too large on big monitors, and never go to 0.
+  scale = Math.max(0.1, Math.min(scale, 1.4));
+  inner.style.transform = `scale(${scale})`;
+}
+
+window.addEventListener('resize', fitGameScreen);
+window.addEventListener('orientationchange', ()=>setTimeout(fitGameScreen, 200));
 
 // ============================================================
 //  SETUP FLOW
