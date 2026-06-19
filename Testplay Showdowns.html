@@ -1439,7 +1439,7 @@ if(window.matchMedia){
 function submitName(){
   const val = document.getElementById('player-name-input').value;
   if(!val.trim()){ alert('Please enter a name.'); return; }
-  G.playerName = val.trim().substring(0,5);
+  G.playerName = val.trim().substring(0,7);
   showScreen('screen-board');
 }
 
