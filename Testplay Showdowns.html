@@ -357,16 +357,60 @@
     cursor: default;
     transition: filter 0.1s;
   }
-  .tile.normal { background: #e8e2d0; }
+  .tile.normal {
+    background: url('GrassBackground.png') center/cover;
+  }
   .tile.starting { background: #d4af37; }
-  .tile.difficult { background: #e77d22; }
+
+  .tile.difficult {
+    background: url('Mud.png') center/cover;
+  }
   .tile.high-ground { background: #4a90d9; }
-  .tile.partial-cover { background: #b0a882; }
-  .tile.heavy-cover { background: #092409; }
-  .tile.thorny { background: #7a9a44; }
-  .tile.log { background: #7a5533; }
-  .tile.chest { background: #c8a05a; }
-  .tile.chest.opened { background: rgba(200,100,100,0.5) !important; }
+
+  .tile.partial-cover {
+    background: url('Rock.png') center/cover;
+  }
+  .tile.heavy-cover {
+    background: url('Tree.png') center/cover;
+  }
+  .tile.thorny {
+    background: url('THV.png') center/cover;
+  }
+  .tile.log {
+    background-color: #7a5533;
+  }
+  /* Logs occupy 2 tiles. The same source image is stretched/cropped across
+     both tile divs so it reads as one continuous log. */
+  .tile.log-h-left {
+    background-image: url('LogHorizontal.png');
+    background-size: 104px 52px;
+    background-position: 0px 0px;
+    background-repeat: no-repeat;
+  }
+  .tile.log-h-right {
+    background-image: url('LogHorizontal.png');
+    background-size: 104px 52px;
+    background-position: -52px 0px;
+    background-repeat: no-repeat;
+  }
+  .tile.log-v-top {
+    background-image: url('LogVertical.png');
+    background-size: 69px 104px;
+    background-position: -8.5px 0px;
+    background-repeat: no-repeat;
+  }
+  .tile.log-v-bottom {
+    background-image: url('LogVertical.png');
+    background-size: 69px 104px;
+    background-position: -8.5px -52px;
+    background-repeat: no-repeat;
+  }
+  .tile.chest, .tile.high-ground.chest {
+    background: url('ChestClosed.png') center/cover;
+  }
+  .tile.chest.opened, .tile.high-ground.chest.opened {
+    background: url('ChestOpened.png') center/cover !important;
+  }
   .tile.hill { background: #c8780a; }
 
   .tile-label {
@@ -773,7 +817,7 @@
 
     <h2>Attacks & Hit Throws</h2>
     <p>Before attacking, roll a Hit Throw. If the total (including modifiers) equals or exceeds the target's Defence, the attack hits. Range is measured as the greater of horizontal or vertical distance.</p>
-    <p>If a straight line from attacker to target passes through 2 tiles of Partial Cover, the attack fails. Mages' spells are stopped by even a single tile of Partial Cover (their magic treats it as severely as Heavy Cover). Heavy Cover no longer blocks a shot outright - it still grants a defence bonus, it just doesn't stop the attack from passing through.</p>
+    <p>Rocks, Logs, and Trees never block a ranged attack outright - they only grant a defence bonus (see Cover below), they don't stop the shot from passing through. The only thing solid enough to block a shot outright is a Chest: if a straight line from attacker to target passes through 2 Chest tiles, the attack fails. Mages' spells are stopped by even a single Chest tile in their line of fire.</p>
 
     <h2>Cover</h2>
     <ul>
@@ -807,7 +851,7 @@
   <div class="setup-title">Enter Your Name</div>
   <div class="setup-box" style="text-align:center;">
     <p style="margin-bottom:16px; color:var(--text-dim); font-size:0.9em;">Maximum 7 characters (letters, numbers, symbols, spaces). At least one visible character.</p>
-    <input type="text" id="player-name-input" maxlength="7" placeholder="Name" autocomplete="off" />
+    <input type="text" id="player-name-input" maxlength="7" placeholder="Name" autocomplete="off" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitName(); }" />
     <br><br>
     <button class="btn" onclick="submitName()">Continue</button>
   </div>
@@ -1163,10 +1207,10 @@ const BOARD_CONFIGS = {
       '10,7':{type:'difficult', label:'Mud'},
       '2,8':{type:'difficult', label:'Mud'},
       '9,8':{type:'difficult', label:'Mud'},
-      '8,1':{type:'log', label:'Log'},
-      '9,1':{type:'log', label:'Log'},
-      '1,4':{type:'log', label:'Log'},
-      '1,5':{type:'log', label:'Log'},
+      '8,1':{type:'log', label:'Log', logDir:'h-left'},
+      '9,1':{type:'log', label:'Log', logDir:'h-right'},
+      '1,4':{type:'log', label:'Log', logDir:'v-bottom'},
+      '1,5':{type:'log', label:'Log', logDir:'v-top'},
       '1,2':{type:'highground'},
       '8,5':{type:'highground'},
       '7,6':{type:'highground'},
@@ -1201,8 +1245,8 @@ const BOARD_CONFIGS = {
       '5,1':{type:'difficult', label:'Mud'},
       '4,5':{type:'difficult', label:'Mud'},
       '5,7':{type:'difficult', label:'Mud'},
-      '2,0':{type:'log', label:'Log'},
-      '3,0':{type:'log', label:'Log'},
+      '2,0':{type:'log', label:'Log', logDir:'h-left'},
+      '3,0':{type:'log', label:'Log', logDir:'h-right'},
       '0,8':{type:'highground'},
       '10,0':{type:'highground'},
       '9,0':{type:'difficult', label:'Hill'},
@@ -1233,8 +1277,8 @@ const BOARD_CONFIGS = {
       '9,0':{type:'difficult', label:'Mud'},
       '5,7':{type:'difficult', label:'Mud'},
       '0,7':{type:'difficult', label:'Mud'},
-      '2,0':{type:'log', label:'Log'},
-      '3,0':{type:'log', label:'Log'},
+      '2,0':{type:'log', label:'Log', logDir:'h-left'},
+      '3,0':{type:'log', label:'Log', logDir:'h-right'},
       '3,4':{type:'highground'},
       '7,4':{type:'highground'},
       '3,3':{type:'difficult', label:'Hill'},
@@ -1336,6 +1380,14 @@ function isPCTile(x,y){
 function isHCTile(x,y){
   const t = getTileType(x,y);
   return t==='hc';
+}
+// Cover that actually blocks a shot outright. Rocks (pc), Logs (log) and
+// Trees (hc) only ever grant a defence bonus now - they never stop a
+// ranged attack from passing through. Only Chests are solid enough to
+// block a shot outright (see checkCoverLOS).
+function blocksLOSTile(x,y){
+  const t = getTileType(x,y);
+  return ['chest','chest_hg'].includes(t);
 }
 
 function getChar(id){ return G.characters.find(c=>c.id===id); }
@@ -1544,13 +1596,33 @@ function buildStartTileScreen(){
 function applyTileStyle(cell, x, y){
   const t = getTile(x,y);
   const type = t ? t.type : 'normal';
-  const colors = {
-    normal:'#e8e2d0', starting:'#d4af37', difficult:'#e77d22',
-    highground:'#4a90d9', pc:'#b0a882', hc:'#092409',
-    thorny:'#7a9a44', log:'#7a5533', chest:'#c8a05a',
-    chest_hg:'#5a8ab0', hill:'#c8780a'
+  const backgrounds = {
+    normal: `url('GrassBackground.png') center/cover`,
+    difficult: `url('Mud.png') center/cover`,
+    thorny: `url('THV.png') center/cover`,
+    chest: `url('ChestClosed.png') center/cover`,
+    chest_hg: `url('ChestClosed.png') center/cover`,
+    starting:'#d4af37', highground:'#4a90d9',
+    pc: `url('Rock.png') center/cover`,
+    hc: `url('Tree.png') center/cover`,
+    log:'#7a5533', hill:'#c8780a'
   };
-  cell.style.background = colors[type] || '#e8e2d0';
+  // This preview board uses 58px tiles (vs 52px on the main game board), so
+  // the 2-tile log images are split using sizes/offsets scaled for 58px.
+  if(type==='log' && t && t.logDir){
+    cell.style.backgroundRepeat = 'no-repeat';
+    if(t.logDir==='h-left' || t.logDir==='h-right'){
+      cell.style.backgroundImage = "url('LogHorizontal.png')";
+      cell.style.backgroundSize = '116px 58px';
+      cell.style.backgroundPosition = (t.logDir==='h-left') ? '0px 0px' : '-58px 0px';
+    } else {
+      cell.style.backgroundImage = "url('LogVertical.png')";
+      cell.style.backgroundSize = '76.96px 116px';
+      cell.style.backgroundPosition = (t.logDir==='v-top') ? '-9.48px 0px' : '-9.48px -58px';
+    }
+  } else {
+    cell.style.background = backgrounds[type] || backgrounds.normal;
+  }
   if(t && t.label){
     const lbl = document.createElement('div');
     lbl.style.cssText='position:absolute;bottom:1px;left:1px;font-size:0.72em;color:rgba(0,0,0,0.55);font-weight:700;pointer-events:none;';
@@ -1768,7 +1840,7 @@ function buildGameScreen(){
     const icon = document.createElement('div');
     icon.className = `char-icon ${c.class}`;
     icon.id = `char-icon-${c.id}`;
-    icon.textContent = c.name;
+    setCharIconName(icon, c.name);
     icon.dataset.charid = c.id;
     board.appendChild(icon);
     positionIcon(c);
@@ -1800,10 +1872,22 @@ function setTileClass(cell, x, y){
   } else {
     (classMap[type]||'normal').split(' ').forEach(c=>cell.classList.add(c));
   }
+  if(type==='log' && t.logDir){
+    cell.classList.add('log-'+t.logDir);
+  }
   if(G.openedChests.has(tileKey(x,y))){
     cell.classList.add('opened');
-    cell.style.background='rgba(200,100,100,0.55)';
   }
+}
+
+function setCharIconName(icon, name){
+  icon.textContent = name;
+  const len = Math.max(1, (name||'').length);
+  // Scale the font down as the name gets longer so any name up to the
+  // 7-character max fills the icon without overflowing it, and short
+  // names still look nicely sized rather than tiny.
+  const px = Math.max(7.5, Math.min(14, 14 - (len-2)*1.3));
+  icon.style.fontSize = px + 'px';
 }
 
 function positionIcon(c){
@@ -2132,7 +2216,7 @@ function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
 function getAdjacentTiles(x,y, includeDiag=false){
   const dirs = includeDiag?
-    [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]:
+    [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]] :
     [[-1,0],[1,0],[0,-1],[0,1]];
   return dirs.map(([dx,dy])=>({x:x+dx,y:y+dy})).filter(t=>t.x>=0&&t.x<=10&&t.y>=0&&t.y<=8);
 }
@@ -2272,16 +2356,19 @@ function checkCoverLOS(ax,ay,tx,ty, attacker, target){
   const midTiles = tiles.filter(t=>!(t.x===ax&&t.y===ay)&&!(t.x===tx&&t.y===ty));
 
   for(const t of midTiles){
-    if(isPCTile(t.x,t.y)){
+    if(blocksLOSTile(t.x,t.y)){
       // Mage passive: a mage's spells are stopped by even minor cover -
-      // count each Partial Cover tile as double (as severe as Heavy
-      // Cover used to be), so a single PC tile is enough to block them.
+      // count each blocking tile as double (as severe as it used to be
+      // for any cover), so a single Chest tile is enough to block them.
       pcCount += (attacker && attacker.class==='mage') ? 2 : 1;
     }
-    // Heavy Cover no longer blocks a shot outright - it still grants a
-    // defence bonus (handled below), it just doesn't stop the attack.
+    // Rocks (PC), Logs, and Trees (HC) no longer block a shot outright -
+    // they still grant a defence bonus (handled below), they just don't
+    // stop the attack from passing through. Only Chests are solid enough
+    // to block a shot outright.
     if(pcCount>=2) return {blocked:true, defBonus:0};
   }
+
 
   // Cover only grants a defence bonus if the attacker's actual line of
   // fire passes through a cover tile immediately adjacent to the target,
@@ -2562,7 +2649,7 @@ function openChest(char, cx, cy, callback){
   G.openedChests.add(tileKey(cx,cy));
   // Mark chest as opened
   const tile = document.getElementById(`tile-${cx}-${cy}`);
-  if(tile){ tile.classList.add('opened'); tile.style.background='rgba(200,100,100,0.55)'; }
+  if(tile){ tile.classList.add('opened'); }
   logMsg(`${char.name} opens the chest!`);
 
   if(char.isPlayer){
