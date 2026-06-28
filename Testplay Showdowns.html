@@ -365,7 +365,7 @@
   .tile.difficult {
     background: url('Mud.png') center/cover;
   }
-  .tile.high-ground { background: #4a90d9; }
+  .tile.high-ground { background: url('HighGround.png') center/cover; }
 
   .tile.partial-cover {
     background: url('Rock.png') center/cover;
@@ -411,7 +411,20 @@
   .tile.chest.opened, .tile.high-ground.chest.opened {
     background: url('ChestOpened.png') center/cover !important;
   }
-  .tile.hill { background: #c8780a; }
+  /* Hill tiles use a directional image so the upward slope visually
+     points toward the High Ground tile it leads to. hill-n is the
+     unrotated source image (slope rises toward the top of the tile);
+     e/s/w are the same artwork rotated to point the rise the other
+     three ways. Which class is used per-tile is decided in JS from
+     each tile's `hillDir` (see BOARD_CONFIGS / setTileClass). */
+  .tile.hill-n { background: url('HillN.png') center/cover; }
+  .tile.hill-e { background: url('HillE.png') center/cover; }
+  .tile.hill-s { background: url('HillS.png') center/cover; }
+  .tile.hill-w { background: url('HillW.png') center/cover; }
+  /* Custom corner-junction artwork for hill tiles that lead up to High
+     Ground in two directions at once (e.g. Board 1's (7,5), which sits
+     between the (7,6) and (8,5) High Ground tiles). */
+  .tile.hill-ne { background: url('Hill2.png') center/cover; }
 
   .tile-label {
     position: absolute;
@@ -1215,16 +1228,16 @@ const BOARD_CONFIGS = {
       '8,5':{type:'highground'},
       '7,6':{type:'highground'},
       '8,6':{type:'highground'},
-      '2,2':{type:'difficult', label:'Hill'},
-      '1,3':{type:'difficult', label:'Hill'},
-      '8,4':{type:'difficult', label:'Hill'},
-      '7,5':{type:'difficult', label:'Hill'},
+      '2,2':{type:'difficult', label:'Hill', hillDir:'w'},
+      '1,3':{type:'difficult', label:'Hill', hillDir:'s'},
+      '8,4':{type:'difficult', label:'Hill', hillDir:'n'},
+      '7,5':{type:'difficult', label:'Hill', hillDir:'ne'},
       '8,5':{type:'highground'},
-      '6,6':{type:'difficult', label:'Hill'},
-      '9,6':{type:'difficult', label:'Hill'},
-      '9,5':{type:'difficult', label:'Hill'},
-      '7,7':{type:'difficult', label:'Hill'},
-      '8,7':{type:'difficult', label:'Hill'},
+      '6,6':{type:'difficult', label:'Hill', hillDir:'e'},
+      '9,6':{type:'difficult', label:'Hill', hillDir:'s'},
+      '9,5':{type:'difficult', label:'Hill', hillDir:'w'},
+      '7,7':{type:'difficult', label:'Hill', hillDir:'s'},
+      '8,7':{type:'difficult', label:'Hill', hillDir:'s'},
       '3,2':{type:'chest', label:'Chest'},
       '8,6':{type:'chest_hg', label:'Chest'},
       '2,7':{type:'chest', label:'Chest'},
@@ -1249,10 +1262,10 @@ const BOARD_CONFIGS = {
       '3,0':{type:'log', label:'Log', logDir:'h-right'},
       '0,8':{type:'highground'},
       '10,0':{type:'highground'},
-      '9,0':{type:'difficult', label:'Hill'},
-      '10,1':{type:'difficult', label:'Hill'},
-      '0,7':{type:'difficult', label:'Hill'},
-      '1,8':{type:'difficult', label:'Hill'},
+      '9,0':{type:'difficult', label:'Hill', hillDir:'e'},
+      '10,1':{type:'difficult', label:'Hill', hillDir:'s'},
+      '0,7':{type:'difficult', label:'Hill', hillDir:'n'},
+      '1,8':{type:'difficult', label:'Hill', hillDir:'w'},
       '0,4':{type:'chest', label:'Chest'},
       '5,0':{type:'chest', label:'Chest'},
       '10,4':{type:'chest', label:'Chest'},
@@ -1281,12 +1294,12 @@ const BOARD_CONFIGS = {
       '3,0':{type:'log', label:'Log', logDir:'h-right'},
       '3,4':{type:'highground'},
       '7,4':{type:'highground'},
-      '3,3':{type:'difficult', label:'Hill'},
-      '7,3':{type:'difficult', label:'Hill'},
-      '2,4':{type:'difficult', label:'Hill'},
-      '8,4':{type:'difficult', label:'Hill'},
-      '3,5':{type:'difficult', label:'Hill'},
-      '7,5':{type:'difficult', label:'Hill'},
+      '3,3':{type:'difficult', label:'Hill', hillDir:'n'},
+      '7,3':{type:'difficult', label:'Hill', hillDir:'n'},
+      '2,4':{type:'difficult', label:'Hill', hillDir:'e'},
+      '8,4':{type:'difficult', label:'Hill', hillDir:'w'},
+      '3,5':{type:'difficult', label:'Hill', hillDir:'s'},
+      '7,5':{type:'difficult', label:'Hill', hillDir:'s'},
       '5,0':{type:'chest', label:'Chest'},
       '10,0':{type:'chest', label:'Chest'},
       '5,8':{type:'chest', label:'Chest'},
@@ -1602,14 +1615,19 @@ function applyTileStyle(cell, x, y){
     thorny: `url('THV.png') center/cover`,
     chest: `url('ChestClosed.png') center/cover`,
     chest_hg: `url('ChestClosed.png') center/cover`,
-    starting:'#d4af37', highground:'#4a90d9',
+    starting:'#d4af37', highground:`url('HighGround.png') center/cover`,
     pc: `url('Rock.png') center/cover`,
     hc: `url('Tree.png') center/cover`,
-    log:'#7a5533', hill:'#c8780a'
+    log:'#7a5533'
   };
+  // Hill tiles (difficult terrain labeled 'Hill') use one of 4 directional
+  // images so the slope visually rises toward the High Ground it leads to.
+  const HILL_IMAGES = {n:'HillN.png', e:'HillE.png', s:'HillS.png', w:'HillW.png', ne:'Hill2.png'};
   // This preview board uses 58px tiles (vs 52px on the main game board), so
   // the 2-tile log images are split using sizes/offsets scaled for 58px.
-  if(type==='log' && t && t.logDir){
+  if(type==='difficult' && t && t.label==='Hill' && t.hillDir){
+    cell.style.background = `url('${HILL_IMAGES[t.hillDir]}') center/cover`;
+  } else if(type==='log' && t && t.logDir){
     cell.style.backgroundRepeat = 'no-repeat';
     if(t.logDir==='h-left' || t.logDir==='h-right'){
       cell.style.backgroundImage = "url('LogHorizontal.png')";
@@ -1867,7 +1885,9 @@ function setTileClass(cell, x, y){
     thorny:'thorny', log:'log', chest:'chest', chest_hg:'high-ground chest',
     starting:'starting'
   };
-  if(G.boardConfig.startingTiles.some(s=>s.x===x&&s.y===y) && type==='normal'){
+  if(type==='difficult' && t && t.label==='Hill' && t.hillDir){
+    cell.classList.add('hill-'+t.hillDir);
+  } else if(G.boardConfig.startingTiles.some(s=>s.x===x&&s.y===y) && type==='normal'){
     cell.classList.add('starting');
   } else {
     (classMap[type]||'normal').split(' ').forEach(c=>cell.classList.add(c));
