@@ -626,6 +626,23 @@
     margin: 10px 0;
     min-height: 20px;
   }
+  .dice-vial-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin: 4px 0 10px;
+  }
+  .btn.vial-bonus-btn {
+    background: linear-gradient(135deg, #700, #c00);
+    padding: 8px 14px;
+    font-size: 0.78em;
+    margin: 2px;
+  }
+  .btn.vial-bonus-btn:disabled {
+    background: linear-gradient(135deg, #444, #666);
+    opacity: 0.6;
+  }
 
   /* ===== ITEM CARD POPUP ===== */
   #item-popup {
@@ -1021,6 +1038,7 @@
       <div class="dice-face-display" id="dice-face">?</div>
     </div>
     <div class="dice-result-text" id="dice-result-text"></div>
+    <div id="dice-vial-buttons" class="dice-vial-buttons"></div>
     <button class="btn" id="dice-roll-btn" onclick="rollTheDice()">Roll!</button>
     <button class="btn secondary" id="dice-ok-btn" style="display:none;" onclick="diceOk()">OK</button>
   </div>
@@ -1199,7 +1217,7 @@ const CHEST_LOOT = [
   { roll: 1, name: 'Potion of Healing', type: 'potion', amount: 2, desc: 'Heal 10 health.' },
   { roll: 2, name: 'Potion of Reach', type: 'potion', amount: 2, desc: 'All attacks this turn have +2 to range.' },
   { roll: 3, name: 'Vial of Blue Liquid', type: 'potion', amount: 3, desc: 'Roll a die. 1-4: heal 2 HP. 5-6: heal 15 HP.' },
-  { roll: 4, name: 'Vial of Red Liquid', type: 'potion', amount: 3, desc: 'Add 1 to any one dice roll made this turn.' },
+  { roll: 4, name: 'Vial of Red Liquid', type: 'potion', amount: 3, desc: 'Whenever you roll a die, a +1 button appears - click it to add 1 to that roll. Stackable: carry several to stack multiple +1s on the same roll.' },
   { roll: 5, name: 'Potion of Godly Strength', type: 'potion', amount: 1, desc: 'All attacks this turn deal 3 extra damage (+5 and +1 range for Knights).' },
   { roll: 6, name: 'Class Weapon', type: 'weapon', amount: 1, desc: 'Receive the weapon matching your class from the chest.' },
   { roll: 7, name: "Helen's Staff of Pure Oblivion", type: 'weapon', amount: 1, desc: 'A legendary weapon usable by any class.' }
@@ -1346,7 +1364,6 @@ let G = {
   damageTakenThisTurn: {}, // for sword&buckler
   reachBonusActive: false,
   godlyStrengthActive: false,
-  redLiquidActive: false,
   vialBluePending: false,
 };
 
@@ -2013,7 +2030,6 @@ function startTurn(){
   G.selectedMoveRoute = [];
   G.reachBonusActive = false;
   G.godlyStrengthActive = false;
-  G.redLiquidActive = false;
   G.aoeSelectedTiles = [];
 
   // Record damage taken at start of turn for sword & buckler reset
@@ -2512,7 +2528,6 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
 
   // Hit throw
   let hitRoll = roll(6);
-  if(G.redLiquidActive && isPlayer) hitRoll = Math.min(6, hitRoll+1);
   let hitMod = w.hitThrowMod;
   // High ground bonus
   if(isHighGround(attacker.x,attacker.y)) hitMod += 1;
@@ -2752,6 +2767,9 @@ function clickInventoryItem(idx){
   G.activeItem = {item, idx};
   document.getElementById('ip-title').textContent = item.name;
   document.getElementById('ip-desc').textContent = item.desc;
+  // Vial of Red Liquid isn't "used" from the inventory directly - instead,
+  // a +1 button appears next to the result whenever you roll a die.
+  document.getElementById('ip-use-btn').style.display = (item.name==='Vial of Red Liquid') ? 'none' : 'inline-block';
   document.getElementById('item-popup').classList.add('active');
 }
 
@@ -2786,10 +2804,6 @@ async function useItem(char, item, idx, isPlayer){
       else { healed=Math.min(15,char.maxHp-char.hp); char.hp=Math.min(char.maxHp,char.hp+15); }
       logMsg(`${char.name} uses Vial of Blue Liquid! Healed ${healed} HP.`, 'heal');
     });
-    char.inventory.splice(idx,1);
-  } else if(item.name==='Vial of Red Liquid'){
-    G.redLiquidActive = true;
-    logMsg(`${char.name} uses Vial of Red Liquid! Next roll +1.`, 'heal');
     char.inventory.splice(idx,1);
   } else if(item.name==='Potion of Godly Strength'){
     G.godlyStrengthActive = true;
@@ -3354,6 +3368,7 @@ function openDice(title, callback){
   document.getElementById('dice-title').textContent = title;
   document.getElementById('dice-face').textContent = '?';
   document.getElementById('dice-result-text').textContent = '';
+  document.getElementById('dice-vial-buttons').innerHTML = '';
   document.getElementById('dice-roll-btn').style.display = 'inline-block';
   document.getElementById('dice-roll-btn').disabled = false;
   document.getElementById('dice-ok-btn').style.display = 'none';
@@ -3383,7 +3398,44 @@ function rollTheDice(){
     document.getElementById('dice-ok-btn').style.display = 'inline-block';
     diceHasRolled = true;
     G._lastDiceResult = result;
+    renderVialButtons();
   }, 700);
+}
+
+// Vial of Red Liquid: after a roll is revealed, show one +1 button per
+// unused vial the player is carrying. Each button can only be clicked
+// once - clicking it spends one vial (removing it from inventory) and
+// adds 1 to the current roll. Since each remaining vial gets its own
+// button, a player with several can stack multiple +1s on one roll.
+function renderVialButtons(){
+  const container = document.getElementById('dice-vial-buttons');
+  container.innerHTML = '';
+  const player = G.characters.find(c=>c.isPlayer&&c.alive);
+  if(!player) return;
+  const charges = player.inventory.filter(i=>i.name==='Vial of Red Liquid').length;
+  for(let i=0;i<charges;i++){
+    const btn = document.createElement('button');
+    btn.className = 'btn vial-bonus-btn';
+    btn.textContent = '+1 (Vial of Red Liquid)';
+    btn.onclick = ()=>useVialOnRoll(btn);
+    container.appendChild(btn);
+  }
+}
+
+function useVialOnRoll(btn){
+  if(btn.disabled) return;
+  const player = G.characters.find(c=>c.isPlayer&&c.alive);
+  if(!player) return;
+  const idx = player.inventory.findIndex(i=>i.name==='Vial of Red Liquid');
+  if(idx<0) return;
+  player.inventory.splice(idx,1);
+  G._lastDiceResult += 1;
+  document.getElementById('dice-face').textContent = G._lastDiceResult;
+  document.getElementById('dice-result-text').textContent = `You rolled: ${G._lastDiceResult}`;
+  logMsg(`${player.name} uses a Vial of Red Liquid! +1 to the roll (now ${G._lastDiceResult}).`, 'heal');
+  btn.disabled = true;
+  btn.textContent = 'Used!';
+  updateStatPanel();
 }
 
 function diceOk(){
