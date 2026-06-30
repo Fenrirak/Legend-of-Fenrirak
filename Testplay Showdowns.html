@@ -316,6 +316,16 @@
     color: var(--gold);
     margin-bottom: 10px;
     text-align: center;
+    padding: 5px 18px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+  #turn-info.turn-flash {
+    animation: turnInfoGlow 3.75s ease-out;
+  }
+  @keyframes turnInfoGlow {
+    0% { background: rgba(212, 175, 55, 0.85); box-shadow: 0 0 20px 4px rgba(212, 175, 55, 0.7); }
+    100% { background: rgba(212, 175, 55, 0); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
   }
   #message-log {
     width: 100%;
@@ -775,7 +785,7 @@
   .tile.aoe-hover { background: rgba(255, 53, 53, 0.45) !important; outline: 2px solid #ff3535; }
 
   #phase-indicator {
-    font-size: 0.82em;
+    font-size: 0.98em;
     color: var(--text-dim);
     margin-top: 4px;
     min-height: 18px;
@@ -847,13 +857,13 @@
 
     <h2>Attacks & Hit Throws</h2>
     <p>Before attacking, roll a Hit Throw. If the total (including modifiers) equals or exceeds the target's Defence, the attack hits. Range is measured as the greater of horizontal or vertical distance.</p>
-    <p>Rocks, Logs, and Trees never block a ranged attack outright - they only grant a defence bonus (see Cover below), they don't stop the shot from passing through. The only thing solid enough to block a shot outright is a Chest: if a straight line from attacker to target passes through 2 Chest tiles, the attack fails. Mages' spells are stopped by even a single Chest tile in their line of fire.</p>
+    <p>Rocks, Logs, Trees, and Chests never block a ranged attack outright - they only grant a defence bonus (see Cover below); they don't stop the shot from passing through.</p>
 
     <h2>Cover</h2>
     <ul>
       <li><strong>Partial Cover (PC):</strong> +1 Defence if it's directly adjacent (non-diagonally) to the target AND the attacker's line of fire actually passes through it on the way to the target. Cover next to the target that the shot isn't coming through (e.g. an attack from behind) gives no bonus. Mages treat PC as Heavy Cover for this bonus too.</li>
       <li><strong>Heavy Cover (HC):</strong> +2 Defence in the same situation (+3 if the target is a Knight).</li>
-      <li><strong>Chests and Logs</strong> count as Partial Cover.</li>
+      <li><strong>Rocks and Logs</strong> count as Partial Cover. <strong>Trees and Chests</strong> count as Heavy Cover.</li>
     </ul>
 
     <h2>High Ground</h2>
@@ -1009,8 +1019,8 @@
     </div>
     <div class="section-header">Inventory</div>
     <div id="sp-inventory"></div>
-    <button class="btn danger" id="end-turn-btn" onclick="playerEndTurn()">End Turn</button>
     <div id="phase-indicator"></div>
+    <button class="btn danger" id="end-turn-btn" onclick="playerEndTurn()">End Turn</button>
   </div>
 
   <!-- Center: Board -->
@@ -1050,6 +1060,10 @@
     <h3 id="ip-title"></h3>
     <p id="ip-desc"></p>
     <button class="btn success" id="ip-use-btn" onclick="useItemConfirm()">Use Item</button>
+    <div id="ip-vial-buttons" style="display:none; gap:8px; margin-top:4px;">
+      <button class="btn success" onclick="useVialChoice('hit')">+1 to Hit Throw</button>
+      <button class="btn success" onclick="useVialChoice('damage')">+1 to Damage</button>
+    </div>
     <button class="btn secondary" onclick="closeItemPopup()" style="margin-top:8px;">Cancel</button>
   </div>
 </div>
@@ -1217,7 +1231,7 @@ const CHEST_LOOT = [
   { roll: 1, name: 'Potion of Healing', type: 'potion', amount: 2, desc: 'Heal 10 health.' },
   { roll: 2, name: 'Potion of Reach', type: 'potion', amount: 2, desc: 'All attacks this turn have +2 to range.' },
   { roll: 3, name: 'Vial of Blue Liquid', type: 'potion', amount: 3, desc: 'Roll a die. 1-4: heal 2 HP. 5-6: heal 15 HP.' },
-  { roll: 4, name: 'Vial of Red Liquid', type: 'potion', amount: 3, desc: 'Whenever you roll a die, a +1 button appears - click it to add 1 to that roll. Stackable: carry several to stack multiple +1s on the same roll.' },
+  { roll: 4, name: 'Vial of Red Liquid', type: 'potion', amount: 3, desc: 'Add 1 to any dice roll.' },
   { roll: 5, name: 'Potion of Godly Strength', type: 'potion', amount: 1, desc: 'All attacks this turn deal 3 extra damage (+5 and +1 range for Knights).' },
   { roll: 6, name: 'Class Weapon', type: 'weapon', amount: 1, desc: 'Receive the weapon matching your class from the chest.' },
   { roll: 7, name: "Helen's Staff of Pure Oblivion", type: 'weapon', amount: 1, desc: 'A legendary weapon usable by any class.' }
@@ -1405,19 +1419,17 @@ function isThorny(x,y){
 }
 function isPCTile(x,y){
   const t = getTileType(x,y);
-  return ['pc','log','chest','chest_hg'].includes(t);
+  return ['pc','log'].includes(t);
 }
 function isHCTile(x,y){
   const t = getTileType(x,y);
-  return t==='hc';
+  return t==='hc' || t==='chest' || t==='chest_hg';
 }
-// Cover that actually blocks a shot outright. Rocks (pc), Logs (log) and
-// Trees (hc) only ever grant a defence bonus now - they never stop a
-// ranged attack from passing through. Only Chests are solid enough to
-// block a shot outright (see checkCoverLOS).
+// Nothing blocks a shot outright anymore. Rocks (PC), Logs (PC), Trees
+// (HC) and now Chests (HC) only ever grant a defence bonus - they never
+// stop a ranged attack from passing through (see checkCoverLOS).
 function blocksLOSTile(x,y){
-  const t = getTileType(x,y);
-  return ['chest','chest_hg'].includes(t);
+  return false;
 }
 
 function getChar(id){ return G.characters.find(c=>c.id===id); }
@@ -1670,7 +1682,11 @@ function highlightStartTiles(){
   G.boardConfig.startingTiles.forEach(t=>{
     if(!takenStartTiles.some(tt=>tt.x===t.x&&tt.y===t.y)){
       const el = document.getElementById(`st-tile-${t.x}-${t.y}`);
-      if(el && startTilePhase===0) el.style.outline='3px solid gold';
+      // outline-offset is negative so the ring is drawn just inside the
+      // tile's own edge instead of straddling the boundary with its
+      // neighbour - otherwise the next-painted neighbouring tile's opaque
+      // background covers up to half of the outline on shared edges.
+      if(el && startTilePhase===0){ el.style.outline='3px solid gold'; el.style.outlineOffset='-3px'; }
     }
   });
 }
@@ -1682,7 +1698,7 @@ function startTileClick(x,y){
 
   takenStartTiles.push({x,y, charId:'player'});
   const el = document.getElementById(`st-tile-${x}-${y}`);
-  if(el){ el.style.outline='3px solid #39b5ff'; el.style.background='#39b5ff55'; }
+  if(el){ el.style.outline='3px solid #39b5ff'; el.style.outlineOffset='-3px'; el.style.background='#39b5ff55'; }
 
   G.playerStartX = x; G.playerStartY = y;
   startTilePhase=1;
@@ -1698,7 +1714,7 @@ function computerPickStartTile(){
   takenStartTiles.push({x:pick.x, y:pick.y, charId});
   const el = document.getElementById(`st-tile-${pick.x}-${pick.y}`);
   const colors=['','#ff885555','#88ff5555','#ff55ff55'];
-  if(el){ el.style.outline='3px solid orange'; el.style.background=colors[startTilePhase]||'#88888855'; }
+  if(el){ el.style.outline='3px solid orange'; el.style.outlineOffset='-3px'; el.style.background=colors[startTilePhase]||'#88888855'; }
 
   if(startTilePhase<3){
     startTilePhase++;
@@ -2052,7 +2068,16 @@ function startTurn(){
   checkWinLose();
   if(G.phase==='game-over') return;
 
-  document.getElementById('turn-info').textContent = `${char.name}'s Turn (${char.class})`;
+  const turnInfoEl = document.getElementById('turn-info');
+  turnInfoEl.textContent = `${char.name}'s Turn (${char.class})`;
+  // Restart the glow animation every turn (removing then re-adding the
+  // class forces the browser to replay it, even on consecutive turns).
+  // Only the human player's turn gets the glow - computer turns leave it off.
+  turnInfoEl.classList.remove('turn-flash');
+  if(char.isPlayer){
+    void turnInfoEl.offsetWidth; // force reflow so the removal registers
+    turnInfoEl.classList.add('turn-flash');
+  }
   updateStatPanel();
   updateEnemyPanel();
   updateIconHighlights();
@@ -2092,10 +2117,12 @@ function setPhaseText(t){
 }
 
 function updateIconHighlights(){
+  const current = getCurrentChar();
+  const isHumanTurn = !!(current && current.isPlayer);
   G.characters.forEach(c=>{
     const icon = document.getElementById(`char-icon-${c.id}`);
     if(icon){
-      icon.classList.toggle('active-turn', c===getCurrentChar());
+      icon.classList.toggle('active-turn', isHumanTurn && c===current);
     }
   });
 }
@@ -2380,30 +2407,14 @@ function getTerrainLevel(x,y){
 }
 
 function checkCoverLOS(ax,ay,tx,ty, attacker, target){
-  // Draw line from (ax,ay) center to (tx,ty) center
-  // Check all tiles the line passes through (not attacker or target tile)
-  let pcCount = 0;
+  // Draw line from (ax,ay) center to (tx,ty) center.
+  // Nothing on the board blocks a shot outright anymore - Rocks, Logs,
+  // Trees, and Chests all just grant a defence bonus (handled below) if
+  // they sit directly between the attacker and the target.
   let defBonus = 0;
 
   // Get tiles along line using Bresenham-like approach
   const tiles = getTilesAlongLine(ax,ay,tx,ty);
-
-  // Remove attacker and target tiles
-  const midTiles = tiles.filter(t=>!(t.x===ax&&t.y===ay)&&!(t.x===tx&&t.y===ty));
-
-  for(const t of midTiles){
-    if(blocksLOSTile(t.x,t.y)){
-      // Mage passive: a mage's spells are stopped by even minor cover -
-      // count each blocking tile as double (as severe as it used to be
-      // for any cover), so a single Chest tile is enough to block them.
-      pcCount += (attacker && attacker.class==='mage') ? 2 : 1;
-    }
-    // Rocks (PC), Logs, and Trees (HC) no longer block a shot outright -
-    // they still grant a defence bonus (handled below), they just don't
-    // stop the attack from passing through. Only Chests are solid enough
-    // to block a shot outright.
-    if(pcCount>=2) return {blocked:true, defBonus:0};
-  }
 
 
   // Cover only grants a defence bonus if the attacker's actual line of
@@ -2538,6 +2549,12 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     if(tl < al) hitMod += 1;
   }
   // Potion of Reach doesn't affect hit throw, just range
+  // Vial of Red Liquid: spend any banked +1 Hit Throw bonus on this throw.
+  if(isPlayer && G.vialBonusHit){
+    hitMod += G.vialBonusHit;
+    logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusHit} to Hit Throw!`, 'heal');
+    G.vialBonusHit = 0;
+  }
   const totalHit = hitRoll + hitMod;
   let targetDef = target.defence + coverRes.defBonus;
 
@@ -2551,6 +2568,11 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   // Calculate damage
   let dmg = calcWeaponDamage(w, attacker, target, isPlayer);
   dmg += extraDmg;
+  if(isPlayer && G.vialBonusDamage){
+    dmg += G.vialBonusDamage;
+    logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusDamage} to Damage!`, 'heal');
+    G.vialBonusDamage = 0;
+  }
   if(isPlayer && G.godlyStrengthActive){
     dmg += attacker.class==='knight' ? 5 : 3;
   }
@@ -2767,15 +2789,41 @@ function clickInventoryItem(idx){
   G.activeItem = {item, idx};
   document.getElementById('ip-title').textContent = item.name;
   document.getElementById('ip-desc').textContent = item.desc;
-  // Vial of Red Liquid isn't "used" from the inventory directly - instead,
-  // a +1 button appears next to the result whenever you roll a die.
-  document.getElementById('ip-use-btn').style.display = (item.name==='Vial of Red Liquid') ? 'none' : 'inline-block';
+  // Vial of Red Liquid isn't "used" from the inventory directly via the
+  // normal Use Item button - instead, you can either wait and use the +1
+  // button that appears next to a die roll (unchanged), or pick ahead of
+  // time here whether this vial's +1 should go to your next Hit Throw or
+  // your next Damage roll.
+  const isVial = item.name==='Vial of Red Liquid';
+  document.getElementById('ip-use-btn').style.display = isVial ? 'none' : 'inline-block';
+  document.getElementById('ip-vial-buttons').style.display = isVial ? 'flex' : 'none';
   document.getElementById('item-popup').classList.add('active');
 }
 
 function closeItemPopup(){
   document.getElementById('item-popup').classList.remove('active');
   G.activeItem = null; G.activeItemUser = null;
+}
+
+// Player pre-commits a Vial of Red Liquid's +1 to either their next Hit
+// Throw or their next Damage roll, straight from the inventory popup.
+// The vial is consumed immediately; the bonus is banked and applied (then
+// cleared) the next time the player attacks. This is in addition to the
+// existing option of waiting and clicking the +1 button on a die roll.
+function useVialChoice(type){
+  const player = G.activeItemUser || G.characters.find(c=>c.isPlayer&&c.alive);
+  const {item, idx} = G.activeItem || {};
+  if(!player || !item || item.name!=='Vial of Red Liquid') { closeItemPopup(); return; }
+  player.inventory.splice(idx,1);
+  if(type==='hit'){
+    G.vialBonusHit = (G.vialBonusHit||0) + 1;
+    logMsg(`${player.name} uses a Vial of Red Liquid! +1 to their next Hit Throw.`, 'heal');
+  } else {
+    G.vialBonusDamage = (G.vialBonusDamage||0) + 1;
+    logMsg(`${player.name} uses a Vial of Red Liquid! +1 to their next Damage roll.`, 'heal');
+  }
+  closeItemPopup();
+  updateStatPanel();
 }
 
 async function useItemConfirm(){
@@ -2866,14 +2914,20 @@ async function playerAOESurrounding(attacker, weapon){
 }
 
 async function playerAOE2x2(attacker, primaryTarget, weapon){
-  // Choose a 2x2 area that includes the target
-  logMsg('Aldemar\'s Staff: Select a 2×2 area (click top-left corner of the 2×2)!');
+  // Choose a 2x2 area - the tile clicked is the TOP-LEFT corner. On this
+  // board, north is +y (up on screen) and west is -x, so the square
+  // extends right (+x) and down (-y) from the clicked tile.
+  let range = weapon.range;
+  if(G.reachBonusActive) range += 2;
+  logMsg("Aldemar's Staff: Select a 2×2 area (click the top-left tile of the 2×2)!");
   aoeMode=true;
-  setPhaseText('Click to choose 2×2 area origin!');
+  setPhaseText('Click the top-left tile of the 2×2 area!');
   return new Promise(resolve=>{
     aoeSelectCallback=(x,y)=>{
-      // 2x2 from (x,y) to (x+1,y+1)
-      const tiles=[{x,y},{x:x+1,y},{x,y:y+1},{x:x+1,y:y+1}].filter(t=>t.x<=10&&t.y<=8&&t.x>=0&&t.y>=0);
+      // Whole 2x2 must fit on the board (x+1<=10, y-1>=0) and be in range.
+      if(x<0||x>9||y<1||y>8) return;
+      if(chebyshev(attacker.x,attacker.y,x,y)>range) return;
+      const tiles=[{x,y},{x:x+1,y},{x,y:y-1},{x:x+1,y:y-1}];
       aoeMode=false; aoeSelectCallback=null;
       tiles.forEach(t=>{ const el=document.getElementById(`tile-${t.x}-${t.y}`); if(el)el.classList.add('aoe-hover'); });
       setTimeout(async ()=>{
@@ -2999,6 +3053,17 @@ async function runAITurn(char){
   // Use potions first if beneficial
   await aiUsePotions(char);
 
+  // Endgame special case: this is the last computer standing against the
+  // player (no other computers alive). From here on it cares only about
+  // the player: attack them if at all possible; if it can't land a hit
+  // right now, grab an adjacent chest instead (since that's free value);
+  // and if there's no chest either, close the distance and try again.
+  const aliveComputers = G.characters.filter(c=>!c.isPlayer && c.alive);
+  if(aliveComputers.length===1 && aliveComputers[0]===char){
+    await runLoneComputerTurn(char, player);
+    return;
+  }
+
   // Check if can kill someone
   const killTarget = findKillTarget(char);
   if(killTarget){
@@ -3082,6 +3147,63 @@ async function runAITurn(char){
       document.getElementById('ai-thinking').classList.remove('active');
       nextTurn(); return;
     }
+  }
+
+  logMsg(`${char.name} ends their turn.`);
+  document.getElementById('ai-thinking').classList.remove('active');
+  nextTurn();
+}
+
+// Endgame behaviour for the last computer alive against the player.
+// Priority: 1) attack the player if possible, 2) otherwise open an
+// adjacent chest if there is one, 3) otherwise close the distance on the
+// player and try to attack again.
+async function runLoneComputerTurn(char, player){
+  // 1. Attack the player right now if possible.
+  let target = findBestTarget(char); // only the player can ever come back here
+  if(target){
+    logMsg(`${char.name} attacks ${target.name}!`);
+    await aiDoAttack(char, target);
+    document.getElementById('ai-thinking').classList.remove('active');
+    updateEnemyPanel(); updateStatPanel();
+    checkWinLose();
+    if(G.phase!=='game-over') nextTurn();
+    return;
+  }
+
+  // 2. Can't hit the player - grab an adjacent unopened chest instead.
+  const adjChest = findAdjacentChest(char);
+  if(adjChest){
+    logMsg(`${char.name} opens a chest!`);
+    await new Promise(resolve=>{ openChest(char, adjChest.x, adjChest.y, resolve); });
+    document.getElementById('ai-thinking').classList.remove('active');
+    nextTurn(); return;
+  }
+
+  // 3. No chest either - close the distance on the player and try again.
+  const path = findPathTo(char, player.x, player.y);
+  if(path && path.length>1){
+    await aiMoveAlongPath(char, path);
+  }
+
+  target = findBestTarget(char);
+  if(target){
+    logMsg(`${char.name} attacks ${target.name}!`);
+    await aiDoAttack(char, target);
+    document.getElementById('ai-thinking').classList.remove('active');
+    updateEnemyPanel(); updateStatPanel();
+    checkWinLose();
+    if(G.phase!=='game-over') nextTurn();
+    return;
+  }
+
+  // Still can't reach them after moving - check for a chest one more time.
+  const adjChest2 = findAdjacentChest(char);
+  if(adjChest2){
+    logMsg(`${char.name} opens a chest!`);
+    await new Promise(resolve=>{ openChest(char, adjChest2.x, adjChest2.y, resolve); });
+    document.getElementById('ai-thinking').classList.remove('active');
+    nextTurn(); return;
   }
 
   logMsg(`${char.name} ends their turn.`);
