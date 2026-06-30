@@ -1155,7 +1155,8 @@ const WEAPONS = {
       baseDamage: 12, damageType: 'flat',
       diceCount: 2, diceCondition: 'odd', diceBonus: 1,
       hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 4,
-      desc: '12 Damage. Roll die 2 times, for every odd number, deal 1 extra damage.'
+      special: 'push_back',
+      desc: '12 Damage. Roll die 2 times, for every odd number, deal 1 extra damage. Pushes the target back one tile; if blocked, deals 5 extra damage instead.'
     },
     {
       id: 'wand_flames', name: 'Wand of Deathly Flames', class: 'mage',
@@ -2814,8 +2815,35 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     logMsg(`${target.name}'s Parry reduces damage by 4!`);
   }
 
+  // Staff of the Oceans: push the target back one tile (the tile directly
+  // behind them, away from the attacker). If that tile is blocked - by
+  // another character, an obstruction, or the edge of the board - deal
+  // 5 extra damage instead.
+  let oceansPush = null;
+  if(w.id==='staff_oceans'){
+    const dx = Math.sign(target.x - attacker.x);
+    const dy = Math.sign(target.y - attacker.y);
+    const newX = target.x + dx;
+    const newY = target.y + dy;
+    if(isPassable(newX, newY)){
+      oceansPush = {x:newX, y:newY};
+    } else {
+      dmg += 5;
+    }
+  }
+
   applyDamage(target, dmg, true);
   logMsg(`${attacker.name} deals ${dmg} damage to ${target.name}! (${target.hp}/${target.maxHp} HP remaining)`, 'damage');
+  if(w.id==='staff_oceans'){
+    if(oceansPush){
+      target.x = oceansPush.x;
+      target.y = oceansPush.y;
+      positionIcon(target);
+      logMsg(`${target.name} is pushed back by the Aqueous Torrent!`);
+    } else {
+      logMsg(`${target.name} couldn't be pushed back, so the Aqueous Torrent deals 5 extra damage instead!`);
+    }
+  }
   if(w.id==='circle_of_calamity'){
     applyDamage(attacker, 10, false);
     logMsg(`${attacker.name} takes 10 damage from Circle of Calamity!`, 'damage');
