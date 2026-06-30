@@ -185,7 +185,7 @@
 
   .weapon-cards {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     flex-wrap: wrap;
     justify-content: center;
   }
@@ -193,16 +193,22 @@
     background: #111;
     border: 2px solid var(--panel-border);
     border-radius: 6px;
-    padding: 14px;
-    width: 190px;
+    padding: 16px;
+    width: 280px;
     cursor: pointer;
     transition: all 0.2s;
     font-size: 0.82em;
   }
   .weapon-card:hover { border-color: var(--gold); }
   .weapon-card.selected { border-color: var(--gold); background: #1e1800; }
-  .weapon-card h4 { font-family: 'Cinzel', serif; color: var(--accent); margin-bottom: 8px; font-size: 0.95em; }
+  .weapon-card h4 { font-family: 'Cinzel', serif; color: var(--accent); margin-bottom: 10px; font-size: 1em; text-align: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; }
   .weapon-card .wstat { color: var(--text-dim); margin: 2px 0; }
+  .weapon-card .wc-attack-block { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed var(--panel-border); }
+  .weapon-card .wc-attack-block:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .weapon-card .wc-attack-name { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.95em; margin-bottom: 6px; }
+  .weapon-card .wc-attack-desc { color: var(--text); line-height: 1.5; margin-bottom: 8px; }
+  .weapon-card .wc-stat-row { display: flex; justify-content: space-between; color: var(--text-dim); padding: 2px 0; }
+  .weapon-card .wc-stat-row span:last-child { color: var(--text); text-align: right; }
 
   .board-btn-group { display: flex; gap: 16px; }
 
@@ -1695,6 +1701,33 @@ function confirmClass(){
   showWeaponScreen(G.playerClass);
   showScreen('screen-weapon');
 }
+function buildWeaponCardHTML(w){
+  let html = `<h4>${w.name}</h4>`;
+
+  // Passive ability (e.g. Staff of Life's Forest's Grace) gets its own block
+  if(w.passive){
+    html += `<div class="wc-attack-block">
+      <div class="wc-attack-name">${w.passive.split(':')[0]} (Passive)</div>
+      <div class="wc-attack-desc">${w.passive.includes(':') ? w.passive.split(':').slice(1).join(':').trim() : w.passive}</div>
+    </div>`;
+  }
+
+  const attacks = w.attacks && w.attacks.length ? w.attacks : [w];
+  attacks.forEach(a=>{
+    // Break the description into individual sentences so each idea gets its own line
+    const sentences = a.desc.split(/(?<=\.)\s+/).filter(Boolean);
+    html += `<div class="wc-attack-block">
+      <div class="wc-attack-name">${a.attackName}</div>
+      <div class="wc-attack-desc">${sentences.map(s=>`<div>${s}</div>`).join('')}</div>
+      <div class="wc-stat-row"><span>Hit Throw</span><span>Dice ${a.hitThrowMod>=0?'+':''}${a.hitThrowMod}</span></div>
+      <div class="wc-stat-row"><span>Effect</span><span>${a.effect}</span></div>
+      <div class="wc-stat-row"><span>Range</span><span>${a.range} tiles</span></div>
+    </div>`;
+  });
+
+  return html;
+}
+
 function showWeaponScreen(cls){
   const container = document.getElementById('weapon-options');
   container.innerHTML = '';
@@ -1704,7 +1737,7 @@ function showWeaponScreen(cls){
     const div = document.createElement('div');
     div.className = 'weapon-card';
     div.id = 'wc-'+w.id;
-    div.innerHTML = `<h4>${w.name}</h4><div class="wstat">${w.desc}</div>`;
+    div.innerHTML = buildWeaponCardHTML(w);
     div.onclick = ()=>selectWeapon(w.id);
     container.appendChild(div);
   });
