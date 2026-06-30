@@ -486,6 +486,18 @@
     align-items: flex-end;
     padding-bottom: 3px;
   }
+  .char-icon.ronald {
+    background: #228b22;
+    clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  }
+  .char-icon.aldemar {
+    background: #0f4A25;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  }
+  .char-icon.helen {
+    background: #35063E;
+    border-radius: 50%;
+  }
   .char-icon.dead { display: none; }
   .char-icon.active-turn { box-shadow: 0 0 12px 4px gold; }
 
@@ -652,6 +664,36 @@
   .btn.vial-bonus-btn:disabled {
     background: linear-gradient(135deg, #444, #666);
     opacity: 0.6;
+  }
+
+  /* ===== CUSTOM MODAL (attack choice / number input) ===== */
+  #custom-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75);
+    z-index: 1100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  #custom-modal-overlay.active { display: flex; }
+  .custom-modal-box {
+    background: var(--panel-bg);
+    border: 2px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 28px 34px;
+    text-align: center;
+    min-width: 320px;
+    max-width: 480px;
+  }
+  .custom-modal-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 6px 0;
+    line-height: 1.4;
   }
 
   /* ===== ITEM CARD POPUP ===== */
@@ -1054,6 +1096,15 @@
   </div>
 </div>
 
+<!-- ===================== CUSTOM MODAL (attack choice / number input) ===================== -->
+<div id="custom-modal-overlay">
+  <div class="custom-modal-box">
+    <div class="dice-title" id="custom-modal-title"></div>
+    <div id="custom-modal-body" style="margin-bottom:14px;"></div>
+    <div id="custom-modal-buttons" style="display:flex; flex-direction:column; gap:6px;"></div>
+  </div>
+</div>
+
 <!-- ===================== ITEM POPUP ===================== -->
 <div id="item-popup">
   <div class="item-card">
@@ -1187,6 +1238,79 @@ const WEAPONS = {
       desc: '22+/- Damage. Roll die 3 times. Every even: -4 damage. Every odd: +1 damage.'
     }
   ],
+  // Hidden classes, unlocked by entering a special name on the name screen
+  aldemar: [
+    {
+      id: 'aldemar_steel_staff', name: "Aldemar's Steel Staff", class: 'aldemar',
+      attackName: 'Fireball',
+      baseDamage: 25, damageType: 'plus',
+      diceCount: 2, diceCondition: 'even', diceBonus: 6,
+      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 3,
+      special: 'aoe2x2',
+      desc: '25+ Damage. Roll a die 2 times, for every even number, deal 6 more damage. Effect: 4 tiles in a 2×2 area.'
+    },
+    {
+      id: 'staff_of_life', name: 'Staff of Life', class: 'aldemar',
+      attackName: 'Storm Edge',
+      baseDamage: 20, damageType: 'plus',
+      diceCount: 3, diceCondition: 'even', diceBonus: 10,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5,
+      passive: "Forest's Grace: With every attack done, heal 10 health. This is not an attack, it is a passive ability.",
+      desc: "Forest's Grace (Passive): With every attack done, heal 10 health. Storm Edge: 20+ Damage. Roll a die 3 times, for every even number, deal 10 more damage."
+    }
+  ],
+  helen: [
+    {
+      id: 'scarlet_void', name: "Helen's Staff of Pure Oblivion Magic", class: 'helen',
+      attackName: 'Scarlet Void',
+      baseDamage: 20, damageType: 'special',
+      diceCount: 0, diceCondition: 'scarlet_void',
+      hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 4,
+      special: 'scarlet_void',
+      desc: '20+ Damage. Take up to 30 damage; this attack deals extra damage equal to the damage taken.'
+    },
+    {
+      id: 'raw_oblivion_magic', name: 'Raw Oblivion Magic', class: 'helen',
+      desc: 'A staff with two attacks to choose from each turn: Black Lightning (a powerful ranged burst that surges when you are low on health) and Circle of Calamity (self-damage that stuns the target\'s next attack).',
+      attacks: [
+        {
+          id: 'black_lightning', name: 'Raw Oblivion Magic', class: 'helen',
+          attackName: 'Black Lightning',
+          baseDamage: 25, damageType: 'plus',
+          diceCount: 0, diceCondition: 'low_hp_bonus',
+          hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5,
+          desc: '25+ Damage. If you have 40 or less health remaining, deal 20 extra damage.'
+        },
+        {
+          id: 'circle_of_calamity', name: 'Raw Oblivion Magic', class: 'helen',
+          attackName: 'Circle of Calamity',
+          baseDamage: 20, damageType: 'flat',
+          diceCount: 0,
+          hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 3,
+          special: 'circle_calamity',
+          desc: '20 Damage. Take 10 damage. The target cannot attack during their next turn.'
+        }
+      ]
+    }
+  ],
+  ronald: [
+    {
+      id: 'compound_bow', name: "Ronald's Compound Bow", class: 'ronald',
+      attackName: 'Through the Fence',
+      baseDamage: 20, damageType: 'plus',
+      diceCount: 2, diceCondition: 'even', diceBonus: 8,
+      hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 7,
+      desc: '20+ Damage. Roll a die 2 times, for every even number, deal 8 more damage.'
+    },
+    {
+      id: 'energy_bow', name: 'Energy Bow', class: 'ronald',
+      attackName: 'Arrow of Pure Magic',
+      baseDamage: 20, damageType: 'plus',
+      diceCount: 3, diceCondition: 'even', diceBonus: 5,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 7,
+      desc: '20+ Damage. Roll a die 3 times, for every even number, deal 5 more damage.'
+    }
+  ],
   // Chest weapons
   chest: {
     mage: {
@@ -1210,8 +1334,8 @@ const WEAPONS = {
       id: 'fenrirak_blade', name: "Fenrirak's Tail Blade", class: 'knight',
       attackName: 'Lightning Strike',
       baseDamage: 5, damageType: 'plus_pct_dmg',
-      diceCount: 0,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 3,
+      diceCount: 0, diceCondition: 'plus_pct_dmg',
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 2,
       desc: '5+ damage. +1 damage for every 2 damage target has already taken (round down).'
     },
     any: {
@@ -1534,13 +1658,28 @@ function submitName(){
   const val = document.getElementById('player-name-input').value;
   if(!val.trim()){ alert('Please enter a name.'); return; }
   G.playerName = val.trim().substring(0,7);
+  const lower = G.playerName.trim().toLowerCase();
+  const specialClasses = ['aldemar','helen','ronald'];
+  if(specialClasses.includes(lower)){
+    G.playerClass = lower;
+    G.isSpecialClass = true;
+  } else {
+    G.playerClass = null;
+    G.isSpecialClass = false;
+  }
   showScreen('screen-board');
 }
 
 function selectBoard(id){
   G.boardId = id;
   G.boardConfig = JSON.parse(JSON.stringify(BOARD_CONFIGS[id]));
-  showScreen('screen-class');
+  if(G.isSpecialClass && G.playerClass){
+    // Hidden class unlocked by name - skip the normal class-selection screen
+    showWeaponScreen(G.playerClass);
+    showScreen('screen-weapon');
+  } else {
+    showScreen('screen-class');
+  }
 }
 
 let selectedClassId = null;
@@ -1739,7 +1878,10 @@ function getClassStats(cls){
   const stats = {
     mage:{hp:65,def:3,move:4,passive:'Magical Barrier'},
     knight:{hp:75,def:5,move:6,passive:'Mighty Muscles'},
-    archer:{hp:70,def:4,move:5,passive:"Hunter's Eyes"}
+    archer:{hp:70,def:4,move:5,passive:"Hunter's Eyes"},
+    aldemar:{hp:70,def:4,move:5,passive:'Magical Barrier'},
+    helen:{hp:70,def:4,move:5,passive:'Crystal of Immortality'},
+    ronald:{hp:70,def:4,move:6,passive:'Magic of Precision'}
   };
   return stats[cls];
 }
@@ -1974,12 +2116,26 @@ function updateStatPanel(){
   const passives = {
     mage:'Magical Barrier: All PC becomes HC for you; Thorny Vines take one extra cycle.',
     knight:'Mighty Muscles: Difficult terrain costs 1 tile (no penalty). Thorny damage still applies.',
-    archer:"Hunter's Eyes: +1 Hit Throw & +1 Range vs targets on lower terrain."
+    archer:"Hunter's Eyes: +1 Hit Throw & +1 Range vs targets on lower terrain.",
+    aldemar:'Magical Barrier: All PC becomes HC for you; Thorny Vines take one extra cycle.',
+    helen:'Crystal of Immortality: The first time you die, instead of dying, your Health is restored to 20.',
+    ronald:'Magic of Precision: If an attack misses, deal 5 damage instead.'
   };
   document.getElementById('sp-ability').textContent = passives[player.class]||'';
 
   const w = player.equippedWeapon;
-  if(w){
+  if(w && w.attacks && w.attacks.length){
+    document.getElementById('sp-weapon-name').textContent = w.name;
+    document.getElementById('sp-w-attack').textContent = w.attacks.map(a=>a.attackName).join(' / ');
+    document.getElementById('sp-w-damage').textContent = w.attacks.map(a=>a.desc.split('.')[0]).join(' | ');
+    document.getElementById('sp-w-hitthrow').textContent = w.attacks.map(a=>`Dice + ${a.hitThrowMod>=0?'+':''}${a.hitThrowMod}`.replace('+ +','+').replace('+ -','-')).join(' / ');
+    document.getElementById('sp-w-effect').textContent = w.attacks.map(a=>a.effect).join(' / ');
+    document.getElementById('sp-w-range').textContent = w.attacks.map(a=>a.range+' tiles').join(' / ');
+    document.getElementById('sp-w-special').textContent = w.passive||'—';
+    const btn = document.getElementById('sp-attack-btn');
+    btn.textContent = 'Choose Attack';
+    btn.disabled = G.hasActedThisTurn || !getCurrentChar()?.isPlayer;
+  } else if(w){
     document.getElementById('sp-weapon-name').textContent = w.name;
     document.getElementById('sp-w-attack').textContent = w.attackName;
     document.getElementById('sp-w-damage').textContent = w.desc.split('.')[0];
@@ -2021,7 +2177,7 @@ function updateEnemyPanel(){
     const fillCls = pct>50?'':'pct>25?low:critical'.split(':')[pct>25?0:1]||'critical';
     const isCurrentTurn = getCurrentChar()===c;
     card.innerHTML = `
-      <h4>${c.name} <span style="font-size:0.8em;color:${c.class==='mage'?'#39b5ff':c.class==='knight'?'#b7b7b7':'#e77d22'}">${c.class}</span>${isCurrentTurn?'<span class="current-player-tag">TURN</span>':''}</h4>
+      <h4>${c.name} <span style="font-size:0.8em;color:${c.class==='mage'?'#39b5ff':c.class==='knight'?'#b7b7b7':c.class==='archer'?'#e77d22':c.class==='ronald'?'#3ddc3d':c.class==='aldemar'?'#2e8b57':c.class==='helen'?'#c77ad6':'#d4af37'}">${c.class}</span>${isCurrentTurn?'<span class="current-player-tag">TURN</span>':''}</h4>
       <div class="stat-row"><span class="stat-label">HP:</span><span class="stat-value">${c.alive?c.hp+'/'+c.maxHp:'DEAD'}</span></div>
       <div class="health-bar-bg"><div class="health-bar-fill ${pct>50?'':pct>25?'low':'critical'}" style="width:${c.alive?pct:0}%"></div></div>
       <div style="font-size:0.78em;color:var(--text-dim);margin-top:4px;">${c.alive?`Pos: (${c.x},${c.y})`:''}</div>
@@ -2052,10 +2208,21 @@ function startTurn(){
   char.damageTakenLastTurn = char.damageTakenThisTurn||0;
   char.damageTakenThisTurn = 0;
 
+  // Circle of Calamity: blocked from attacking this turn
+  if(char.skipAttackNextTurn){
+    char.skipAttackNextTurn = false;
+    if(char.isPlayer){
+      G.hasActedThisTurn = true;
+    } else {
+      char.aiSkipAttackThisTurn = true;
+    }
+    logMsg(`${char.name} cannot attack this turn (Circle of Calamity)!`, 'important');
+  }
+
   // Thorny vine start-of-turn damage
   if(isThorny(char.x, char.y)){
     char.thornyCounter = (char.thornyCounter||0)+1;
-    const extraCycle = char.class==='mage' ? 1 : 0;
+    const extraCycle = (char.class==='mage'||char.class==='aldemar') ? 1 : 0;
     if(char.thornyCounter >= 2 + extraCycle){
       applyDamage(char, 3, false);
       logMsg(`${char.name} takes 3 thorny vine damage!`, 'damage');
@@ -2309,18 +2476,30 @@ function playerClickAttack(){
   const player = G.characters.find(c=>c.isPlayer && c.alive);
   if(!player) return;
 
+  const w = player.equippedWeapon;
+  if(w && w.attacks && w.attacks.length){
+    showChoiceModal('Choose Your Attack', w.attacks.map(a=>({label:a.attackName, value:a.id, desc:a.desc})), (chosenId)=>{
+      const chosenAttack = w.attacks.find(a=>a.id===chosenId);
+      beginPlayerAttackTargeting(player, chosenAttack);
+    });
+    return;
+  }
+  beginPlayerAttackTargeting(player, w);
+}
+
+function beginPlayerAttackTargeting(player, weapon){
   G.phase = 'player-attack-targeting';
   G.hasMovedThisTurn = true; // Can't move after attacking
   setPhaseText('Click an enemy character to attack!');
-  selectedAttackWeapon = player.equippedWeapon;
+  selectedAttackWeapon = weapon;
 
   // Highlight valid targets
-  highlightAttackTargets(player);
+  highlightAttackTargets(player, weapon);
 }
 
-function highlightAttackTargets(attacker){
+function highlightAttackTargets(attacker, weapon){
   clearMoveHighlights();
-  const w = attacker.equippedWeapon;
+  const w = weapon || attacker.equippedWeapon;
   let range = getEffectiveRange(attacker, w, null, true);
 
   G.characters.filter(c=>c.alive&&!c.isPlayer).forEach(target=>{
@@ -2338,9 +2517,21 @@ function clearAttackHighlights(){
 
 // Character icon clicked during attack targeting
 document.addEventListener('click', e=>{
-  if(G.phase!=='player-attack-targeting') return;
   const icon = e.target.closest('.char-icon');
   if(!icon) return;
+
+  // If an AOE area-selection is in progress, a click on a character icon
+  // standing on the targeted tile must count as a click on that tile -
+  // otherwise the icon (which sits visually on top of the tile) swallows
+  // the click and that tile can never be selected.
+  if(aoeMode && aoeSelectCallback){
+    const charId = icon.dataset.charid;
+    const ch = G.characters.find(c=>c.id===charId);
+    if(ch) aoeSelectCallback(ch.x, ch.y);
+    return;
+  }
+
+  if(G.phase!=='player-attack-targeting') return;
   const charId = icon.dataset.charid;
   const target = G.characters.find(c=>c.id===charId);
   if(!target||!target.alive) return;
@@ -2433,7 +2624,7 @@ function checkCoverLOS(ax,ay,tx,ty, attacker, target){
           // Target on difficult terrain can't benefit from PC
           const onDiff = isDifficult(tx,ty);
           if(!onDiff){
-            if(attacker && attacker.class==='mage'){
+            if(attacker && (attacker.class==='mage'||attacker.class==='aldemar')){
               defBonus = Math.max(defBonus, 2);
             } else {
               defBonus = Math.max(defBonus, 1);
@@ -2558,13 +2749,56 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
 
   logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
 
+  // Forest's Grace (Staff of Life passive): heal 10 HP with every attack done, hit or miss
+  if(w.id==='staff_of_life'){
+    const healAmt = Math.max(0, Math.min(10, attacker.maxHp - attacker.hp));
+    if(healAmt>0){
+      attacker.hp += healAmt;
+      logMsg(`${attacker.name}'s Forest's Grace heals them for ${healAmt} HP! (${attacker.hp}/${attacker.maxHp})`, 'heal');
+      updateStatPanel();
+      updateEnemyPanel();
+    }
+  }
+
   if(totalHit < targetDef){
+    if(attacker.class==='ronald'){
+      applyDamage(target, 5, true);
+      logMsg(`Miss! But ${attacker.name}'s Magic of Precision deals 5 damage anyway!`, 'damage');
+      updateEnemyPanel();
+      updateStatPanel();
+      return true;
+    }
     logMsg(`Miss!`);
     return false;
   }
 
   // Calculate damage
-  let dmg = calcWeaponDamage(w, attacker, target, isPlayer);
+  let dmg;
+  if(w.id==='scarlet_void'){
+    // Scarlet Void: take up to 30 self damage, dealing equal extra damage
+    const maxTake = Math.max(0, Math.min(30, attacker.hp-1));
+    let selfDmg = 0;
+    if(isPlayer){
+      selfDmg = await new Promise(resolve=>{
+        showNumberInputModal(
+          'Scarlet Void',
+          `Choose how much self-damage to take (0-${maxTake}). You have ${attacker.hp} HP. This attack deals extra damage equal to the damage taken.`,
+          0, maxTake, resolve
+        );
+      });
+    } else {
+      selfDmg = Math.max(0, Math.min(maxTake, 20));
+    }
+    if(selfDmg>0){
+      applyDamage(attacker, selfDmg, false);
+      logMsg(`${attacker.name} channels Scarlet Void and takes ${selfDmg} self-damage!`, 'damage');
+    }
+    dmg = w.baseDamage + selfDmg;
+  } else if(w.id==='circle_of_calamity'){
+    dmg = w.baseDamage;
+  } else {
+    dmg = calcWeaponDamage(w, attacker, target, isPlayer);
+  }
   dmg += extraDmg;
   if(isPlayer && G.vialBonusDamage){
     dmg += G.vialBonusDamage;
@@ -2582,6 +2816,12 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
 
   applyDamage(target, dmg, true);
   logMsg(`${attacker.name} deals ${dmg} damage to ${target.name}! (${target.hp}/${target.maxHp} HP remaining)`, 'damage');
+  if(w.id==='circle_of_calamity'){
+    applyDamage(attacker, 10, false);
+    logMsg(`${attacker.name} takes 10 damage from Circle of Calamity!`, 'damage');
+    target.skipAttackNextTurn = true;
+    logMsg(`${target.name} cannot attack during their next turn!`);
+  }
   updateEnemyPanel();
   updateStatPanel();
   return true;
@@ -2617,6 +2857,9 @@ function calcWeaponDamage(w, attacker, target, isPlayer){
     const r = roll(6);
     dmg = r%2!==0 ? 50 : 25;
     // Extra dice from the weapon
+  } else if(cond==='low_hp_bonus'){
+    // Black Lightning: 25+, +20 if attacker at or below 40 HP
+    dmg = w.baseDamage + (attacker.hp<=40 ? 20 : 0);
   } else {
     // Standard extra dice
     for(let i=0;i<w.diceCount;i++){
@@ -2643,6 +2886,16 @@ function applyDamage(char, dmg, trackTurn=false){
 }
 
 function killChar(char){
+  if(char.class==='helen' && !char.usedImmortality){
+    char.usedImmortality = true;
+    char.hp = 20;
+    char.alive = true;
+    logMsg(`${char.name}'s Crystal of Immortality shatters, restoring them to 20 HP instead of dying!`, 'important');
+    positionIcon(char);
+    updateEnemyPanel();
+    updateStatPanel();
+    return;
+  }
   char.alive = false;
   char.hp = 0;
   const icon = document.getElementById(`char-icon-${char.id}`);
@@ -2727,12 +2980,30 @@ function openChest(char, cx, cy, callback){
 
 function grantChestLoot(char, loot, callback){
   if(loot.type==='weapon'){
+    const isSpecialClass = ['aldemar','helen','ronald'].includes(char.class);
+
+    // The hidden classes don't have a generic "Class Weapon" in the chest
+    // loot table - rewarding them with the normal class-weapon roll instead
+    // gives 5 Potions of Healing.
+    if(loot.roll===6 && isSpecialClass){
+      for(let i=0;i<5;i++){
+        addToInventory(char, {name:'Potion of Healing', type:'potion', amount:1, desc:'Heal 10 health.'});
+      }
+      logMsg(`${char.name} receives 5x Potion of Healing!`, 'important');
+      updateStatPanel();
+      updateEnemyPanel();
+      if(callback) callback();
+      return;
+    }
+
     let weapon = null;
     if(loot.roll===7){
       weapon = {...WEAPONS.chest.any};
-    } else {
+    } else if(WEAPONS.chest[char.class]){
       // Roll 6: class weapon
-      weapon = {...WEAPONS.chest[char.class]} || {...WEAPONS.chest.any};
+      weapon = {...WEAPONS.chest[char.class]};
+    } else {
+      weapon = {...WEAPONS.chest.any};
     }
     if(weapon){
       addToInventory(char, {name:weapon.name, type:'weapon', weapon:weapon, amount:1});
@@ -2888,7 +3159,7 @@ async function playerAOEGreataxe(attacker, primaryTarget, weapon){
         // Attack each selected tile
         Promise.all(selected.map(t=>{
           const tgt = getCharAt(t.x,t.y);
-          if(tgt&&tgt!==attacker) return doAttack(attacker,tgt,weapon,true);
+          if(tgt&&tgt!==attacker) return doAttack(attacker,tgt,weapon,true,0,999);
         })).then(()=>{
           G.hasActedThisTurn=true; G.phase='game';
           checkWinLose(); updateStatPanel(); updateEnemyPanel();
@@ -2905,7 +3176,7 @@ async function playerAOESurrounding(attacker, weapon){
   const surrounding = getAdjacentTiles(attacker.x, attacker.y, true);
   for(const t of surrounding){
     const tgt = getCharAt(t.x,t.y);
-    if(tgt && tgt!==attacker) await doAttack(attacker,tgt,weapon,true);
+    if(tgt && tgt!==attacker) await doAttack(attacker,tgt,weapon,true,0,999);
   }
   G.hasActedThisTurn=true; G.phase='game';
   checkWinLose(); updateStatPanel(); updateEnemyPanel();
@@ -2932,7 +3203,7 @@ async function playerAOE2x2(attacker, primaryTarget, weapon){
         clearMoveHighlights();
         for(const t of tiles){
           const tgt=getCharAt(t.x,t.y);
-          if(tgt) await doAttack(attacker,tgt,weapon,true);
+          if(tgt) await doAttack(attacker,tgt,weapon,true,0,999);
         }
         G.hasActedThisTurn=true; G.phase='game';
         checkWinLose(); updateStatPanel(); updateEnemyPanel();
@@ -2960,7 +3231,7 @@ async function playerHelentiles(attacker, weapon){
         (async()=>{
           for(const t of selected){
             const tgt=getCharAt(t.x,t.y);
-            if(tgt) await doAttack(attacker,tgt,weapon,true);
+            if(tgt) await doAttack(attacker,tgt,weapon,true,0,999);
           }
           G.hasActedThisTurn=true; G.phase='game';
           checkWinLose(); updateStatPanel(); updateEnemyPanel();
@@ -2988,7 +3259,7 @@ async function playerShortbowAttack(attacker, target, weapon){
         if(x===target.x&&y===target.y) return;
         aoeMode=false; aoeSelectCallback=null;
         const tgt=getCharAt(x,y);
-        if(tgt) doAttack(attacker,tgt,weapon,true).then(resolve);
+        if(tgt) doAttack(attacker,tgt,weapon,true,0,999).then(resolve);
         else resolve();
       };
     });
@@ -3036,6 +3307,24 @@ async function runAITurn(char){
   await sleep(600);
   const player = G.characters.find(c=>c.isPlayer&&c.alive);
   if(!player){ document.getElementById('ai-thinking').classList.remove('active'); nextTurn(); return; }
+
+  // Circle of Calamity: this character cannot attack this turn, but can still move
+  if(char.aiSkipAttackThisTurn){
+    char.aiSkipAttackThisTurn = false;
+    if(char.class !== 'knight'){
+      const hgMove = findHighGroundMove(char);
+      if(hgMove){ await aiMoveAlongPath(char, hgMove); document.getElementById('ai-thinking').classList.remove('active'); nextTurn(); return; }
+    }
+    const nearestEnemy = findNearestEnemy(char);
+    if(nearestEnemy){
+      const path = findPathTo(char, nearestEnemy.x, nearestEnemy.y);
+      if(path && path.length>1) await aiMoveAlongPath(char, path);
+    }
+    logMsg(`${char.name} cannot attack this turn.`);
+    document.getElementById('ai-thinking').classList.remove('active');
+    nextTurn();
+    return;
+  }
 
   // AI turn effects reset
   let aiReachBonus = false;
@@ -3439,10 +3728,10 @@ async function aiDoAttack(char, target){
     targets.sort((a,b)=>a.char.hp-b.char.hp);
     const chosen = targets.slice(0,2);
     if(chosen.length===0){ logMsg(`${char.name} has no adjacent targets for Iron Cleave.`); return; }
-    for(const t of chosen) await doAttack(char,t.char,w,false);
+    for(const t of chosen) await doAttack(char,t.char,w,false,0,999);
   } else if(w.special==='aoe8surround'){
     const surrounding=getAdjacentTiles(char.x,char.y,true);
-    for(const t of surrounding){ const tgt=getCharAt(t.x,t.y); if(tgt&&tgt!==char) await doAttack(char,tgt,w,false); }
+    for(const t of surrounding){ const tgt=getCharAt(t.x,t.y); if(tgt&&tgt!==char) await doAttack(char,tgt,w,false,0,999); }
   } else if(w.special==='aoe2x2'){
     // Choose 2x2 area that hits most enemies
     let bestArea=null, bestCount=-1;
@@ -3452,12 +3741,12 @@ async function aiDoAttack(char, target){
       const hitCount=area.filter(t=>getCharAt(t.x,t.y)&&getCharAt(t.x,t.y)!==char).length;
       if(hitCount>bestCount){ bestCount=hitCount; bestArea=area; }
     }
-    if(bestArea) for(const t of bestArea){ const tgt=getCharAt(t.x,t.y); if(tgt) await doAttack(char,tgt,w,false); }
+    if(bestArea) for(const t of bestArea){ const tgt=getCharAt(t.x,t.y); if(tgt) await doAttack(char,tgt,w,false,0,999); }
   } else if(w.special==='helen2tiles'){
     const enemies=getLiveChars().filter(c=>c!==char);
     const inRangeE=enemies.filter(e=>chebyshev(char.x,char.y,e.x,e.y)<=w.range);
     inRangeE.sort((a,b)=>a.hp-b.hp);
-    for(const e of inRangeE.slice(0,2)) await doAttack(char,e,w,false);
+    for(const e of inRangeE.slice(0,2)) await doAttack(char,e,w,false,0,999);
   } else if(w.special==='shortbow_spread'){
     await doAttack(char,target,w,false);
     const rolls=[];
@@ -3468,12 +3757,60 @@ async function aiDoAttack(char, target){
       const adjChars=adj.map(t=>getCharAt(t.x,t.y)).filter(Boolean).filter(c=>c!==char);
       if(adjChars.length>0){
         adjChars.sort((a,b)=>a.hp-b.hp);
-        await doAttack(char,adjChars[0],w,false);
+        await doAttack(char,adjChars[0],w,false,0,999);
       }
     }
   } else {
     await doAttack(char, target, w, false);
   }
+}
+
+// ============================================================
+//  CUSTOM MODAL (attack choice / number input)
+// ============================================================
+function showChoiceModal(title, choices, callback){
+  document.getElementById('custom-modal-title').textContent = title;
+  document.getElementById('custom-modal-body').innerHTML = '';
+  const btnContainer = document.getElementById('custom-modal-buttons');
+  btnContainer.innerHTML = '';
+  choices.forEach(choice=>{
+    const btn = document.createElement('button');
+    btn.className = 'btn custom-modal-btn';
+    btn.innerHTML = `${choice.label}${choice.desc?`<br><span style="font-size:0.72em;font-weight:400;opacity:0.85;">${choice.desc}</span>`:''}`;
+    btn.onclick = ()=>{
+      closeCustomModal();
+      callback(choice.value);
+    };
+    btnContainer.appendChild(btn);
+  });
+  document.getElementById('custom-modal-overlay').classList.add('active');
+}
+
+function showNumberInputModal(title, bodyText, min, max, callback){
+  document.getElementById('custom-modal-title').textContent = title;
+  const body = document.getElementById('custom-modal-body');
+  body.innerHTML = `<p style="color:var(--text-dim); font-size:0.85em; margin-bottom:12px; line-height:1.5;">${bodyText}</p>
+    <input type="number" id="custom-modal-number-input" min="${min}" max="${max}" value="${min}" style="width:110px; text-align:center; font-size:1.2em; background:#111; color:var(--text); border:1px solid var(--panel-border); border-radius:4px; padding:8px; font-family:'Lato',sans-serif;">`;
+  const btnContainer = document.getElementById('custom-modal-buttons');
+  btnContainer.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.className = 'btn success';
+  btn.textContent = 'Confirm';
+  btn.onclick = ()=>{
+    const input = document.getElementById('custom-modal-number-input');
+    let val = parseInt(input.value);
+    if(isNaN(val)) val = min;
+    val = Math.max(min, Math.min(max, val));
+    closeCustomModal();
+    callback(val);
+  };
+  btnContainer.appendChild(btn);
+  document.getElementById('custom-modal-overlay').classList.add('active');
+  setTimeout(()=>{ const inp=document.getElementById('custom-modal-number-input'); if(inp) inp.focus(); }, 50);
+}
+
+function closeCustomModal(){
+  document.getElementById('custom-modal-overlay').classList.remove('active');
 }
 
 // ============================================================
