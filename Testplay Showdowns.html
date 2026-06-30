@@ -2326,7 +2326,6 @@ function highlightAttackTargets(attacker){
   G.characters.filter(c=>c.alive&&!c.isPlayer).forEach(target=>{
     if(inRange(attacker, target, range)){
       const icon = document.getElementById(`char-icon-${target.id}`);
-      if(icon) icon.style.outline='3px solid #ff3535';
     }
   });
 }
@@ -2334,7 +2333,6 @@ function highlightAttackTargets(attacker){
 function clearAttackHighlights(){
   G.characters.forEach(c=>{
     const icon = document.getElementById(`char-icon-${c.id}`);
-    if(icon) icon.style.outline='';
   });
 }
 
