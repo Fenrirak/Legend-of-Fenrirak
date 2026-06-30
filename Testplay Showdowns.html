@@ -1177,37 +1177,37 @@ const WEAPONS = {
     {
       id: 'longsword', name: 'Longsword', class: 'knight',
       attackName: 'Piercing Thrust',
-      baseDamage: 16, damageType: 'plus',
+      baseDamage: 11, damageType: 'plus',
       diceCount: 2, diceCondition: 'even', diceBonus: 4,
       hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 2,
-      desc: '16+ Damage. Roll die 2 times, for every even number, deal 4 extra damage.'
+      desc: '11+ Damage. Roll die 2 times, for every even number, deal 4 extra damage.'
     },
     {
       id: 'twin_daggers', name: 'Twin Daggers', class: 'knight',
       attackName: 'Blade Flurry',
-      baseDamage: 10, damageType: 'plus',
+      baseDamage: 5, damageType: 'plus',
       diceCount: 6, diceCondition: 'odd', diceBonus: 2,
       hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 1,
-      desc: '10+ Damage. Roll die 6 times, for every odd number, deal 2 extra damage.'
+      desc: '5+ Damage. Roll die 6 times, for every odd number, deal 2 extra damage.'
     },
     {
       id: 'greataxe', name: 'Greataxe', class: 'knight',
       attackName: 'Iron Cleave',
-      baseDamage: 18, damageType: 'plus',
+      baseDamage: 13, damageType: 'plus',
       diceCount: 1, diceCondition: 'even', diceBonus: 2,
       hitThrowMod: 1, effect: '2 adjacent tiles (including diagonals)', effectTiles: 2, range: 1,
       special: 'aoe2adj',
-      desc: '18+ Damage. Roll die once, if even, deal 2 extra damage. Effect: 2 adjacent tiles (incl. diagonals).'
+      desc: '13+ Damage. Roll die once, if even, deal 2 extra damage. Effect: 2 adjacent tiles (incl. diagonals).'
     },
     {
       id: 'sword_buckler', name: 'Sword and Buckler', class: 'knight',
       attackName: 'Destructive Rush',
-      baseDamage: 22, damageType: 'minus_dmg_taken',
+      baseDamage: 17, damageType: 'minus_dmg_taken',
       diceCount: 0,
       hitThrowMod: 0, effect: '8 surrounding tiles', effectTiles: 8, range: 1,
       special: 'aoe8surround',
       passive: 'Parry: Take 4 less damage if attack deals <18 (before Parry).',
-      desc: '22- Damage. Deal 1 less damage for every damage taken since start of last turn. Minimum 0. Effect: 8 surrounding tiles.'
+      desc: '17- Damage. Deal 1 less damage for every damage taken since start of last turn. Minimum 0. Effect: 8 surrounding tiles.'
     }
   ],
   archer: [
@@ -3387,119 +3387,94 @@ async function runAITurn(char){
     return;
   }
 
-  // AI turn effects reset
-  let aiReachBonus = false;
-  let aiGodlyStrength = false;
-
-  // Priority list:
-  // 1. Kill enemy if possible
-  // 2. Open chest if adjacent
-  // 3. Move to high ground (not knight)
-  // 4. Move toward nearest enemy
-  // 5. End turn
-
   // Use potions first if beneficial
   await aiUsePotions(char);
 
   // Endgame special case: this is the last computer standing against the
   // player (no other computers alive). From here on it cares only about
-  // the player: attack them if at all possible; if it can't land a hit
-  // right now, grab an adjacent chest instead (since that's free value);
-  // and if there's no chest either, close the distance and try again.
+  // the player.
   const aliveComputers = G.characters.filter(c=>!c.isPlayer && c.alive);
   if(aliveComputers.length===1 && aliveComputers[0]===char){
     await runLoneComputerTurn(char, player);
     return;
   }
 
-  // Check if can kill someone
-  const killTarget = findKillTarget(char);
-  if(killTarget){
-    logMsg(`${char.name} attacks ${killTarget.name}!`);
-    await aiDoAttack(char, killTarget);
+  // ==========================================================
+  //  AI TURN PRIORITY LIST
+  //  1. Open chest if adjacent; use/equip any items received
+  //  2. Move towards a chest if it is closer than the nearest enemy
+  //  3. Move behind cover / onto high ground (only if it can still
+  //     hit the player from there)
+  //  4. Move towards the closest enemy character
+  //  5. Attack the closest character in range (prefer the human
+  //     player on a tie)
+  // ==========================================================
+
+  const endTurn = ()=>{
+    logMsg(`${char.name} ends their turn.`);
+    document.getElementById('ai-thinking').classList.remove('active');
+    nextTurn();
+  };
+
+  const tryAttack = async ()=>{
+    const target = findBestTarget(char);
+    if(!target) return false;
+    logMsg(`${char.name} attacks ${target.name}!`);
+    await aiDoAttack(char, target);
     document.getElementById('ai-thinking').classList.remove('active');
     updateEnemyPanel(); updateStatPanel();
     checkWinLose();
     if(G.phase!=='game-over') nextTurn();
-    return;
-  }
+    return true;
+  };
 
-  // Check adjacent chest
+  // --- Priority 1: open an adjacent chest ---
   const adjChest = findAdjacentChest(char);
-  const weapon = char.equippedWeapon;
-  const expectedDmg = estimateDamage(char, weapon, player);
-
-  if(adjChest && expectedDmg < 18){
+  if(adjChest){
     logMsg(`${char.name} opens a chest!`);
-    await new Promise(resolve=>{
-      openChest(char, adjChest.x, adjChest.y, resolve);
-    });
+    await new Promise(resolve=>{ openChest(char, adjChest.x, adjChest.y, resolve); });
+    await aiUsePotions(char); // use/equip anything useful just received
     document.getElementById('ai-thinking').classList.remove('active');
-    nextTurn(); return;
-  }
-
-  // Can attack? (with current position)
-  const attackTarget = findBestTarget(char);
-  if(attackTarget){
-    logMsg(`${char.name} attacks ${attackTarget.name}!`);
-    await aiDoAttack(char, attackTarget);
-    document.getElementById('ai-thinking').classList.remove('active');
-    updateEnemyPanel(); updateStatPanel();
-    checkWinLose();
-    if(G.phase!=='game-over') nextTurn();
+    nextTurn();
     return;
   }
 
-  // Move
-  let moved = false;
-  // High ground (not knight)
-  if(char.class !== 'knight'){
-    const hgMove = findHighGroundMove(char);
-    if(hgMove){
-      await aiMoveAlongPath(char, hgMove);
-      moved = true;
+  // --- Priority 2: move towards a chest, if one is closer than the nearest enemy ---
+  const nearestEnemy = findNearestEnemy(char);
+  const enemyDist = nearestEnemy ? chebyshev(char.x,char.y,nearestEnemy.x,nearestEnemy.y) : Infinity;
+  const closestChest = findClosestChest(char);
+  const chestDist = closestChest ? chebyshev(char.x,char.y,closestChest.x,closestChest.y) : Infinity;
+
+  if(closestChest && chestDist < enemyDist){
+    const path = findPathTo(char, closestChest.x, closestChest.y);
+    if(path && path.length>1){
+      await aiMoveAlongPath(char, path);
+      if(await tryAttack()) return;
+      endTurn();
+      return;
     }
   }
 
-  if(!moved){
-    // Move toward nearest enemy
-    const nearestEnemy = findNearestEnemy(char);
-    if(nearestEnemy){
-      const path = findPathTo(char, nearestEnemy.x, nearestEnemy.y);
-      if(path && path.length>1){
-        await aiMoveAlongPath(char, path);
-        moved=true;
-      }
-    }
-  }
-
-  // After moving, check if can attack
-  const attackTarget2 = findBestTarget(char);
-  if(attackTarget2){
-    logMsg(`${char.name} attacks ${attackTarget2.name}!`);
-    await aiDoAttack(char, attackTarget2);
-    document.getElementById('ai-thinking').classList.remove('active');
-    updateEnemyPanel(); updateStatPanel();
-    checkWinLose();
-    if(G.phase!=='game-over') nextTurn();
+  // --- Priority 3: move behind cover / onto high ground, only if the
+  //     AI can still hit the player from that position ---
+  const defensiveMove = findDefensiveMove(char, player);
+  if(defensiveMove){
+    await aiMoveAlongPath(char, defensiveMove);
+    if(await tryAttack()) return;
+    endTurn();
     return;
   }
 
-  // After moving, check chest
-  const adjChest2 = findAdjacentChest(char);
-  if(adjChest2){
-    const expDmg2 = estimateDamage(char, weapon, player);
-    if(expDmg2<18){
-      logMsg(`${char.name} opens a chest!`);
-      await new Promise(resolve=>{ openChest(char, adjChest2.x, adjChest2.y, resolve); });
-      document.getElementById('ai-thinking').classList.remove('active');
-      nextTurn(); return;
-    }
+  // --- Priority 4: move towards the closest enemy character ---
+  if(nearestEnemy){
+    const path = findPathTo(char, nearestEnemy.x, nearestEnemy.y);
+    if(path && path.length>1) await aiMoveAlongPath(char, path);
   }
 
-  logMsg(`${char.name} ends their turn.`);
-  document.getElementById('ai-thinking').classList.remove('active');
-  nextTurn();
+  // --- Priority 5: attack the closest character in range ---
+  if(await tryAttack()) return;
+
+  endTurn();
 }
 
 // Endgame behaviour for the last computer alive against the player.
@@ -3598,6 +3573,15 @@ function preferPlayerTarget(char, candidates){
   return best;
 }
 
+// On a tie in distance, prefer attacking the human player over an AI.
+function preferPlayerOnTie(candidates){
+  if(!candidates.length) return null;
+  const minDist = candidates[0].dist;
+  const tied = candidates.filter(c=>c.dist===minDist);
+  const human = tied.find(c=>c.char.isPlayer);
+  return (human || tied[0]).char;
+}
+
 function findBestTarget(char){
   const w = char.equippedWeapon;
   const enemies = getLiveChars().filter(c=>c!==char);
@@ -3610,19 +3594,18 @@ function findBestTarget(char){
     return !coverRes.blocked;
   });
   if(inRangeEnemies.length===0) return null;
-  // Pick lowest HP, tiebreak closest
-  inRangeEnemies.sort((a,b)=>{
-    if(a.hp!==b.hp) return a.hp-b.hp;
-    return chebyshev(char.x,char.y,a.x,a.y)-chebyshev(char.x,char.y,b.x,b.y);
-  });
-  return preferPlayerTarget(char, inRangeEnemies);
+  // Closest target wins; ties go to the human player
+  const candidates = inRangeEnemies.map(e=>({char:e, dist:chebyshev(char.x,char.y,e.x,e.y)}));
+  candidates.sort((a,b)=>a.dist-b.dist);
+  return preferPlayerOnTie(candidates);
 }
 
 function findNearestEnemy(char){
   const enemies = getLiveChars().filter(c=>c!==char);
   if(!enemies.length) return null;
-  enemies.sort((a,b)=>chebyshev(char.x,char.y,a.x,a.y)-chebyshev(char.x,char.y,b.x,b.y));
-  return enemies[0];
+  const candidates = enemies.map(e=>({char:e, dist:chebyshev(char.x,char.y,e.x,e.y)}));
+  candidates.sort((a,b)=>a.dist-b.dist);
+  return preferPlayerOnTie(candidates);
 }
 
 function findAdjacentChest(char){
@@ -3630,6 +3613,70 @@ function findAdjacentChest(char){
   for(const t of adj){
     const type=getTileType(t.x,t.y);
     if((type==='chest'||type==='chest_hg') && !G.openedChests.has(tileKey(t.x,t.y))) return t;
+  }
+  return null;
+}
+
+// All unopened chest tiles currently on the board.
+function getAllChestTiles(){
+  const out = [];
+  if(!G.boardConfig || !G.boardConfig.tiles) return out;
+  for(const key in G.boardConfig.tiles){
+    const info = G.boardConfig.tiles[key];
+    if((info.type==='chest'||info.type==='chest_hg') && !G.openedChests.has(key)){
+      const [x,y] = key.split(',').map(Number);
+      out.push({x,y});
+    }
+  }
+  return out;
+}
+
+// Closest unopened chest to this character (straight-line distance).
+function findClosestChest(char){
+  const chests = getAllChestTiles();
+  if(!chests.length) return null;
+  chests.sort((a,b)=>chebyshev(char.x,char.y,a.x,a.y)-chebyshev(char.x,char.y,b.x,b.y));
+  return chests[0];
+}
+
+// Would `char`, if standing at (x,y), still be able to hit `target` -
+// i.e. target is in weapon range and the shot isn't blocked.
+function canHitTargetFrom(char, x, y, target){
+  const w = char.equippedWeapon;
+  if(!w || !target || !target.alive) return false;
+  const origX = char.x, origY = char.y;
+  char.x = x; char.y = y;
+  const range = getEffectiveRange(char, w, target, false);
+  const ok = inRange(char, target, range) && !checkCoverLOS(char.x,char.y,target.x,target.y,char,target).blocked;
+  char.x = origX; char.y = origY;
+  return ok;
+}
+
+// Find a reachable tile this turn that puts the character behind cover
+// (adjacent to a Rock/Log/Tree/Chest) or on high ground, but only if the
+// player is still hittable from that tile.
+function findDefensiveMove(char, player){
+  if(!player || !player.alive) return null;
+  const candidates = [];
+  for(let x=0;x<=10;x++) for(let y=0;y<=8;y++){
+    if(!isPassable(x,y)) continue; // must be an empty, walkable tile
+    if(x===char.x && y===char.y) continue;
+    let isDefensive = isHighGround(x,y);
+    if(!isDefensive){
+      const adj = getAdjacentTiles(x,y,false);
+      isDefensive = adj.some(t=>isPCTile(t.x,t.y)||isHCTile(t.x,t.y));
+    }
+    if(isDefensive) candidates.push({x,y});
+  }
+  if(!candidates.length) return null;
+  candidates.sort((a,b)=>chebyshev(char.x,char.y,a.x,a.y)-chebyshev(char.x,char.y,b.x,b.y));
+
+  for(const c of candidates){
+    const path = findPathTo(char, c.x, c.y);
+    if(!path || path.length<=1) continue;
+    const dest = path[path.length-1];
+    if(dest.x!==c.x || dest.y!==c.y) continue; // only take fully-reachable tiles
+    if(canHitTargetFrom(char, c.x, c.y, player)) return path;
   }
   return null;
 }
