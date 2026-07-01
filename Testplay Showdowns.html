@@ -1203,7 +1203,7 @@ const WEAPONS = {
       id: 'sword_buckler', name: 'Sword and Buckler', class: 'knight',
       attackName: 'Destructive Rush',
       baseDamage: 17, damageType: 'minus_dmg_taken',
-      diceCount: 0,
+      diceCount: 0, diceCondition: 'minus_dmg_taken',
       hitThrowMod: 0, effect: '8 surrounding tiles', effectTiles: 8, range: 1,
       special: 'aoe8surround',
       passive: 'Parry: Take 4 less damage if attack deals <18 (before Parry).',
@@ -2908,11 +2908,11 @@ function calcWeaponDamage(w, attacker, target, isPlayer){
   } else if(cond==='minus_dmg_taken'){
     // Destructive Rush
     const taken = attacker.damageTakenLastTurn||0;
-    dmg = Math.max(0, 22 - taken);
+    dmg = Math.max(0, w.baseDamage - taken);
   } else if(cond==='plus_pct_dmg'){
     // Fenrirak's Tail Blade: 5 + 1 per 2 damage taken
     const damageTaken = target.maxHp - target.hp;
-    dmg = 5 + Math.floor(damageTaken/2);
+    dmg = w.baseDamage + Math.floor(damageTaken/2);
   } else if(cond==='oblivion'){
     // Helen's Staff: 25+, if odd roll 50
     const r = roll(6);
@@ -3311,12 +3311,20 @@ async function playerShortbowAttack(attacker, target, weapon){
   for(let i=0;i<4;i++) rolls.push(roll(6));
   const spreads=rolls.filter(r=>r>=5).length;
   logMsg(`Shortbow spread rolls: [${rolls.join(',')}] - ${spreads} additional hit${spreads===1?'':'s'} available!`, 'important');
+  const usedTiles = [];
   for(let s=0;s<spreads;s++){
+    // Stop early if every adjacent tile has already been used
+    const allAdj = getAdjacentTiles(target.x, target.y, false);
+    if(usedTiles.length >= allAdj.length){
+      logMsg(`No more unused adjacent tiles for the remaining spread hit${(spreads-s)===1?'':'s'}.`);
+      break;
+    }
     await new Promise(resolve=>{
       aoeMode=true;
-      setPhaseText(`Reign of Arrows: select a tile adjacent to ${target.name} for spread hit ${s+1} of ${spreads}!`);
+      setPhaseText(`Reign of Arrows: select a NEW tile adjacent to ${target.name} for spread hit ${s+1} of ${spreads}!`);
       // Outline the tiles the player is actually allowed to pick from
-      const validAdj = getAdjacentTiles(target.x, target.y, false);
+      // (already-used adjacent tiles are excluded)
+      const validAdj = allAdj.filter(t=>!usedTiles.some(u=>u.x===t.x&&u.y===t.y));
       validAdj.forEach(t=>{
         const el = document.getElementById(`tile-${t.x}-${t.y}`);
         if(el) el.classList.add('hover-attack');
@@ -3324,6 +3332,8 @@ async function playerShortbowAttack(attacker, target, weapon){
       aoeSelectCallback=(x,y)=>{
         if(manhattan(target.x,target.y,x,y)!==1) return;
         if(x===target.x&&y===target.y) return;
+        if(usedTiles.some(u=>u.x===x&&u.y===y)) return; // already used this turn
+        usedTiles.push({x,y});
         aoeMode=false; aoeSelectCallback=null;
         validAdj.forEach(t=>{
           const el = document.getElementById(`tile-${t.x}-${t.y}`);
@@ -3682,9 +3692,13 @@ function canHitTargetFrom(char, x, y, target){
 
 // Find a reachable tile this turn that puts the character behind cover
 // (adjacent to a Rock/Log/Tree/Chest) or on high ground, but only if the
-// player is still hittable from that tile.
+// player is still hittable from that tile. Returns null if the character
+// can already hit the player from where it's currently standing - there's
+// no point repositioning for cover it doesn't need this turn.
 function findDefensiveMove(char, player){
   if(!player || !player.alive) return null;
+  if(canHitTargetFrom(char, char.x, char.y, player)) return null;
+
   const candidates = [];
   for(let x=0;x<=10;x++) for(let y=0;y<=8;y++){
     if(!isPassable(x,y)) continue; // must be an empty, walkable tile
