@@ -954,6 +954,9 @@
       <button class="btn" onclick="selectBoard(2)">Board 2</button>
       <button class="btn" onclick="selectBoard(3)">Board 3</button>
     </div>
+    <div style="margin-top:14px;">
+      <button class="btn success" onclick="selectRandomBoard()">🎲 Random Board</button>
+    </div>
   </div>
 </div>
 
@@ -1259,11 +1262,11 @@ const WEAPONS = {
     {
       id: 'staff_of_life', name: 'Staff of Life', class: 'aldemar',
       attackName: 'Storm Edge',
-      baseDamage: 20, damageType: 'plus',
+      baseDamage: 15, damageType: 'plus',
       diceCount: 3, diceCondition: 'even', diceBonus: 10,
       hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5,
       passive: "Forest's Grace: With every attack done, heal 10 health. This is not an attack, it is a passive ability.",
-      desc: "Forest's Grace (Passive): With every attack done, heal 10 health. Storm Edge: 20+ Damage. Roll a die 3 times, for every even number, deal 10 more damage."
+      desc: '15+ Damage. Roll a die 3 times, for every even number, deal 10 more damage.'
     }
   ],
   helen: [
@@ -1687,6 +1690,13 @@ function selectBoard(id){
   } else {
     showScreen('screen-class');
   }
+}
+
+function selectRandomBoard(){
+  const ids = Object.keys(BOARD_CONFIGS).map(Number);
+  const pick = ids[Math.floor(Math.random()*ids.length)];
+  logMsg(`Random board selected: Board ${pick}!`, 'important');
+  selectBoard(pick);
 }
 
 let selectedClassId = null;
@@ -3033,7 +3043,7 @@ function openChest(char, cx, cy, callback){
       const loot = CHEST_LOOT[rollResult];
       if(!loot){ callback(); return; }
       grantChestLoot(char, loot, callback);
-    });
+    }, 7);
   } else {
     // AI characters roll for their own loot automatically - the human
     // player shouldn't be asked to manually roll dice for the AI's chest.
@@ -3388,7 +3398,7 @@ async function playerShortbowAttack(attacker, target, weapon){
   const usedTiles = [];
   for(let s=0;s<spreads;s++){
     // Stop early if every adjacent tile has already been used
-    const allAdj = getAdjacentTiles(target.x, target.y, false);
+    const allAdj = getAdjacentTiles(target.x, target.y, true);
     if(usedTiles.length >= allAdj.length){
       logMsg(`No more unused adjacent tiles for the remaining spread hit${(spreads-s)===1?'':'s'}.`);
       break;
@@ -3404,7 +3414,7 @@ async function playerShortbowAttack(attacker, target, weapon){
         if(el) el.classList.add('hover-attack');
       });
       aoeSelectCallback=(x,y)=>{
-        if(manhattan(target.x,target.y,x,y)!==1) return;
+        if(chebyshev(target.x,target.y,x,y)!==1) return;
         if(x===target.x&&y===target.y) return;
         if(usedTiles.some(u=>u.x===x&&u.y===y)) return; // already used this turn
         usedTiles.push({x,y});
@@ -3975,12 +3985,17 @@ async function aiDoAttack(char, target){
     const rolls=[];
     for(let i=0;i<4;i++) rolls.push(roll(6));
     const spreads=rolls.filter(r=>r>=5).length;
+    const usedTiles=[];
     for(let s=0;s<spreads;s++){
-      const adj=getAdjacentTiles(target.x,target.y,false);
-      const adjChars=adj.map(t=>getCharAt(t.x,t.y)).filter(Boolean).filter(c=>c!==char);
+      const adj=getAdjacentTiles(target.x,target.y,true);
+      const adjChars=adj
+        .filter(t=>!usedTiles.some(u=>u.x===t.x&&u.y===t.y))
+        .map(t=>({t,c:getCharAt(t.x,t.y)}))
+        .filter(o=>o.c && o.c!==char);
       if(adjChars.length>0){
-        adjChars.sort((a,b)=>a.hp-b.hp);
-        await doAttack(char,adjChars[0],w,false,0,999);
+        adjChars.sort((a,b)=>a.c.hp-b.c.hp);
+        usedTiles.push(adjChars[0].t);
+        await doAttack(char,adjChars[0].c,w,false,0,999);
       }
     }
   } else {
@@ -4041,10 +4056,12 @@ function closeCustomModal(){
 // ============================================================
 let diceResolve = null;
 let diceHasRolled = false;
+let diceMaxResult = null;
 
-function openDice(title, callback){
+function openDice(title, callback, maxResult=null){
   diceResolve = callback;
   diceHasRolled = false;
+  diceMaxResult = maxResult;
   document.getElementById('dice-title').textContent = title;
   document.getElementById('dice-face').textContent = '?';
   document.getElementById('dice-result-text').textContent = '';
@@ -4092,6 +4109,7 @@ function renderVialButtons(){
   container.innerHTML = '';
   const player = G.characters.find(c=>c.isPlayer&&c.alive);
   if(!player) return;
+  if(diceMaxResult!==null && G._lastDiceResult>=diceMaxResult) return; // already at the cap
   const charges = player.inventory.filter(i=>i.name==='Vial of Red Liquid').length;
   for(let i=0;i<charges;i++){
     const btn = document.createElement('button');
@@ -4106,16 +4124,20 @@ function useVialOnRoll(btn){
   if(btn.disabled) return;
   const player = G.characters.find(c=>c.isPlayer&&c.alive);
   if(!player) return;
+  if(diceMaxResult!==null && G._lastDiceResult>=diceMaxResult) return; // capped
   const idx = player.inventory.findIndex(i=>i.name==='Vial of Red Liquid');
   if(idx<0) return;
   player.inventory.splice(idx,1);
   G._lastDiceResult += 1;
+  if(diceMaxResult!==null && G._lastDiceResult>diceMaxResult) G._lastDiceResult = diceMaxResult;
   document.getElementById('dice-face').textContent = G._lastDiceResult;
   document.getElementById('dice-result-text').textContent = `You rolled: ${G._lastDiceResult}`;
   logMsg(`${player.name} uses a Vial of Red Liquid! +1 to the roll (now ${G._lastDiceResult}).`, 'heal');
   btn.disabled = true;
   btn.textContent = 'Used!';
   updateStatPanel();
+  // Refresh the remaining vial buttons in case the cap was just reached
+  renderVialButtons();
 }
 
 function diceOk(){
