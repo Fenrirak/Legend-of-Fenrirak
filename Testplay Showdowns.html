@@ -3310,18 +3310,33 @@ async function playerShortbowAttack(attacker, target, weapon){
   const rolls=[];
   for(let i=0;i<4;i++) rolls.push(roll(6));
   const spreads=rolls.filter(r=>r>=5).length;
-  logMsg(`Shortbow spread rolls: [${rolls.join(',')}] - ${spreads} additional hits possible`);
+  logMsg(`Shortbow spread rolls: [${rolls.join(',')}] - ${spreads} additional hit${spreads===1?'':'s'} available!`, 'important');
   for(let s=0;s<spreads;s++){
     await new Promise(resolve=>{
       aoeMode=true;
-      setPhaseText(`Select an adjacent tile to spread shot ${s+1}!`);
+      setPhaseText(`Reign of Arrows: select a tile adjacent to ${target.name} for spread hit ${s+1} of ${spreads}!`);
+      // Outline the tiles the player is actually allowed to pick from
+      const validAdj = getAdjacentTiles(target.x, target.y, false);
+      validAdj.forEach(t=>{
+        const el = document.getElementById(`tile-${t.x}-${t.y}`);
+        if(el) el.classList.add('hover-attack');
+      });
       aoeSelectCallback=(x,y)=>{
         if(manhattan(target.x,target.y,x,y)!==1) return;
         if(x===target.x&&y===target.y) return;
         aoeMode=false; aoeSelectCallback=null;
+        validAdj.forEach(t=>{
+          const el = document.getElementById(`tile-${t.x}-${t.y}`);
+          if(el) el.classList.remove('hover-attack');
+        });
+        const tile=document.getElementById(`tile-${x}-${y}`);
+        if(tile) tile.classList.add('aoe-hover');
         const tgt=getCharAt(x,y);
-        if(tgt) doAttack(attacker,tgt,weapon,true,0,999).then(resolve);
-        else resolve();
+        setTimeout(()=>{
+          clearMoveHighlights();
+          if(tgt) doAttack(attacker,tgt,weapon,true,0,999).then(resolve);
+          else resolve();
+        }, 500);
       };
     });
   }
@@ -3401,6 +3416,10 @@ async function runAITurn(char){
 
   // ==========================================================
   //  AI TURN PRIORITY LIST
+  //  Evaluated top-down every turn; the AI does as much of this list
+  //  as it can within a single turn (chest-opening is a free action
+  //  that doesn't use up its move or attack, so it can still move
+  //  and/or attack afterward).
   //  1. Open chest if adjacent; use/equip any items received
   //  2. Move towards a chest if it is closer than the nearest enemy
   //  3. Move behind cover / onto high ground (only if it can still
@@ -3428,15 +3447,13 @@ async function runAITurn(char){
     return true;
   };
 
-  // --- Priority 1: open an adjacent chest ---
+  // --- Priority 1: open an adjacent chest (free action - doesn't use
+  //     up the move or the attack for this turn) ---
   const adjChest = findAdjacentChest(char);
   if(adjChest){
     logMsg(`${char.name} opens a chest!`);
     await new Promise(resolve=>{ openChest(char, adjChest.x, adjChest.y, resolve); });
     await aiUsePotions(char); // use/equip anything useful just received
-    document.getElementById('ai-thinking').classList.remove('active');
-    nextTurn();
-    return;
   }
 
   // --- Priority 2: move towards a chest, if one is closer than the nearest enemy ---
@@ -3445,30 +3462,41 @@ async function runAITurn(char){
   const closestChest = findClosestChest(char);
   const chestDist = closestChest ? chebyshev(char.x,char.y,closestChest.x,closestChest.y) : Infinity;
 
+  let moved = false;
   if(closestChest && chestDist < enemyDist){
     const path = findPathTo(char, closestChest.x, closestChest.y);
     if(path && path.length>1){
       await aiMoveAlongPath(char, path);
-      if(await tryAttack()) return;
-      endTurn();
-      return;
+      moved = true;
     }
   }
 
   // --- Priority 3: move behind cover / onto high ground, only if the
   //     AI can still hit the player from that position ---
-  const defensiveMove = findDefensiveMove(char, player);
-  if(defensiveMove){
-    await aiMoveAlongPath(char, defensiveMove);
-    if(await tryAttack()) return;
-    endTurn();
-    return;
+  if(!moved){
+    const defensiveMove = findDefensiveMove(char, player);
+    if(defensiveMove){
+      await aiMoveAlongPath(char, defensiveMove);
+      moved = true;
+    }
   }
 
   // --- Priority 4: move towards the closest enemy character ---
-  if(nearestEnemy){
+  if(!moved && nearestEnemy){
     const path = findPathTo(char, nearestEnemy.x, nearestEnemy.y);
-    if(path && path.length>1) await aiMoveAlongPath(char, path);
+    if(path && path.length>1){
+      await aiMoveAlongPath(char, path);
+      moved = true;
+    }
+  }
+
+  // A chest reached via priority 2's move might now be adjacent - grab it
+  // (still a free action) before attacking.
+  const adjChest2 = findAdjacentChest(char);
+  if(adjChest2 && !G.openedChests.has(tileKey(adjChest2.x,adjChest2.y))){
+    logMsg(`${char.name} opens a chest!`);
+    await new Promise(resolve=>{ openChest(char, adjChest2.x, adjChest2.y, resolve); });
+    await aiUsePotions(char);
   }
 
   // --- Priority 5: attack the closest character in range ---
