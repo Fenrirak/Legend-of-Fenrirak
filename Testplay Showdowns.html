@@ -1219,7 +1219,7 @@ const WEAPONS = {
       attackName: 'Twin Shot',
       baseDamage: 11, damageType: 'plus',
       diceCount: 3, diceCondition: '4or6', diceBonus: 7,
-      hitThrowMod: 0, effect: '1 tile', effectTiles: 1, range: 8,
+      hitThrowMod: 0, effect: '1 tile', effectTiles: 1, range: 7,
       desc: '11+ Damage. Roll die 3 times, for every 4 or 6, deal 7 extra damage.'
     },
     {
@@ -1227,7 +1227,7 @@ const WEAPONS = {
       attackName: 'Reign of Arrows',
       baseDamage: 10, damageType: 'flat',
       diceCount: 4, diceCondition: '5or6_spread', diceBonus: 0,
-      hitThrowMod: 1, effect: '1+ tiles (spread on 5/6)', effectTiles: 1, range: 6,
+      hitThrowMod: 1, effect: '1+ tiles (spread on 5/6)', effectTiles: 1, range: 5,
       special: 'shortbow_spread',
       desc: '10 Damage. Roll die 4 times; for every 5 or 6, hit an adjacent tile of choice.'
     },
@@ -1236,7 +1236,7 @@ const WEAPONS = {
       attackName: 'Blasting Arrow',
       baseDamage: 13, damageType: 'plus',
       diceCount: 2, diceCondition: 'odd', diceBonus: 4,
-      hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 6,
+      hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 5,
       desc: '13+ Damage. Roll die 2 times, for every odd number, deal 4 extra damage.'
     },
     {
@@ -1244,7 +1244,7 @@ const WEAPONS = {
       attackName: 'Flaming Arrows',
       baseDamage: 22, damageType: 'mixed_crossbow',
       diceCount: 3, diceCondition: 'crossbow',
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 7,
+      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6,
       desc: '22+/- Damage. Roll die 3 times. Every even: -4 damage. Every odd: +1 damage.'
     }
   ],
@@ -1265,7 +1265,7 @@ const WEAPONS = {
       baseDamage: 15, damageType: 'plus',
       diceCount: 3, diceCondition: 'even', diceBonus: 10,
       hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5,
-      passive: "Forest's Grace: With every attack done, heal 10 health. This is not an attack, it is a passive ability.",
+      passive: "Forest's Grace: With every attack that hits, heal 10 health. This is not an attack, it is a passive ability.",
       desc: '15+ Damage. Roll a die 3 times, for every even number, deal 10 more damage.'
     }
   ],
@@ -1885,7 +1885,7 @@ function startTileClick(x,y){
 
   G.playerStartX = x; G.playerStartY = y;
   startTilePhase=1;
-  document.getElementById('start-tile-title').textContent = 'Computer 1 choosing...';
+  document.getElementById('start-tile-title').textContent = 'Alexander choosing...';
   setTimeout(computerPickStartTile, 600);
 }
 
@@ -1901,7 +1901,7 @@ function computerPickStartTile(){
 
   if(startTilePhase<3){
     startTilePhase++;
-    const names=['Computer 1 choosing...','Computer 2 choosing...','Computer 3 choosing...'];
+    const names=['Alexander choosing...','Harwin choosing...','Lex choosing...'];
     document.getElementById('start-tile-title').textContent = names[startTilePhase-1]||'Done';
     setTimeout(computerPickStartTile, 600);
   } else {
@@ -2799,17 +2799,6 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
 
   logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
 
-  // Forest's Grace (Staff of Life passive): heal 10 HP with every attack done, hit or miss
-  if(w.id==='staff_of_life'){
-    const healAmt = Math.max(0, Math.min(10, attacker.maxHp - attacker.hp));
-    if(healAmt>0){
-      attacker.hp += healAmt;
-      logMsg(`${attacker.name}'s Forest's Grace heals them for ${healAmt} HP! (${attacker.hp}/${attacker.maxHp})`, 'heal');
-      updateStatPanel();
-      updateEnemyPanel();
-    }
-  }
-
   if(totalHit < targetDef){
     if(attacker.class==='ronald'){
       applyDamage(target, 5, true);
@@ -2899,6 +2888,15 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     target.skipAttackNextTurn = true;
     logMsg(`${target.name} cannot attack during their next turn!`);
   }
+  // Forest's Grace (Staff of Life passive): heal 10 HP, only when the attack hits
+  if(w.id==='staff_of_life'){
+    const healAmt = Math.max(0, Math.min(10, attacker.maxHp - attacker.hp));
+    if(healAmt>0){
+      attacker.hp += healAmt;
+      logMsg(`${attacker.name}'s Forest's Grace heals them for ${healAmt} HP! (${attacker.hp}/${attacker.maxHp})`, 'heal');
+    }
+  }
+
   updateEnemyPanel();
   updateStatPanel();
   return true;
@@ -3001,7 +2999,7 @@ function triggerVictory(){
   overlay.classList.add('active');
   word.className='victory';
   word.textContent='Victory!';
-  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 5000);
+  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 4500);
 }
 
 function triggerDefeat(){
@@ -3011,7 +3009,7 @@ function triggerDefeat(){
   overlay.classList.add('active');
   word.className='defeat';
   word.textContent='Defeat';
-  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 5000);
+  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 4500);
 }
 
 // ============================================================
@@ -3405,7 +3403,7 @@ async function playerShortbowAttack(attacker, target, weapon){
     }
     await new Promise(resolve=>{
       aoeMode=true;
-      setPhaseText(`Reign of Arrows: select a NEW tile adjacent to ${target.name} for spread hit ${s+1} of ${spreads}!`);
+      setPhaseText(`Reign of Arrows: select a tile adjacent to ${target.name} for spread hit ${s+1} of ${spreads}!`);
       // Outline the tiles the player is actually allowed to pick from
       // (already-used adjacent tiles are excluded)
       const validAdj = allAdj.filter(t=>!usedTiles.some(u=>u.x===t.x&&u.y===t.y));
