@@ -453,8 +453,8 @@
     line-height: 1;
   }
 
-  .tile.hover-move { filter: brightness(1.3); outline: 2px solid #2eb674; }
-  .tile.hover-attack { outline: 2px solid #ff3535; }
+  .tile.hover-move { filter: brightness(1.3); box-shadow: inset 0 0 0 3px #2eb674; }
+  .tile.hover-attack { box-shadow: inset 0 0 0 3px #ff3535; }
   .tile.selected-move { background: rgba(46,182,116,0.5) !important; }
   .tile.selected-attack { background: rgba(255,53,53,0.4) !important; }
 
@@ -830,7 +830,7 @@
   }
 
   /* AOE drag highlight */
-  .tile.aoe-hover { background: rgba(255, 53, 53, 0.45) !important; outline: 2px solid #ff3535; }
+  .tile.aoe-hover { background: rgba(255, 53, 53, 0.45) !important; box-shadow: inset 0 0 0 3px #ff3535; }
 
   #phase-indicator {
     font-size: 0.98em;
@@ -2717,7 +2717,7 @@ async function initiatePlayerAttack(attacker, target, weapon){
     return;
   }
   if(w.special==='aoe8surround'){
-    await playerAOESurrounding(attacker, w);
+    await playerAOESurrounding(attacker, target, w);
     return;
   }
   if(w.special==='aoe2x2'){
@@ -3231,14 +3231,82 @@ async function playerAOEGreataxe(attacker, primaryTarget, weapon){
   });
 }
 
-async function playerAOESurrounding(attacker, weapon){
-  // Destructive Rush: hits all 8 surrounding squares automatically
-  logMsg(`${attacker.name} uses Destructive Rush on all surrounding tiles!`);
-  const surrounding = getAdjacentTiles(attacker.x, attacker.y, true);
-  for(const t of surrounding){
-    const tgt = getCharAt(t.x,t.y);
-    if(tgt && tgt!==attacker) await doAttack(attacker,tgt,weapon,true,0,999);
+// Destructive Rush (Sword and Buckler): a single Hit Throw is rolled
+// against the selected enemy to see if the swing connects at all. If it
+// does, damage is dealt to every character standing in the 8 tiles
+// surrounding the ATTACKER (not the target) - the target only matters for
+// determining whether the attack hits in the first place.
+async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
+  const w = weapon;
+  logMsg(`${attacker.name} uses Destructive Rush!`);
+
+  const coverRes = checkCoverLOS(attacker.x,attacker.y,target.x,target.y,attacker,target);
+  if(coverRes.blocked){
+    logMsg(`${attacker.name}'s attack on ${target.name} blocked by cover!`);
+    return;
   }
+
+  // Single Hit Throw against the selected target
+  let hitRoll = roll(6);
+  let hitMod = w.hitThrowMod;
+  if(isHighGround(attacker.x,attacker.y)) hitMod += 1;
+  if(attacker.class==='archer'){
+    const al = getTerrainLevel(attacker.x,attacker.y);
+    const tl = getTerrainLevel(target.x,target.y);
+    if(tl < al) hitMod += 1;
+  }
+  if(isPlayer && G.vialBonusHit){
+    hitMod += G.vialBonusHit;
+    logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusHit} to Hit Throw!`, 'heal');
+    G.vialBonusHit = 0;
+  }
+  const totalHit = hitRoll + hitMod;
+  const targetDef = target.defence + coverRes.defBonus;
+  logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
+
+  if(totalHit < targetDef){
+    if(attacker.class==='ronald'){
+      applyDamage(target, 5, true);
+      logMsg(`Miss! But ${attacker.name}'s Magic of Precision deals 5 damage anyway!`, 'damage');
+      updateEnemyPanel(); updateStatPanel();
+      return;
+    }
+    logMsg(`Miss!`);
+    return;
+  }
+
+  // Hit! Work out the damage once, then apply it to everyone standing
+  // around the attacker.
+  let dmg = calcWeaponDamage(w, attacker, target, isPlayer);
+  if(isPlayer && G.vialBonusDamage){
+    dmg += G.vialBonusDamage;
+    logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusDamage} to Damage!`, 'heal');
+    G.vialBonusDamage = 0;
+  }
+  if(isPlayer && G.godlyStrengthActive){
+    dmg += attacker.class==='knight' ? 5 : 3;
+  }
+
+  const surrounding = getAdjacentTiles(attacker.x, attacker.y, true);
+  let hitAnyone = false;
+  for(const t of surrounding){
+    const victim = getCharAt(t.x, t.y);
+    if(!victim || victim===attacker) continue;
+    let vdmg = dmg;
+    // Each victim's own Parry (if they're wearing a Sword and Buckler) applies individually
+    if(victim.equippedWeapon?.id==='sword_buckler' && vdmg>0 && vdmg<18){
+      vdmg = Math.max(0, vdmg-4);
+      logMsg(`${victim.name}'s Parry reduces damage by 4!`);
+    }
+    applyDamage(victim, vdmg, true);
+    logMsg(`${attacker.name}'s Destructive Rush deals ${vdmg} damage to ${victim.name}! (${victim.hp}/${victim.maxHp} HP remaining)`, 'damage');
+    hitAnyone = true;
+  }
+  if(!hitAnyone) logMsg(`${attacker.name}'s Destructive Rush connects, but no one is standing nearby to hit!`);
+}
+
+async function playerAOESurrounding(attacker, target, weapon){
+  await resolveDestructiveRush(attacker, target, weapon, true);
   G.hasActedThisTurn=true; G.phase='game';
   checkWinLose(); updateStatPanel(); updateEnemyPanel();
 }
@@ -3432,9 +3500,9 @@ async function runAITurn(char){
   //  and/or attack afterward).
   //  1. Open chest if adjacent; use/equip any items received
   //  2. Move towards a chest if it is closer than the nearest enemy
-  //  3. Move behind cover / onto high ground (only if it can still
+  //  3. Move towards the closest enemy character
+  //  4. Move behind cover / onto high ground (only if it can still
   //     hit the player from there)
-  //  4. Move towards the closest enemy character
   //  5. Attack the closest character in range (prefer the human
   //     player on a tie)
   // ==========================================================
@@ -3481,21 +3549,21 @@ async function runAITurn(char){
     }
   }
 
-  // --- Priority 3: move behind cover / onto high ground, only if the
+  // --- Priority 3: move towards the closest enemy character ---
+  if(!moved && nearestEnemy){
+    const path = findPathTo(char, nearestEnemy.x, nearestEnemy.y);
+    if(path && path.length>1){
+      await aiMoveAlongPath(char, path);
+      moved = true;
+    }
+  }
+
+  // --- Priority 4: move behind cover / onto high ground, only if the
   //     AI can still hit the player from that position ---
   if(!moved){
     const defensiveMove = findDefensiveMove(char, player);
     if(defensiveMove){
       await aiMoveAlongPath(char, defensiveMove);
-      moved = true;
-    }
-  }
-
-  // --- Priority 4: move towards the closest enemy character ---
-  if(!moved && nearestEnemy){
-    const path = findPathTo(char, nearestEnemy.x, nearestEnemy.y);
-    if(path && path.length>1){
-      await aiMoveAlongPath(char, path);
       moved = true;
     }
   }
@@ -3880,8 +3948,7 @@ async function aiDoAttack(char, target){
     if(chosen.length===0){ logMsg(`${char.name} has no adjacent targets for Iron Cleave.`); return; }
     for(const t of chosen) await doAttack(char,t.char,w,false,0,999);
   } else if(w.special==='aoe8surround'){
-    const surrounding=getAdjacentTiles(char.x,char.y,true);
-    for(const t of surrounding){ const tgt=getCharAt(t.x,t.y); if(tgt&&tgt!==char) await doAttack(char,tgt,w,false,0,999); }
+    await resolveDestructiveRush(char, target, w, false);
   } else if(w.special==='aoe2x2'){
     // Choose 2x2 area that hits most enemies
     let bestArea=null, bestCount=-1;
