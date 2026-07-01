@@ -1207,7 +1207,7 @@ const WEAPONS = {
       hitThrowMod: 0, effect: '8 surrounding tiles', effectTiles: 8, range: 1,
       special: 'aoe8surround',
       passive: 'Parry: Take 4 less damage if attack deals <18 (before Parry).',
-      desc: '17- Damage. Deal 1 less damage for every damage taken since start of last turn. Minimum 0. Effect: 8 surrounding tiles.'
+      desc: '17- Damage. Deal 1 less damage for every damage taken since start of last turn. Minimum 5. Effect: 8 surrounding tiles.'
     }
   ],
   archer: [
@@ -2908,7 +2908,7 @@ function calcWeaponDamage(w, attacker, target, isPlayer){
   } else if(cond==='minus_dmg_taken'){
     // Destructive Rush
     const taken = attacker.damageTakenLastTurn||0;
-    dmg = Math.max(0, w.baseDamage - taken);
+    dmg = Math.max(5, w.baseDamage - taken);
   } else if(cond==='plus_pct_dmg'){
     // Fenrirak's Tail Blade: 5 + 1 per 2 damage taken
     const damageTaken = target.maxHp - target.hp;
