@@ -1255,7 +1255,7 @@ const WEAPONS = {
       attackName: 'Fireball',
       baseDamage: 25, damageType: 'plus',
       diceCount: 2, diceCondition: 'even', diceBonus: 6,
-      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 3,
+      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4,
       special: 'aoe2x2',
       desc: '25+ Damage. Roll a die 2 times, for every even number, deal 6 more damage. Effect: 4 tiles in a 2×2 area.'
     },
@@ -1265,7 +1265,7 @@ const WEAPONS = {
       baseDamage: 15, damageType: 'plus',
       diceCount: 3, diceCondition: 'even', diceBonus: 10,
       hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5,
-      passive: "Forest's Grace: With every attack that hits, heal 10 health. This is not an attack, it is a passive ability.",
+      passive: "Forest's Grace: With every attack that hits, heal 5 health. This is not an attack, it is a passive ability.",
       desc: '15+ Damage. Roll a die 3 times, for every even number, deal 10 more damage.'
     }
   ],
@@ -1328,7 +1328,7 @@ const WEAPONS = {
       attackName: 'Fireball',
       baseDamage: 22, damageType: 'plus',
       diceCount: 3, diceCondition: 'even', diceBonus: 5,
-      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 5,
+      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 6,
       special: 'aoe2x2',
       desc: '22+ Damage. Roll die 3 times, for every even number, deal 5 more damage. Effect: 4 tiles in a 2×2 area.'
     },
@@ -2888,9 +2888,9 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     target.skipAttackNextTurn = true;
     logMsg(`${target.name} cannot attack during their next turn!`);
   }
-  // Forest's Grace (Staff of Life passive): heal 10 HP, only when the attack hits
+  // Forest's Grace (Staff of Life passive): heal 5 HP, only when the attack hits
   if(w.id==='staff_of_life'){
-    const healAmt = Math.max(0, Math.min(10, attacker.maxHp - attacker.hp));
+    const healAmt = Math.max(0, Math.min(5, attacker.maxHp - attacker.hp));
     if(healAmt>0){
       attacker.hp += healAmt;
       logMsg(`${attacker.name}'s Forest's Grace heals them for ${healAmt} HP! (${attacker.hp}/${attacker.maxHp})`, 'heal');
@@ -2996,9 +2996,10 @@ function triggerVictory(){
   G.phase='game-over';
   const overlay = document.getElementById('outcome-overlay');
   const word = document.getElementById('outcome-word');
+  const player = G.characters.find(c=>c.isPlayer);
   overlay.classList.add('active');
   word.className='victory';
-  word.textContent='Victory!';
+  word.textContent = (player && player.class==='helen') ? 'Victory ❤️' : 'Victory!';
   setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 4500);
 }
 
@@ -3006,9 +3007,10 @@ function triggerDefeat(){
   G.phase='game-over';
   const overlay = document.getElementById('outcome-overlay');
   const word = document.getElementById('outcome-word');
+  const player = G.characters.find(c=>c.isPlayer);
   overlay.classList.add('active');
   word.className='defeat';
-  word.textContent='Defeat';
+  word.textContent = (player && player.class==='ronald') ? 'How did you lose...' : 'Defeat';
   setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 4500);
 }
 
@@ -3508,11 +3510,10 @@ async function runAITurn(char){
 
   // ==========================================================
   //  AI TURN PRIORITY LIST
-  //  Evaluated top-down every turn; the AI does as much of this list
-  //  as it can within a single turn (chest-opening is a free action
-  //  that doesn't use up its move or attack, so it can still move
-  //  and/or attack afterward).
-  //  1. Open chest if adjacent; use/equip any items received
+  //  Evaluated top-down every turn. Opening a chest ends the turn
+  //  immediately (same rule as the human player) - the AI cannot open
+  //  a chest and attack in the same turn, and will attack next turn.
+  //  1. Open chest if adjacent; use/equip any items received, then end turn
   //  2. Move towards a chest if it is closer than the nearest enemy
   //  3. Move towards the closest enemy character
   //  4. Move behind cover / onto high ground (only if it can still
@@ -3539,13 +3540,17 @@ async function runAITurn(char){
     return true;
   };
 
-  // --- Priority 1: open an adjacent chest (free action - doesn't use
-  //     up the move or the attack for this turn) ---
+  // --- Priority 1: open an adjacent chest. Opening a chest ends the
+  //     turn immediately (same rule as the human player), so the AI
+  //     does this instead of moving/attacking this turn, and will
+  //     attack next turn. ---
   const adjChest = findAdjacentChest(char);
   if(adjChest){
     logMsg(`${char.name} opens a chest!`);
     await new Promise(resolve=>{ openChest(char, adjChest.x, adjChest.y, resolve); });
     await aiUsePotions(char); // use/equip anything useful just received
+    endTurn();
+    return;
   }
 
   // --- Priority 2: move towards a chest, if one is closer than the nearest enemy ---
@@ -3582,13 +3587,15 @@ async function runAITurn(char){
     }
   }
 
-  // A chest reached via priority 2's move might now be adjacent - grab it
-  // (still a free action) before attacking.
+  // A chest reached via priority 2's move might now be adjacent - grab it.
+  // Opening it still ends the turn immediately, so the AI attacks next turn.
   const adjChest2 = findAdjacentChest(char);
   if(adjChest2 && !G.openedChests.has(tileKey(adjChest2.x,adjChest2.y))){
     logMsg(`${char.name} opens a chest!`);
     await new Promise(resolve=>{ openChest(char, adjChest2.x, adjChest2.y, resolve); });
     await aiUsePotions(char);
+    endTurn();
+    return;
   }
 
   // --- Priority 5: attack the closest character in range ---
