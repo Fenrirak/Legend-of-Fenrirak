@@ -146,26 +146,26 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 620px;
+    max-width: 900px;
   }
   .board-option-label {
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 6px;
-    padding: 12px 20px;
+    background: none;
+    border: none;
+    padding: 0;
     font-family: 'Cinzel', serif;
     color: var(--gold);
-    font-size: 1.05em;
-    letter-spacing: 1px;
-    margin-bottom: 22px;
+    font-size: 1.8em;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 0 0 14px rgba(212,175,55,0.55), 0 2px 4px rgba(0,0,0,0.6);
+    margin-bottom: 20px;
     text-align: center;
-    width: 62%;
   }
   .board-preview-row {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
+    gap: 34px;
     margin-bottom: 20px;
     width: 100%;
   }
@@ -181,13 +181,13 @@
     flex: 0 0 auto;
     width: 0;
     height: 0;
-    border-top: clamp(40px, 11vw, 90px) solid transparent;
-    border-bottom: clamp(40px, 11vw, 90px) solid transparent;
+    border-top: clamp(18px, 4vw, 30px) solid transparent;
+    border-bottom: clamp(18px, 4vw, 30px) solid transparent;
     font-size: 0;
     overflow: hidden;
   }
-  #board-arrow-left { border-right: clamp(30px, 8vw, 68px) solid var(--accent); }
-  #board-arrow-right { border-left: clamp(30px, 8vw, 68px) solid var(--accent); }
+  #board-arrow-left { border-right: clamp(14px, 3vw, 22px) solid var(--accent); }
+  #board-arrow-right { border-left: clamp(14px, 3vw, 22px) solid var(--accent); }
   .board-arrow:hover { filter: brightness(1.3); transform: scale(1.08); }
   .board-arrow:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
   .board-preview-box {
@@ -195,34 +195,123 @@
     border: 1px solid var(--panel-border);
     border-radius: 10px;
     width: 100%;
-    max-width: 460px;
+    max-width: 780px;
     aspect-ratio: 11 / 9;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     flex: 1 1 auto;
+    padding: 6px;
   }
   #board-preview-inner {
     display: grid;
+    width: 100%;
+    height: 100%;
     border: 2px solid var(--panel-border);
     background: #c8bfa0;
   }
+  .tile.preview-tile {
+    width: auto;
+    height: auto;
+    border: 0.5px solid rgba(0,0,0,0.15);
+    font-size: 0;
+    cursor: default;
+  }
+  /* The full-size board hard-codes 52px log art offsets since real tiles
+     are always exactly 52px. Preview tiles scale to fit the container, so
+     the log art needs to scale with them (percentage-based) instead, or it
+     overflows/misaligns at the preview's smaller size. */
+  .tile.preview-tile.log-h-left {
+    background-image: url('LogHorizontal.png');
+    background-size: 200% 100%;
+    background-position: 0% 0%;
+  }
+  .tile.preview-tile.log-h-right {
+    background-image: url('LogHorizontal.png');
+    background-size: 200% 100%;
+    background-position: 100% 0%;
+  }
+  .tile.preview-tile.log-v-top {
+    background-image: url('LogVertical.png');
+    background-size: 100% 200%;
+    background-position: 0% 0%;
+  }
+  .tile.preview-tile.log-v-bottom {
+    background-image: url('LogVertical.png');
+    background-size: 100% 200%;
+    background-position: 0% 100%;
+  }
   #select-board-btn {
     width: 100%;
-    max-width: 460px;
+    max-width: 780px;
     margin: 0 0 18px;
   }
   .board-select-extra-btns {
     display: flex;
     gap: 12px;
     width: 100%;
-    max-width: 460px;
+    max-width: 780px;
     justify-content: center;
   }
   .board-select-extra-btns .btn {
     flex: 1 1 0;
     margin: 0;
+  }
+  .dice-setting-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    color: var(--text-dim);
+    font-size: 0.95em;
+    cursor: pointer;
+    user-select: none;
+  }
+  .dice-setting-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    cursor: pointer;
+  }
+  .dice-setting-box {
+    position: relative;
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    background: var(--panel-bg);
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  .dice-setting-box::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 11px;
+    border: solid var(--bg-dark, #111);
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .dice-setting-toggle input[type="checkbox"]:checked ~ .dice-setting-box {
+    background: var(--gold);
+    box-shadow: 0 0 8px rgba(212,175,55,0.6);
+  }
+  .dice-setting-toggle input[type="checkbox"]:checked ~ .dice-setting-box::after {
+    opacity: 1;
+  }
+  .dice-setting-toggle input[type="checkbox"]:focus-visible ~ .dice-setting-box {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  .dice-setting-toggle:hover .dice-setting-box {
+    filter: brightness(1.2);
   }
 
   input[type="text"] {
@@ -1058,6 +1147,12 @@
       <button class="btn success" onclick="selectRandomBoard()">🎲 Random Board</button>
       <button class="btn" style="background:#2a6b8a;" onclick="selectBoard('tutorial')">📘 Tutorial</button>
     </div>
+
+    <label class="dice-setting-toggle" for="interactive-dice-toggle">
+      <input type="checkbox" id="interactive-dice-toggle" onchange="setInteractiveDice(this.checked)">
+      <span class="dice-setting-box" aria-hidden="true"></span>
+      <span>Roll &amp; watch my own Hit Throw and Damage dice</span>
+    </label>
   </div>
 </div>
 
@@ -1169,7 +1264,7 @@
     </div>
     <div style="margin-top:6px;">
       <button class="attack-name-btn" id="sp-attack-btn" onclick="playerClickAttack()"></button>
-      <button class="btn" id="cancel-attack-btn" onclick="cancelPlayerAttackTargeting()" style="display:none; width:100%; margin-top:4px;">Cancel Attack</button>
+      <button class="btn" id="cancel-attack-btn" onclick="cancelPlayerAttackTargeting()" style="display:none; width:auto; padding:6px 14px; font-size:0.8em; margin:4px auto 0;">Cancel Attack</button>
     </div>
     <div id="sp-inventory-block" style="min-height:46px;">
       <div class="section-header">Inventory</div>
@@ -1634,7 +1729,24 @@ let G = {
   reachBonusActive: false,
   godlyStrengthActive: false,
   vialBluePending: false,
+  settings: { interactiveDice: false },
 };
+
+// Load saved settings (if any) and reflect them in the UI once the DOM is ready.
+try {
+  const savedSettings = JSON.parse(localStorage.getItem('showdowns_settings')||'{}');
+  Object.assign(G.settings, savedSettings);
+} catch(e){ /* ignore malformed/unavailable storage */ }
+
+function setInteractiveDice(val){
+  G.settings.interactiveDice = !!val;
+  try { localStorage.setItem('showdowns_settings', JSON.stringify(G.settings)); } catch(e){}
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const toggle = document.getElementById('interactive-dice-toggle');
+  if(toggle) toggle.checked = !!G.settings.interactiveDice;
+});
 
 // ============================================================
 //  UTILITY
@@ -1711,6 +1823,7 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if(id==='screen-game') fitGameScreen();
+  if(id==='screen-board') renderBoardPreview();
 }
 
 // ============================================================
@@ -1799,6 +1912,62 @@ function submitName(){
     G.isSpecialClass = false;
   }
   showScreen('screen-board');
+}
+
+// ============================================================
+//  BOARD PREVIEW (screen-board carousel)
+// ============================================================
+// Only the numbered boards are cycled through here; Random and Tutorial
+// are handled by their own dedicated buttons below the preview.
+const PREVIEW_BOARD_IDS = Object.keys(BOARD_CONFIGS).filter(k=>k!=='tutorial').map(Number).sort((a,b)=>a-b);
+let previewBoardIdx = 0;
+
+const PREVIEW_CLASS_MAP = {
+  normal:'normal', difficult:'difficult', hill:'difficult',
+  highground:'high-ground', pc:'partial-cover', hc:'heavy-cover',
+  thorny:'thorny', log:'log', chest:'chest', chest_hg:'high-ground chest',
+  starting:'starting'
+};
+
+function renderBoardPreview(){
+  const id = PREVIEW_BOARD_IDS[previewBoardIdx];
+  const cfg = BOARD_CONFIGS[id];
+  document.getElementById('board-option-label').textContent = 'Board Option ' + id;
+
+  const inner = document.getElementById('board-preview-inner');
+  inner.innerHTML = '';
+  inner.style.gridTemplateColumns = 'repeat(11, 1fr)';
+  inner.style.gridTemplateRows = 'repeat(9, 1fr)';
+
+  for(let y=8;y>=0;y--){
+    for(let x=0;x<=10;x++){
+      const cell = document.createElement('div');
+      cell.className = 'tile preview-tile';
+      const t = cfg.tiles[x+','+y];
+      const type = t ? t.type : 'normal';
+      if(type==='difficult' && t && t.label==='Hill' && t.hillDir){
+        cell.classList.add('hill-'+t.hillDir);
+      } else if(cfg.startingTiles.some(s=>s.x===x&&s.y===y) && type==='normal'){
+        cell.classList.add('starting');
+      } else {
+        (PREVIEW_CLASS_MAP[type]||'normal').split(' ').forEach(c=>cell.classList.add(c));
+      }
+      if(type==='log' && t.logDir) cell.classList.add('log-'+t.logDir);
+      inner.appendChild(cell);
+    }
+  }
+
+  document.getElementById('board-arrow-left').disabled = false;
+  document.getElementById('board-arrow-right').disabled = false;
+}
+
+function cycleBoardPreview(dir){
+  previewBoardIdx = (previewBoardIdx + dir + PREVIEW_BOARD_IDS.length) % PREVIEW_BOARD_IDS.length;
+  renderBoardPreview();
+}
+
+function confirmBoardPreviewSelection(){
+  selectBoard(PREVIEW_BOARD_IDS[previewBoardIdx]);
 }
 
 function selectBoard(id){
@@ -2388,8 +2557,9 @@ function updateStatPanel(){
 
   const isMyTurn = getCurrentChar()?.isPlayer;
   const tutorialForcedMove = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
+  const tutorialChestNotOpened = G.tutorialMode && G.tutorialStage==='go-chest';
   document.getElementById('end-turn-btn').disabled = !isMyTurn || G.phase==='game-over' || tutorialForcedMove;
-  document.getElementById('sp-attack-btn').disabled = G.hasActedThisTurn || !isMyTurn || G.phase==='game-over';
+  document.getElementById('sp-attack-btn').disabled = G.hasActedThisTurn || !isMyTurn || G.phase==='game-over' || tutorialChestNotOpened;
 }
 
 // ============================================================
@@ -2926,6 +3096,10 @@ function onTileClick(e){
 function playerClickAttack(){
   if(G.hasActedThisTurn) return;
   if(!getCurrentChar()?.isPlayer) return;
+  if(G.tutorialMode && G.tutorialStage==='go-chest'){
+    setPhaseText('Find and open the Chest first - no fighting until then!');
+    return;
+  }
   const player = G.characters.find(c=>c.isPlayer && c.alive);
   if(!player) return;
 
@@ -2959,7 +3133,7 @@ function beginPlayerAttackTargeting(player, weapon){
 function cancelPlayerAttackTargeting(){
   if(G.phase!=='player-attack-targeting') return;
   clearAttackHighlights();
-  G.phase = 'game';
+  G.phase = 'player-move';
   G.hasMovedThisTurn = attackTargetingPrevMoved;
   selectedAttackWeapon = null;
   document.getElementById('cancel-attack-btn').style.display = 'none';
@@ -3181,6 +3355,7 @@ async function initiatePlayerAttack(attacker, target, weapon){
 
 async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOverride=null){
   const w = weapon;
+  const interactive = isPlayer && G.settings.interactiveDice;
   let range = rangeOverride !== null ? rangeOverride : getEffectiveRange(attacker, w, target, isPlayer);
 
   // Hard range validation for all attacks (player + AI)
@@ -3197,7 +3372,7 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   }
 
   // Hit throw
-  let hitRoll = roll(6);
+  let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!');
   let hitMod = w.hitThrowMod;
   // High ground bonus
   if(isHighGround(attacker.x,attacker.y)) hitMod += 1;
@@ -3255,7 +3430,7 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   } else if(w.id==='circle_of_calamity'){
     dmg = w.baseDamage;
   } else {
-    dmg = calcWeaponDamage(w, attacker, target, isPlayer);
+    dmg = await calcWeaponDamage(w, attacker, target, isPlayer, interactive);
   }
   dmg += extraDmg;
   if(isPlayer && G.vialBonusDamage){
@@ -3335,7 +3510,7 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   return true;
 }
 
-function calcWeaponDamage(w, attacker, target, isPlayer){
+async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false){
   let dmg = w.baseDamage;
   const cond = w.diceCondition;
 
@@ -3346,7 +3521,7 @@ function calcWeaponDamage(w, attacker, target, isPlayer){
   } else if(cond==='crossbow'){
     // 22 +/- based on rolls
     for(let i=0;i<w.diceCount;i++){
-      const r = roll(6);
+      const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`);
       if(r%2===0) dmg -= 4;
       else dmg += 1;
     }
@@ -3362,7 +3537,7 @@ function calcWeaponDamage(w, attacker, target, isPlayer){
     dmg = w.baseDamage + Math.floor(damageTaken/2);
   } else if(cond==='oblivion'){
     // Helen's Staff: 25+, if odd roll 50
-    const r = roll(6);
+    const r = await rollD6(interactive, 'Oblivion roll');
     dmg = r%2!==0 ? 50 : 25;
     // Extra dice from the weapon
   } else if(cond==='low_hp_bonus'){
@@ -3371,7 +3546,7 @@ function calcWeaponDamage(w, attacker, target, isPlayer){
   } else {
     // Standard extra dice
     for(let i=0;i<w.diceCount;i++){
-      const r = roll(6);
+      const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`);
       let matches = false;
       if(cond==='even') matches = r%2===0;
       else if(cond==='odd') matches = r%2!==0;
@@ -3584,6 +3759,10 @@ function clickInventoryItem(idx){
   }
 
   // Show item popup
+  if(G.tutorialMode && G.tutorialStage==='go-chest'){
+    setPhaseText('Find and open the Chest first - no item use until then!');
+    return;
+  }
   G.activeItemUser = player;
   G.activeItem = {item, idx};
   document.getElementById('ip-title').textContent = item.name;
@@ -3707,6 +3886,7 @@ async function playerAOEGreataxe(attacker, primaryTarget, weapon){
 // determining whether the attack hits in the first place.
 async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
   const w = weapon;
+  const interactive = isPlayer && G.settings.interactiveDice;
   logMsg(`${attacker.name} uses Destructive Rush!`);
 
   const coverRes = checkCoverLOS(attacker.x,attacker.y,target.x,target.y,attacker,target);
@@ -3716,7 +3896,7 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
   }
 
   // Single Hit Throw against the selected target
-  let hitRoll = roll(6);
+  let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!');
   let hitMod = w.hitThrowMod;
   if(isHighGround(attacker.x,attacker.y)) hitMod += 1;
   if(attacker.class==='archer'){
@@ -3746,7 +3926,7 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
 
   // Hit! Work out the damage once, then apply it to everyone standing
   // around the attacker.
-  let dmg = calcWeaponDamage(w, attacker, target, isPlayer);
+  let dmg = await calcWeaponDamage(w, attacker, target, isPlayer, interactive);
   if(isPlayer && G.vialBonusDamage){
     dmg += G.vialBonusDamage;
     logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusDamage} to Damage!`, 'heal');
@@ -4643,6 +4823,14 @@ function closeCustomModal(){
 let diceResolve = null;
 let diceHasRolled = false;
 let diceMaxResult = null;
+
+// Rolls a d6 either instantly (normal/AI play) or, when the player has
+// opted in via Settings, by popping up the same interactive dice modal
+// used for chest loot / turn order, so they can click Roll and watch it.
+async function rollD6(interactive, label){
+  if(!interactive) return roll(6);
+  return await new Promise(resolve=>{ openDice(label, resolve); });
+}
 
 function openDice(title, callback, maxResult=null){
   diceResolve = callback;
