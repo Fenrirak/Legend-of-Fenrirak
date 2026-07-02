@@ -263,6 +263,7 @@
     align-items: center;
     gap: 10px;
     margin-top: 20px;
+    margin-bottom: 20px;
     color: var(--text-dim);
     font-size: 0.95em;
     cursor: pointer;
@@ -1141,18 +1142,18 @@
       <button class="board-arrow" id="board-arrow-right" onclick="cycleBoardPreview(1)" aria-label="Next board"></button>
     </div>
 
+    <label class="dice-setting-toggle" for="interactive-dice-toggle" style="margin-bottom: 18px;">
+      <input type="checkbox" id="interactive-dice-toggle" onchange="setInteractiveDice(this.checked)">
+      <span class="dice-setting-box" aria-hidden="true"></span>
+      <span>Roll &amp; watch my own Hit Throw and Damage dice</span>
+    </label>
+
     <button class="btn" id="select-board-btn" onclick="confirmBoardPreviewSelection()">Select Board</button>
 
     <div class="board-select-extra-btns">
       <button class="btn success" onclick="selectRandomBoard()">🎲 Random Board</button>
       <button class="btn" style="background:#2a6b8a;" onclick="selectBoard('tutorial')">📘 Tutorial</button>
     </div>
-
-    <label class="dice-setting-toggle" for="interactive-dice-toggle">
-      <input type="checkbox" id="interactive-dice-toggle" onchange="setInteractiveDice(this.checked)">
-      <span class="dice-setting-box" aria-hidden="true"></span>
-      <span>Roll &amp; watch my own Hit Throw and Damage dice</span>
-    </label>
   </div>
 </div>
 
@@ -2783,6 +2784,13 @@ function startTurn(){
 
   checkWinLose();
   if(G.phase==='game-over') return;
+  
+  // If the character died from start-of-turn effects (like thorny vines),
+  // skip the rest of their turn immediately.
+  if(!char.alive){
+    nextTurn();
+    return;
+  }
 
   const turnInfoEl = document.getElementById('turn-info');
   turnInfoEl.textContent = `${char.name}'s Turn (${char.class})`;
@@ -3371,26 +3379,28 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     return false;
   }
 
-  // Hit throw
-  let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!');
+  // Calculate hit modifiers and target defense BEFORE rolling
   let hitMod = w.hitThrowMod;
-  // High ground bonus
   if(isHighGround(attacker.x,attacker.y)) hitMod += 1;
-  // Hunter's Eyes
   if(attacker.class==='archer'){
     const al = getTerrainLevel(attacker.x,attacker.y);
     const tl = getTerrainLevel(target.x,target.y);
     if(tl < al) hitMod += 1;
   }
-  // Potion of Reach doesn't affect hit throw, just range
-  // Vial of Red Liquid: spend any banked +1 Hit Throw bonus on this throw.
   if(isPlayer && G.vialBonusHit){
     hitMod += G.vialBonusHit;
     logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusHit} to Hit Throw!`, 'heal');
     G.vialBonusHit = 0;
   }
+  const targetDef = target.defence + coverRes.defBonus;
+
+  // Hit throw (with interactive evaluation)
+  let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!', (res) => {
+    const totalHit = res + hitMod;
+    return totalHit >= targetDef ? "HIT!" : "MISS!";
+  });
+
   const totalHit = hitRoll + hitMod;
-  let targetDef = target.defence + coverRes.defBonus;
 
   if(totalHit < targetDef){
     logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
@@ -3521,7 +3531,10 @@ async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false
   } else if(cond==='crossbow'){
     // 22 +/- based on rolls
     for(let i=0;i<w.diceCount;i++){
-      const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`);
+      const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
+        if(res%2===0) return "-4 damage!";
+        return "+1 damage!";
+      });
       if(r%2===0) dmg -= 4;
       else dmg += 1;
     }
@@ -3537,7 +3550,9 @@ async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false
     dmg = w.baseDamage + Math.floor(damageTaken/2);
   } else if(cond==='oblivion'){
     // Helen's Staff: 25+, if odd roll 50
-    const r = await rollD6(interactive, 'Oblivion roll');
+    const r = await rollD6(interactive, 'Oblivion roll', (res) => {
+      return res%2!==0 ? "50 damage!" : "25 damage.";
+    });
     dmg = r%2!==0 ? 50 : 25;
     // Extra dice from the weapon
   } else if(cond==='low_hp_bonus'){
@@ -3546,7 +3561,15 @@ async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false
   } else {
     // Standard extra dice
     for(let i=0;i<w.diceCount;i++){
-      const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`);
+      const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
+        let matches = false;
+        if(cond==='even') matches = res%2===0;
+        else if(cond==='odd') matches = res%2!==0;
+        else if(cond==='5or6') matches = res>=5;
+        else if(cond==='4or6') matches = res===4||res===6;
+        if(matches) return `+${w.diceBonus || 0} damage!`;
+        return "No bonus.";
+      });
       let matches = false;
       if(cond==='even') matches = r%2===0;
       else if(cond==='odd') matches = r%2!==0;
@@ -3824,12 +3847,20 @@ async function useItem(char, item, idx, isPlayer){
     logMsg(`${char.name} uses Potion of Reach! +2 range this turn.`, 'heal');
     char.inventory.splice(idx,1);
   } else if(item.name==='Vial of Blue Liquid'){
-    openDice(`${char.name}: Roll for Vial of Blue Liquid!`, (r)=>{
+    if(isPlayer){
+      openDice(`${char.name}: Roll for Vial of Blue Liquid!`, (r)=>{
+        let healed;
+        if(r<=4){ healed=Math.min(2,char.maxHp-char.hp); char.hp=Math.min(char.maxHp,char.hp+2); }
+        else { healed=Math.min(15,char.maxHp-char.hp); char.hp=Math.min(char.maxHp,char.hp+15); }
+        logMsg(`${char.name} uses Vial of Blue Liquid! Healed ${healed} HP.`, 'heal');
+      });
+    } else {
+      const r = roll(6);
       let healed;
       if(r<=4){ healed=Math.min(2,char.maxHp-char.hp); char.hp=Math.min(char.maxHp,char.hp+2); }
       else { healed=Math.min(15,char.maxHp-char.hp); char.hp=Math.min(char.maxHp,char.hp+15); }
       logMsg(`${char.name} uses Vial of Blue Liquid! Healed ${healed} HP.`, 'heal');
-    });
+    }
     char.inventory.splice(idx,1);
   } else if(item.name==='Potion of Godly Strength'){
     G.godlyStrengthActive = true;
@@ -3895,8 +3926,7 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
     return;
   }
 
-  // Single Hit Throw against the selected target
-  let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!');
+  // Calculate hit modifiers and target defense BEFORE rolling
   let hitMod = w.hitThrowMod;
   if(isHighGround(attacker.x,attacker.y)) hitMod += 1;
   if(attacker.class==='archer'){
@@ -3909,8 +3939,15 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
     logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusHit} to Hit Throw!`, 'heal');
     G.vialBonusHit = 0;
   }
-  const totalHit = hitRoll + hitMod;
   const targetDef = target.defence + coverRes.defBonus;
+
+  // Single Hit Throw against the selected target
+  let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!', (res) => {
+    const totalHit = res + hitMod;
+    return totalHit >= targetDef ? "HIT!" : "MISS!";
+  });
+  const totalHit = hitRoll + hitMod;
+
   logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
 
   if(totalHit < targetDef){
@@ -4823,19 +4860,21 @@ function closeCustomModal(){
 let diceResolve = null;
 let diceHasRolled = false;
 let diceMaxResult = null;
+let diceEvaluate = null;
 
 // Rolls a d6 either instantly (normal/AI play) or, when the player has
 // opted in via Settings, by popping up the same interactive dice modal
 // used for chest loot / turn order, so they can click Roll and watch it.
-async function rollD6(interactive, label){
+async function rollD6(interactive, label, onEvaluate=null){
   if(!interactive) return roll(6);
-  return await new Promise(resolve=>{ openDice(label, resolve); });
+  return await new Promise(resolve=>{ openDice(label, resolve, null, onEvaluate); });
 }
 
-function openDice(title, callback, maxResult=null){
+function openDice(title, callback, maxResult=null, onEvaluate=null){
   diceResolve = callback;
   diceHasRolled = false;
   diceMaxResult = maxResult;
+  diceEvaluate = onEvaluate;
   document.getElementById('dice-title').textContent = title;
   document.getElementById('dice-face').textContent = '?';
   document.getElementById('dice-result-text').textContent = '';
@@ -4863,12 +4902,17 @@ function rollTheDice(){
 
   setTimeout(()=>{
     const result = roll(6);
+    G._lastDiceResult = result;
+    let evalText = '';
+    if(diceEvaluate){
+      evalText = diceEvaluate(result);
+    }
+    let baseText = `You rolled: ${result}`;
     face.textContent = result;
     face.classList.remove('rolling');
-    document.getElementById('dice-result-text').textContent = `You rolled: ${result}`;
+    document.getElementById('dice-result-text').textContent = evalText ? `${baseText} - ${evalText}` : baseText;
     document.getElementById('dice-ok-btn').style.display = 'inline-block';
     diceHasRolled = true;
-    G._lastDiceResult = result;
     renderVialButtons();
   }, 700);
 }
@@ -4904,8 +4948,13 @@ function useVialOnRoll(btn){
   player.inventory.splice(idx,1);
   G._lastDiceResult += 1;
   if(diceMaxResult!==null && G._lastDiceResult>diceMaxResult) G._lastDiceResult = diceMaxResult;
+  let evalText = '';
+  if(diceEvaluate){
+    evalText = diceEvaluate(G._lastDiceResult);
+  }
+  let baseText = `You rolled: ${G._lastDiceResult}`;
   document.getElementById('dice-face').textContent = G._lastDiceResult;
-  document.getElementById('dice-result-text').textContent = `You rolled: ${G._lastDiceResult}`;
+  document.getElementById('dice-result-text').textContent = evalText ? `${baseText} - ${evalText}` : baseText;
   logMsg(`${player.name} uses a Vial of Red Liquid! +1 to the roll (now ${G._lastDiceResult}).`, 'heal');
   btn.disabled = true;
   btn.textContent = 'Used!';
@@ -4919,6 +4968,7 @@ function diceOk(){
   document.getElementById('dice-overlay').classList.remove('active');
   if(diceResolve) diceResolve(result);
   diceResolve = null;
+  diceEvaluate = null;
 }
 
 // ============================================================
