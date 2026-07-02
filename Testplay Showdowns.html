@@ -2632,6 +2632,18 @@ function onTileMouseOver(e){
     if(newDist > curDist) return;
   }
 
+  // Allow backtracking - check this BEFORE the movement-cost cap below, so
+  // retracing a step you've already taken always works, even if you've
+  // already used your full movement budget getting there.
+  const prev = moveRoute.findIndex(r=>r.x===x&&r.y===y);
+  if(prev>=0){
+    // Backtrack: recalculate
+    moveRoute.splice(prev+1);
+    recalcMoveUsed();
+    renderMoveRoute();
+    return;
+  }
+
   // Calculate cost
   const char = moveStartChar;
   let cost = 1;
@@ -2640,16 +2652,8 @@ function onTileMouseOver(e){
   // (entering difficult = 2, leaving = 1 already accounted for by entering)
   if(moveUsed+cost > char.move) return;
 
-  // Allow backtracking
-  const prev = moveRoute.findIndex(r=>r.x===x&&r.y===y);
-  if(prev>=0){
-    // Backtrack: recalculate
-    const removed = moveRoute.splice(prev+1);
-    recalcMoveUsed();
-  } else {
-    moveRoute.push({x,y});
-    moveUsed += cost;
-  }
+  moveRoute.push({x,y});
+  moveUsed += cost;
   renderMoveRoute();
 }
 
@@ -3927,7 +3931,7 @@ async function runAITurn(char){
 
   let moved = false;
   if(closestChest && chestDist < enemyDist){
-    const path = findPathTo(char, closestChest.x, closestChest.y);
+    const path = findPathToChest(char, closestChest.x, closestChest.y);
     if(path && path.length>1){
       await aiMoveAlongPath(char, path);
       moved = true;
@@ -4124,6 +4128,39 @@ function getAllChestTiles(){
     }
   }
   return out;
+}
+
+// Chests are impassable and can only be opened from a directly (non-diagonal)
+// adjacent tile. Pathing straight at the chest's own coordinates makes
+// findPathTo's chebyshev-based "closest approach" heuristic just as happy to
+// stop on a diagonal neighbour as an orthogonal one - which leaves the AI
+// standing somewhere it can never actually open the chest from. Instead,
+// explicitly path to whichever orthogonally-adjacent, reachable tile is
+// cheapest to get to.
+function findPathToChest(char, cx, cy){
+  const candidates = getAdjacentTiles(cx, cy, false).filter(t=>isPassable(t.x,t.y));
+  let bestPath = null;
+  let bestReached = false;
+  let bestFinalDist = Infinity;
+  for(const c of candidates){
+    if(getCharAt(c.x,c.y) && !(c.x===char.x&&c.y===char.y)) continue;
+    const path = findPathTo(char, c.x, c.y);
+    if(!path) continue;
+    const dest = path[path.length-1];
+    const reached = (dest.x===c.x && dest.y===c.y);
+    const finalDist = chebyshev(dest.x,dest.y,cx,cy);
+    // Prefer any path that fully reaches a valid opening tile over one
+    // that only gets partway there. Among equally-"reached" options, pick
+    // whichever ends closest to the chest, then whichever is cheapest.
+    if(reached && !bestReached){
+      bestPath = path; bestReached = true; bestFinalDist = finalDist;
+    } else if(reached === bestReached){
+      if(finalDist < bestFinalDist || (finalDist===bestFinalDist && bestPath && path.length < bestPath.length)){
+        bestPath = path; bestFinalDist = finalDist;
+      }
+    }
+  }
+  return bestPath;
 }
 
 // Closest unopened chest to this character (straight-line distance).
