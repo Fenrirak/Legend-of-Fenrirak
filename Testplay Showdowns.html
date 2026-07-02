@@ -3117,14 +3117,14 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     }
   }
 
-  // Tutorial: the player quietly takes half damage (rounded, minimum 1
-  // if any damage would land) - not called out in the log.
+  // Tutorial mode ONLY: the player quietly takes half damage (rounded,
+  // minimum 1 if any damage would land) - not called out in the log.
   if(G.tutorialMode && target.isPlayer && dmg>0){
     dmg = Math.max(1, Math.round(dmg/2));
   }
 
-  // Tutorial: an attack that would kill the player instead just misses,
-  // shown as a clean "Miss!" with no hit-throw math or damage mentioned.
+  // Tutorial mode ONLY: an attack that would kill the player instead just
+  // misses, shown as a clean "Miss!" with no hit-throw math or damage mentioned.
   if(G.tutorialMode && target.isPlayer && dmg >= target.hp){
     logMsg(`Miss!`);
     return false;
@@ -3579,6 +3579,16 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
       vdmg = Math.max(0, vdmg-4);
       logMsg(`${victim.name}'s Parry reduces damage by 4!`);
     }
+    
+    // Tutorial mode ONLY: halve damage to the player and prevent player death
+    if(G.tutorialMode && victim.isPlayer && vdmg>0){
+      vdmg = Math.max(1, Math.round(vdmg/2));
+    }
+    if(G.tutorialMode && victim.isPlayer && vdmg >= victim.hp){
+      logMsg(`Miss!`);
+      continue;
+    }
+
     applyDamage(victim, vdmg, true);
     logMsg(`${attacker.name}'s Destructive Rush deals ${vdmg} damage to ${victim.name}! (${victim.hp}/${victim.maxHp} HP remaining)`, 'damage');
     hitAnyone = true;
