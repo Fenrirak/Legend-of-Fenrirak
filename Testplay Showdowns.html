@@ -446,12 +446,17 @@
     position: absolute;
     bottom: 2px;
     left: 2px;
+    right: 2px;
     font-size: 0.85em;
     color: rgba(0,0,0,0.6);
     font-weight: 700;
     pointer-events: none;
     line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
+  .tile-label.long-label { font-size: 0.55em; }
 
   .tile.hover-move { filter: brightness(1.3); box-shadow: inset 0 0 0 3px #2eb674; }
   .tile.hover-attack { box-shadow: inset 0 0 0 3px #ff3535; }
@@ -901,7 +906,10 @@
     <p>Players may move before attacking but cannot move after attacking. Opening a chest ends the turn immediately. One turn ends when a character has opened a chest, attacked, or clicked End Turn.</p>
 
     <h2>Movement</h2>
-    <p>Move up to your movement speed in adjacent (non-diagonal) tiles. Difficult Terrain costs 2 tiles per tile (Knights ignore this). Thorny Vines deal 2 damage when passing through and 4 damage if you stop in them, then 3 damage every 2 turn cycles until you leave.</p>
+    <p>Move up to your movement speed in adjacent (non-diagonal) tiles. Difficult Terrain (Mud/Hill) costs 2 tiles per tile (Knights ignore this). Thorny Vines (THV) deal 2 damage when passing through and 4 damage if you stop in them, then 3 damage every 2 turn cycles until you leave.</p>
+
+    <h2>Tiles</h2>
+    <p>Each tile's image tells you what it is - if a tile has a name written on it (Mud, Hill, Rock, Tree, Log, THV, Chest, High Ground), that's its type and it behaves as described below. A tile with no name on it is just Normal ground with no special effect.</p>
 
     <h2>Attacks & Hit Throws</h2>
     <p>Before attacking, roll a Hit Throw. If the total (including modifiers) equals or exceeds the target's Defence, the attack hits. Range is measured as the greater of horizontal or vertical distance.</p>
@@ -909,16 +917,16 @@
 
     <h2>Cover</h2>
     <ul>
-      <li><strong>Partial Cover (PC):</strong> +1 Defence if it's directly adjacent (non-diagonally) to the target AND the attacker's line of fire actually passes through it on the way to the target. Cover next to the target that the shot isn't coming through (e.g. an attack from behind) gives no bonus. Mages treat PC as Heavy Cover for this bonus too.</li>
-      <li><strong>Heavy Cover (HC):</strong> +2 Defence in the same situation (+3 if the target is a Knight).</li>
-      <li><strong>Rocks and Logs</strong> count as Partial Cover. <strong>Trees and Chests</strong> count as Heavy Cover.</li>
+      <li><strong>Partial Cover:</strong> +1 Defence if it's directly adjacent (non-diagonally) to the target AND the attacker's line of fire actually passes through it on the way to the target. Cover next to the target that the shot isn't coming through (e.g. an attack from behind) gives no bonus. Mages treat Partial Cover as Heavy Cover for this bonus too.</li>
+      <li><strong>Heavy Cover:</strong> +2 Defence in the same situation (+3 if the target is a Knight).</li>
+      <li><strong>Rock and Log</strong> tiles count as Partial Cover. <strong>Tree and Chest</strong> tiles count as Heavy Cover.</li>
     </ul>
 
     <h2>High Ground</h2>
-    <p>Blue tiles are High Ground. Attacker on High Ground gets +1 to Hit Throw.</p>
+    <p>Tiles labeled High Ground give the attacker standing on them +1 to Hit Throw.</p>
 
     <h2>Chests</h2>
-    <p>Opening a chest ends your turn. You must be directly adjacent (non-diagonal). Roll a die for loot. A chest can only be opened once. If a weapon is received, it goes to inventory automatically.</p>
+    <p>Opening a chest ends your turn. You must be directly adjacent (non-diagonal). Roll a die for loot. A chest can only be opened once. If a weapon is received, it goes to inventory automatically. A Chest can also sit on a High Ground tile, granting both effects at once.</p>
 
     <h2>Healing & Potions</h2>
     <p>Can't use Potion of Healing at full health. Can't heal above max health. Potions can be used any time during your turn before it ends.</p>
@@ -1394,15 +1402,15 @@ const BOARD_CONFIGS = {
       '9,1':{type:'log', label:'Log', logDir:'h-right'},
       '1,4':{type:'log', label:'Log', logDir:'v-bottom'},
       '1,5':{type:'log', label:'Log', logDir:'v-top'},
-      '1,2':{type:'highground'},
-      '8,5':{type:'highground'},
-      '7,6':{type:'highground'},
-      '8,6':{type:'highground'},
+      '1,2':{type:'highground', label:'High Ground'},
+      '8,5':{type:'highground', label:'High Ground'},
+      '7,6':{type:'highground', label:'High Ground'},
+      '8,6':{type:'highground', label:'High Ground'},
       '2,2':{type:'difficult', label:'Hill', hillDir:'w'},
       '1,3':{type:'difficult', label:'Hill', hillDir:'s'},
       '8,4':{type:'difficult', label:'Hill', hillDir:'n'},
       '7,5':{type:'difficult', label:'Hill', hillDir:'ne'},
-      '8,5':{type:'highground'},
+      '8,5':{type:'highground', label:'High Ground'},
       '6,6':{type:'difficult', label:'Hill', hillDir:'e'},
       '9,6':{type:'difficult', label:'Hill', hillDir:'s'},
       '9,5':{type:'difficult', label:'Hill', hillDir:'w'},
@@ -1430,8 +1438,8 @@ const BOARD_CONFIGS = {
       '5,7':{type:'difficult', label:'Mud'},
       '2,0':{type:'log', label:'Log', logDir:'h-left'},
       '3,0':{type:'log', label:'Log', logDir:'h-right'},
-      '0,8':{type:'highground'},
-      '10,0':{type:'highground'},
+      '0,8':{type:'highground', label:'High Ground'},
+      '10,0':{type:'highground', label:'High Ground'},
       '9,0':{type:'difficult', label:'Hill', hillDir:'e'},
       '10,1':{type:'difficult', label:'Hill', hillDir:'s'},
       '0,7':{type:'difficult', label:'Hill', hillDir:'n'},
@@ -1462,8 +1470,8 @@ const BOARD_CONFIGS = {
       '0,7':{type:'difficult', label:'Mud'},
       '2,0':{type:'log', label:'Log', logDir:'h-left'},
       '3,0':{type:'log', label:'Log', logDir:'h-right'},
-      '3,4':{type:'highground'},
-      '7,4':{type:'highground'},
+      '3,4':{type:'highground', label:'High Ground'},
+      '7,4':{type:'highground', label:'High Ground'},
       '3,3':{type:'difficult', label:'Hill', hillDir:'n'},
       '7,3':{type:'difficult', label:'Hill', hillDir:'n'},
       '2,4':{type:'difficult', label:'Hill', hillDir:'e'},
@@ -1484,7 +1492,7 @@ const BOARD_CONFIGS = {
 
 // Fix the board 1 config so (8,6) is chest on highground
 BOARD_CONFIGS[1].tiles['8,6'] = {type:'chest', label:'Chest'};
-BOARD_CONFIGS[1].tiles['8,5'] = {type:'highground'};
+BOARD_CONFIGS[1].tiles['8,5'] = {type:'highground', label:'High Ground'};
 
 // Tutorial board - coordinates per the tutorial design doc.
 // Starting tiles: (5,0) Human, (5,6) Knight, (2,6) Mage, (8,6) Archer.
@@ -1495,7 +1503,7 @@ BOARD_CONFIGS['tutorial'] = {
     '6,4':{type:'pc', label:'Rock'},
     '8,4':{type:'pc', label:'Rock'},
     '7,5':{type:'pc', label:'Rock'},
-    '7,4':{type:'highground'},
+    '7,4':{type:'highground', label:'High Ground'},
     '7,3':{type:'difficult', label:'Hill', hillDir:'n'},
     '3,1':{type:'chest', label:'Chest'},
     '5,4':{type:'thorny', label:'THV'},
@@ -1901,7 +1909,8 @@ function applyTileStyle(cell, x, y){
   }
   if(t && t.label){
     const lbl = document.createElement('div');
-    lbl.style.cssText='position:absolute;bottom:1px;left:1px;font-size:0.72em;color:rgba(0,0,0,0.55);font-weight:700;pointer-events:none;';
+    const fontSize = t.label.length>6 ? '0.5em' : '0.72em';
+    lbl.style.cssText=`position:absolute;bottom:1px;left:1px;right:1px;font-size:${fontSize};color:rgba(0,0,0,0.55);font-weight:700;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
     lbl.textContent=t.label;
     cell.appendChild(lbl);
   }
@@ -2111,7 +2120,7 @@ function buildGameScreen(){
       const t = getTile(col,row);
       if(t && t.label){
         const lbl = document.createElement('div');
-        lbl.className = 'tile-label';
+        lbl.className = 'tile-label' + (t.label.length>6 ? ' long-label' : '');
         lbl.textContent = t.label;
         cell.appendChild(lbl);
       }
@@ -2256,7 +2265,7 @@ function updateStatPanel(){
   });
 
   const isMyTurn = getCurrentChar()?.isPlayer;
-  const tutorialForcedMove = G.tutorialMode && G.tutorialStage==='go-tree';
+  const tutorialForcedMove = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
   document.getElementById('end-turn-btn').disabled = !isMyTurn || G.phase==='game-over' || tutorialForcedMove;
   document.getElementById('sp-attack-btn').disabled = G.hasActedThisTurn || !isMyTurn || G.phase==='game-over';
 }
@@ -2403,7 +2412,7 @@ async function runTutorialIntroSequence(){
 
 async function runTutorialHighGroundLesson(){
   await tutorialSpotlight('tile-7-4',
-    "See that blue tile? That's <b>High Ground</b>. Standing on a High Ground tile gives you <b>+1 to your Hit Throw</b> when attacking. Positioning yourself up high is a powerful tactical advantage!",
+    "You're standing on <b>High Ground</b>! Tiles labeled High Ground give you <b>+1 to your Hit Throw</b> when attacking from them. Positioning yourself up high is a powerful tactical advantage!",
     "Got it!");
   G.tutorialStage = 'inventory-lesson';
   setTimeout(runTutorialInventoryLesson, 400);
@@ -2503,12 +2512,9 @@ function startTurn(){
         G.tutorialStage = 'intro';
         setTimeout(runTutorialIntroSequence, 400);
       } else if(G.tutorialStage==='chest-opened'){
-        G.tutorialStage = 'go-tree';
-        G.tutorialMoveTarget = {x:5, y:2};
-        setPhaseText('Chest opened! Now move next to the Tree for cover.');
-      } else if(G.tutorialStage==='tree-explained'){
-        G.tutorialStage = 'highground-lesson';
-        setTimeout(runTutorialHighGroundLesson, 400);
+        G.tutorialStage = 'go-highground';
+        G.tutorialMoveTarget = {x:7, y:4}; // must physically stand on the High Ground tile
+        setPhaseText('Chest opened! Now move onto the High Ground tile.');
       }
     }
   } else {
@@ -2548,8 +2554,12 @@ function showWeaponStatsModal(){
 function playerEndTurn(){
   if(!getCurrentChar()?.isPlayer) return;
   if(G.phase==='game-over') return;
-  if(G.tutorialMode && G.tutorialStage==='go-tree'){
-    setPhaseText('Move next to the Tree before ending your turn!');
+  if(G.tutorialMode && G.tutorialStage==='go-chest'){
+    setPhaseText('Move next to the Chest and open it before ending your turn!');
+    return;
+  }
+  if(G.tutorialMode && G.tutorialStage==='go-highground'){
+    setPhaseText('Move onto the High Ground tile before ending your turn!');
     return;
   }
   logMsg(`${G.playerName} ends their turn.`);
@@ -2713,15 +2723,11 @@ async function executePlayerMove(route){
   // Check if adjacent to chest and not acted
   checkAdjacentChestAutoOpen(char);
 
-  // Tutorial: once the player reaches the tree, explain cover.
-  if(G.tutorialMode && G.tutorialStage==='go-tree' && manhattan(char.x,char.y,5,2)===1){
-    G.tutorialStage = 'tree-explained';
+  // Tutorial: once the player physically reaches the High Ground tile, explain it.
+  if(G.tutorialMode && G.tutorialStage==='go-highground' && char.x===7 && char.y===4){
+    G.tutorialStage = 'highground-reached';
     G.tutorialMoveTarget = null;
-    setTimeout(()=>{
-      tutorialSpotlight('tile-5-2',
-        "This is a <b>Tree</b> (Heavy Cover). Standing next to it gives you a defence bonus against attacks coming from the other side, making you much harder to hit. Look for cover like this in real fights!"
-      ).then(()=>{ setPhaseText('Nice! End your turn when ready.'); });
-    }, 300);
+    setTimeout(runTutorialHighGroundLesson, 300);
   }
 
   updateStatPanel();
@@ -3265,7 +3271,15 @@ function triggerVictory(){
   overlay.classList.add('active');
   word.className='victory';
   word.textContent = (player && player.class==='helen') ? 'Victory ❤️' : 'Victory!';
-  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 4500);
+  setTimeout(()=>{
+    if(G.tutorialMode){
+      overlay.classList.remove('active');
+      G.tutorialMode = false;
+      showScreen('screen-board');
+    } else {
+      window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html';
+    }
+  }, 4500);
 }
 
 function triggerDefeat(){
@@ -3276,7 +3290,15 @@ function triggerDefeat(){
   overlay.classList.add('active');
   word.className='defeat';
   word.textContent = (player && player.class==='ronald') ? 'How did you lose...' : 'Defeat';
-  setTimeout(()=>{ window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }, 4500);
+  setTimeout(()=>{
+    if(G.tutorialMode){
+      overlay.classList.remove('active');
+      G.tutorialMode = false;
+      showScreen('screen-board');
+    } else {
+      window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html';
+    }
+  }, 4500);
 }
 
 // ============================================================
