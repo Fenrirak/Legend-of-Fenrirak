@@ -956,6 +956,7 @@
     </div>
     <div style="margin-top:14px;">
       <button class="btn success" onclick="selectRandomBoard()">🎲 Random Board</button>
+      <button class="btn" style="background:#2a6b8a;" onclick="selectBoard('tutorial')">📘 Tutorial</button>
     </div>
   </div>
 </div>
@@ -1056,20 +1057,23 @@
     <div class="section-header">Ability</div>
     <div id="sp-ability" style="font-size:0.78em; color:var(--text); line-height:1.5;"></div>
     <div class="section-header">Weapon Equipped</div>
-    <div id="sp-weapon-name" style="font-family:'Cinzel',serif; color:var(--accent); font-size:0.9em; margin-bottom:6px;"></div>
-    <div class="weapon-equip-box" id="sp-weapon-box">
+    <div id="sp-weapon-name" style="font-family:'Cinzel',serif; color:var(--accent); font-size:0.9em; margin-bottom:6px; cursor:pointer; text-decoration:underline dotted;" onclick="showWeaponStatsModal()" title="Click for full weapon stats"></div>
+    <div class="weapon-equip-box" id="sp-weapon-box" style="cursor:pointer;" onclick="showWeaponStatsModal()" title="Click for full weapon stats">
       <div class="we-row">Attack: <span id="sp-w-attack"></span></div>
       <div class="we-row">Damage: <span id="sp-w-damage"></span></div>
       <div class="we-row">Hit Throw: <span id="sp-w-hitthrow"></span></div>
       <div class="we-row">Effect: <span id="sp-w-effect"></span></div>
       <div class="we-row">Range: <span id="sp-w-range"></span></div>
       <div class="we-row">Special: <span id="sp-w-special"></span></div>
+      <div style="text-align:center; font-size:0.72em; color:var(--text-dim); margin-top:4px;">(click for full stats)</div>
     </div>
     <div style="margin-top:6px;">
       <button class="attack-name-btn" id="sp-attack-btn" onclick="playerClickAttack()"></button>
     </div>
-    <div class="section-header">Inventory</div>
-    <div id="sp-inventory"></div>
+    <div id="sp-inventory-block" style="min-height:46px;">
+      <div class="section-header">Inventory</div>
+      <div id="sp-inventory"></div>
+    </div>
     <div id="phase-indicator"></div>
     <button class="btn danger" id="end-turn-btn" onclick="playerEndTurn()">End Turn</button>
   </div>
@@ -1328,7 +1332,7 @@ const WEAPONS = {
       attackName: 'Fireball',
       baseDamage: 22, damageType: 'plus',
       diceCount: 3, diceCondition: 'even', diceBonus: 5,
-      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 6,
+      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4,
       special: 'aoe2x2',
       desc: '22+ Damage. Roll die 3 times, for every even number, deal 5 more damage. Effect: 4 tiles in a 2×2 area.'
     },
@@ -1478,10 +1482,26 @@ const BOARD_CONFIGS = {
   }
 };
 
-// Note: Board 1 has some tiles that overlap (highground + chest). Handle chest_hg specially.
 // Fix the board 1 config so (8,6) is chest on highground
 BOARD_CONFIGS[1].tiles['8,6'] = {type:'chest', label:'Chest'};
 BOARD_CONFIGS[1].tiles['8,5'] = {type:'highground'};
+
+// Tutorial board - coordinates per the tutorial design doc.
+// Starting tiles: (5,0) Human, (5,6) Knight, (2,6) Mage, (8,6) Archer.
+BOARD_CONFIGS['tutorial'] = {
+  startingTiles: [{x:5,y:0},{x:5,y:6},{x:2,y:6},{x:8,y:6}],
+  tiles: {
+    '4,4':{type:'pc', label:'Rock'},
+    '6,4':{type:'pc', label:'Rock'},
+    '8,4':{type:'pc', label:'Rock'},
+    '7,5':{type:'pc', label:'Rock'},
+    '7,4':{type:'highground'},
+    '7,3':{type:'difficult', label:'Hill', hillDir:'n'},
+    '3,1':{type:'chest', label:'Chest'},
+    '5,4':{type:'thorny', label:'THV'},
+    '5,2':{type:'hc', label:'Tree'},
+  }
+};
 
 // ============================================================
 //  GAME STATE
@@ -1682,6 +1702,15 @@ function submitName(){
 
 function selectBoard(id){
   G.boardId = id;
+  G.tutorialMode = (id==='tutorial');
+  if(G.tutorialMode){
+    G.tutorialStage = null;
+    G.tutorialIntroDone = false;
+    G.tutorialOfferShown = false;
+    G.tutorialMoveTarget = null;
+    G.tutorialThornyExplained = false;
+    G.tutorialSpotsShown = new Set();
+  }
   G.boardConfig = JSON.parse(JSON.stringify(BOARD_CONFIGS[id]));
   if(G.isSpecialClass && G.playerClass){
     // Hidden class unlocked by name - skip the normal class-selection screen
@@ -1762,6 +1791,23 @@ function selectWeapon(id){
 }
 function confirmWeapon(){
   G.playerWeapon = WEAPONS[G.playerClass].find(w=>w.id===selectedWeaponId);
+  if(G.tutorialMode){
+    // Fixed starting positions per the tutorial design: Human (5,0),
+    // Knight (5,6), Mage (2,6), Archer (8,6). Skip the interactive picker.
+    takenStartTiles = [
+      {x:5,y:0, charId:'player'},
+      {x:2,y:6, charId:'computer1'}, // Alexander - mage
+      {x:5,y:6, charId:'computer2'}, // Harwin - knight
+      {x:8,y:6, charId:'computer3'}, // Lex - archer
+    ];
+    buildCharacters();
+    // Fixed turn order for the tutorial: Human, Mage, Archer, Knight.
+    // allPicks indices: 0=player, 1=mage(computer1), 2=knight(computer2), 3=archer(computer3)
+    G.turnOrder = [0,1,3,2];
+    G.currentTurnIdx = 0;
+    startGame();
+    return;
+  }
   buildStartTileScreen();
   showScreen('screen-start-tile');
 }
@@ -2210,7 +2256,8 @@ function updateStatPanel(){
   });
 
   const isMyTurn = getCurrentChar()?.isPlayer;
-  document.getElementById('end-turn-btn').disabled = !isMyTurn || G.phase==='game-over';
+  const tutorialForcedMove = G.tutorialMode && G.tutorialStage==='go-tree';
+  document.getElementById('end-turn-btn').disabled = !isMyTurn || G.phase==='game-over' || tutorialForcedMove;
   document.getElementById('sp-attack-btn').disabled = G.hasActedThisTurn || !isMyTurn || G.phase==='game-over';
 }
 
@@ -2236,6 +2283,154 @@ function updateEnemyPanel(){
     panel.appendChild(card);
   });
 }
+
+// ============================================================
+//  TUTORIAL SPOTLIGHT SYSTEM
+//  Dims the whole screen except a highlighted rectangle around a given
+//  element, with an explanation box beside it and a "Next" button.
+//  Positions are recalculated on scroll/resize so the highlight tracks
+//  its target even if the page is scrolled while it's showing.
+// ============================================================
+function tutorialSpotlight(elId, text, btnLabel){
+  // Don't show the same spot twice in one tutorial run.
+  if(elId && G.tutorialSpotsShown && G.tutorialSpotsShown.has(elId)){
+    return Promise.resolve();
+  }
+  if(elId && G.tutorialSpotsShown) G.tutorialSpotsShown.add(elId);
+
+  return new Promise(resolve=>{
+    const old = document.getElementById('tutorial-overlay');
+    if(old) old.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'tutorial-overlay';
+    overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:99999; pointer-events:auto;';
+
+    const hole = document.createElement('div');
+    hole.style.cssText = 'position:absolute; border-radius:8px; box-shadow:0 0 0 9999px rgba(0,0,0,0.8); pointer-events:none; border:2px solid #d4af37;';
+    overlay.appendChild(hole);
+
+    const boxWidth = 300;
+    const box = document.createElement('div');
+    box.style.cssText = `position:absolute; width:${boxWidth}px; background:#1b140a; border:2px solid #d4af37; border-radius:10px; padding:16px; color:#f0e6cf; font-family:'Lato',sans-serif; z-index:100000; box-shadow:0 4px 24px rgba(0,0,0,0.6);`;
+    box.innerHTML = `<div style="font-size:0.95em; line-height:1.55; margin-bottom:14px;">${text}</div>
+      <button class="btn" id="tutorial-next-btn" style="width:100%;">${btnLabel||'Next'}</button>`;
+    overlay.appendChild(box);
+
+    // Attach to <body> as position:absolute in the *document* flow (not
+    // viewport-fixed) so it scrolls naturally with the page; we still
+    // recompute on scroll/resize below in case the highlighted element
+    // itself moves independently (e.g. inside a scrolling panel).
+    overlay.style.position = 'absolute';
+    document.body.appendChild(overlay);
+    overlay.style.height = Math.max(document.documentElement.scrollHeight, window.innerHeight) + 'px';
+
+    function reposition(){
+      const el = elId ? document.getElementById(elId) : null;
+      const rect = el ? el.getBoundingClientRect() : {top:20,left:20,width:200,height:80,right:220,bottom:100};
+      const pad = 8;
+      const scrollX = window.scrollX||window.pageXOffset||0;
+      const scrollY = window.scrollY||window.pageYOffset||0;
+
+      hole.style.top = (rect.top+scrollY-pad)+'px';
+      hole.style.left = (rect.left+scrollX-pad)+'px';
+      hole.style.width = (rect.width+pad*2)+'px';
+      hole.style.height = (rect.height+pad*2)+'px';
+
+      let boxLeft = rect.right+scrollX+20;
+      if(boxLeft+boxWidth > scrollX+window.innerWidth-10) boxLeft = Math.max(scrollX+10, rect.left+scrollX-boxWidth-20);
+      if(boxLeft+boxWidth > scrollX+window.innerWidth-10) boxLeft = Math.max(scrollX+10, scrollX+(window.innerWidth-boxWidth)/2);
+      let boxTop = Math.max(scrollY+10, Math.min(rect.top+scrollY, scrollY+window.innerHeight-220));
+
+      box.style.left = boxLeft+'px';
+      box.style.top = boxTop+'px';
+      overlay.style.height = Math.max(document.documentElement.scrollHeight, window.innerHeight) + 'px';
+    }
+    reposition();
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
+
+    document.getElementById('tutorial-next-btn').onclick = ()=>{
+      window.removeEventListener('scroll', reposition, true);
+      window.removeEventListener('resize', reposition);
+      overlay.remove();
+      resolve();
+    };
+  });
+}
+
+// A centered modal (no spotlight hole) used for the tutorial-completion offer.
+function tutorialModal(text, buttons){
+  const old = document.getElementById('tutorial-overlay');
+  if(old) old.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'tutorial-overlay';
+  overlay.style.cssText = 'position:fixed; inset:0; z-index:99999; pointer-events:auto; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center;';
+  const box = document.createElement('div');
+  box.style.cssText = `width:320px; background:#1b140a; border:2px solid #d4af37; border-radius:10px; padding:20px; color:#f0e6cf; font-family:'Lato',sans-serif; box-shadow:0 4px 24px rgba(0,0,0,0.6); text-align:center;`;
+  box.innerHTML = `<div style="font-size:1em; line-height:1.55; margin-bottom:16px;">${text}</div>`;
+  buttons.forEach(b=>{
+    const btn = document.createElement('button');
+    btn.className = 'btn'+(b.primary?' success':'');
+    btn.style.cssText = 'width:100%; margin-bottom:8px;';
+    btn.textContent = b.label;
+    btn.onclick = ()=>{ overlay.remove(); b.onClick(); };
+    box.appendChild(btn);
+  });
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+async function runTutorialIntroSequence(){
+  await tutorialSpotlight('phase-indicator',
+    "This is the <b>Guide</b>. It always tells you what to do right now, like moving your character or picking an attack.");
+  await tutorialSpotlight('sp-inventory-block',
+    "This is your <b>Inventory</b>. Items you find in chests (potions, vials, weapons) show up here - click one to use or equip it.");
+  await tutorialSpotlight('enemy-cards',
+    "This shows every character's <b>Health</b>, including the enemies'. Watch it to see how much damage attacks are doing.");
+  await tutorialSpotlight('sp-attack-btn',
+    "Click here to select your equipped weapon's attack. After selecting it, click an enemy on the board to attack them.");
+  await tutorialSpotlight('end-turn-btn',
+    "When you're done moving and attacking, click <b>End Turn</b> to pass to the next character.");
+  await tutorialSpotlight('board-area',
+    "First, let's grab some loot! Move your character to the <b>Chest</b> and open it by clicking on it while standing next to it.",
+    "Got it!");
+  G.tutorialIntroDone = true;
+  G.tutorialStage = 'go-chest';
+  G.tutorialMoveTarget = {x:3, y:1}; // restrict movement toward the chest
+  setPhaseText('Move next to the chest and click it to open it!');
+}
+
+async function runTutorialHighGroundLesson(){
+  await tutorialSpotlight('tile-7-4',
+    "See that blue tile? That's <b>High Ground</b>. Standing on a High Ground tile gives you <b>+1 to your Hit Throw</b> when attacking. Positioning yourself up high is a powerful tactical advantage!",
+    "Got it!");
+  G.tutorialStage = 'inventory-lesson';
+  setTimeout(runTutorialInventoryLesson, 400);
+}
+
+async function runTutorialInventoryLesson(){
+  G.tutorialMoveTarget = null; // free movement from here on
+  await tutorialSpotlight('sp-inventory-block',
+    "Nice! Whatever you found is now in your <b>Inventory</b> - click an item here any time on your turn to use or equip it.");
+  await tutorialSpotlight('sp-weapon-box',
+    "Click your equipped weapon here any time to see its <b>full stats</b> - every attack's damage, dice rolls, hit throw, effect, and range.");
+  await tutorialSpotlight('stat-panel',
+    "You've learned the basics! Defeat at least one enemy to finish the tutorial. Feel free to explore your attacks and items as you go.");
+  G.tutorialStage = 'playing';
+  setPhaseText('Defeat an enemy to complete the tutorial!');
+}
+
+function showTutorialCompletionOffer(){
+  tutorialModal(
+    "You defeated an enemy - tutorial complete! 🎉<br><br>Want to keep playing this match, or head back to pick a board?",
+    [
+      {label:'Keep Playing', primary:true, onClick:()=>{ G.tutorialMode=false; }},
+      {label:'Return to Board Select', onClick:()=>{ G.tutorialMode=false; showScreen('screen-board'); }},
+    ]
+  );
+}
+
 
 // ============================================================
 //  TURN MANAGEMENT
@@ -2303,6 +2498,19 @@ function startTurn(){
     G.phase = 'player-move';
     setPhaseText('Click your character and drag to move. Click an attack to attack.');
     updateStatPanel();
+    if(G.tutorialMode){
+      if(!G.tutorialStage){
+        G.tutorialStage = 'intro';
+        setTimeout(runTutorialIntroSequence, 400);
+      } else if(G.tutorialStage==='chest-opened'){
+        G.tutorialStage = 'go-tree';
+        G.tutorialMoveTarget = {x:5, y:2};
+        setPhaseText('Chest opened! Now move next to the Tree for cover.');
+      } else if(G.tutorialStage==='tree-explained'){
+        G.tutorialStage = 'highground-lesson';
+        setTimeout(runTutorialHighGroundLesson, 400);
+      }
+    }
   } else {
     G.phase = 'ai-turn';
     document.getElementById('ai-thinking').classList.add('active');
@@ -2321,9 +2529,29 @@ function nextTurn(){
   startTurn();
 }
 
+function showWeaponStatsModal(){
+  const player = G.characters.find(c=>c.isPlayer&&c.alive);
+  const w = player?.equippedWeapon;
+  if(!w) return;
+  document.getElementById('custom-modal-title').textContent = 'Weapon Stats';
+  document.getElementById('custom-modal-body').innerHTML = `<div class="weapon-card" style="cursor:default;">${buildWeaponCardHTML(w)}</div>`;
+  const btnContainer = document.getElementById('custom-modal-buttons');
+  btnContainer.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.className = 'btn';
+  btn.textContent = 'Close';
+  btn.onclick = closeCustomModal;
+  btnContainer.appendChild(btn);
+  document.getElementById('custom-modal-overlay').classList.add('active');
+}
+
 function playerEndTurn(){
   if(!getCurrentChar()?.isPlayer) return;
   if(G.phase==='game-over') return;
+  if(G.tutorialMode && G.tutorialStage==='go-tree'){
+    setPhaseText('Move next to the Tree before ending your turn!');
+    return;
+  }
   logMsg(`${G.playerName} ends their turn.`);
   clearMoveHighlights();
   nextTurn();
@@ -2384,6 +2612,15 @@ function onTileMouseOver(e){
   const t = getTileType(x,y);
   if(['pc','hc','log','chest','chest_hg'].includes(t)) return;
   if(getCharAt(x,y) && !(x===moveStartChar.x&&y===moveStartChar.y)) return;
+
+  // Tutorial: restrict movement so the player heads toward their current
+  // objective tile (e.g. the chest) instead of wandering off elsewhere.
+  if(G.tutorialMode && G.tutorialMoveTarget){
+    const goal = G.tutorialMoveTarget;
+    const curDist = manhattan(last.x,last.y,goal.x,goal.y);
+    const newDist = manhattan(x,y,goal.x,goal.y);
+    if(newDist > curDist) return;
+  }
 
   // Calculate cost
   const char = moveStartChar;
@@ -2475,6 +2712,17 @@ async function executePlayerMove(route){
 
   // Check if adjacent to chest and not acted
   checkAdjacentChestAutoOpen(char);
+
+  // Tutorial: once the player reaches the tree, explain cover.
+  if(G.tutorialMode && G.tutorialStage==='go-tree' && manhattan(char.x,char.y,5,2)===1){
+    G.tutorialStage = 'tree-explained';
+    G.tutorialMoveTarget = null;
+    setTimeout(()=>{
+      tutorialSpotlight('tile-5-2',
+        "This is a <b>Tree</b> (Heavy Cover). Standing next to it gives you a defence bonus against attacks coming from the other side, making you much harder to hit. Look for cover like this in real fights!"
+      ).then(()=>{ setPhaseText('Nice! End your turn when ready.'); });
+    }, 300);
+  }
 
   updateStatPanel();
   updateEnemyPanel();
@@ -2741,7 +2989,7 @@ async function initiatePlayerAttack(attacker, target, weapon){
     return;
   }
   if(w.special==='helen2tiles'){
-    await playerHelentiles(attacker, w);
+    await playerHelentiles(attacker, target, w);
     return;
   }
   if(w.special==='shortbow_spread'){
@@ -2797,9 +3045,8 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   const totalHit = hitRoll + hitMod;
   let targetDef = target.defence + coverRes.defBonus;
 
-  logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
-
   if(totalHit < targetDef){
+    logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
     if(attacker.class==='ronald'){
       applyDamage(target, 5, true);
       logMsg(`Miss! But ${attacker.name}'s Magic of Precision deals 5 damage anyway!`, 'damage');
@@ -2870,6 +3117,20 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     }
   }
 
+  // Tutorial: the player quietly takes half damage (rounded, minimum 1
+  // if any damage would land) - not called out in the log.
+  if(G.tutorialMode && target.isPlayer && dmg>0){
+    dmg = Math.max(1, Math.round(dmg/2));
+  }
+
+  // Tutorial: an attack that would kill the player instead just misses,
+  // shown as a clean "Miss!" with no hit-throw math or damage mentioned.
+  if(G.tutorialMode && target.isPlayer && dmg >= target.hp){
+    logMsg(`Miss!`);
+    return false;
+  }
+
+  logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
   applyDamage(target, dmg, true);
   logMsg(`${attacker.name} deals ${dmg} damage to ${target.name}! (${target.hp}/${target.maxHp} HP remaining)`, 'damage');
   if(w.id==='staff_oceans'){
@@ -2977,6 +3238,10 @@ function killChar(char){
   if(icon) icon.style.display='none';
   logMsg(`${char.name} has been defeated!`, 'important');
   checkWinLose();
+  if(G.tutorialMode && !char.isPlayer && G.tutorialIntroDone && !G.tutorialOfferShown && G.phase!=='game-over'){
+    G.tutorialOfferShown = true;
+    setTimeout(showTutorialCompletionOffer, 1000);
+  }
 }
 
 function checkWinLose(){
@@ -3358,13 +3623,31 @@ async function playerAOE2x2(attacker, primaryTarget, weapon){
   });
 }
 
-async function playerHelentiles(attacker, weapon){
-  // Any 2 tiles within range 7, reroll each
+async function playerHelentiles(attacker, initialTarget, weapon){
+  // The enemy clicked to start the attack counts as the first of the 2 tiles;
+  // only 1 more tile needs to be picked, reroll each.
   let range = weapon.range;
   if(G.reachBonusActive) range += 2;
   const selected=[];
   aoeMode=true;
-  setPhaseText('Helen\'s Staff: Click 2 different tiles to target!');
+
+  if(initialTarget && chebyshev(attacker.x,attacker.y,initialTarget.x,initialTarget.y)<=range){
+    selected.push({x:initialTarget.x, y:initialTarget.y});
+    const tile=document.getElementById(`tile-${initialTarget.x}-${initialTarget.y}`); if(tile)tile.classList.add('aoe-hover');
+  }
+
+  if(selected.length>=2){
+    aoeMode=false;
+    for(const t of selected){
+      const tgt=getCharAt(t.x,t.y);
+      if(tgt) await doAttack(attacker,tgt,weapon,true,0,999);
+    }
+    G.hasActedThisTurn=true; G.phase='game';
+    checkWinLose(); updateStatPanel(); updateEnemyPanel();
+    return;
+  }
+
+  setPhaseText(`Helen's Staff: Click ${2-selected.length} more tile${(2-selected.length)===1?'':'s'} to target!`);
   return new Promise(resolve=>{
     aoeSelectCallback=(x,y)=>{
       if(chebyshev(attacker.x,attacker.y,x,y)>range) return;
@@ -3465,18 +3748,69 @@ document.addEventListener('click', e=>{
   openChest(player, x, y, ()=>{
     G.hasActedThisTurn=true;
     logMsg(`${player.name}'s turn ends (opened chest).`);
+    if(G.tutorialMode && G.tutorialStage==='go-chest'){
+      G.tutorialStage = 'chest-opened';
+    }
     updateStatPanel();
     nextTurn();
   });
-});
+}); // end board click listener
 
 // ============================================================
 //  AI TURN
 // ============================================================
+// ==========================================================
+//  TUTORIAL AI BEHAVIOUR
+//  Mage & Archer take a fixed post on turn 1 and stay there, only
+//  attacking from that spot for the rest of the tutorial. The Knight
+//  rushes forward and keeps following/attacking the human player.
+// ==========================================================
+async function runTutorialAITurn(char, player){
+  const endTurn = ()=>{
+    logMsg(`${char.name} ends their turn.`);
+    document.getElementById('ai-thinking').classList.remove('active');
+    nextTurn();
+  };
+  const tryAttack = async ()=>{
+    const target = findBestTarget(char);
+    if(!target) return false;
+    logMsg(`${char.name} attacks ${target.name}!`);
+    await aiDoAttack(char, target);
+    document.getElementById('ai-thinking').classList.remove('active');
+    updateEnemyPanel(); updateStatPanel();
+    checkWinLose();
+    if(G.phase!=='game-over') nextTurn();
+    return true;
+  };
+
+  if(char.class==='mage' || char.class==='archer'){
+    const post = char.class==='mage' ? {x:4,y:5} : {x:6,y:4};
+    if(char.x!==post.x || char.y!==post.y){
+      const path = findPathTo(char, post.x, post.y);
+      if(path && path.length>1) await aiMoveAlongPath(char, path);
+    }
+    if(await tryAttack()) return;
+    endTurn();
+    return;
+  }
+
+  // Knight: always take the shortest route toward the human player, then
+  // attack at the end of the turn if now in range.
+  const path = findPathTo(char, player.x, player.y);
+  if(path && path.length>1) await aiMoveAlongPath(char, path);
+  if(await tryAttack()) return;
+  endTurn();
+}
+
 async function runAITurn(char){
   await sleep(600);
   const player = G.characters.find(c=>c.isPlayer&&c.alive);
   if(!player){ document.getElementById('ai-thinking').classList.remove('active'); nextTurn(); return; }
+
+  if(G.tutorialMode){
+    await runTutorialAITurn(char, player);
+    return;
+  }
 
   // Circle of Calamity: this character cannot attack this turn, but can still move
   if(char.aiSkipAttackThisTurn){
@@ -3711,7 +4045,8 @@ function preferPlayerOnTie(candidates){
 
 function findBestTarget(char){
   const w = char.equippedWeapon;
-  const enemies = getLiveChars().filter(c=>c!==char);
+  let enemies = getLiveChars().filter(c=>c!==char);
+  if(G.tutorialMode) enemies = enemies.filter(c=>c.isPlayer);
   const inRangeEnemies = enemies.filter(e=>{
     const range = getEffectiveRange(char, w, e, false);
     if(!inRange(char, e, range)) return false;
@@ -3728,7 +4063,8 @@ function findBestTarget(char){
 }
 
 function findNearestEnemy(char){
-  const enemies = getLiveChars().filter(c=>c!==char);
+  let enemies = getLiveChars().filter(c=>c!==char);
+  if(G.tutorialMode) enemies = enemies.filter(c=>c.isPlayer);
   if(!enemies.length) return null;
   const candidates = enemies.map(e=>({char:e, dist:chebyshev(char.x,char.y,e.x,e.y)}));
   candidates.sort((a,b)=>a.dist-b.dist);
@@ -3946,14 +4282,28 @@ async function aiMoveAlongPath(char, path){
     char.x=step.x; char.y=step.y;
     positionIcon(char);
     await sleep(250);
+    if(isThorny(step.x,step.y) && i<path.length-1){
+      await tutorialExplainThornyVines(char, step.x, step.y);
+    }
     i++;
   }
   const last = {x:char.x, y:char.y};
   if(isThorny(last.x,last.y)){
     applyDamage(char,4,false);
     logMsg(`${char.name} stops in thorny vines and takes 4 damage!`,'damage');
+    await tutorialExplainThornyVines(char, last.x, last.y);
   }
   updateEnemyPanel();
+}
+
+// Tutorial: the first time any AI takes thorny-vine damage, pause and
+// point it out to the player so they understand the mechanic.
+async function tutorialExplainThornyVines(char, x, y){
+  if(!G.tutorialMode || G.tutorialThornyExplained) return;
+  G.tutorialThornyExplained = true;
+  await tutorialSpotlight(`tile-${x}-${y}`,
+    `See that? <b>${char.name}</b> just walked through <b>Thorny Vines</b> (difficult terrain) and took damage for it. These tiles cost extra movement to cross and hurt anyone who stops or passes through them - avoid them when you can!`
+  );
 }
 
 async function aiDoAttack(char, target){
