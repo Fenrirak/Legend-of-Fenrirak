@@ -218,10 +218,6 @@
     font-size: 0;
     cursor: default;
   }
-  /* The full-size board hard-codes 52px log art offsets since real tiles
-     are always exactly 52px. Preview tiles scale to fit the container, so
-     the log art needs to scale with them (percentage-based) instead, or it
-     overflows/misaligns at the preview's smaller size. */
   .tile.preview-tile.log-h-left {
     background-image: url('LogHorizontal.png');
     background-size: 200% 100%;
@@ -388,11 +384,6 @@
   .board-btn-group { display: flex; gap: 16px; }
 
   /* ===== GAME SCREEN ===== */
-  /* Default (mouse/desktop): fill the window width via fitGameScreen()'s
-     transform scale; top-anchored so that if the scaled layout ends up a
-     little taller than the window, the page scrolls down cleanly instead
-     of clipping the top of the board. A touch-primary override below
-     switches this to a fully-contained, non-scrolling, centered layout. */
   #screen-game {
     flex-direction: row;
     align-items: flex-start;
@@ -403,10 +394,6 @@
     background: #0d0d0d;
   }
 
-  /* Fixed-size inner layout that gets transform-scaled to fit the
-     available viewport (see fitGameScreen() in the script). Keeping this
-     at a constant natural size makes the scale calculation deterministic
-     across devices. */
   #game-scale-inner {
     display: flex;
     flex-direction: row;
@@ -570,8 +557,6 @@
   .tile.log {
     background-color: #7a5533;
   }
-  /* Logs occupy 2 tiles. The same source image is stretched/cropped across
-     both tile divs so it reads as one continuous log. */
   .tile.log-h-left {
     background-image: url('LogHorizontal.png');
     background-size: 104px 52px;
@@ -602,19 +587,10 @@
   .tile.chest.opened, .tile.high-ground.chest.opened {
     background: url('ChestOpened.png') center/cover !important;
   }
-  /* Hill tiles use a directional image so the upward slope visually
-     points toward the High Ground tile it leads to. hill-n is the
-     unrotated source image (slope rises toward the top of the tile);
-     e/s/w are the same artwork rotated to point the rise the other
-     three ways. Which class is used per-tile is decided in JS from
-     each tile's `hillDir` (see BOARD_CONFIGS / setTileClass). */
   .tile.hill-n { background: url('HillN.png') center/cover; }
   .tile.hill-e { background: url('HillE.png') center/cover; }
   .tile.hill-s { background: url('HillS.png') center/cover; }
   .tile.hill-w { background: url('HillW.png') center/cover; }
-  /* Custom corner-junction artwork for hill tiles that lead up to High
-     Ground in two directions at once (e.g. Board 1's (7,5), which sits
-     between the (7,6) and (8,5) High Ground tiles). */
   .tile.hill-ne { background: url('Hill2.png') center/cover; }
 
   .tile-label {
@@ -638,7 +614,6 @@
   .tile.selected-move { background: rgba(46,182,116,0.5) !important; }
   .tile.selected-attack { background: rgba(255,53,53,0.4) !important; }
 
-  /* Character icons */
   .char-icon {
     position: absolute;
     width: 38px;
@@ -852,7 +827,7 @@
     opacity: 0.6;
   }
 
-  /* ===== CUSTOM MODAL (attack choice / number input) ===== */
+  /* ===== CUSTOM MODAL ===== */
   #custom-modal-overlay {
     position: fixed;
     top: 0; left: 0;
@@ -962,11 +937,9 @@
   #outcome-word.victory { color: #d4af37; }
   #outcome-word.defeat { color: #700000; }
 
-  /* ===== START TILE SELECTION ===== */
   .tile.valid-start { outline: 3px solid var(--gold) !important; cursor: pointer; animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-  /* ===== COMPUTER THINKING INDICATOR ===== */
   #ai-thinking {
     position: fixed;
     bottom: 16px;
@@ -982,7 +955,6 @@
   }
   #ai-thinking.active { display: block; }
 
-  /* scrollbar */
   #stat-panel::-webkit-scrollbar, #right-panel::-webkit-scrollbar { width: 4px; }
   #stat-panel::-webkit-scrollbar-thumb, #right-panel::-webkit-scrollbar-thumb { background: #333; }
 
@@ -1009,7 +981,6 @@
     font-family: 'Cinzel', serif;
   }
 
-  /* AOE drag highlight */
   .tile.aoe-hover { background: rgba(255, 53, 53, 0.45) !important; box-shadow: inset 0 0 0 3px #ff3535; }
 
   #phase-indicator {
@@ -1033,17 +1004,10 @@
     color: #1a0a00;
   }
 
-  /* ===== TOUCH SCREEN SUPPORT ===== */
   @media (pointer: coarse) {
-    /* Let our own JS handle all dragging/tapping on the board - stop the
-       browser from trying to scroll or zoom while a finger is on it. */
     .tile, .char-icon, #game-board, #board-container {
       touch-action: none;
     }
-    /* Phones/tablets: the layout is scaled (by fitGameScreen()) to fit
-       entirely within the screen, so it should sit centered with no
-       page scrolling, rather than the desktop's top-anchored/scrollable
-       behavior. */
     #screen-game {
       height: 100vh;
       min-height: 0;
@@ -1052,12 +1016,10 @@
       overflow: hidden;
     }
   }
-
 </style>
 </head>
 <body>
 
-<!-- ===================== ROTATE DEVICE OVERLAY ===================== -->
 <div id="rotate-overlay">
   <div class="rotate-card">
     <div class="rotate-icon">🔄</div>
@@ -1066,49 +1028,37 @@
   </div>
 </div>
 
-<!-- ===================== RULES SCREEN ===================== -->
 <div id="screen-rules" class="screen active">
   <div class="game-title">Legend Of Fenrirak™</div>
   <div class="game-subtitle">-Showdowns-</div>
   <div class="rules-box">
     <h2>Objective</h2>
     <p>Defeat all other players on the board. If you (the human player) defeat all three computer opponents, you win — even if it's not your turn. If a computer defeats you, the game ends in defeat.</p>
-
     <h2>Setting Up</h2>
     <p>All players choose a class (Mage, Knight, or Archer) and a starting weapon. Players then choose a starting tile. Everyone rolls a die — highest to lowest determines turn order. Ties reroll among tied players.</p>
-
     <h2>Turn Structure</h2>
     <p>Players may move before attacking but cannot move after attacking. Opening a chest ends the turn immediately. One turn ends when a character has opened a chest, attacked, or clicked End Turn.</p>
-
     <h2>Movement</h2>
     <p>Move up to your movement speed in adjacent (non-diagonal) tiles. Difficult Terrain (Mud/Hill) costs 2 tiles per tile (Knights ignore this). Thorny Vines (THV) deal 2 damage when passing through and 4 damage if you stop in them, then 3 damage every 2 turn cycles until you leave.</p>
-
     <h2>Tiles</h2>
     <p>Each tile's image tells you what it is - if a tile has a name written on it (Mud, Hill, Rock, Tree, Log, THV, Chest, High Ground), that's its type and it behaves as described below. A tile with no name on it is just Normal ground with no special effect.</p>
-
     <h2>Attacks & Hit Throws</h2>
     <p>Before attacking, roll a Hit Throw. If the total (including modifiers) equals or exceeds the target's Defence, the attack hits. Range is measured as the greater of horizontal or vertical distance.</p>
     <p>Rocks, Logs, Trees, and Chests never block a ranged attack outright - they only grant a defence bonus (see Cover below); they don't stop the shot from passing through.</p>
-
     <h2>Cover</h2>
     <ul>
       <li><strong>Partial Cover:</strong> +1 Defence if it's directly adjacent (non-diagonally) to the target AND the attacker's line of fire actually passes through it on the way to the target. Cover next to the target that the shot isn't coming through (e.g. an attack from behind) gives no bonus. Mages treat Partial Cover as Heavy Cover for this bonus too.</li>
       <li><strong>Heavy Cover:</strong> +2 Defence in the same situation (+3 if the target is a Knight).</li>
       <li><strong>Rock and Log</strong> tiles count as Partial Cover. <strong>Tree and Chest</strong> tiles count as Heavy Cover.</li>
     </ul>
-
     <h2>High Ground</h2>
     <p>Tiles labeled High Ground give the attacker standing on them +1 to Hit Throw.</p>
-
     <h2>Chests</h2>
     <p>Opening a chest ends your turn. You must be directly adjacent (non-diagonal). Roll a die for loot. A chest can only be opened once. If a weapon is received, it goes to inventory automatically. A Chest can also sit on a High Ground tile, granting both effects at once.</p>
-
     <h2>Healing & Potions</h2>
     <p>Can't use Potion of Healing at full health. Can't heal above max health. Potions can be used any time during your turn before it ends.</p>
-
     <h2>Death</h2>
     <p>Health reduced to 0 or below = defeated and removed from the game.</p>
-
     <h2>Classes</h2>
     <p><strong>Mage:</strong> 65 HP / Defence 3 / Move 4. Passive: All PC becomes HC; Thorny Vines take one extra turn cycle to deal damage.</p>
     <p><strong>Knight:</strong> 75 HP / Defence 5 / Move 6. Passive: Difficult terrain counts as 1 tile (no movement penalty; damage from Thorny Vines still applies).</p>
@@ -1117,7 +1067,6 @@
   <button class="btn" onclick="showScreen('screen-name')">Continue</button>
 </div>
 
-<!-- ===================== NAME SCREEN ===================== -->
 <div id="screen-name" class="screen">
   <div class="setup-title">Enter Your Name</div>
   <div class="setup-box" style="text-align:center;">
@@ -1128,12 +1077,10 @@
   </div>
 </div>
 
-<!-- ===================== BOARD SCREEN ===================== -->
 <div id="screen-board" class="screen">
   <div class="setup-title">Choose a Board</div>
   <div class="board-select-wrap">
     <div class="board-option-label" id="board-option-label">Board Option 1</div>
-
     <div class="board-preview-row">
       <button class="board-arrow" id="board-arrow-left" onclick="cycleBoardPreview(-1)" aria-label="Previous board"></button>
       <div class="board-preview-box" id="board-preview-box">
@@ -1141,15 +1088,12 @@
       </div>
       <button class="board-arrow" id="board-arrow-right" onclick="cycleBoardPreview(1)" aria-label="Next board"></button>
     </div>
-
     <label class="dice-setting-toggle" for="interactive-dice-toggle" style="margin-bottom: 18px;">
       <input type="checkbox" id="interactive-dice-toggle" onchange="setInteractiveDice(this.checked)">
       <span class="dice-setting-box" aria-hidden="true"></span>
       <span>Roll &amp; watch my own Hit Throw and Damage dice</span>
     </label>
-
     <button class="btn" id="select-board-btn" onclick="confirmBoardPreviewSelection()">Select Board</button>
-
     <div class="board-select-extra-btns">
       <button class="btn success" onclick="selectRandomBoard()">🎲 Random Board</button>
       <button class="btn" style="background:#2a6b8a;" onclick="selectBoard('tutorial')">📘 Tutorial</button>
@@ -1157,15 +1101,12 @@
   </div>
 </div>
 
-<!-- ===================== CLASS SCREEN ===================== -->
 <div id="screen-class" class="screen">
   <div class="setup-title">Choose Your Class</div>
   <div class="setup-box">
     <div class="class-cards">
       <div class="class-card" id="cc-mage" onclick="selectClass('mage')">
-        <div class="class-icon">
-          <svg width="44" height="44" viewBox="0 0 44 44"><polygon points="22,2 42,16 35,40 9,40 2,16" fill="#39b5ff" stroke="#1a6090" stroke-width="2"/></svg>
-        </div>
+        <div class="class-icon"><svg width="44" height="44" viewBox="0 0 44 44"><polygon points="22,2 42,16 35,40 9,40 2,16" fill="#39b5ff" stroke="#1a6090" stroke-width="2"/></svg></div>
         <h3>Mage</h3>
         <div class="stat">❤️ Health: 65</div>
         <div class="stat">🛡️ Defence: 3</div>
@@ -1173,9 +1114,7 @@
         <div class="passive">Passive: Magical Barrier — All PC becomes HC; Thorny Vines take one extra turn cycle to deal damage.</div>
       </div>
       <div class="class-card" id="cc-knight" onclick="selectClass('knight')">
-        <div class="class-icon">
-          <svg width="44" height="44" viewBox="0 0 44 44"><rect x="4" y="4" width="36" height="36" rx="3" fill="#b7b7b7" stroke="#777" stroke-width="2"/></svg>
-        </div>
+        <div class="class-icon"><svg width="44" height="44" viewBox="0 0 44 44"><rect x="4" y="4" width="36" height="36" rx="3" fill="#b7b7b7" stroke="#777" stroke-width="2"/></svg></div>
         <h3>Knight</h3>
         <div class="stat">❤️ Health: 75</div>
         <div class="stat">🛡️ Defence: 5</div>
@@ -1183,9 +1122,7 @@
         <div class="passive">Passive: Mighty Muscles — Difficult terrain counts as 1 tile of movement (no movement penalty). Thorny Vine damage still applies.</div>
       </div>
       <div class="class-card" id="cc-archer" onclick="selectClass('archer')">
-        <div class="class-icon">
-          <svg width="44" height="44" viewBox="0 0 44 44"><polygon points="22,2 42,42 2,42" fill="#e77d22" stroke="#a04010" stroke-width="2"/></svg>
-        </div>
+        <div class="class-icon"><svg width="44" height="44" viewBox="0 0 44 44"><polygon points="22,2 42,42 2,42" fill="#e77d22" stroke="#a04010" stroke-width="2"/></svg></div>
         <h3>Archer</h3>
         <div class="stat">❤️ Health: 70</div>
         <div class="stat">🛡️ Defence: 4</div>
@@ -1199,7 +1136,6 @@
   </div>
 </div>
 
-<!-- ===================== WEAPON SCREEN ===================== -->
 <div id="screen-weapon" class="screen">
   <div class="setup-title">Choose Your Starting Weapon</div>
   <div class="setup-box">
@@ -1210,14 +1146,12 @@
   </div>
 </div>
 
-<!-- ===================== START TILE SCREEN ===================== -->
 <div id="screen-start-tile" class="screen">
   <div class="setup-title" id="start-tile-title">Choose Your Starting Tile</div>
   <p style="color:var(--text-dim); font-size:0.9em; margin-bottom:12px;">Click a highlighted (gold) tile on the board</p>
   <div id="start-tile-board-container"></div>
 </div>
 
-<!-- ===================== ROLL ORDER SCREEN ===================== -->
 <div id="screen-rollorder" class="screen">
   <div class="setup-title">Determining Turn Order</div>
   <div class="setup-box">
@@ -1230,26 +1164,15 @@
   </div>
 </div>
 
-<!-- ===================== GAME SCREEN ===================== -->
 <div id="screen-game" class="screen">
  <div id="game-scale-inner">
-  <!-- Left: Player Stats -->
   <div id="stat-panel">
     <div class="stat-title">Legend Of Fenrirak™<br><small style="font-size:0.7em; color:var(--text-dim);">-Showdowns-</small></div>
     <div class="section-header">Class</div>
     <div id="sp-class" style="font-family:'Cinzel',serif; color:var(--gold); font-size:1em; padding:4px 0;"></div>
-    <div class="stat-row">
-      <span class="stat-label">❤️ Health:</span>
-      <span class="stat-value" id="sp-hp"></span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">🛡️ Defence:</span>
-      <span class="stat-value" id="sp-def"></span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">⚡ Move:</span>
-      <span class="stat-value" id="sp-move"></span>
-    </div>
+    <div class="stat-row"><span class="stat-label">❤️ Health:</span><span class="stat-value" id="sp-hp"></span></div>
+    <div class="stat-row"><span class="stat-label">🛡️ Defence:</span><span class="stat-value" id="sp-def"></span></div>
+    <div class="stat-row"><span class="stat-label">⚡ Move:</span><span class="stat-value" id="sp-move"></span></div>
     <div class="section-header">Ability</div>
     <div id="sp-ability" style="font-size:0.78em; color:var(--text); line-height:1.5;"></div>
     <div class="section-header">Weapon Equipped</div>
@@ -1274,17 +1197,11 @@
     <div id="phase-indicator"></div>
     <button class="btn danger" id="end-turn-btn" onclick="playerEndTurn()">End Turn</button>
   </div>
-
-  <!-- Center: Board -->
   <div id="board-area">
     <div id="turn-info">Loading...</div>
     <div id="message-log"></div>
-    <div id="board-container">
-      <div id="game-board"></div>
-    </div>
+    <div id="board-container"><div id="game-board"></div></div>
   </div>
-
-  <!-- Right: Enemy info -->
   <div id="right-panel">
     <div class="section-header" style="margin-top:0;">Characters</div>
     <div id="enemy-cards"></div>
@@ -1292,13 +1209,10 @@
  </div>
 </div>
 
-<!-- ===================== DICE OVERLAY ===================== -->
 <div id="dice-overlay">
   <div class="dice-container">
     <div class="dice-title" id="dice-title">Roll the Dice!</div>
-    <div id="dice-3d">
-      <div class="dice-face-display" id="dice-face">?</div>
-    </div>
+    <div id="dice-3d"><div class="dice-face-display" id="dice-face">?</div></div>
     <div class="dice-result-text" id="dice-result-text"></div>
     <div id="dice-vial-buttons" class="dice-vial-buttons"></div>
     <button class="btn" id="dice-roll-btn" onclick="rollTheDice()">Roll!</button>
@@ -1306,7 +1220,6 @@
   </div>
 </div>
 
-<!-- ===================== CUSTOM MODAL (attack choice / number input) ===================== -->
 <div id="custom-modal-overlay">
   <div class="custom-modal-box">
     <div class="dice-title" id="custom-modal-title"></div>
@@ -1315,7 +1228,6 @@
   </div>
 </div>
 
-<!-- ===================== ITEM POPUP ===================== -->
 <div id="item-popup">
   <div class="item-card">
     <h3 id="ip-title"></h3>
@@ -1329,240 +1241,54 @@
   </div>
 </div>
 
-<!-- ===================== OUTCOME OVERLAY ===================== -->
-<div id="outcome-overlay">
-  <div id="outcome-word"></div>
-</div>
-
+<div id="outcome-overlay"><div id="outcome-word"></div></div>
 <div id="ai-thinking">Computer is thinking...</div>
 
 <script>
-// ============================================================
-//  GAME DATA
-// ============================================================
-
 const WEAPONS = {
   mage: [
-    {
-      id: 'staff_greater_good', name: 'Arcane Scepter', class: 'mage',
-      attackName: 'Orb of Power',
-      baseDamage: 12, damageType: 'plus',
-      diceCount: 3, diceCondition: 'even', diceBonus: 3,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 4,
-      desc: '12+ Damage. Roll die 3 times, for every even number, deal 3 extra damage.'
-    },
-    {
-      id: 'staff_might', name: 'Staff of Cosmic Energy', class: 'mage',
-      attackName: 'Celestial Bolt',
-      baseDamage: 15, damageType: 'plus',
-      diceCount: 3, diceCondition: '5or6', diceBonus: 4,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 4,
-      desc: '15+ Damage. Roll die 3 times, for every 5 or 6, deal 4 extra damage.'
-    },
-    {
-      id: 'staff_oceans', name: 'Staff of the Oceans', class: 'mage',
-      attackName: 'Aqueous Torrent',
-      baseDamage: 12, damageType: 'flat',
-      diceCount: 2, diceCondition: 'odd', diceBonus: 1,
-      hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 4,
-      special: 'push_back',
-      desc: '12 Damage. Roll die 2 times, for every odd number, deal 1 extra damage. Pushes the target back one tile; if blocked, deals 5 extra damage instead.'
-    },
-    {
-      id: 'wand_flames', name: 'Wand of Deathly Flames', class: 'mage',
-      attackName: 'Inferno Blast',
-      baseDamage: 22, damageType: 'minus',
-      diceCount: 0, diceCondition: 'distance', diceBonus: 2,
-      hitThrowMod: -1, effect: '1 tile', effectTiles: 1, range: 10,
-      desc: '22- Damage. For every tile away from the Mage, deal 2 less damage.'
-    }
+    { id: 'staff_greater_good', name: 'Arcane Scepter', class: 'mage', attackName: 'Orb of Power', baseDamage: 12, damageType: 'plus', diceCount: 3, diceCondition: 'even', diceBonus: 3, hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 4, desc: '12+ Damage. Roll die 3 times, for every even number, deal 3 extra damage.' },
+    { id: 'staff_might', name: 'Staff of Cosmic Energy', class: 'mage', attackName: 'Celestial Bolt', baseDamage: 15, damageType: 'plus', diceCount: 3, diceCondition: '5or6', diceBonus: 4, hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 4, desc: '15+ Damage. Roll die 3 times, for every 5 or 6, deal 4 extra damage.' },
+    { id: 'staff_oceans', name: 'Staff of the Oceans', class: 'mage', attackName: 'Aqueous Torrent', baseDamage: 12, damageType: 'flat', diceCount: 2, diceCondition: 'odd', diceBonus: 1, hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 4, special: 'push_back', desc: '12 Damage. Roll die 2 times, for every odd number, deal 1 extra damage. Pushes the target back one tile; if blocked, deals 5 extra damage instead.' },
+    { id: 'wand_flames', name: 'Wand of Deathly Flames', class: 'mage', attackName: 'Inferno Blast', baseDamage: 22, damageType: 'minus', diceCount: 0, diceCondition: 'distance', diceBonus: 2, hitThrowMod: -1, effect: '1 tile', effectTiles: 1, range: 10, desc: '22- Damage. For every tile away from the Mage, deal 2 less damage.' }
   ],
   knight: [
-    {
-      id: 'longsword', name: 'Longsword', class: 'knight',
-      attackName: 'Piercing Thrust',
-      baseDamage: 11, damageType: 'plus',
-      diceCount: 2, diceCondition: 'even', diceBonus: 4,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 2,
-      desc: '11+ Damage. Roll die 2 times, for every even number, deal 4 extra damage.'
-    },
-    {
-      id: 'twin_daggers', name: 'Twin Daggers', class: 'knight',
-      attackName: 'Blade Flurry',
-      baseDamage: 5, damageType: 'plus',
-      diceCount: 6, diceCondition: 'odd', diceBonus: 2,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 1,
-      desc: '5+ Damage. Roll die 6 times, for every odd number, deal 2 extra damage.'
-    },
-    {
-      id: 'greataxe', name: 'Greataxe', class: 'knight',
-      attackName: 'Iron Cleave',
-      baseDamage: 13, damageType: 'plus',
-      diceCount: 1, diceCondition: 'even', diceBonus: 2,
-      hitThrowMod: 1, effect: '2 adjacent tiles (including diagonals)', effectTiles: 2, range: 1,
-      special: 'aoe2adj',
-      desc: '13+ Damage. Roll die once, if even, deal 2 extra damage. Effect: 2 adjacent tiles (incl. diagonals).'
-    },
-    {
-      id: 'sword_buckler', name: 'Sword and Buckler', class: 'knight',
-      attackName: 'Destructive Rush',
-      baseDamage: 17, damageType: 'minus_dmg_taken',
-      diceCount: 0, diceCondition: 'minus_dmg_taken',
-      hitThrowMod: 0, effect: '8 surrounding tiles', effectTiles: 8, range: 1,
-      special: 'aoe8surround',
-      passive: 'Parry: Take 4 less damage if attack deals <18 (before Parry).',
-      desc: '17- Damage. Deal 1 less damage for every damage taken since start of last turn. Minimum 5. Effect: 8 surrounding tiles.'
-    }
+    { id: 'longsword', name: 'Longsword', class: 'knight', attackName: 'Piercing Thrust', baseDamage: 11, damageType: 'plus', diceCount: 2, diceCondition: 'even', diceBonus: 4, hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 2, desc: '11+ Damage. Roll die 2 times, for every even number, deal 4 extra damage.' },
+    { id: 'twin_daggers', name: 'Twin Daggers', class: 'knight', attackName: 'Blade Flurry', baseDamage: 5, damageType: 'plus', diceCount: 6, diceCondition: 'odd', diceBonus: 2, hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 1, desc: '5+ Damage. Roll die 6 times, for every odd number, deal 2 extra damage.' },
+    { id: 'greataxe', name: 'Greataxe', class: 'knight', attackName: 'Iron Cleave', baseDamage: 13, damageType: 'plus', diceCount: 1, diceCondition: 'even', diceBonus: 2, hitThrowMod: 1, effect: '2 adjacent tiles (including diagonals)', effectTiles: 2, range: 1, special: 'aoe2adj', desc: '13+ Damage. Roll die once, if even, deal 2 extra damage. Effect: 2 adjacent tiles (incl. diagonals).' },
+    { id: 'sword_buckler', name: 'Sword and Buckler', class: 'knight', attackName: 'Destructive Rush', baseDamage: 17, damageType: 'minus_dmg_taken', diceCount: 0, diceCondition: 'minus_dmg_taken', hitThrowMod: 0, effect: '8 surrounding tiles', effectTiles: 8, range: 1, special: 'aoe8surround', passive: 'Parry: Take 4 less damage if attack deals <18 (before Parry).', desc: '17- Damage. Deal 1 less damage for every damage taken since start of last turn. Minimum 5. Effect: 8 surrounding tiles.' }
   ],
   archer: [
-    {
-      id: 'longbow', name: 'Longbow', class: 'archer',
-      attackName: 'Twin Shot',
-      baseDamage: 11, damageType: 'plus',
-      diceCount: 3, diceCondition: '4or6', diceBonus: 7,
-      hitThrowMod: 0, effect: '1 tile', effectTiles: 1, range: 7,
-      desc: '11+ Damage. Roll die 3 times, for every 4 or 6, deal 7 extra damage.'
-    },
-    {
-      id: 'shortbow', name: 'Shortbow', class: 'archer',
-      attackName: 'Reign of Arrows',
-      baseDamage: 10, damageType: 'flat',
-      diceCount: 4, diceCondition: '5or6_spread', diceBonus: 0,
-      hitThrowMod: 1, effect: '1+ tiles (spread on 5/6)', effectTiles: 1, range: 5,
-      special: 'shortbow_spread',
-      desc: '10 Damage. Roll die 4 times; for every 5 or 6, hit an adjacent tile of choice.'
-    },
-    {
-      id: 'horsebow', name: "Ranger's Bow", class: 'archer',
-      attackName: 'Blasting Arrow',
-      baseDamage: 13, damageType: 'plus',
-      diceCount: 2, diceCondition: 'odd', diceBonus: 4,
-      hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 5,
-      desc: '13+ Damage. Roll die 2 times, for every odd number, deal 4 extra damage.'
-    },
-    {
-      id: 'crossbow', name: 'Crossbow', class: 'archer',
-      attackName: 'Flaming Arrows',
-      baseDamage: 22, damageType: 'mixed_crossbow',
-      diceCount: 3, diceCondition: 'crossbow',
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6,
-      desc: '22+/- Damage. Roll die 3 times. Every even: -4 damage. Every odd: +1 damage.'
-    }
+    { id: 'longbow', name: 'Longbow', class: 'archer', attackName: 'Twin Shot', baseDamage: 11, damageType: 'plus', diceCount: 3, diceCondition: '4or6', diceBonus: 7, hitThrowMod: 0, effect: '1 tile', effectTiles: 1, range: 7, desc: '11+ Damage. Roll die 3 times, for every 4 or 6, deal 7 extra damage.' },
+    { id: 'shortbow', name: 'Shortbow', class: 'archer', attackName: 'Reign of Arrows', baseDamage: 10, damageType: 'flat', diceCount: 4, diceCondition: '5or6_spread', diceBonus: 0, hitThrowMod: 1, effect: '1+ tiles (spread on 5/6)', effectTiles: 1, range: 5, special: 'shortbow_spread', desc: '10 Damage. Roll die 4 times; for every 5 or 6, hit an adjacent tile of choice.' },
+    { id: 'horsebow', name: "Ranger's Bow", class: 'archer', attackName: 'Blasting Arrow', baseDamage: 13, damageType: 'plus', diceCount: 2, diceCondition: 'odd', diceBonus: 4, hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 5, desc: '13+ Damage. Roll die 2 times, for every odd number, deal 4 extra damage.' },
+    { id: 'crossbow', name: 'Crossbow', class: 'archer', attackName: 'Flaming Arrows', baseDamage: 22, damageType: 'mixed_crossbow', diceCount: 3, diceCondition: 'crossbow', hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6, desc: '22+/- Damage. Roll die 3 times. Every even: -4 damage. Every odd: +1 damage.' }
   ],
-  // Hidden classes, unlocked by entering a special name on the name screen
   aldemar: [
-    {
-      id: 'aldemar_steel_staff', name: "Aldemar's Steel Staff", class: 'aldemar',
-      attackName: 'Fireball',
-      baseDamage: 25, damageType: 'plus',
-      diceCount: 2, diceCondition: 'even', diceBonus: 6,
-      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4,
-      special: 'aoe2x2',
-      desc: '25+ Damage. Roll a die 2 times, for every even number, deal 6 more damage. Effect: 4 tiles in a 2×2 area.'
-    },
-    {
-      id: 'staff_of_life', name: 'Staff of Life', class: 'aldemar',
-      attackName: 'Storm Edge',
-      baseDamage: 15, damageType: 'plus',
-      diceCount: 3, diceCondition: 'even', diceBonus: 10,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5,
-      passive: "Forest's Grace: With every attack that hits, heal 5 health. This is not an attack, it is a passive ability.",
-      desc: '15+ Damage. Roll a die 3 times, for every even number, deal 10 more damage.'
-    }
+    { id: 'aldemar_steel_staff', name: "Aldemar's Steel Staff", class: 'aldemar', attackName: 'Fireball', baseDamage: 25, damageType: 'plus', diceCount: 2, diceCondition: 'even', diceBonus: 6, hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4, special: 'aoe2x2', desc: '25+ Damage. Roll a die 2 times, for every even number, deal 6 more damage. Effect: 4 tiles in a 2×2 area.' },
+    { id: 'staff_of_life', name: 'Staff of Life', class: 'aldemar', attackName: 'Storm Edge', baseDamage: 15, damageType: 'plus', diceCount: 3, diceCondition: 'even', diceBonus: 10, hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5, passive: "Forest's Grace: With every attack that hits, heal 5 health. This is not an attack, it is a passive ability.", desc: '15+ Damage. Roll a die 3 times, for every even number, deal 10 more damage.' }
   ],
   helen: [
-    {
-      id: 'scarlet_void', name: "Helen's Staff of Pure Oblivion Magic", class: 'helen',
-      attackName: 'Scarlet Void',
-      baseDamage: 20, damageType: 'special',
-      diceCount: 0, diceCondition: 'scarlet_void',
-      hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 4,
-      special: 'scarlet_void',
-      desc: '20+ Damage. Take up to 30 damage; this attack deals extra damage equal to the damage taken.'
-    },
-    {
-      id: 'raw_oblivion_magic', name: 'Raw Oblivion Magic', class: 'helen',
-      desc: 'A staff with two attacks to choose from each turn: Black Lightning (a powerful ranged burst that surges when you are low on health) and Circle of Calamity (self-damage that stuns the target\'s next attack).',
-      attacks: [
-        {
-          id: 'black_lightning', name: 'Raw Oblivion Magic', class: 'helen',
-          attackName: 'Black Lightning',
-          baseDamage: 25, damageType: 'plus',
-          diceCount: 0, diceCondition: 'low_hp_bonus',
-          hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5,
-          desc: '25+ Damage. If you have 40 or less health remaining, deal 20 extra damage.'
-        },
-        {
-          id: 'circle_of_calamity', name: 'Raw Oblivion Magic', class: 'helen',
-          attackName: 'Circle of Calamity',
-          baseDamage: 20, damageType: 'flat',
-          diceCount: 0,
-          hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 3,
-          special: 'circle_calamity',
-          desc: '20 Damage. Take 10 damage. The target cannot attack during their next turn.'
-        }
-      ]
-    }
+    { id: 'scarlet_void', name: "Helen's Staff of Pure Oblivion Magic", class: 'helen', attackName: 'Scarlet Void', baseDamage: 20, damageType: 'special', diceCount: 0, diceCondition: 'scarlet_void', hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 4, special: 'scarlet_void', desc: '20+ Damage. Take up to 30 damage; this attack deals extra damage equal to the damage taken.' },
+    { id: 'raw_oblivion_magic', name: 'Raw Oblivion Magic', class: 'helen', desc: 'A staff with two attacks to choose from each turn: Black Lightning (a powerful ranged burst that surges when you are low on health) and Circle of Calamity (self-damage that stuns the target\'s next attack).', attacks: [
+      { id: 'black_lightning', name: 'Raw Oblivion Magic', class: 'helen', attackName: 'Black Lightning', baseDamage: 25, damageType: 'plus', diceCount: 0, diceCondition: 'low_hp_bonus', hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5, desc: '25+ Damage. If you have 40 or less health remaining, deal 20 extra damage.' },
+      { id: 'circle_of_calamity', name: 'Raw Oblivion Magic', class: 'helen', attackName: 'Circle of Calamity', baseDamage: 20, damageType: 'flat', diceCount: 0, hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 3, special: 'circle_calamity', desc: '20 Damage. Take 10 damage. The target cannot attack during their next turn.' }
+    ]}
   ],
   ronald: [
-    {
-      id: 'compound_bow', name: "Ronald's Compound Bow", class: 'ronald',
-      attackName: 'Through the Fence',
-      baseDamage: 20, damageType: 'plus',
-      diceCount: 2, diceCondition: 'even', diceBonus: 8,
-      hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 7,
-      desc: '20+ Damage. Roll a die 2 times, for every even number, deal 8 more damage.'
-    },
-    {
-      id: 'energy_bow', name: 'Energy Bow', class: 'ronald',
-      attackName: 'Arrow of Pure Magic',
-      baseDamage: 20, damageType: 'plus',
-      diceCount: 3, diceCondition: 'even', diceBonus: 5,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 7,
-      desc: '20+ Damage. Roll a die 3 times, for every even number, deal 5 more damage.'
-    }
+    { id: 'compound_bow', name: "Ronald's Compound Bow", class: 'ronald', attackName: 'Through the Fence', baseDamage: 20, damageType: 'plus', diceCount: 2, diceCondition: 'even', diceBonus: 8, hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 7, desc: '20+ Damage. Roll a die 2 times, for every even number, deal 8 more damage.' },
+    { id: 'energy_bow', name: 'Energy Bow', class: 'ronald', attackName: 'Arrow of Pure Magic', baseDamage: 20, damageType: 'plus', diceCount: 3, diceCondition: 'even', diceBonus: 5, hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 7, desc: '20+ Damage. Roll a die 3 times, for every even number, deal 5 more damage.' }
   ],
-  // Chest weapons
   chest: {
-    mage: {
-      id: 'aldamars_staff', name: "Aldemar's Staff", class: 'mage',
-      attackName: 'Fireball',
-      baseDamage: 22, damageType: 'plus',
-      diceCount: 3, diceCondition: 'even', diceBonus: 5,
-      hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4,
-      special: 'aoe2x2',
-      desc: '22+ Damage. Roll die 3 times, for every even number, deal 5 more damage. Effect: 4 tiles in a 2×2 area.'
-    },
-    archer: {
-      id: 'sylvias_bow', name: "Sylvia's Bow", class: 'archer',
-      attackName: 'Arrow of Light',
-      baseDamage: 12, damageType: 'plus',
-      diceCount: 2, diceCondition: 'even', diceBonus: 16,
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6,
-      desc: '12+ Damage. Roll die 2 times, for every even number, deal 16 more damage.'
-    },
-    knight: {
-      id: 'fenrirak_blade', name: "Fenrirak's Tail Blade", class: 'knight',
-      attackName: 'Lightning Strike',
-      baseDamage: 5, damageType: 'plus_pct_dmg',
-      diceCount: 0, diceCondition: 'plus_pct_dmg',
-      hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 2,
-      desc: '5+ damage. +1 damage for every 2 damage target has already taken (round down).'
-    },
-    any: {
-      id: 'helens_staff', name: "Helen's Staff of Pure Oblivion", class: 'any',
-      attackName: 'Blast of Obliviation',
-      baseDamage: 25, damageType: 'oblivion',
-      diceCount: 1, diceCondition: 'odd_50',
-      hitThrowMod: 2, effect: 'Any 2 tiles (reroll each)', effectTiles: 2, range: 8,
-      special: 'helen2tiles',
-      desc: '25+ damage. Roll a die, if odd, deal 50 damage instead. Effect: Any 2 tiles, reroll Hit Throw & damage for each.'
-    }
+    mage: { id: 'aldamars_staff', name: "Aldemar's Staff", class: 'mage', attackName: 'Fireball', baseDamage: 22, damageType: 'plus', diceCount: 3, diceCondition: 'even', diceBonus: 5, hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4, special: 'aoe2x2', desc: '22+ Damage. Roll die 3 times, for every even number, deal 5 more damage. Effect: 4 tiles in a 2×2 area.' },
+    archer: { id: 'sylvias_bow', name: "Sylvia's Bow", class: 'archer', attackName: 'Arrow of Light', baseDamage: 12, damageType: 'plus', diceCount: 2, diceCondition: 'even', diceBonus: 16, hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6, desc: '12+ Damage. Roll die 2 times, for every even number, deal 16 more damage.' },
+    knight: { id: 'fenrirak_blade', name: "Fenrirak's Tail Blade", class: 'knight', attackName: 'Lightning Strike', baseDamage: 5, damageType: 'plus_pct_dmg', diceCount: 0, diceCondition: 'plus_pct_dmg', hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 2, desc: '5+ damage. +1 damage for every 2 damage target has already taken (round down).' },
+    any: { id: 'helens_staff', name: "Helen's Staff of Pure Oblivion", class: 'any', attackName: 'Blast of Obliviation', baseDamage: 25, damageType: 'oblivion', diceCount: 1, diceCondition: 'odd_50', hitThrowMod: 2, effect: 'Any 2 tiles (reroll each)', effectTiles: 2, range: 8, special: 'helen2tiles', desc: '25+ damage. Roll a die, if odd, deal 50 damage instead. Effect: Any 2 tiles, reroll Hit Throw & damage for each.' }
   }
 };
 
 const CHEST_LOOT = [
-  null, // 0 unused
+  null,
   { roll: 1, name: 'Potion of Healing', type: 'potion', amount: 2, desc: 'Heal 10 health.' },
   { roll: 2, name: 'Potion of Reach', type: 'potion', amount: 2, desc: 'All attacks this turn have +2 to range.' },
   { roll: 3, name: 'Vial of Blue Liquid', type: 'potion', amount: 3, desc: 'Roll a die. 1-4: heal 2 HP. 5-6: heal 15 HP.' },
@@ -1576,122 +1302,53 @@ const BOARD_CONFIGS = {
   1: {
     startingTiles: [{x:0,y:0},{x:5,y:0},{x:10,y:0},{x:0,y:8},{x:5,y:8},{x:10,y:8}],
     tiles: {
-      '1,1':{type:'pc', label:'Rock'},
-      '0,2':{type:'pc', label:'Rock'},
-      '9,3':{type:'pc', label:'Rock'},
-      '4,6':{type:'pc', label:'Rock'},
-      '7,1':{type:'difficult', label:'Mud'},
-      '3,3':{type:'difficult', label:'Mud'},
-      '6,4':{type:'difficult', label:'Mud'},
-      '1,7':{type:'difficult', label:'Mud'},
-      '10,7':{type:'difficult', label:'Mud'},
-      '2,8':{type:'difficult', label:'Mud'},
-      '9,8':{type:'difficult', label:'Mud'},
-      '8,1':{type:'log', label:'Log', logDir:'h-left'},
-      '9,1':{type:'log', label:'Log', logDir:'h-right'},
-      '1,4':{type:'log', label:'Log', logDir:'v-bottom'},
-      '1,5':{type:'log', label:'Log', logDir:'v-top'},
-      '1,2':{type:'highground', label:'High Ground'},
-      '8,5':{type:'highground', label:'High Ground'},
-      '7,6':{type:'highground', label:'High Ground'},
-      '8,6':{type:'highground', label:'High Ground'},
-      '2,2':{type:'difficult', label:'Hill', hillDir:'w'},
-      '1,3':{type:'difficult', label:'Hill', hillDir:'s'},
-      '8,4':{type:'difficult', label:'Hill', hillDir:'n'},
-      '7,5':{type:'difficult', label:'Hill', hillDir:'ne'},
-      '8,5':{type:'highground', label:'High Ground'},
-      '6,6':{type:'difficult', label:'Hill', hillDir:'e'},
-      '9,6':{type:'difficult', label:'Hill', hillDir:'s'},
-      '9,5':{type:'difficult', label:'Hill', hillDir:'w'},
-      '7,7':{type:'difficult', label:'Hill', hillDir:'s'},
-      '8,7':{type:'difficult', label:'Hill', hillDir:'s'},
-      '3,2':{type:'chest', label:'Chest'},
-      '8,6':{type:'chest_hg', label:'Chest'},
-      '2,7':{type:'chest', label:'Chest'},
-      '3,0':{type:'thorny', label:'THV'},
-      '4,2':{type:'thorny', label:'THV'},
-      '7,3':{type:'thorny', label:'THV'},
-      '3,5':{type:'thorny', label:'THV'},
+      '1,1':{type:'pc', label:'Rock'}, '0,2':{type:'pc', label:'Rock'}, '9,3':{type:'pc', label:'Rock'}, '4,6':{type:'pc', label:'Rock'},
+      '7,1':{type:'difficult', label:'Mud'}, '3,3':{type:'difficult', label:'Mud'}, '6,4':{type:'difficult', label:'Mud'}, '1,7':{type:'difficult', label:'Mud'}, '10,7':{type:'difficult', label:'Mud'}, '2,8':{type:'difficult', label:'Mud'}, '9,8':{type:'difficult', label:'Mud'},
+      '8,1':{type:'log', label:'Log', logDir:'h-left'}, '9,1':{type:'log', label:'Log', logDir:'h-right'},
+      '1,4':{type:'log', label:'Log', logDir:'v-bottom'}, '1,5':{type:'log', label:'Log', logDir:'v-top'},
+      '1,2':{type:'highground', label:'High Ground'}, '8,5':{type:'highground', label:'High Ground'}, '7,6':{type:'highground', label:'High Ground'}, '8,6':{type:'highground', label:'High Ground'},
+      '2,2':{type:'difficult', label:'Hill', hillDir:'w'}, '1,3':{type:'difficult', label:'Hill', hillDir:'s'}, '8,4':{type:'difficult', label:'Hill', hillDir:'n'}, '7,5':{type:'difficult', label:'Hill', hillDir:'ne'},
+      '6,6':{type:'difficult', label:'Hill', hillDir:'e'}, '9,6':{type:'difficult', label:'Hill', hillDir:'s'}, '9,5':{type:'difficult', label:'Hill', hillDir:'w'}, '7,7':{type:'difficult', label:'Hill', hillDir:'s'}, '8,7':{type:'difficult', label:'Hill', hillDir:'s'},
+      '3,2':{type:'chest', label:'Chest'}, '8,6':{type:'chest_hg', label:'Chest'}, '2,7':{type:'chest', label:'Chest'},
+      '3,0':{type:'thorny', label:'THV'}, '4,2':{type:'thorny', label:'THV'}, '7,3':{type:'thorny', label:'THV'}, '3,5':{type:'thorny', label:'THV'},
       '6,2':{type:'hc', label:'Tree'},
     }
   },
   2: {
     startingTiles: [{x:2,y:2},{x:8,y:2},{x:5,y:4},{x:2,y:6},{x:8,y:6}],
     tiles: {
-      '1,1':{type:'pc', label:'Rock'},
-      '7,4':{type:'pc', label:'Rock'},
-      '10,6':{type:'pc', label:'Rock'},
-      '3,7':{type:'pc', label:'Rock'},
-      '5,1':{type:'difficult', label:'Mud'},
-      '4,5':{type:'difficult', label:'Mud'},
-      '5,7':{type:'difficult', label:'Mud'},
-      '2,0':{type:'log', label:'Log', logDir:'h-left'},
-      '3,0':{type:'log', label:'Log', logDir:'h-right'},
-      '0,8':{type:'highground', label:'High Ground'},
-      '10,0':{type:'highground', label:'High Ground'},
-      '9,0':{type:'difficult', label:'Hill', hillDir:'e'},
-      '10,1':{type:'difficult', label:'Hill', hillDir:'s'},
-      '0,7':{type:'difficult', label:'Hill', hillDir:'n'},
-      '1,8':{type:'difficult', label:'Hill', hillDir:'w'},
-      '0,4':{type:'chest', label:'Chest'},
-      '5,0':{type:'chest', label:'Chest'},
-      '10,4':{type:'chest', label:'Chest'},
-      '5,8':{type:'chest', label:'Chest'},
-      '6,2':{type:'thorny', label:'THV'},
-      '1,4':{type:'thorny', label:'THV'},
-      '9,4':{type:'thorny', label:'THV'},
-      '3,3':{type:'hc', label:'Tree'},
-      '9,8':{type:'hc', label:'Tree'},
+      '1,1':{type:'pc', label:'Rock'}, '7,4':{type:'pc', label:'Rock'}, '10,6':{type:'pc', label:'Rock'}, '3,7':{type:'pc', label:'Rock'},
+      '5,1':{type:'difficult', label:'Mud'}, '4,5':{type:'difficult', label:'Mud'}, '5,7':{type:'difficult', label:'Mud'},
+      '2,0':{type:'log', label:'Log', logDir:'h-left'}, '3,0':{type:'log', label:'Log', logDir:'h-right'},
+      '0,8':{type:'highground', label:'High Ground'}, '10,0':{type:'highground', label:'High Ground'},
+      '9,0':{type:'difficult', label:'Hill', hillDir:'e'}, '10,1':{type:'difficult', label:'Hill', hillDir:'s'}, '0,7':{type:'difficult', label:'Hill', hillDir:'n'}, '1,8':{type:'difficult', label:'Hill', hillDir:'w'},
+      '0,4':{type:'chest', label:'Chest'}, '5,0':{type:'chest', label:'Chest'}, '10,4':{type:'chest', label:'Chest'}, '5,8':{type:'chest', label:'Chest'},
+      '6,2':{type:'thorny', label:'THV'}, '1,4':{type:'thorny', label:'THV'}, '9,4':{type:'thorny', label:'THV'},
+      '3,3':{type:'hc', label:'Tree'}, '9,8':{type:'hc', label:'Tree'},
     }
   },
   3: {
     startingTiles: [{x:2,y:2},{x:8,y:2},{x:5,y:4},{x:2,y:6},{x:8,y:6}],
     tiles: {
-      '1,1':{type:'pc', label:'Rock'},
-      '10,4':{type:'pc', label:'Rock'},
-      '0,4':{type:'pc', label:'Rock'},
-      '4,4':{type:'pc', label:'Rock'},
-      '6,4':{type:'pc', label:'Rock'},
-      '3,7':{type:'pc', label:'Rock'},
-      '5,1':{type:'difficult', label:'Mud'},
-      '9,0':{type:'difficult', label:'Mud'},
-      '5,7':{type:'difficult', label:'Mud'},
-      '0,7':{type:'difficult', label:'Mud'},
-      '2,0':{type:'log', label:'Log', logDir:'h-left'},
-      '3,0':{type:'log', label:'Log', logDir:'h-right'},
-      '3,4':{type:'highground', label:'High Ground'},
-      '7,4':{type:'highground', label:'High Ground'},
-      '3,3':{type:'difficult', label:'Hill', hillDir:'n'},
-      '7,3':{type:'difficult', label:'Hill', hillDir:'n'},
-      '2,4':{type:'difficult', label:'Hill', hillDir:'e'},
-      '8,4':{type:'difficult', label:'Hill', hillDir:'w'},
-      '3,5':{type:'difficult', label:'Hill', hillDir:'s'},
-      '7,5':{type:'difficult', label:'Hill', hillDir:'s'},
-      '5,0':{type:'chest', label:'Chest'},
-      '10,0':{type:'chest', label:'Chest'},
-      '5,8':{type:'chest', label:'Chest'},
-      '0,8':{type:'chest', label:'Chest'},
-      '0,2':{type:'thorny', label:'THV'},
-      '10,1':{type:'thorny', label:'THV'},
-      '1,8':{type:'thorny', label:'THV'},
+      '1,1':{type:'pc', label:'Rock'}, '10,4':{type:'pc', label:'Rock'}, '0,4':{type:'pc', label:'Rock'}, '4,4':{type:'pc', label:'Rock'}, '6,4':{type:'pc', label:'Rock'}, '3,7':{type:'pc', label:'Rock'},
+      '5,1':{type:'difficult', label:'Mud'}, '9,0':{type:'difficult', label:'Mud'}, '5,7':{type:'difficult', label:'Mud'}, '0,7':{type:'difficult', label:'Mud'},
+      '2,0':{type:'log', label:'Log', logDir:'h-left'}, '3,0':{type:'log', label:'Log', logDir:'h-right'},
+      '3,4':{type:'highground', label:'High Ground'}, '7,4':{type:'highground', label:'High Ground'},
+      '3,3':{type:'difficult', label:'Hill', hillDir:'n'}, '7,3':{type:'difficult', label:'Hill', hillDir:'n'}, '2,4':{type:'difficult', label:'Hill', hillDir:'e'}, '8,4':{type:'difficult', label:'Hill', hillDir:'w'}, '3,5':{type:'difficult', label:'Hill', hillDir:'s'}, '7,5':{type:'difficult', label:'Hill', hillDir:'s'},
+      '5,0':{type:'chest', label:'Chest'}, '10,0':{type:'chest', label:'Chest'}, '5,8':{type:'chest', label:'Chest'}, '0,8':{type:'chest', label:'Chest'},
+      '0,2':{type:'thorny', label:'THV'}, '10,1':{type:'thorny', label:'THV'}, '1,8':{type:'thorny', label:'THV'},
       '9,7':{type:'hc', label:'Tree'},
     }
   }
 };
 
-// Fix the board 1 config so (8,6) is chest on highground
 BOARD_CONFIGS[1].tiles['8,6'] = {type:'chest', label:'Chest'};
 BOARD_CONFIGS[1].tiles['8,5'] = {type:'highground', label:'High Ground'};
 
-// Tutorial board - coordinates per the tutorial design doc.
-// Starting tiles: (5,0) Human, (5,6) Knight, (2,6) Mage, (8,6) Archer.
 BOARD_CONFIGS['tutorial'] = {
   startingTiles: [{x:5,y:0},{x:5,y:6},{x:2,y:6},{x:8,y:6}],
   tiles: {
-    '4,4':{type:'pc', label:'Rock'},
-    '6,4':{type:'pc', label:'Rock'},
-    '8,4':{type:'pc', label:'Rock'},
-    '7,5':{type:'pc', label:'Rock'},
+    '4,4':{type:'pc', label:'Rock'}, '6,4':{type:'pc', label:'Rock'}, '8,4':{type:'pc', label:'Rock'}, '7,5':{type:'pc', label:'Rock'},
     '7,4':{type:'highground', label:'High Ground'},
     '7,3':{type:'difficult', label:'Hill', hillDir:'n'},
     '3,1':{type:'chest', label:'Chest'},
@@ -1700,44 +1357,21 @@ BOARD_CONFIGS['tutorial'] = {
   }
 };
 
-// ============================================================
-//  GAME STATE
-// ============================================================
 let G = {
-  playerName: '',
-  boardId: null,
-  boardConfig: null,
-  playerClass: null,
-  playerWeapon: null,
-  characters: [], // [{id, name, class, weapon, x, y, hp, maxHp, defence, move, alive, isPlayer, inventory, ...}]
-  turnOrder: [],
-  currentTurnIdx: 0,
-  phase: 'setup', // setup, player-move, player-attack, ai-turn, game-over
-  selectedMoveRoute: [],
-  hasMovedThisTurn: false,
-  hasActedThisTurn: false, // attacked or opened chest
-  openedChests: new Set(),
-  diceCallback: null,
-  multiDiceResults: [],
-  pendingAttack: null,
-  pendingChestOpener: null,
-  aoeSelectedTiles: [],
-  activeItemUser: null,
-  activeItem: null,
-  turnEffects: {}, // per-character per-turn effects
-  thornyDmgCounters: {}, // thorny vine damage cycle counters
-  damageTakenThisTurn: {}, // for sword&buckler
-  reachBonusActive: false,
-  godlyStrengthActive: false,
-  vialBluePending: false,
-  settings: { interactiveDice: false },
+  playerName: '', boardId: null, boardConfig: null, playerClass: null, playerWeapon: null,
+  characters: [], turnOrder: [], currentTurnIdx: 0, phase: 'setup',
+  selectedMoveRoute: [], hasMovedThisTurn: false, hasActedThisTurn: false,
+  openedChests: new Set(), diceCallback: null, multiDiceResults: [],
+  pendingAttack: null, pendingChestOpener: null, aoeSelectedTiles: [],
+  activeItemUser: null, activeItem: null, turnEffects: {}, thornyDmgCounters: {},
+  damageTakenThisTurn: {}, reachBonusActive: false, godlyStrengthActive: false,
+  vialBluePending: false, settings: { interactiveDice: false },
 };
 
-// Load saved settings (if any) and reflect them in the UI once the DOM is ready.
 try {
   const savedSettings = JSON.parse(localStorage.getItem('showdowns_settings')||'{}');
   Object.assign(G.settings, savedSettings);
-} catch(e){ /* ignore malformed/unavailable storage */ }
+} catch(e){}
 
 function setInteractiveDice(val){
   G.settings.interactiveDice = !!val;
@@ -1749,63 +1383,33 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(toggle) toggle.checked = !!G.settings.interactiveDice;
 });
 
-// ============================================================
-//  UTILITY
-// ============================================================
 function tileKey(x,y){ return `${x},${y}`; }
 function chebyshev(x1,y1,x2,y2){ return Math.max(Math.abs(x2-x1),Math.abs(y2-y1)); }
 function manhattan(x1,y1,x2,y2){ return Math.abs(x2-x1)+Math.abs(y2-y1); }
 function roll(sides=6){ return Math.floor(Math.random()*sides)+1; }
 function clamp(v,mn,mx){ return Math.max(mn,Math.min(mx,v)); }
 
-function getTile(x,y){
-  return G.boardConfig ? G.boardConfig.tiles[tileKey(x,y)] : null;
-}
-function getTileType(x,y){
-  const t = getTile(x,y);
-  if(!t) return 'normal';
-  return t.type;
-}
+function getTile(x,y){ return G.boardConfig ? G.boardConfig.tiles[tileKey(x,y)] : null; }
+function getTileType(x,y){ const t = getTile(x,y); return t ? t.type : 'normal'; }
 function isPassable(x,y){
   if(x<0||x>10||y<0||y>8) return false;
   const type = getTileType(x,y);
   if(['pc','hc','log','chest','chest_hg'].includes(type)) return false;
-  // check if a character occupies it
   if(G.characters.some(c=>c.alive && c.x===x && c.y===y)) return false;
   return true;
 }
-function isHighGround(x,y){
-  const t = getTileType(x,y);
-  return t==='highground'||t==='chest_hg';
-}
-function isDifficult(x,y){
-  const t = getTileType(x,y);
-  return ['difficult','thorny','hill'].includes(t) || t==='difficult';
-}
-function isThorny(x,y){
-  return getTileType(x,y)==='thorny';
-}
-function isPCTile(x,y){
-  const t = getTileType(x,y);
-  return ['pc','log'].includes(t);
-}
-function isHCTile(x,y){
-  const t = getTileType(x,y);
-  return t==='hc' || t==='chest' || t==='chest_hg';
-}
-// Nothing blocks a shot outright anymore. Rocks (PC), Logs (PC), Trees
-// (HC) and now Chests (HC) only ever grant a defence bonus - they never
-// stop a ranged attack from passing through (see checkCoverLOS).
-function blocksLOSTile(x,y){
-  return false;
-}
+function isHighGround(x,y){ const t = getTileType(x,y); return t==='highground'||t==='chest_hg'; }
+function isDifficult(x,y){ const t = getTileType(x,y); return ['difficult','thorny','hill'].includes(t) || t==='difficult'; }
+function isThorny(x,y){ return getTileType(x,y)==='thorny'; }
+function isPCTile(x,y){ const t = getTileType(x,y); return ['pc','log'].includes(t); }
+function isHCTile(x,y){ const t = getTileType(x,y); return t==='hc' || t==='chest' || t==='chest_hg'; }
+function blocksLOSTile(x,y){ return false; }
 
 function getChar(id){ return G.characters.find(c=>c.id===id); }
 function getCharAt(x,y){ return G.characters.find(c=>c.alive&&c.x===x&&c.y===y); }
 function getLiveChars(){ return G.characters.filter(c=>c.alive); }
 function getCurrentChar(){ return G.characters[G.turnOrder[G.currentTurnIdx]]; }
 
-// Log message
 function logMsg(text, cls=''){
   const el = document.getElementById('message-log');
   const div = document.createElement('div');
@@ -1813,13 +1417,9 @@ function logMsg(text, cls=''){
   div.textContent = text;
   el.appendChild(div);
   el.scrollTop = el.scrollHeight;
-  // Keep log manageable
   while(el.children.length > 60) el.removeChild(el.firstChild);
 }
 
-// ============================================================
-//  SCREEN NAV
-// ============================================================
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1827,78 +1427,41 @@ function showScreen(id){
   if(id==='screen-board') renderBoardPreview();
 }
 
-// ============================================================
-//  RESPONSIVE SCALING
-//  The whole game layout (#game-scale-inner) has a fixed natural size in
-//  CSS pixels, and is scaled as a single unit with a CSS transform to fit
-//  whatever screen it's shown on. The behavior differs by input type:
-//
-//   - Touch-primary devices (phones/tablets): the layout is scaled to fit
-//     ENTIRELY within the screen in both directions (shrinking on small
-//     screens, enlarging on big tablets) so the whole game is visible at
-//     once with no page scrolling - important since dragging to move a
-//     character needs the whole board reachable without scrolling under
-//     your finger.
-//
-//   - Mouse-primary devices (desktops/laptops): the layout is scaled to
-//     fill (almost) the full window width. If that makes the page a
-//     little taller than the window, a small amount of vertical scroll
-//     is allowed rather than shrinking the whole UI down just to avoid
-//     any scrolling at all.
-// ============================================================
-function isTouchPrimaryDevice(){
-  return window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-}
+function isTouchPrimaryDevice(){ return window.matchMedia && window.matchMedia('(pointer: coarse)').matches; }
 
 function fitGameScreen(){
   const inner = document.getElementById('game-scale-inner');
   const screenEl = document.getElementById('screen-game');
   if(!inner || !screenEl || !screenEl.classList.contains('active')) return;
-
-  // Measure the natural (unscaled) size of the layout. Reading
-  // offsetWidth/offsetHeight is unaffected by any CSS transform already
-  // applied, so this stays accurate across repeated calls.
   inner.style.transform = 'none';
   const naturalW = inner.offsetWidth;
   const naturalH = inner.offsetHeight;
   if(!naturalW || !naturalH) return;
-
   const availW = window.innerWidth;
   const availH = window.innerHeight;
   let scale, origin;
-
   if(isTouchPrimaryDevice()){
-    // Fit completely on screen in both dimensions - no scrolling.
     scale = Math.min(availW / naturalW, availH / naturalH);
     scale = Math.max(0.25, Math.min(scale, 2.2));
     origin = 'center center';
   } else {
-    // Fill the window width. Only back off from that if it would make
-    // the page noticeably taller than the window - a little overflow
-    // (and a little scrolling) is fine, a lot is not.
     scale = availW / naturalW;
     const maxOverflowH = availH * 1.15;
     if(naturalH * scale > maxOverflowH) scale = maxOverflowH / naturalH;
     scale = Math.max(0.4, Math.min(scale, 1.8));
     origin = 'top center';
   }
-
   inner.style.transformOrigin = origin;
   inner.style.transform = `scale(${scale})`;
 }
 
 window.addEventListener('resize', fitGameScreen);
 window.addEventListener('orientationchange', ()=>setTimeout(fitGameScreen, 200));
-// If the device's primary pointer type changes mid-session (e.g. a
-// convertible laptop folding into tablet mode), re-fit the layout.
 if(window.matchMedia){
   const pointerQuery = window.matchMedia('(pointer: coarse)');
   if(pointerQuery.addEventListener) pointerQuery.addEventListener('change', fitGameScreen);
 }
 
-// ============================================================
-//  SETUP FLOW
-// ============================================================
 function submitName(){
   const val = document.getElementById('player-name-input').value;
   if(!val.trim()){ alert('Please enter a name.'); return; }
@@ -1915,11 +1478,6 @@ function submitName(){
   showScreen('screen-board');
 }
 
-// ============================================================
-//  BOARD PREVIEW (screen-board carousel)
-// ============================================================
-// Only the numbered boards are cycled through here; Random and Tutorial
-// are handled by their own dedicated buttons below the preview.
 const PREVIEW_BOARD_IDS = Object.keys(BOARD_CONFIGS).filter(k=>k!=='tutorial').map(Number).sort((a,b)=>a-b);
 let previewBoardIdx = 0;
 
@@ -1934,12 +1492,10 @@ function renderBoardPreview(){
   const id = PREVIEW_BOARD_IDS[previewBoardIdx];
   const cfg = BOARD_CONFIGS[id];
   document.getElementById('board-option-label').textContent = 'Board Option ' + id;
-
   const inner = document.getElementById('board-preview-inner');
   inner.innerHTML = '';
   inner.style.gridTemplateColumns = 'repeat(11, 1fr)';
   inner.style.gridTemplateRows = 'repeat(9, 1fr)';
-
   for(let y=8;y>=0;y--){
     for(let x=0;x<=10;x++){
       const cell = document.createElement('div');
@@ -1957,7 +1513,6 @@ function renderBoardPreview(){
       inner.appendChild(cell);
     }
   }
-
   document.getElementById('board-arrow-left').disabled = false;
   document.getElementById('board-arrow-right').disabled = false;
 }
@@ -1967,24 +1522,17 @@ function cycleBoardPreview(dir){
   renderBoardPreview();
 }
 
-function confirmBoardPreviewSelection(){
-  selectBoard(PREVIEW_BOARD_IDS[previewBoardIdx]);
-}
+function confirmBoardPreviewSelection(){ selectBoard(PREVIEW_BOARD_IDS[previewBoardIdx]); }
 
 function selectBoard(id){
   G.boardId = id;
   G.tutorialMode = (id==='tutorial');
   if(G.tutorialMode){
-    G.tutorialStage = null;
-    G.tutorialIntroDone = false;
-    G.tutorialOfferShown = false;
-    G.tutorialMoveTarget = null;
-    G.tutorialThornyExplained = false;
-    G.tutorialSpotsShown = new Set();
+    G.tutorialStage = null; G.tutorialIntroDone = false; G.tutorialOfferShown = false;
+    G.tutorialMoveTarget = null; G.tutorialThornyExplained = false; G.tutorialSpotsShown = new Set();
   }
   G.boardConfig = JSON.parse(JSON.stringify(BOARD_CONFIGS[id]));
   if(G.isSpecialClass && G.playerClass){
-    // Hidden class unlocked by name - skip the normal class-selection screen
     showWeaponScreen(G.playerClass);
     showScreen('screen-weapon');
   } else {
@@ -2013,18 +1561,14 @@ function confirmClass(){
 }
 function buildWeaponCardHTML(w){
   let html = `<h4>${w.name}</h4>`;
-
-  // Passive ability (e.g. Staff of Life's Forest's Grace) gets its own block
   if(w.passive){
     html += `<div class="wc-attack-block">
       <div class="wc-attack-name">${w.passive.split(':')[0]} (Passive)</div>
       <div class="wc-attack-desc">${w.passive.includes(':') ? w.passive.split(':').slice(1).join(':').trim() : w.passive}</div>
     </div>`;
   }
-
   const attacks = w.attacks && w.attacks.length ? w.attacks : [w];
   attacks.forEach(a=>{
-    // Break the description into individual sentences so each idea gets its own line
     const sentences = a.desc.split(/(?<=\.)\s+/).filter(Boolean);
     html += `<div class="wc-attack-block">
       <div class="wc-attack-name">${a.attackName}</div>
@@ -2034,7 +1578,6 @@ function buildWeaponCardHTML(w){
       <div class="wc-stat-row"><span>Range</span><span>${a.range} tiles</span></div>
     </div>`;
   });
-
   return html;
 }
 
@@ -2063,17 +1606,13 @@ function selectWeapon(id){
 function confirmWeapon(){
   G.playerWeapon = WEAPONS[G.playerClass].find(w=>w.id===selectedWeaponId);
   if(G.tutorialMode){
-    // Fixed starting positions per the tutorial design: Human (5,0),
-    // Knight (5,6), Mage (2,6), Archer (8,6). Skip the interactive picker.
     takenStartTiles = [
       {x:5,y:0, charId:'player'},
-      {x:2,y:6, charId:'computer1'}, // Alexander - mage
-      {x:5,y:6, charId:'computer2'}, // Harwin - knight
-      {x:8,y:6, charId:'computer3'}, // Lex - archer
+      {x:2,y:6, charId:'computer1'},
+      {x:5,y:6, charId:'computer2'},
+      {x:8,y:6, charId:'computer3'},
     ];
     buildCharacters();
-    // Fixed turn order for the tutorial: Human, Mage, Archer, Knight.
-    // allPicks indices: 0=player, 1=mage(computer1), 2=knight(computer2), 3=archer(computer3)
     G.turnOrder = [0,1,3,2];
     G.currentTurnIdx = 0;
     startGame();
@@ -2083,10 +1622,7 @@ function confirmWeapon(){
   showScreen('screen-start-tile');
 }
 
-// ============================================================
-//  START TILE SELECTION
-// ============================================================
-let startTilePhase = 0; // 0=player, 1,2,3=computers
+let startTilePhase = 0;
 let takenStartTiles = [];
 let startTileBoardEl = null;
 
@@ -2096,7 +1632,6 @@ function buildStartTileScreen(){
   document.getElementById('start-tile-title').textContent = `${G.playerName}: Choose Your Starting Tile`;
   const container = document.getElementById('start-tile-board-container');
   container.innerHTML = '';
-
   const boardEl = document.createElement('div');
   boardEl.id = 'start-tile-board';
   boardEl.style.display = 'grid';
@@ -2104,8 +1639,6 @@ function buildStartTileScreen(){
   boardEl.style.border = '2px solid #3a2a0a';
   boardEl.style.background = '#c8bfa0';
   startTileBoardEl = boardEl;
-
-  // Draw board (y from 8 to 0 top-bottom)
   for(let row=8; row>=0; row--){
     for(let col=0; col<=10; col++){
       const cell = document.createElement('div');
@@ -2119,7 +1652,6 @@ function buildStartTileScreen(){
       cell.dataset.x = col; cell.dataset.y = row;
       applyTileStyle(cell, col, row);
       cell.id = `st-tile-${col}-${row}`;
-
       if(G.boardConfig.startingTiles.some(t=>t.x===col&&t.y===row)){
         cell.classList.add('valid-start-marker');
         const lbl = document.createElement('div');
@@ -2139,21 +1671,12 @@ function applyTileStyle(cell, x, y){
   const t = getTile(x,y);
   const type = t ? t.type : 'normal';
   const backgrounds = {
-    normal: `url('GrassBackground.png') center/cover`,
-    difficult: `url('Mud.png') center/cover`,
-    thorny: `url('THV.png') center/cover`,
-    chest: `url('ChestClosed.png') center/cover`,
-    chest_hg: `url('ChestClosed.png') center/cover`,
-    starting:'#d4af37', highground:`url('HighGround.png') center/cover`,
-    pc: `url('Rock.png') center/cover`,
-    hc: `url('Tree.png') center/cover`,
-    log:'#7a5533'
+    normal: `url('GrassBackground.png') center/cover`, difficult: `url('Mud.png') center/cover`,
+    thorny: `url('THV.png') center/cover`, chest: `url('ChestClosed.png') center/cover`,
+    chest_hg: `url('ChestClosed.png') center/cover`, starting:'#d4af37', highground:`url('HighGround.png') center/cover`,
+    pc: `url('Rock.png') center/cover`, hc: `url('Tree.png') center/cover`, log:'#7a5533'
   };
-  // Hill tiles (difficult terrain labeled 'Hill') use one of 4 directional
-  // images so the slope visually rises toward the High Ground it leads to.
   const HILL_IMAGES = {n:'HillN.png', e:'HillE.png', s:'HillS.png', w:'HillW.png', ne:'Hill2.png'};
-  // This preview board uses 58px tiles (vs 52px on the main game board), so
-  // the 2-tile log images are split using sizes/offsets scaled for 58px.
   if(type==='difficult' && t && t.label==='Hill' && t.hillDir){
     cell.style.background = `url('${HILL_IMAGES[t.hillDir]}') center/cover`;
   } else if(type==='log' && t && t.logDir){
@@ -2183,10 +1706,6 @@ function highlightStartTiles(){
   G.boardConfig.startingTiles.forEach(t=>{
     if(!takenStartTiles.some(tt=>tt.x===t.x&&tt.y===t.y)){
       const el = document.getElementById(`st-tile-${t.x}-${t.y}`);
-      // outline-offset is negative so the ring is drawn just inside the
-      // tile's own edge instead of straddling the boundary with its
-      // neighbour - otherwise the next-painted neighbouring tile's opaque
-      // background covers up to half of the outline on shared edges.
       if(el && startTilePhase===0){ el.style.outline='3px solid gold'; el.style.outlineOffset='-3px'; }
     }
   });
@@ -2196,11 +1715,9 @@ function startTileClick(x,y){
   if(startTilePhase!==0) return;
   if(!G.boardConfig.startingTiles.some(t=>t.x===x&&t.y===y)) return;
   if(takenStartTiles.some(t=>t.x===x&&t.y===y)) return;
-
   takenStartTiles.push({x,y, charId:'player'});
   const el = document.getElementById(`st-tile-${x}-${y}`);
   if(el){ el.style.outline='3px solid #39b5ff'; el.style.outlineOffset='-3px'; el.style.background='#39b5ff55'; }
-
   G.playerStartX = x; G.playerStartY = y;
   startTilePhase=1;
   document.getElementById('start-tile-title').textContent = 'Alexander choosing...';
@@ -2216,7 +1733,6 @@ function computerPickStartTile(){
   const el = document.getElementById(`st-tile-${pick.x}-${pick.y}`);
   const colors=['','#ff885555','#88ff5555','#ff55ff55'];
   if(el){ el.style.outline='3px solid orange'; el.style.outlineOffset='-3px'; el.style.background=colors[startTilePhase]||'#88888855'; }
-
   if(startTilePhase<3){
     startTilePhase++;
     const names=['Alexander choosing...','Harwin choosing...','Lex choosing...'];
@@ -2233,9 +1749,6 @@ function proceedToRollOrder(){
   showScreen('screen-rollorder');
 }
 
-// ============================================================
-//  BUILD CHARACTERS
-// ============================================================
 function getClassStats(cls){
   const stats = {
     mage:{hp:65,def:3,move:4,passive:'Magical Barrier'},
@@ -2249,12 +1762,10 @@ function getClassStats(cls){
 }
 
 function buildCharacters(){
-  // Computer weapon rolls (4-sided)
   function rollWeapon(cls){
     const r = roll(4);
     return WEAPONS[cls][Math.min(r-1, WEAPONS[cls].length-1)];
   }
-
   const compClasses = ['mage','knight','archer'];
   const allPicks = [
     {id:'player', name:G.playerName, cls:G.playerClass, weapon:G.playerWeapon, isPlayer:true},
@@ -2262,36 +1773,20 @@ function buildCharacters(){
     {id:'computer2', name:'Harwin', cls:'knight', weapon:rollWeapon('knight'), isPlayer:false},
     {id:'computer3', name:'Lex', cls:'archer', weapon:rollWeapon('archer'), isPlayer:false},
   ];
-
   G.characters = allPicks.map((p,i)=>{
     const startPos = takenStartTiles.find(t=>t.charId===p.id)||{x:0,y:0};
     const stats = getClassStats(p.cls);
     return {
-      id: p.id,
-      name: p.name,
-      class: p.cls,
-      weapon: p.weapon,
-      equippedWeapon: p.weapon,
-      x: startPos.x, y: startPos.y,
-      hp: stats.hp, maxHp: stats.hp,
-      defence: stats.def,
-      move: stats.move,
-      alive: true,
-      isPlayer: p.isPlayer,
-      inventory: [],
-      damageTakenLastTurn: 0,
-      damageTakenThisTurn: 0,
-      leftThornyLastTurn: false,
-      thornyCounter: 0,
+      id: p.id, name: p.name, class: p.cls, weapon: p.weapon, equippedWeapon: p.weapon,
+      x: startPos.x, y: startPos.y, hp: stats.hp, maxHp: stats.hp, defence: stats.def, move: stats.move,
+      alive: true, isPlayer: p.isPlayer, inventory: [], damageTakenLastTurn: 0, damageTakenThisTurn: 0,
+      leftThornyLastTurn: false, thornyCounter: 0,
     };
   });
   G.turnOrder = [0,1,2,3];
   G.currentTurnIdx = 0;
 }
 
-// ============================================================
-//  ROLL ORDER
-// ============================================================
 let rollResults = {};
 let rollOrderDone = false;
 
@@ -2305,11 +1800,9 @@ function buildRollOrderScreen(){
 
 function doRollOrder(){
   document.getElementById('roll-order-btn').disabled = true;
-  // Player rolls via dice overlay
   openDice('Roll to determine turn order!', (result)=>{
     rollResults['player'] = result;
     displayRollResult('player', G.playerName, result);
-    // Computers roll
     setTimeout(()=>{
       ['computer1','computer2','computer3'].forEach((id,i)=>{
         setTimeout(()=>{
@@ -2346,36 +1839,25 @@ function finalizeRollOrder(){
 
 const rollOrderIdxMap = {player:0, computer1:1, computer2:2, computer3:3};
 
-// Determine turn order from `group` (array of {id,val}). Any character
-// whose value is shared with at least one other character in the group
-// rerolls - and ONLY those characters, never the whole group - until every
-// value is unique. Handles multiple independent tie groups at once (e.g.
-// two people tied at 5 and, separately, two different people tied at 3)
-// without making the untied/differently-tied characters reroll needlessly.
 function resolveOrder(group){
   const buckets = {};
   group.forEach(g=>{ (buckets[g.val] = buckets[g.val] || []).push(g); });
   const tied = Object.values(buckets).filter(b=>b.length>1).flat();
-
   if(tied.length===0){
     const sorted = group.slice().sort((a,b)=>b.val-a.val);
     G.turnOrder = sorted.map(s=>rollOrderIdxMap[s.id]);
     document.getElementById('start-game-btn').style.display = 'inline-block';
     return;
   }
-
-  // Reroll exactly the tied characters, one at a time, then re-check.
   let i = 0;
   const rerollNext = ()=>{
     if(i>=tied.length){ setTimeout(()=>resolveOrder(group), 400); return; }
     const t = tied[i];
     const applyRoll = (val)=>{
-      t.val = val;
-      rollResults[t.id] = val;
+      t.val = val; rollResults[t.id] = val;
       const char = G.characters.find(c=>c.id===t.id);
       displayRollResult(t.id, char.name, val);
-      i++;
-      setTimeout(rerollNext, 300);
+      i++; setTimeout(rerollNext, 300);
     };
     if(t.id==='player'){
       openDice('Tie! Roll again!', applyRoll);
@@ -2394,14 +1876,10 @@ function startGame(){
   startTurn();
 }
 
-// ============================================================
-//  GAME BOARD RENDERING
-// ============================================================
 function buildGameScreen(){
   const board = document.getElementById('game-board');
   board.style.gridTemplateColumns = `repeat(11, 52px)`;
   board.innerHTML = '';
-
   for(let row=8; row>=0; row--){
     for(let col=0; col<=10; col++){
       const cell = document.createElement('div');
@@ -2419,7 +1897,6 @@ function buildGameScreen(){
       board.appendChild(cell);
     }
   }
-  // Add character icons
   G.characters.forEach(c=>{
     const icon = document.createElement('div');
     icon.className = `char-icon ${c.class}`;
@@ -2430,13 +1907,10 @@ function buildGameScreen(){
     positionIcon(c);
     icon.addEventListener('mousedown', onCharIconMouseDown);
   });
-
-  // Tile events
   document.querySelectorAll('.tile').forEach(t=>{
     t.addEventListener('mouseover', onTileMouseOver);
     t.addEventListener('click', onTileClick);
   });
-
   updateStatPanel();
   updateEnemyPanel();
 }
@@ -2458,19 +1932,14 @@ function setTileClass(cell, x, y){
   } else {
     (classMap[type]||'normal').split(' ').forEach(c=>cell.classList.add(c));
   }
-  if(type==='log' && t.logDir){
-    cell.classList.add('log-'+t.logDir);
-  }
-  if(G.openedChests.has(tileKey(x,y))){
-    cell.classList.add('opened');
-  }
+  if(type==='log' && t.logDir){ cell.classList.add('log-'+t.logDir); }
+  if(G.openedChests.has(tileKey(x,y))){ cell.classList.add('opened'); }
 }
 
 function setCharIconName(icon, name){
   icon.textContent = name;
   const len = Math.max(1, (name||'').length);
   let px = 14;
-  if (len > 1) px = 14;
   if (len > 2) px = 13;
   if (len > 3) px = 12;
   if (len > 4) px = 11;
@@ -2478,7 +1947,6 @@ function setCharIconName(icon, name){
   if (len > 6) px = 7.5;
   if (len > 7) px = 7;
   if (len > 8) px = 6;
-
   icon.style.fontSize = px + 'px';
 }
 
@@ -2487,18 +1955,14 @@ function positionIcon(c){
   if(!icon) return;
   const tile = document.getElementById(`tile-${c.x}-${c.y}`);
   if(!tile) return;
-  // Position relative to board grid
   const col = c.x;
-  const row = 8 - c.y; // grid row from top
+  const row = 8 - c.y;
   icon.style.position = 'absolute';
   icon.style.left = (col * 52 + 7) + 'px';
   icon.style.top = (row * 52 + 7) + 'px';
   if(!c.alive) icon.style.display='none';
 }
 
-// ============================================================
-//  STAT PANEL
-// ============================================================
 function updateStatPanel(){
   const player = G.characters.find(c=>c.isPlayer);
   if(!player || !player.alive){
@@ -2509,7 +1973,6 @@ function updateStatPanel(){
   document.getElementById('sp-hp').textContent = `${player.hp}/${player.maxHp}`;
   document.getElementById('sp-def').textContent = player.defence;
   document.getElementById('sp-move').textContent = player.move;
-
   const passives = {
     mage:'Magical Barrier: All PC becomes HC for you; Thorny Vines take one extra cycle.',
     knight:'Mighty Muscles: Difficult terrain costs 1 tile (no penalty). Thorny damage still applies.',
@@ -2519,7 +1982,6 @@ function updateStatPanel(){
     ronald:'Magic of Precision: If an attack misses, deal 5 damage instead.'
   };
   document.getElementById('sp-ability').textContent = passives[player.class]||'';
-
   const w = player.equippedWeapon;
   if(w && w.attacks && w.attacks.length){
     document.getElementById('sp-weapon-name').textContent = w.name;
@@ -2544,8 +2006,6 @@ function updateStatPanel(){
     btn.textContent = w.attackName;
     btn.disabled = G.hasActedThisTurn || !getCurrentChar()?.isPlayer;
   }
-
-  // Inventory
   const invEl = document.getElementById('sp-inventory');
   invEl.innerHTML = '';
   player.inventory.forEach((item,i)=>{
@@ -2555,7 +2015,6 @@ function updateStatPanel(){
     div.onclick = ()=>clickInventoryItem(i);
     invEl.appendChild(div);
   });
-
   const isMyTurn = getCurrentChar()?.isPlayer;
   const tutorialForcedMove = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
   const tutorialChestNotOpened = G.tutorialMode && G.tutorialStage==='go-chest';
@@ -2563,9 +2022,6 @@ function updateStatPanel(){
   document.getElementById('sp-attack-btn').disabled = G.hasActedThisTurn || !isMyTurn || G.phase==='game-over' || tutorialChestNotOpened;
 }
 
-// ============================================================
-//  ENEMY PANEL
-// ============================================================
 function updateEnemyPanel(){
   const panel = document.getElementById('enemy-cards');
   panel.innerHTML = '';
@@ -2573,7 +2029,6 @@ function updateEnemyPanel(){
     const card = document.createElement('div');
     card.className = 'enemy-card';
     const pct = c.hp/c.maxHp*100;
-    const fillCls = pct>50?'':'pct>25?low:critical'.split(':')[pct>25?0:1]||'critical';
     const isCurrentTurn = getCurrentChar()===c;
     card.innerHTML = `
       <h4>${c.name} <span style="font-size:0.8em;color:${c.class==='mage'?'#39b5ff':c.class==='knight'?'#b7b7b7':c.class==='archer'?'#e77d22':c.class==='ronald'?'#3ddc3d':c.class==='aldemar'?'#2e8b57':c.class==='helen'?'#c77ad6':'#d4af37'}">${c.class}</span>${isCurrentTurn?'<span class="current-player-tag">TURN</span>':''}</h4>
@@ -2586,64 +2041,41 @@ function updateEnemyPanel(){
   });
 }
 
-// ============================================================
-//  TUTORIAL SPOTLIGHT SYSTEM
-//  Dims the whole screen except a highlighted rectangle around a given
-//  element, with an explanation box beside it and a "Next" button.
-//  Positions are recalculated on scroll/resize so the highlight tracks
-//  its target even if the page is scrolled while it's showing.
-// ============================================================
 function tutorialSpotlight(elId, text, btnLabel){
-  // Don't show the same spot twice in one tutorial run.
-  if(elId && G.tutorialSpotsShown && G.tutorialSpotsShown.has(elId)){
-    return Promise.resolve();
-  }
+  if(elId && G.tutorialSpotsShown && G.tutorialSpotsShown.has(elId)){ return Promise.resolve(); }
   if(elId && G.tutorialSpotsShown) G.tutorialSpotsShown.add(elId);
-
   return new Promise(resolve=>{
     const old = document.getElementById('tutorial-overlay');
     if(old) old.remove();
-
     const overlay = document.createElement('div');
     overlay.id = 'tutorial-overlay';
     overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:99999; pointer-events:auto;';
-
     const hole = document.createElement('div');
     hole.style.cssText = 'position:absolute; border-radius:8px; box-shadow:0 0 0 9999px rgba(0,0,0,0.8); pointer-events:none; border:2px solid #d4af37;';
     overlay.appendChild(hole);
-
     const boxWidth = 300;
     const box = document.createElement('div');
     box.style.cssText = `position:absolute; width:${boxWidth}px; background:#1b140a; border:2px solid #d4af37; border-radius:10px; padding:16px; color:#f0e6cf; font-family:'Lato',sans-serif; z-index:100000; box-shadow:0 4px 24px rgba(0,0,0,0.6);`;
     box.innerHTML = `<div style="font-size:0.95em; line-height:1.55; margin-bottom:14px;">${text}</div>
       <button class="btn" id="tutorial-next-btn" style="width:100%;">${btnLabel||'Next'}</button>`;
     overlay.appendChild(box);
-
-    // Attach to <body> as position:absolute in the *document* flow (not
-    // viewport-fixed) so it scrolls naturally with the page; we still
-    // recompute on scroll/resize below in case the highlighted element
-    // itself moves independently (e.g. inside a scrolling panel).
     overlay.style.position = 'absolute';
     document.body.appendChild(overlay);
     overlay.style.height = Math.max(document.documentElement.scrollHeight, window.innerHeight) + 'px';
-
     function reposition(){
       const el = elId ? document.getElementById(elId) : null;
       const rect = el ? el.getBoundingClientRect() : {top:20,left:20,width:200,height:80,right:220,bottom:100};
       const pad = 8;
       const scrollX = window.scrollX||window.pageXOffset||0;
       const scrollY = window.scrollY||window.pageYOffset||0;
-
       hole.style.top = (rect.top+scrollY-pad)+'px';
       hole.style.left = (rect.left+scrollX-pad)+'px';
       hole.style.width = (rect.width+pad*2)+'px';
       hole.style.height = (rect.height+pad*2)+'px';
-
       let boxLeft = rect.right+scrollX+20;
       if(boxLeft+boxWidth > scrollX+window.innerWidth-10) boxLeft = Math.max(scrollX+10, rect.left+scrollX-boxWidth-20);
       if(boxLeft+boxWidth > scrollX+window.innerWidth-10) boxLeft = Math.max(scrollX+10, scrollX+(window.innerWidth-boxWidth)/2);
       let boxTop = Math.max(scrollY+10, Math.min(rect.top+scrollY, scrollY+window.innerHeight-220));
-
       box.style.left = boxLeft+'px';
       box.style.top = boxTop+'px';
       overlay.style.height = Math.max(document.documentElement.scrollHeight, window.innerHeight) + 'px';
@@ -2651,7 +2083,6 @@ function tutorialSpotlight(elId, text, btnLabel){
     reposition();
     window.addEventListener('scroll', reposition, true);
     window.addEventListener('resize', reposition);
-
     document.getElementById('tutorial-next-btn').onclick = ()=>{
       window.removeEventListener('scroll', reposition, true);
       window.removeEventListener('resize', reposition);
@@ -2661,7 +2092,6 @@ function tutorialSpotlight(elId, text, btnLabel){
   });
 }
 
-// A centered modal (no spotlight hole) used for the tutorial-completion offer.
 function tutorialModal(text, buttons){
   const old = document.getElementById('tutorial-overlay');
   if(old) old.remove();
@@ -2684,66 +2114,44 @@ function tutorialModal(text, buttons){
 }
 
 async function runTutorialIntroSequence(){
-  await tutorialSpotlight('phase-indicator',
-    "This is the <b>Guide</b>. It always tells you what to do right now, like moving your character or picking an attack.");
-  await tutorialSpotlight('sp-inventory-block',
-    "This is your <b>Inventory</b>. Items you find in chests (potions, vials, weapons) show up here - click one to use or equip it.");
-  await tutorialSpotlight('enemy-cards',
-    "This shows every character's <b>Health</b>, including the enemies'. Watch it to see how much damage attacks are doing.");
-  await tutorialSpotlight('sp-attack-btn',
-    "Click here to select your equipped weapon's attack. After selecting it, click an enemy on the board to attack them.");
-  await tutorialSpotlight('end-turn-btn',
-    "When you're done moving and attacking, click <b>End Turn</b> to pass to the next character.");
-  await tutorialSpotlight('board-area',
-    "First, let's grab some loot! Move your character to the <b>Chest</b> and open it by clicking on it while standing next to it.",
-    "Got it!");
+  await tutorialSpotlight('phase-indicator', "This is the <b>Guide</b>. It always tells you what to do right now, like moving your character or picking an attack.");
+  await tutorialSpotlight('sp-inventory-block', "This is your <b>Inventory</b>. Items you find in chests (potions, vials, weapons) show up here - click one to use or equip it.");
+  await tutorialSpotlight('enemy-cards', "This shows every character's <b>Health</b>, including the enemies'. Watch it to see how much damage attacks are doing.");
+  await tutorialSpotlight('sp-attack-btn', "Click here to select your equipped weapon's attack. After selecting it, click an enemy on the board to attack them.");
+  await tutorialSpotlight('end-turn-btn', "When you're done moving and attacking, click <b>End Turn</b> to pass to the next character.");
+  await tutorialSpotlight('board-area', "First, let's grab some loot! Move your character to the <b>Chest</b> and open it by clicking on it while standing next to it.", "Got it!");
   G.tutorialIntroDone = true;
   G.tutorialStage = 'go-chest';
-  G.tutorialMoveTarget = {x:3, y:1}; // restrict movement toward the chest
+  G.tutorialMoveTarget = {x:3, y:1};
   setPhaseText('Move next to the chest and click it to open it!');
 }
 
 async function runTutorialHighGroundLesson(){
-  await tutorialSpotlight('tile-7-4',
-    "You're standing on <b>High Ground</b>! Tiles labeled High Ground give you <b>+1 to your Hit Throw</b> when attacking from them. Positioning yourself up high is a powerful tactical advantage!",
-    "Got it!");
+  await tutorialSpotlight('tile-7-4', "You're standing on <b>High Ground</b>! Tiles labeled High Ground give you <b>+1 to your Hit Throw</b> when attacking from them. Positioning yourself up high is a powerful tactical advantage!", "Got it!");
   G.tutorialStage = 'inventory-lesson';
   setTimeout(runTutorialInventoryLesson, 400);
 }
 
 async function runTutorialInventoryLesson(){
-  G.tutorialMoveTarget = null; // free movement from here on
-  await tutorialSpotlight('sp-inventory-block',
-    "Nice! Whatever you found is now in your <b>Inventory</b> - click an item here any time on your turn to use or equip it.");
-  await tutorialSpotlight('sp-weapon-box',
-    "Click your equipped weapon here any time to see its <b>full stats</b> - every attack's damage, dice rolls, hit throw, effect, and range.");
-  await tutorialSpotlight('stat-panel',
-    "You've learned the basics! Defeat at least one enemy to finish the tutorial. Feel free to explore your attacks and items as you go.");
+  G.tutorialMoveTarget = null;
+  await tutorialSpotlight('sp-inventory-block', "Nice! Whatever you found is now in your <b>Inventory</b> - click an item here any time on your turn to use or equip it.");
+  await tutorialSpotlight('sp-weapon-box', "Click your equipped weapon here any time to see its <b>full stats</b> - every attack's damage, dice rolls, hit throw, effect, and range.");
+  await tutorialSpotlight('stat-panel', "You've learned the basics! Defeat at least one enemy to finish the tutorial. Feel free to explore your attacks and items as you go.");
   G.tutorialStage = 'playing';
   setPhaseText('Defeat an enemy to complete the tutorial!');
 }
 
 function showTutorialCompletionOffer(){
-  tutorialModal(
-    "You defeated an enemy - tutorial complete! 🎉<br><br>Want to keep playing this match, or head back to pick a board?",
-    [
-      {label:'Keep Playing', primary:true, onClick:()=>{ G.tutorialMode=false; }},
-      {label:'Return to Board Select', onClick:()=>{ G.tutorialMode=false; showScreen('screen-board'); }},
-    ]
-  );
+  tutorialModal("You defeated an enemy - tutorial complete! 🎉<br><br>Want to keep playing this match, or head back to pick a board?", [
+    {label:'Keep Playing', primary:true, onClick:()=>{ G.tutorialMode=false; }},
+    {label:'Return to Board Select', onClick:()=>{ G.tutorialMode=false; showScreen('screen-board'); }},
+  ]);
 }
 
-
-// ============================================================
-//  TURN MANAGEMENT
-// ============================================================
 function startTurn(){
   if(G.phase==='game-over') return;
   const char = getCurrentChar();
-  if(!char || !char.alive){
-    nextTurn();
-    return;
-  }
+  if(!char || !char.alive){ nextTurn(); return; }
   G.hasMovedThisTurn = false;
   G.hasActedThisTurn = false;
   tutorialMoveCarry = 0;
@@ -2753,23 +2161,13 @@ function startTurn(){
   G.reachBonusActive = false;
   G.godlyStrengthActive = false;
   G.aoeSelectedTiles = [];
-
-  // Record damage taken at start of turn for sword & buckler reset
   char.damageTakenLastTurn = char.damageTakenThisTurn||0;
   char.damageTakenThisTurn = 0;
-
-  // Circle of Calamity: blocked from attacking this turn
   if(char.skipAttackNextTurn){
     char.skipAttackNextTurn = false;
-    if(char.isPlayer){
-      G.hasActedThisTurn = true;
-    } else {
-      char.aiSkipAttackThisTurn = true;
-    }
+    if(char.isPlayer){ G.hasActedThisTurn = true; } else { char.aiSkipAttackThisTurn = true; }
     logMsg(`${char.name} cannot attack this turn (Circle of Calamity)!`, 'important');
   }
-
-  // Thorny vine start-of-turn damage
   if(isThorny(char.x, char.y)){
     char.thornyCounter = (char.thornyCounter||0)+1;
     const extraCycle = (char.class==='mage'||char.class==='aldemar') ? 1 : 0;
@@ -2778,34 +2176,20 @@ function startTurn(){
       logMsg(`${char.name} takes 3 thorny vine damage!`, 'damage');
       char.thornyCounter = 0;
     }
-  } else {
-    char.thornyCounter = 0;
-  }
-
+  } else { char.thornyCounter = 0; }
   checkWinLose();
   if(G.phase==='game-over') return;
-  
-  // If the character died from start-of-turn effects (like thorny vines),
-  // skip the rest of their turn immediately.
-  if(!char.alive){
-    nextTurn();
-    return;
-  }
-
+  if(!char.alive){ nextTurn(); return; }
   const turnInfoEl = document.getElementById('turn-info');
   turnInfoEl.textContent = `${char.name}'s Turn (${char.class})`;
-  // Restart the glow animation every turn (removing then re-adding the
-  // class forces the browser to replay it, even on consecutive turns).
-  // Only the human player's turn gets the glow - computer turns leave it off.
   turnInfoEl.classList.remove('turn-flash');
   if(char.isPlayer){
-    void turnInfoEl.offsetWidth; // force reflow so the removal registers
+    void turnInfoEl.offsetWidth;
     turnInfoEl.classList.add('turn-flash');
   }
   updateStatPanel();
   updateEnemyPanel();
   updateIconHighlights();
-
   if(char.isPlayer){
     G.phase = 'player-move';
     setPhaseText('Click your character and drag to move. Click an attack to attack.');
@@ -2816,7 +2200,7 @@ function startTurn(){
         setTimeout(runTutorialIntroSequence, 400);
       } else if(G.tutorialStage==='chest-opened'){
         G.tutorialStage = 'go-highground';
-        G.tutorialMoveTarget = {x:7, y:4}; // must physically stand on the High Ground tile
+        G.tutorialMoveTarget = {x:7, y:4};
         setPhaseText('Chest opened! Now move onto the High Ground tile.');
       }
     }
@@ -2829,7 +2213,6 @@ function startTurn(){
 
 function nextTurn(){
   G.currentTurnIdx = (G.currentTurnIdx+1) % G.turnOrder.length;
-  // Skip dead
   let attempts = 0;
   while(!G.characters[G.turnOrder[G.currentTurnIdx]].alive && attempts<4){
     G.currentTurnIdx = (G.currentTurnIdx+1) % G.turnOrder.length;
@@ -2857,45 +2240,28 @@ function showWeaponStatsModal(){
 function playerEndTurn(){
   if(!getCurrentChar()?.isPlayer) return;
   if(G.phase==='game-over') return;
-  if(G.tutorialMode && G.tutorialStage==='go-chest'){
-    setPhaseText('Move next to the Chest and open it before ending your turn!');
-    return;
-  }
-  if(G.tutorialMode && G.tutorialStage==='go-highground'){
-    setPhaseText('Move onto the High Ground tile before ending your turn!');
-    return;
-  }
+  if(G.tutorialMode && G.tutorialStage==='go-chest'){ setPhaseText('Move next to the Chest and open it before ending your turn!'); return; }
+  if(G.tutorialMode && G.tutorialStage==='go-highground'){ setPhaseText('Move onto the High Ground tile before ending your turn!'); return; }
   logMsg(`${G.playerName} ends their turn.`);
   clearMoveHighlights();
   nextTurn();
 }
 
-function setPhaseText(t){
-  document.getElementById('phase-indicator').textContent = t;
-}
+function setPhaseText(t){ document.getElementById('phase-indicator').textContent = t; }
 
 function updateIconHighlights(){
   const current = getCurrentChar();
   const isHumanTurn = !!(current && current.isPlayer);
   G.characters.forEach(c=>{
     const icon = document.getElementById(`char-icon-${c.id}`);
-    if(icon){
-      icon.classList.toggle('active-turn', isHumanTurn && c===current);
-    }
+    if(icon){ icon.classList.toggle('active-turn', isHumanTurn && c===current); }
   });
 }
 
-// ============================================================
-//  MOVEMENT - PLAYER
-// ============================================================
 let isDraggingMove = false;
 let moveStartChar = null;
 let moveRoute = [];
 let moveUsed = 0;
-// Carries leftover movement cost across multiple drags within the same
-// turn, for the tutorial's forced-objective stages (go-chest / go-highground)
-// where a partial drag doesn't lock the player out of moving again - this
-// still keeps their total movement for the turn capped at char.move.
 let tutorialMoveCarry = 0;
 
 function onCharIconMouseDown(e){
@@ -2909,7 +2275,6 @@ function onCharIconMouseDown(e){
   moveRoute = [{x:char.x, y:char.y}];
   const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
   moveUsed = forcedStageActive ? tutorialMoveCarry : 0;
-
   document.addEventListener('mouseup', onMouseUp, {once:true});
   document.addEventListener('touchend', onMouseUp, {once:true});
 }
@@ -2919,55 +2284,37 @@ function onTileMouseOver(e){
   const x = parseInt(e.target.dataset.x);
   const y = parseInt(e.target.dataset.y);
   if(isNaN(x)||isNaN(y)) return;
-
   const last = moveRoute[moveRoute.length-1];
   if(last.x===x && last.y===y) return;
-
-  // Check adjacency (no diagonals)
   const dx = Math.abs(x-last.x), dy = Math.abs(y-last.y);
   if(dx+dy!==1) return;
-
-  // Check if passable (allow movement through, just don't stop on occupied)
   const t = getTileType(x,y);
   if(['pc','hc','log','chest','chest_hg'].includes(t)) return;
   if(getCharAt(x,y) && !(x===moveStartChar.x&&y===moveStartChar.y)) return;
-
-  // Tutorial: restrict movement so the player heads toward their current
-  // objective tile (e.g. the chest) instead of wandering off elsewhere.
   if(G.tutorialMode && G.tutorialMoveTarget){
     const goal = G.tutorialMoveTarget;
     const curDist = manhattan(last.x,last.y,goal.x,goal.y);
     const newDist = manhattan(x,y,goal.x,goal.y);
     if(newDist > curDist) return;
   }
-
-  // Allow backtracking - check this BEFORE the movement-cost cap below, so
-  // retracing a step you've already taken always works, even if you've
-  // already used your full movement budget getting there.
   const prev = moveRoute.findIndex(r=>r.x===x&&r.y===y);
   if(prev>=0){
-    // Backtrack: recalculate
     moveRoute.splice(prev+1);
     recalcMoveUsed();
     renderMoveRoute();
     return;
   }
-
-  // Calculate cost
   const char = moveStartChar;
   let cost = 1;
   if(isDifficultForChar(char, x, y)) cost = 2;
-  // Check if leaving a thorny/difficult tile costs extra (leaving difficult = 1)
-  // (entering difficult = 2, leaving = 1 already accounted for by entering)
   if(moveUsed+cost > char.move) return;
-
   moveRoute.push({x,y});
   moveUsed += cost;
   renderMoveRoute();
 }
 
 function isDifficultForChar(char, x, y){
-  if(char.class==='knight') return false; // Mighty Muscles
+  if(char.class==='knight') return false;
   const t = getTileType(x,y);
   return ['difficult','thorny','hill'].includes(t)||t==='difficult';
 }
@@ -3002,31 +2349,18 @@ function onMouseUp(e){
   isDraggingMove = false;
   const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
   if(forcedStageActive) tutorialMoveCarry = moveUsed;
-  if(moveRoute.length>1){
-    executePlayerMove(moveRoute);
-  }
+  if(moveRoute.length>1){ executePlayerMove(moveRoute); }
   moveRoute = [];
   moveUsed = 0;
 }
 
 async function executePlayerMove(route){
   const char = moveStartChar;
-  // Tutorial: while the player is being forced toward an objective (the
-  // chest, or the High Ground tile) and hasn't reached it yet, don't treat
-  // this as "their move for the turn" - otherwise a short/partial drag
-  // would use up their one move, they can't drag again (already moved),
-  // and they can't end turn either (objective not met yet) - a total
-  // deadlock. Only lock movement once the objective is actually reached,
-  // or if no forced objective is active at all (normal play).
   const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
-  if(!forcedStageActive){
-    G.hasMovedThisTurn = true;
-  }
+  if(!forcedStageActive){ G.hasMovedThisTurn = true; }
   clearMoveHighlights();
-
   for(let i=1;i<route.length;i++){
     const step = route[i];
-    // Thorny vine damage on passing through
     if(isThorny(step.x, step.y) && i < route.length-1){
       applyDamage(char, 2, false);
       logMsg(`${char.name} takes 2 damage from thorny vines!`, 'damage');
@@ -3035,28 +2369,20 @@ async function executePlayerMove(route){
     positionIcon(char);
     await sleep(250);
   }
-
-  // Stopping on thorny vine
   const finalStep = route[route.length-1];
   if(isThorny(finalStep.x, finalStep.y)){
     applyDamage(char, 4, false);
     logMsg(`${char.name} stops in thorny vines and takes 4 damage!`, 'damage');
   }
-
   checkWinLose();
   if(G.phase==='game-over') return;
-
-  // Check if adjacent to chest and not acted
   checkAdjacentChestAutoOpen(char);
-
-  // Tutorial: once the player physically reaches the High Ground tile, explain it.
   if(G.tutorialMode && G.tutorialStage==='go-highground' && char.x===7 && char.y===4){
     G.tutorialStage = 'highground-reached';
     G.tutorialMoveTarget = null;
-    G.hasMovedThisTurn = true; // objective done - normal one-move-per-turn rule now applies
+    G.hasMovedThisTurn = true;
     setTimeout(runTutorialHighGroundLesson, 300);
   }
-
   updateStatPanel();
   updateEnemyPanel();
   setPhaseText(forcedStageActive && !G.hasMovedThisTurn ? 'Keep going!' : 'Movement done. Click an attack name or end your turn.');
@@ -3068,7 +2394,7 @@ function checkAdjacentChestAutoOpen(char){
   for(const t of adj){
     const type = getTileType(t.x,t.y);
     if((type==='chest'||type==='chest_hg') && !G.openedChests.has(tileKey(t.x,t.y))){
-      if(!G.hasMovedThisTurn) return; // Only auto-open if they moved to adjacent, not start of turn (start-of-turn handled below)
+      if(!G.hasMovedThisTurn) return;
     }
   }
 }
@@ -3082,9 +2408,6 @@ function getAdjacentTiles(x,y, includeDiag=false){
   return dirs.map(([dx,dy])=>({x:x+dx,y:y+dy})).filter(t=>t.x>=0&&t.x<=10&&t.y>=0&&t.y<=8);
 }
 
-// ============================================================
-//  TILE CLICK (Attack target selection)
-// ============================================================
 let pendingAttackMode = false;
 let selectedAttackWeapon = null;
 let aoeMode = false;
@@ -3094,23 +2417,15 @@ function onTileClick(e){
   const x = parseInt(e.target.dataset.x);
   const y = parseInt(e.target.dataset.y);
   if(isNaN(x)||isNaN(y)) return;
-
-  if(aoeMode && aoeSelectCallback){
-    aoeSelectCallback(x,y);
-    return;
-  }
+  if(aoeMode && aoeSelectCallback){ aoeSelectCallback(x,y); return; }
 }
 
 function playerClickAttack(){
   if(G.hasActedThisTurn) return;
   if(!getCurrentChar()?.isPlayer) return;
-  if(G.tutorialMode && G.tutorialStage==='go-chest'){
-    setPhaseText('Find and open the Chest first - no fighting until then!');
-    return;
-  }
+  if(G.tutorialMode && G.tutorialStage==='go-chest'){ setPhaseText('Find and open the Chest first - no fighting until then!'); return; }
   const player = G.characters.find(c=>c.isPlayer && c.alive);
   if(!player) return;
-
   const w = player.equippedWeapon;
   if(w && w.attacks && w.attacks.length){
     showChoiceModal('Choose Your Attack', w.attacks.map(a=>({label:a.attackName, value:a.id, desc:a.desc})), (chosenId)=>{
@@ -3127,17 +2442,13 @@ let attackTargetingPrevMoved = false;
 function beginPlayerAttackTargeting(player, weapon){
   attackTargetingPrevMoved = G.hasMovedThisTurn;
   G.phase = 'player-attack-targeting';
-  G.hasMovedThisTurn = true; // Can't move after attacking
+  G.hasMovedThisTurn = true;
   setPhaseText('Click an enemy character to attack! (or cancel below)');
   selectedAttackWeapon = weapon;
-
-  // Highlight valid targets
   highlightAttackTargets(player, weapon);
   document.getElementById('cancel-attack-btn').style.display = 'block';
 }
 
-// Cancel attack targeting if the player clicked Attack but hasn't picked a
-// target yet - restores the turn to exactly how it was beforehand.
 function cancelPlayerAttackTargeting(){
   if(G.phase!=='player-attack-targeting') return;
   clearAttackHighlights();
@@ -3152,43 +2463,29 @@ function highlightAttackTargets(attacker, weapon){
   clearMoveHighlights();
   const w = weapon || attacker.equippedWeapon;
   let range = getEffectiveRange(attacker, w, null, true);
-
   G.characters.filter(c=>c.alive&&!c.isPlayer).forEach(target=>{
-    if(inRange(attacker, target, range)){
-      const icon = document.getElementById(`char-icon-${target.id}`);
-    }
+    if(inRange(attacker, target, range)){ const icon = document.getElementById(`char-icon-${target.id}`); }
   });
 }
 
-function clearAttackHighlights(){
-  G.characters.forEach(c=>{
-    const icon = document.getElementById(`char-icon-${c.id}`);
-  });
-}
+function clearAttackHighlights(){ G.characters.forEach(c=>{ const icon = document.getElementById(`char-icon-${c.id}`); }); }
 
-// Character icon clicked during attack targeting
 document.addEventListener('click', e=>{
   const icon = e.target.closest('.char-icon');
   if(!icon) return;
-
-  // If an AOE area-selection is in progress, a click on a character icon
-  // standing on the targeted tile must count as a click on that tile -
-  // otherwise the icon (which sits visually on top of the tile) swallows
-  // the click and that tile can never be selected.
   if(aoeMode && aoeSelectCallback){
     const charId = icon.dataset.charid;
     const ch = G.characters.find(c=>c.id===charId);
     if(ch) aoeSelectCallback(ch.x, ch.y);
     return;
   }
-
   if(G.phase!=='player-attack-targeting') return;
   const charId = icon.dataset.charid;
   const target = G.characters.find(c=>c.id===charId);
   if(!target||!target.alive) return;
   const attacker = G.characters.find(c=>c.isPlayer&&c.alive);
   if(!attacker) return;
-  if(target===attacker) return; // can't attack self with targeted
+  if(target===attacker) return;
   clearAttackHighlights();
   G.phase = 'game';
   document.getElementById('cancel-attack-btn').style.display = 'none';
@@ -3197,44 +2494,26 @@ document.addEventListener('click', e=>{
 
 function getEffectiveRange(attacker, weapon, target=null, isPlayer=false){
   let range = weapon.range;
-
   if(isPlayer && G.reachBonusActive) range += 2;
-
-  // Archer passive: +1 range against lower terrain
   if(attacker.class==='archer' && target){
     const attackerTerrain = getTerrainLevel(attacker.x, attacker.y);
     const targetTerrain = getTerrainLevel(target.x, target.y);
     if(targetTerrain < attackerTerrain) range += 1;
   }
-
-  // Knight Potion of Godly Strength bonus
-  if(isPlayer && G.godlyStrengthActive && attacker.class==='knight'){
-    range += 1;
-  }
-
+  if(isPlayer && G.godlyStrengthActive && attacker.class==='knight'){ range += 1; }
   return range;
 }
 
-function inRange(attacker, target, range){
-  return chebyshev(attacker.x, attacker.y, target.x, target.y) <= range;
-}
+function inRange(attacker, target, range){ return chebyshev(attacker.x, attacker.y, target.x, target.y) <= range; }
 
-// ============================================================
-//  COMBAT
-// ============================================================
 function getDefenceWithCover(attacker, target, weapon){
   let def = target.defence;
-  // High ground bonus for attacker
-  if(isHighGround(attacker.x, attacker.y)) {
-    // +1 to hit throw, handled in hit throw calc
-  }
-  // Hunter's Eyes
+  if(isHighGround(attacker.x, attacker.y)) { }
   if(attacker.class==='archer'){
     const attackerTerrain = getTerrainLevel(attacker.x, attacker.y);
     const targetTerrain = getTerrainLevel(target.x, target.y);
-    if(targetTerrain < attackerTerrain) def -= 0; // bonus applied to throw, not defence
+    if(targetTerrain < attackerTerrain) def -= 0;
   }
-  // Cover check - line from attacker to target
   const coverResult = checkCoverLOS(attacker.x,attacker.y, target.x,target.y, attacker, target);
   if(coverResult.blocked) return {def: def, blocked: true};
   def += coverResult.defBonus;
@@ -3243,60 +2522,32 @@ function getDefenceWithCover(attacker, target, weapon){
 
 function getTerrainLevel(x,y){
   if(isHighGround(x,y)) return 2;
-  if(isDifficult(x,y)) return 0; // rough terrain = lower
+  if(isDifficult(x,y)) return 0;
   return 1;
 }
 
 function checkCoverLOS(ax,ay,tx,ty, attacker, target){
-  // Draw line from (ax,ay) center to (tx,ty) center.
-  // Nothing on the board blocks a shot outright anymore - Rocks, Logs,
-  // Trees, and Chests all just grant a defence bonus (handled below) if
-  // they sit directly between the attacker and the target.
   let defBonus = 0;
-
-  // Get tiles along line using Bresenham-like approach
   const tiles = getTilesAlongLine(ax,ay,tx,ty);
-
-
-  // Cover only grants a defence bonus if the attacker's actual line of
-  // fire passes through a cover tile immediately adjacent to the target,
-  // right before reaching them - i.e. the cover is genuinely between the
-  // attacker and the target at this attack's angle. Cover sitting next to
-  // the target on a side the shot isn't coming from/through (e.g. an
-  // attack from behind the target) gives no bonus.
   const approachTile = tiles.length>=2 ? tiles[tiles.length-2] : null;
   if(approachTile && !(approachTile.x===ax&&approachTile.y===ay)){
     const isAdjToTarget = Math.abs(approachTile.x-tx)+Math.abs(approachTile.y-ty)===1;
     if(isAdjToTarget && (isPCTile(approachTile.x,approachTile.y) || isHCTile(approachTile.x,approachTile.y))){
-      // Cover gives no bonus if the attacker is standing right next to
-      // that same cover tile (point-blank, on the other side of it).
       const attackerAdjToCover = Math.abs(approachTile.x-ax)+Math.abs(approachTile.y-ay)===1;
       if(!attackerAdjToCover){
         if(isPCTile(approachTile.x,approachTile.y)){
-          // Target on difficult terrain can't benefit from PC
           const onDiff = isDifficult(tx,ty);
           if(!onDiff){
-            if(attacker && (attacker.class==='mage'||attacker.class==='aldemar')){
-              defBonus = Math.max(defBonus, 2);
-            } else {
-              defBonus = Math.max(defBonus, 1);
-            }
+            if(attacker && (attacker.class==='mage'||attacker.class==='aldemar')){ defBonus = Math.max(defBonus, 2); } else { defBonus = Math.max(defBonus, 1); }
           }
         }
         if(isHCTile(approachTile.x,approachTile.y)){
           const onDiff = isDifficult(tx,ty);
-          if(target && target.class==='knight'){
-            defBonus = Math.max(defBonus, 3);
-          } else if(onDiff){
-            defBonus = Math.max(defBonus, 1);
-          } else {
-            defBonus = Math.max(defBonus, 2);
-          }
+          if(target && target.class==='knight'){ defBonus = Math.max(defBonus, 3); } else if(onDiff){ defBonus = Math.max(defBonus, 1); } else { defBonus = Math.max(defBonus, 2); }
         }
       }
     }
   }
-
   return {blocked:false, defBonus};
 }
 
@@ -3318,8 +2569,6 @@ function getTilesAlongLine(x1,y1,x2,y2){
 async function initiatePlayerAttack(attacker, target, weapon){
   const w = weapon;
   if(!w) return;
-
-  // Check range
   let range = w.range;
   if(G.reachBonusActive) range += 2;
   if(!inRange(attacker, target, range)){
@@ -3328,30 +2577,11 @@ async function initiatePlayerAttack(attacker, target, weapon){
     G.hasMovedThisTurn = true;
     return;
   }
-
-  // AOE weapons
-  if(w.special==='aoe2adj'){
-    await playerAOEGreataxe(attacker, target, w);
-    return;
-  }
-  if(w.special==='aoe8surround'){
-    await playerAOESurrounding(attacker, target, w);
-    return;
-  }
-  if(w.special==='aoe2x2'){
-    await playerAOE2x2(attacker, target, w);
-    return;
-  }
-  if(w.special==='helen2tiles'){
-    await playerHelentiles(attacker, target, w);
-    return;
-  }
-  if(w.special==='shortbow_spread'){
-    await playerShortbowAttack(attacker, target, w);
-    return;
-  }
-
-  // Single target
+  if(w.special==='aoe2adj'){ await playerAOEGreataxe(attacker, target, w); return; }
+  if(w.special==='aoe8surround'){ await playerAOESurrounding(attacker, target, w); return; }
+  if(w.special==='aoe2x2'){ await playerAOE2x2(attacker, target, w); return; }
+  if(w.special==='helen2tiles'){ await playerHelentiles(attacker, target, w); return; }
+  if(w.special==='shortbow_spread'){ await playerShortbowAttack(attacker, target, w); return; }
   await doAttack(attacker, target, w, true);
   G.hasActedThisTurn = true;
   G.phase = 'game';
@@ -3365,21 +2595,15 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   const w = weapon;
   const interactive = isPlayer && G.settings.interactiveDice;
   let range = rangeOverride !== null ? rangeOverride : getEffectiveRange(attacker, w, target, isPlayer);
-
-  // Hard range validation for all attacks (player + AI)
   if(!inRange(attacker, target, range)){
     logMsg(`${attacker.name}'s attack on ${target.name} failed: target out of range!`);
     return false;
   }
-
-  // LOS and cover
   const coverRes = checkCoverLOS(attacker.x,attacker.y,target.x,target.y,attacker,target);
   if(coverRes.blocked){
     logMsg(`${attacker.name}'s attack on ${target.name} blocked by cover!`);
     return false;
   }
-
-  // Calculate hit modifiers and target defense BEFORE rolling
   let hitMod = w.hitThrowMod;
   if(isHighGround(attacker.x,attacker.y)) hitMod += 1;
   if(attacker.class==='archer'){
@@ -3393,15 +2617,11 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     G.vialBonusHit = 0;
   }
   const targetDef = target.defence + coverRes.defBonus;
-
-  // Hit throw (with interactive evaluation)
   let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!', (res) => {
     const totalHit = res + hitMod;
     return totalHit >= targetDef ? "HIT!" : "MISS!";
   });
-
   const totalHit = hitRoll + hitMod;
-
   if(totalHit < targetDef){
     logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
     if(attacker.class==='ronald'){
@@ -3414,24 +2634,15 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     logMsg(`Miss!`);
     return false;
   }
-
-  // Calculate damage
   let dmg;
   if(w.id==='scarlet_void'){
-    // Scarlet Void: take up to 30 self damage, dealing equal extra damage
     const maxTake = Math.max(0, Math.min(30, attacker.hp-1));
     let selfDmg = 0;
     if(isPlayer){
       selfDmg = await new Promise(resolve=>{
-        showNumberInputModal(
-          'Scarlet Void',
-          `Choose how much self-damage to take (0-${maxTake}). You have ${attacker.hp} HP. This attack deals extra damage equal to the damage taken.`,
-          0, maxTake, resolve
-        );
+        showNumberInputModal('Scarlet Void', `Choose how much self-damage to take (0-${maxTake}). You have ${attacker.hp} HP. This attack deals extra damage equal to the damage taken.`, 0, maxTake, resolve);
       });
-    } else {
-      selfDmg = Math.max(0, Math.min(maxTake, 20));
-    }
+    } else { selfDmg = Math.max(0, Math.min(maxTake, 20)); }
     if(selfDmg>0){
       applyDamage(attacker, selfDmg, false);
       logMsg(`${attacker.name} channels Scarlet Void and takes ${selfDmg} self-damage!`, 'damage');
@@ -3448,57 +2659,30 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusDamage} to Damage!`, 'heal');
     G.vialBonusDamage = 0;
   }
-  if(isPlayer && G.godlyStrengthActive){
-    dmg += attacker.class==='knight' ? 5 : 3;
-  }
-  // Sword and Buckler Parry on target
+  if(isPlayer && G.godlyStrengthActive){ dmg += attacker.class==='knight' ? 5 : 3; }
   if(target.equippedWeapon?.id==='sword_buckler' && dmg > 0 && dmg < 18){
     dmg = Math.max(0, dmg-4);
     logMsg(`${target.name}'s Parry reduces damage by 4!`);
   }
-
-  // Staff of the Oceans: push the target back one tile (the tile directly
-  // behind them, away from the attacker). If that tile is blocked - by
-  // another character, an obstruction, or the edge of the board - deal
-  // 5 extra damage instead.
   let oceansPush = null;
   if(w.id==='staff_oceans'){
     const dx = Math.sign(target.x - attacker.x);
     const dy = Math.sign(target.y - attacker.y);
     const newX = target.x + dx;
     const newY = target.y + dy;
-    if(isPassable(newX, newY)){
-      oceansPush = {x:newX, y:newY};
-    } else {
-      dmg += 5;
-    }
+    if(isPassable(newX, newY)){ oceansPush = {x:newX, y:newY}; } else { dmg += 5; }
   }
-
-  // Tutorial mode ONLY: the player quietly takes half damage (rounded,
-  // minimum 1 if any damage would land) - not called out in the log.
-  if(G.tutorialMode && target.isPlayer && dmg>0){
-    dmg = Math.max(1, Math.round(dmg/2));
-  }
-
-  // Tutorial mode ONLY: an attack that would kill the player instead just
-  // misses, shown as a clean "Miss!" with no hit-throw math or damage mentioned.
-  if(G.tutorialMode && target.isPlayer && dmg >= target.hp){
-    logMsg(`Miss!`);
-    return false;
-  }
-
+  if(G.tutorialMode && target.isPlayer && dmg>0){ dmg = Math.max(1, Math.round(dmg/2)); }
+  if(G.tutorialMode && target.isPlayer && dmg >= target.hp){ logMsg(`Miss!`); return false; }
   logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
   applyDamage(target, dmg, true);
   logMsg(`${attacker.name} deals ${dmg} damage to ${target.name}! (${target.hp}/${target.maxHp} HP remaining)`, 'damage');
   if(w.id==='staff_oceans'){
     if(oceansPush){
-      target.x = oceansPush.x;
-      target.y = oceansPush.y;
+      target.x = oceansPush.x; target.y = oceansPush.y;
       positionIcon(target);
       logMsg(`${target.name} is pushed back by the Aqueous Torrent!`);
-    } else {
-      logMsg(`${target.name} couldn't be pushed back, so the Aqueous Torrent deals 5 extra damage instead!`);
-    }
+    } else { logMsg(`${target.name} couldn't be pushed back, so the Aqueous Torrent deals 5 extra damage instead!`); }
   }
   if(w.id==='circle_of_calamity'){
     applyDamage(attacker, 10, false);
@@ -3506,7 +2690,6 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     target.skipAttackNextTurn = true;
     logMsg(`${target.name} cannot attack during their next turn!`);
   }
-  // Forest's Grace (Staff of Life passive): heal 5 HP, only when the attack hits
   if(w.id==='staff_of_life'){
     const healAmt = Math.max(0, Math.min(5, attacker.maxHp - attacker.hp));
     if(healAmt>0){
@@ -3514,7 +2697,6 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
       logMsg(`${attacker.name}'s Forest's Grace heals them for ${healAmt} HP! (${attacker.hp}/${attacker.maxHp})`, 'heal');
     }
   }
-
   updateEnemyPanel();
   updateStatPanel();
   return true;
@@ -3523,43 +2705,33 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
 async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false){
   let dmg = w.baseDamage;
   const cond = w.diceCondition;
-
   if(cond==='distance'){
-    // Inferno Blast: 22 - 2 per tile away
     const dist = chebyshev(attacker.x,attacker.y,target.x,target.y);
     dmg = Math.max(0, 22 - dist*2);
   } else if(cond==='crossbow'){
-    // 22 +/- based on rolls
     for(let i=0;i<w.diceCount;i++){
       const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
         if(res%2===0) return "-4 damage!";
         return "+1 damage!";
       });
-      if(r%2===0) dmg -= 4;
-      else dmg += 1;
+      if(r%2===0) dmg -= 4; else dmg += 1;
     }
   } else if(cond==='5or6_spread'){
     // Handled separately (shortbow)
   } else if(cond==='minus_dmg_taken'){
-    // Destructive Rush
     const taken = attacker.damageTakenLastTurn||0;
     dmg = Math.max(5, w.baseDamage - taken);
   } else if(cond==='plus_pct_dmg'){
-    // Fenrirak's Tail Blade: 5 + 1 per 2 damage taken
     const damageTaken = target.maxHp - target.hp;
     dmg = w.baseDamage + Math.floor(damageTaken/2);
   } else if(cond==='oblivion'){
-    // Helen's Staff: 25+, if odd roll 50
     const r = await rollD6(interactive, 'Oblivion roll', (res) => {
       return res%2!==0 ? "50 damage!" : "25 damage.";
     });
     dmg = r%2!==0 ? 50 : 25;
-    // Extra dice from the weapon
   } else if(cond==='low_hp_bonus'){
-    // Black Lightning: 25+, +20 if attacker at or below 40 HP
     dmg = w.baseDamage + (attacker.hp<=40 ? 20 : 0);
   } else {
-    // Standard extra dice
     for(let i=0;i<w.diceCount;i++){
       const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
         let matches = false;
@@ -3578,7 +2750,6 @@ async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false
       if(matches) dmg += w.diceBonus||0;
     }
   }
-
   return Math.max(0, dmg);
 }
 
@@ -3617,14 +2788,9 @@ function killChar(char){
 function checkWinLose(){
   const player = G.characters.find(c=>c.isPlayer);
   if(!player) return;
-  if(!player.alive){
-    triggerDefeat();
-    return;
-  }
+  if(!player.alive){ triggerDefeat(); return; }
   const aiAlive = G.characters.filter(c=>!c.isPlayer&&c.alive);
-  if(aiAlive.length===0){
-    triggerVictory();
-  }
+  if(aiAlive.length===0){ triggerVictory(); }
 }
 
 function triggerVictory(){
@@ -3636,13 +2802,8 @@ function triggerVictory(){
   word.className='victory';
   word.textContent = (player && player.class==='helen') ? 'Victory ❤️' : 'Victory!';
   setTimeout(()=>{
-    if(G.tutorialMode){
-      overlay.classList.remove('active');
-      G.tutorialMode = false;
-      showScreen('screen-board');
-    } else {
-      window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html';
-    }
+    if(G.tutorialMode){ overlay.classList.remove('active'); G.tutorialMode = false; showScreen('screen-board'); }
+    else { window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }
   }, 4500);
 }
 
@@ -3655,49 +2816,30 @@ function triggerDefeat(){
   word.className='defeat';
   word.textContent = (player && player.class==='ronald') ? 'How did you lose...' : 'Defeat';
   setTimeout(()=>{
-    if(G.tutorialMode){
-      overlay.classList.remove('active');
-      G.tutorialMode = false;
-      showScreen('screen-board');
-    } else {
-      window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html';
-    }
+    if(G.tutorialMode){ overlay.classList.remove('active'); G.tutorialMode = false; showScreen('screen-board'); }
+    else { window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }
   }, 4500);
 }
 
-// ============================================================
-//  CHEST SYSTEM
-// ============================================================
 function tryOpenChest(char, cx, cy){
-  if(G.openedChests.has(tileKey(cx,cy))){
-    logMsg('Chest has already been opened!');
-    return false;
-  }
+  if(G.openedChests.has(tileKey(cx,cy))){ logMsg('Chest has already been opened!'); return false; }
   const adj = getAdjacentTiles(char.x, char.y, false);
-  if(!adj.some(t=>t.x===cx&&t.y===cy)){
-    logMsg('Must be directly adjacent to the chest!');
-    return false;
-  }
+  if(!adj.some(t=>t.x===cx&&t.y===cy)){ logMsg('Must be directly adjacent to the chest!'); return false; }
   return true;
 }
 
 function openChest(char, cx, cy, callback){
   G.openedChests.add(tileKey(cx,cy));
-  // Mark chest as opened
   const tile = document.getElementById(`tile-${cx}-${cy}`);
   if(tile){ tile.classList.add('opened'); }
   logMsg(`${char.name} opens the chest!`);
-
   if(char.isPlayer){
-    // The player rolls for their own loot interactively.
     openDice(`${char.name}: Roll for chest loot!`, (rollResult)=>{
       const loot = CHEST_LOOT[rollResult];
       if(!loot){ callback(); return; }
       grantChestLoot(char, loot, callback);
     }, 7);
   } else {
-    // AI characters roll for their own loot automatically - the human
-    // player shouldn't be asked to manually roll dice for the AI's chest.
     const rollResult = roll(6);
     logMsg(`${char.name} rolls a ${rollResult} for chest loot!`);
     const loot = CHEST_LOOT[rollResult];
@@ -3709,44 +2851,24 @@ function openChest(char, cx, cy, callback){
 function grantChestLoot(char, loot, callback){
   if(loot.type==='weapon'){
     const isSpecialClass = ['aldemar','helen','ronald'].includes(char.class);
-
-    // The hidden classes don't have a generic "Class Weapon" in the chest
-    // loot table - rewarding them with the normal class-weapon roll instead
-    // gives 5 Potions of Healing.
     if(loot.roll===6 && isSpecialClass){
-      for(let i=0;i<5;i++){
-        addToInventory(char, {name:'Potion of Healing', type:'potion', amount:1, desc:'Heal 10 health.'});
-      }
+      for(let i=0;i<5;i++){ addToInventory(char, {name:'Potion of Healing', type:'potion', amount:1, desc:'Heal 10 health.'}); }
       logMsg(`${char.name} receives 5x Potion of Healing!`, 'important');
-      updateStatPanel();
-      updateEnemyPanel();
+      updateStatPanel(); updateEnemyPanel();
       if(callback) callback();
       return;
     }
-
     let weapon = null;
-    if(loot.roll===7){
-      weapon = {...WEAPONS.chest.any};
-    } else if(WEAPONS.chest[char.class]){
-      // Roll 6: class weapon
-      weapon = {...WEAPONS.chest[char.class]};
-    } else {
-      weapon = {...WEAPONS.chest.any};
-    }
+    if(loot.roll===7){ weapon = {...WEAPONS.chest.any}; }
+    else if(WEAPONS.chest[char.class]){ weapon = {...WEAPONS.chest[char.class]}; }
+    else { weapon = {...WEAPONS.chest.any}; }
     if(weapon){
       addToInventory(char, {name:weapon.name, type:'weapon', weapon:weapon, amount:1});
       logMsg(`${char.name} receives ${weapon.name}!`, 'important');
-      if(!char.isPlayer){
-        // Auto-equip for computers
-        char.equippedWeapon = weapon;
-        logMsg(`${char.name} equips ${weapon.name}.`);
-      }
+      if(!char.isPlayer){ char.equippedWeapon = weapon; logMsg(`${char.name} equips ${weapon.name}.`); }
     }
   } else {
-    // Potion or vial
-    for(let i=0;i<loot.amount;i++){
-      addToInventory(char, {...loot, amount:1});
-    }
+    for(let i=0;i<loot.amount;i++){ addToInventory(char, {...loot, amount:1}); }
     logMsg(`${char.name} receives ${loot.amount}x ${loot.name}!`, 'important');
   }
   updateStatPanel();
@@ -3755,46 +2877,28 @@ function grantChestLoot(char, loot, callback){
 }
 
 function addToInventory(char, item){
-  if(char.inventory.length>=5){
-    // Discard oldest
-    char.inventory.shift();
-  }
+  if(char.inventory.length>=5){ char.inventory.shift(); }
   char.inventory.push(item);
 }
 
-// ============================================================
-//  INVENTORY / ITEM USE
-// ============================================================
 function clickInventoryItem(idx){
   const player = G.characters.find(c=>c.isPlayer&&c.alive);
   if(!player) return;
   if(!getCurrentChar()?.isPlayer) return;
   const item = player.inventory[idx];
   if(!item) return;
-
   if(item.type==='weapon'){
-    // Equip weapon
     player.equippedWeapon = item.weapon;
     player.inventory.splice(idx,1);
     logMsg(`${player.name} equips ${item.name}!`, 'important');
     updateStatPanel();
     return;
   }
-
-  // Show item popup
-  if(G.tutorialMode && G.tutorialStage==='go-chest'){
-    setPhaseText('Find and open the Chest first - no item use until then!');
-    return;
-  }
+  if(G.tutorialMode && G.tutorialStage==='go-chest'){ setPhaseText('Find and open the Chest first - no item use until then!'); return; }
   G.activeItemUser = player;
   G.activeItem = {item, idx};
   document.getElementById('ip-title').textContent = item.name;
   document.getElementById('ip-desc').textContent = item.desc;
-  // Vial of Red Liquid isn't "used" from the inventory directly via the
-  // normal Use Item button - instead, you can either wait and use the +1
-  // button that appears next to a die roll (unchanged), or pick ahead of
-  // time here whether this vial's +1 should go to your next Hit Throw or
-  // your next Damage roll.
   const isVial = item.name==='Vial of Red Liquid';
   document.getElementById('ip-use-btn').style.display = isVial ? 'none' : 'inline-block';
   document.getElementById('ip-vial-buttons').style.display = isVial ? 'flex' : 'none';
@@ -3806,11 +2910,6 @@ function closeItemPopup(){
   G.activeItem = null; G.activeItemUser = null;
 }
 
-// Player pre-commits a Vial of Red Liquid's +1 to either their next Hit
-// Throw or their next Damage roll, straight from the inventory popup.
-// The vial is consumed immediately; the bonus is banked and applied (then
-// cleared) the next time the player attacks. This is in addition to the
-// existing option of waiting and clicking the +1 button on a die roll.
 function useVialChoice(type){
   const player = G.activeItemUser || G.characters.find(c=>c.isPlayer&&c.alive);
   const {item, idx} = G.activeItem || {};
@@ -3872,19 +2971,12 @@ async function useItem(char, item, idx, isPlayer){
   updateEnemyPanel();
 }
 
-// ============================================================
-//  AOE ATTACKS - PLAYER
-// ============================================================
 async function playerAOEGreataxe(attacker, primaryTarget, weapon){
-  // Player must choose 2 adjacent tiles to the knight (including diagonals)
-  const validTiles = getAdjacentTiles(attacker.x, attacker.y, true).filter(t=>{
-    return t.x>=0&&t.x<=10&&t.y>=0&&t.y<=8;
-  });
+  const validTiles = getAdjacentTiles(attacker.x, attacker.y, true).filter(t=>{ return t.x>=0&&t.x<=10&&t.y>=0&&t.y<=8; });
   logMsg('Greataxe: Select 2 adjacent tiles (including diagonals) to attack!');
   const selected = [];
   aoeMode = true;
   setPhaseText('Click 2 adjacent tiles to attack with Greataxe!');
-
   return new Promise(resolve=>{
     aoeSelectCallback = (x,y)=>{
       if(!validTiles.some(t=>t.x===x&&t.y===y)) return;
@@ -3892,11 +2984,9 @@ async function playerAOEGreataxe(attacker, primaryTarget, weapon){
       selected.push({x,y});
       const tile = document.getElementById(`tile-${x}-${y}`);
       if(tile) tile.classList.add('aoe-hover');
-
       if(selected.length>=2){
         aoeMode=false; aoeSelectCallback=null;
         clearMoveHighlights();
-        // Attack each selected tile
         Promise.all(selected.map(t=>{
           const tgt = getCharAt(t.x,t.y);
           if(tgt&&tgt!==attacker) return doAttack(attacker,tgt,weapon,true,0,999);
@@ -3910,23 +3000,12 @@ async function playerAOEGreataxe(attacker, primaryTarget, weapon){
   });
 }
 
-// Destructive Rush (Sword and Buckler): a single Hit Throw is rolled
-// against the selected enemy to see if the swing connects at all. If it
-// does, damage is dealt to every character standing in the 8 tiles
-// surrounding the ATTACKER (not the target) - the target only matters for
-// determining whether the attack hits in the first place.
 async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
   const w = weapon;
   const interactive = isPlayer && G.settings.interactiveDice;
   logMsg(`${attacker.name} uses Destructive Rush!`);
-
   const coverRes = checkCoverLOS(attacker.x,attacker.y,target.x,target.y,attacker,target);
-  if(coverRes.blocked){
-    logMsg(`${attacker.name}'s attack on ${target.name} blocked by cover!`);
-    return;
-  }
-
-  // Calculate hit modifiers and target defense BEFORE rolling
+  if(coverRes.blocked){ logMsg(`${attacker.name}'s attack on ${target.name} blocked by cover!`); return; }
   let hitMod = w.hitThrowMod;
   if(isHighGround(attacker.x,attacker.y)) hitMod += 1;
   if(attacker.class==='archer'){
@@ -3940,16 +3019,12 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
     G.vialBonusHit = 0;
   }
   const targetDef = target.defence + coverRes.defBonus;
-
-  // Single Hit Throw against the selected target
   let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!', (res) => {
     const totalHit = res + hitMod;
     return totalHit >= targetDef ? "HIT!" : "MISS!";
   });
   const totalHit = hitRoll + hitMod;
-
   logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
-
   if(totalHit < targetDef){
     if(attacker.class==='ronald'){
       applyDamage(target, 5, true);
@@ -3960,40 +3035,25 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
     logMsg(`Miss!`);
     return;
   }
-
-  // Hit! Work out the damage once, then apply it to everyone standing
-  // around the attacker.
   let dmg = await calcWeaponDamage(w, attacker, target, isPlayer, interactive);
   if(isPlayer && G.vialBonusDamage){
     dmg += G.vialBonusDamage;
     logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusDamage} to Damage!`, 'heal');
     G.vialBonusDamage = 0;
   }
-  if(isPlayer && G.godlyStrengthActive){
-    dmg += attacker.class==='knight' ? 5 : 3;
-  }
-
+  if(isPlayer && G.godlyStrengthActive){ dmg += attacker.class==='knight' ? 5 : 3; }
   const surrounding = getAdjacentTiles(attacker.x, attacker.y, true);
   let hitAnyone = false;
   for(const t of surrounding){
     const victim = getCharAt(t.x, t.y);
     if(!victim || victim===attacker) continue;
     let vdmg = dmg;
-    // Each victim's own Parry (if they're wearing a Sword and Buckler) applies individually
     if(victim.equippedWeapon?.id==='sword_buckler' && vdmg>0 && vdmg<18){
       vdmg = Math.max(0, vdmg-4);
       logMsg(`${victim.name}'s Parry reduces damage by 4!`);
     }
-    
-    // Tutorial mode ONLY: halve damage to the player and prevent player death
-    if(G.tutorialMode && victim.isPlayer && vdmg>0){
-      vdmg = Math.max(1, Math.round(vdmg/2));
-    }
-    if(G.tutorialMode && victim.isPlayer && vdmg >= victim.hp){
-      logMsg(`Miss!`);
-      continue;
-    }
-
+    if(G.tutorialMode && victim.isPlayer && vdmg>0){ vdmg = Math.max(1, Math.round(vdmg/2)); }
+    if(G.tutorialMode && victim.isPlayer && vdmg >= victim.hp){ logMsg(`Miss!`); continue; }
     applyDamage(victim, vdmg, true);
     logMsg(`${attacker.name}'s Destructive Rush deals ${vdmg} damage to ${victim.name}! (${victim.hp}/${victim.maxHp} HP remaining)`, 'damage');
     hitAnyone = true;
@@ -4008,9 +3068,6 @@ async function playerAOESurrounding(attacker, target, weapon){
 }
 
 async function playerAOE2x2(attacker, primaryTarget, weapon){
-  // Choose a 2x2 area - the tile clicked is the TOP-LEFT corner. On this
-  // board, north is +y (up on screen) and west is -x, so the square
-  // extends right (+x) and down (-y) from the clicked tile.
   let range = weapon.range;
   if(G.reachBonusActive) range += 2;
   logMsg("Aldemar's Staff: Select a 2×2 area (click the top-left tile of the 2×2)!");
@@ -4018,7 +3075,6 @@ async function playerAOE2x2(attacker, primaryTarget, weapon){
   setPhaseText('Click the top-left tile of the 2×2 area!');
   return new Promise(resolve=>{
     aoeSelectCallback=(x,y)=>{
-      // Whole 2x2 must fit on the board (x+1<=10, y-1>=0) and be in range.
       if(x<0||x>9||y<1||y>8) return;
       if(chebyshev(attacker.x,attacker.y,x,y)>range) return;
       const tiles=[{x,y},{x:x+1,y},{x,y:y-1},{x:x+1,y:y-1}];
@@ -4039,18 +3095,14 @@ async function playerAOE2x2(attacker, primaryTarget, weapon){
 }
 
 async function playerHelentiles(attacker, initialTarget, weapon){
-  // The enemy clicked to start the attack counts as the first of the 2 tiles;
-  // only 1 more tile needs to be picked, reroll each.
   let range = weapon.range;
   if(G.reachBonusActive) range += 2;
   const selected=[];
   aoeMode=true;
-
   if(initialTarget && chebyshev(attacker.x,attacker.y,initialTarget.x,initialTarget.y)<=range){
     selected.push({x:initialTarget.x, y:initialTarget.y});
     const tile=document.getElementById(`tile-${initialTarget.x}-${initialTarget.y}`); if(tile)tile.classList.add('aoe-hover');
   }
-
   if(selected.length>=2){
     aoeMode=false;
     for(const t of selected){
@@ -4061,7 +3113,6 @@ async function playerHelentiles(attacker, initialTarget, weapon){
     checkWinLose(); updateStatPanel(); updateEnemyPanel();
     return;
   }
-
   setPhaseText(`Helen's Staff: Click ${2-selected.length} more tile${(2-selected.length)===1?'':'s'} to target!`);
   return new Promise(resolve=>{
     aoeSelectCallback=(x,y)=>{
@@ -4090,12 +3141,18 @@ async function playerShortbowAttack(attacker, target, weapon){
   await doAttack(attacker, target, weapon, true);
   // Roll 4 dice for spread
   const rolls=[];
-  for(let i=0;i<4;i++) rolls.push(roll(6));
+  const interactive = G.settings.interactiveDice;
+  for(let i=0;i<4;i++) {
+    const r = await rollD6(interactive, `Effect die ${i+1} of 4`, (res) => {
+      if (res >= 5) return "Spread hit!";
+      return "No spread.";
+    });
+    rolls.push(r);
+  }
   const spreads=rolls.filter(r=>r>=5).length;
   logMsg(`Shortbow spread rolls: [${rolls.join(',')}] - ${spreads} additional hit${spreads===1?'':'s'} available!`, 'important');
   const usedTiles = [];
   for(let s=0;s<spreads;s++){
-    // Stop early if every adjacent tile has already been used
     const allAdj = getAdjacentTiles(target.x, target.y, true);
     if(usedTiles.length >= allAdj.length){
       logMsg(`No more unused adjacent tiles for the remaining spread hit${(spreads-s)===1?'':'s'}.`);
@@ -4104,8 +3161,6 @@ async function playerShortbowAttack(attacker, target, weapon){
     await new Promise(resolve=>{
       aoeMode=true;
       setPhaseText(`Reign of Arrows: select a tile adjacent to ${target.name} for spread hit ${s+1} of ${spreads}!`);
-      // Outline the tiles the player is actually allowed to pick from
-      // (already-used adjacent tiles are excluded)
       const validAdj = allAdj.filter(t=>!usedTiles.some(u=>u.x===t.x&&u.y===t.y));
       validAdj.forEach(t=>{
         const el = document.getElementById(`tile-${t.x}-${t.y}`);
@@ -4114,7 +3169,7 @@ async function playerShortbowAttack(attacker, target, weapon){
       aoeSelectCallback=(x,y)=>{
         if(chebyshev(target.x,target.y,x,y)!==1) return;
         if(x===target.x&&y===target.y) return;
-        if(usedTiles.some(u=>u.x===x&&u.y===y)) return; // already used this turn
+        if(usedTiles.some(u=>u.x===x&&u.y===y)) return;
         usedTiles.push({x,y});
         aoeMode=false; aoeSelectCallback=null;
         validAdj.forEach(t=>{
@@ -4136,56 +3191,34 @@ async function playerShortbowAttack(attacker, target, weapon){
   checkWinLose(); updateStatPanel(); updateEnemyPanel();
 }
 
-// ============================================================
-//  CHEST INTERACTION - PLAYER TILE CLICK
-// ============================================================
-// Add chest click handling
 document.addEventListener('click', e=>{
   if(G.phase==='game-over'||G.phase==='ai-turn') return;
   if(!getCurrentChar()?.isPlayer) return;
   if(G.hasActedThisTurn) return;
   if(aoeMode) return;
   if(G.phase==='player-attack-targeting') return;
-
   const tileEl = e.target.closest('.tile');
   if(!tileEl) return;
   const x=parseInt(tileEl.dataset.x), y=parseInt(tileEl.dataset.y);
   if(isNaN(x)||isNaN(y)) return;
   const t=getTileType(x,y);
   if(t!=='chest'&&t!=='chest_hg') return;
-
   const player=G.characters.find(c=>c.isPlayer&&c.alive);
   if(!player) return;
   const adj=getAdjacentTiles(player.x,player.y,false);
   if(!adj.some(a=>a.x===x&&a.y===y)){ logMsg('Must be directly adjacent to open a chest.'); return; }
   if(G.openedChests.has(tileKey(x,y))){ logMsg('Chest has already been opened!'); return; }
-
   openChest(player, x, y, ()=>{
     G.hasActedThisTurn=true;
     logMsg(`${player.name}'s turn ends (opened chest).`);
-    if(G.tutorialMode && G.tutorialStage==='go-chest'){
-      G.tutorialStage = 'chest-opened';
-    }
+    if(G.tutorialMode && G.tutorialStage==='go-chest'){ G.tutorialStage = 'chest-opened'; }
     updateStatPanel();
     nextTurn();
   });
-}); // end board click listener
+});
 
-// ============================================================
-//  AI TURN
-// ============================================================
-// ==========================================================
-//  TUTORIAL AI BEHAVIOUR
-//  Mage & Archer take a fixed post on turn 1 and stay there, only
-//  attacking from that spot for the rest of the tutorial. The Knight
-//  rushes forward and keeps following/attacking the human player.
-// ==========================================================
 async function runTutorialAITurn(char, player){
-  const endTurn = ()=>{
-    logMsg(`${char.name} ends their turn.`);
-    document.getElementById('ai-thinking').classList.remove('active');
-    nextTurn();
-  };
+  const endTurn = ()=>{ logMsg(`${char.name} ends their turn.`); document.getElementById('ai-thinking').classList.remove('active'); nextTurn(); };
   const tryAttack = async ()=>{
     const target = findBestTarget(char);
     if(!target) return false;
@@ -4197,7 +3230,6 @@ async function runTutorialAITurn(char, player){
     if(G.phase!=='game-over') nextTurn();
     return true;
   };
-
   if(char.class==='mage' || char.class==='archer'){
     const post = char.class==='mage' ? {x:4,y:5} : {x:6,y:4};
     if(char.x!==post.x || char.y!==post.y){
@@ -4208,9 +3240,6 @@ async function runTutorialAITurn(char, player){
     endTurn();
     return;
   }
-
-  // Knight: always take the shortest route toward the human player, then
-  // attack at the end of the turn if now in range.
   const path = findPathTo(char, player.x, player.y);
   if(path && path.length>1) await aiMoveAlongPath(char, path);
   if(await tryAttack()) return;
@@ -4221,13 +3250,7 @@ async function runAITurn(char){
   await sleep(600);
   const player = G.characters.find(c=>c.isPlayer&&c.alive);
   if(!player){ document.getElementById('ai-thinking').classList.remove('active'); nextTurn(); return; }
-
-  if(G.tutorialMode){
-    await runTutorialAITurn(char, player);
-    return;
-  }
-
-  // Circle of Calamity: this character cannot attack this turn, but can still move
+  if(G.tutorialMode){ await runTutorialAITurn(char, player); return; }
   if(char.aiSkipAttackThisTurn){
     char.aiSkipAttackThisTurn = false;
     if(char.class !== 'knight'){
@@ -4244,39 +3267,10 @@ async function runAITurn(char){
     nextTurn();
     return;
   }
-
-  // Use potions first if beneficial
   await aiUsePotions(char);
-
-  // Endgame special case: this is the last computer standing against the
-  // player (no other computers alive). From here on it cares only about
-  // the player.
   const aliveComputers = G.characters.filter(c=>!c.isPlayer && c.alive);
-  if(aliveComputers.length===1 && aliveComputers[0]===char){
-    await runLoneComputerTurn(char, player);
-    return;
-  }
-
-  // ==========================================================
-  //  AI TURN PRIORITY LIST
-  //  Evaluated top-down every turn. Opening a chest ends the turn
-  //  immediately (same rule as the human player) - the AI cannot open
-  //  a chest and attack in the same turn, and will attack next turn.
-  //  1. Open chest if adjacent; use/equip any items received, then end turn
-  //  2. Move towards a chest if it is closer than the nearest enemy
-  //  3. Move towards the closest enemy character
-  //  4. Move behind cover / onto high ground (only if it can still
-  //     hit the player from there)
-  //  5. Attack the closest character in range (prefer the human
-  //     player on a tie)
-  // ==========================================================
-
-  const endTurn = ()=>{
-    logMsg(`${char.name} ends their turn.`);
-    document.getElementById('ai-thinking').classList.remove('active');
-    nextTurn();
-  };
-
+  if(aliveComputers.length===1 && aliveComputers[0]===char){ await runLoneComputerTurn(char, player); return; }
+  const endTurn = ()=>{ logMsg(`${char.name} ends their turn.`); document.getElementById('ai-thinking').classList.remove('active'); nextTurn(); };
   const tryAttack = async ()=>{
     const target = findBestTarget(char);
     if(!target) return false;
@@ -4288,56 +3282,31 @@ async function runAITurn(char){
     if(G.phase!=='game-over') nextTurn();
     return true;
   };
-
-  // --- Priority 1: open an adjacent chest. Opening a chest ends the
-  //     turn immediately (same rule as the human player), so the AI
-  //     does this instead of moving/attacking this turn, and will
-  //     attack next turn. ---
   const adjChest = findAdjacentChest(char);
   if(adjChest){
     logMsg(`${char.name} opens a chest!`);
     await new Promise(resolve=>{ openChest(char, adjChest.x, adjChest.y, resolve); });
-    await aiUsePotions(char); // use/equip anything useful just received
+    await aiUsePotions(char);
     endTurn();
     return;
   }
-
-  // --- Priority 2: move towards a chest, if one is closer than the nearest enemy ---
   const nearestEnemy = findNearestEnemy(char);
   const enemyDist = nearestEnemy ? chebyshev(char.x,char.y,nearestEnemy.x,nearestEnemy.y) : Infinity;
   const closestChest = findClosestChest(char);
   const chestDist = closestChest ? chebyshev(char.x,char.y,closestChest.x,closestChest.y) : Infinity;
-
   let moved = false;
   if(closestChest && chestDist < enemyDist){
     const path = findPathToChest(char, closestChest.x, closestChest.y);
-    if(path && path.length>1){
-      await aiMoveAlongPath(char, path);
-      moved = true;
-    }
+    if(path && path.length>1){ await aiMoveAlongPath(char, path); moved = true; }
   }
-
-  // --- Priority 3: move towards the closest enemy character ---
   if(!moved && nearestEnemy){
     const path = findPathTo(char, nearestEnemy.x, nearestEnemy.y);
-    if(path && path.length>1){
-      await aiMoveAlongPath(char, path);
-      moved = true;
-    }
+    if(path && path.length>1){ await aiMoveAlongPath(char, path); moved = true; }
   }
-
-  // --- Priority 4: move behind cover / onto high ground, only if the
-  //     AI can still hit the player from that position ---
   if(!moved){
     const defensiveMove = findDefensiveMove(char, player);
-    if(defensiveMove){
-      await aiMoveAlongPath(char, defensiveMove);
-      moved = true;
-    }
+    if(defensiveMove){ await aiMoveAlongPath(char, defensiveMove); moved = true; }
   }
-
-  // A chest reached via priority 2's move might now be adjacent - grab it.
-  // Opening it still ends the turn immediately, so the AI attacks next turn.
   const adjChest2 = findAdjacentChest(char);
   if(adjChest2 && !G.openedChests.has(tileKey(adjChest2.x,adjChest2.y))){
     logMsg(`${char.name} opens a chest!`);
@@ -4346,20 +3315,12 @@ async function runAITurn(char){
     endTurn();
     return;
   }
-
-  // --- Priority 5: attack the closest character in range ---
   if(await tryAttack()) return;
-
   endTurn();
 }
 
-// Endgame behaviour for the last computer alive against the player.
-// Priority: 1) attack the player if possible, 2) otherwise open an
-// adjacent chest if there is one, 3) otherwise close the distance on the
-// player and try to attack again.
 async function runLoneComputerTurn(char, player){
-  // 1. Attack the player right now if possible.
-  let target = findBestTarget(char); // only the player can ever come back here
+  let target = findBestTarget(char);
   if(target){
     logMsg(`${char.name} attacks ${target.name}!`);
     await aiDoAttack(char, target);
@@ -4369,8 +3330,6 @@ async function runLoneComputerTurn(char, player){
     if(G.phase!=='game-over') nextTurn();
     return;
   }
-
-  // 2. Can't hit the player - grab an adjacent unopened chest instead.
   const adjChest = findAdjacentChest(char);
   if(adjChest){
     logMsg(`${char.name} opens a chest!`);
@@ -4378,13 +3337,8 @@ async function runLoneComputerTurn(char, player){
     document.getElementById('ai-thinking').classList.remove('active');
     nextTurn(); return;
   }
-
-  // 3. No chest either - close the distance on the player and try again.
   const path = findPathTo(char, player.x, player.y);
-  if(path && path.length>1){
-    await aiMoveAlongPath(char, path);
-  }
-
+  if(path && path.length>1){ await aiMoveAlongPath(char, path); }
   target = findBestTarget(char);
   if(target){
     logMsg(`${char.name} attacks ${target.name}!`);
@@ -4395,8 +3349,6 @@ async function runLoneComputerTurn(char, player){
     if(G.phase!=='game-over') nextTurn();
     return;
   }
-
-  // Still can't reach them after moving - check for a chest one more time.
   const adjChest2 = findAdjacentChest(char);
   if(adjChest2){
     logMsg(`${char.name} opens a chest!`);
@@ -4404,21 +3356,18 @@ async function runLoneComputerTurn(char, player){
     document.getElementById('ai-thinking').classList.remove('active');
     nextTurn(); return;
   }
-
   logMsg(`${char.name} ends their turn.`);
   document.getElementById('ai-thinking').classList.remove('active');
   nextTurn();
 }
 
 async function aiUsePotions(char){
-  // Use godly strength if HP > 20
   const gsIdx = char.inventory.findIndex(i=>i.name==='Potion of Godly Strength');
   if(gsIdx>=0 && char.hp > 20){
     useItem(char, char.inventory[gsIdx], gsIdx, false);
     G.godlyStrengthActive = true;
     await sleep(300);
   }
-  // Heal if HP < 30
   if(char.hp < 30){
     const healIdx = char.inventory.findIndex(i=>i.name==='Potion of Healing'||i.name==='Vial of Blue Liquid');
     if(healIdx>=0) { useItem(char, char.inventory[healIdx], healIdx, false); await sleep(300); }
@@ -4433,9 +3382,6 @@ function findKillTarget(char){
   return preferPlayerTarget(char, killable);
 }
 
-// If the human player is among the candidate targets and is at least as
-// close as whichever target the AI's normal priority would otherwise pick,
-// attack the player instead. AI-vs-AI priority/ordering is left untouched.
 function preferPlayerTarget(char, candidates){
   if(!candidates.length) return null;
   const best = candidates[0];
@@ -4449,7 +3395,6 @@ function preferPlayerTarget(char, candidates){
   return best;
 }
 
-// On a tie in distance, prefer attacking the human player over an AI.
 function preferPlayerOnTie(candidates){
   if(!candidates.length) return null;
   const minDist = candidates[0].dist;
@@ -4465,13 +3410,10 @@ function findBestTarget(char){
   const inRangeEnemies = enemies.filter(e=>{
     const range = getEffectiveRange(char, w, e, false);
     if(!inRange(char, e, range)) return false;
-
-    // AI cannot shoot through Heavy Cover / blocked LOS
     const coverRes = checkCoverLOS(char.x, char.y, e.x, e.y, char, e);
     return !coverRes.blocked;
   });
   if(inRangeEnemies.length===0) return null;
-  // Closest target wins; ties go to the human player
   const candidates = inRangeEnemies.map(e=>({char:e, dist:chebyshev(char.x,char.y,e.x,e.y)}));
   candidates.sort((a,b)=>a.dist-b.dist);
   return preferPlayerOnTie(candidates);
@@ -4495,7 +3437,6 @@ function findAdjacentChest(char){
   return null;
 }
 
-// All unopened chest tiles currently on the board.
 function getAllChestTiles(){
   const out = [];
   if(!G.boardConfig || !G.boardConfig.tiles) return out;
@@ -4509,13 +3450,6 @@ function getAllChestTiles(){
   return out;
 }
 
-// Chests are impassable and can only be opened from a directly (non-diagonal)
-// adjacent tile. Pathing straight at the chest's own coordinates makes
-// findPathTo's chebyshev-based "closest approach" heuristic just as happy to
-// stop on a diagonal neighbour as an orthogonal one - which leaves the AI
-// standing somewhere it can never actually open the chest from. Instead,
-// explicitly path to whichever orthogonally-adjacent, reachable tile is
-// cheapest to get to.
 function findPathToChest(char, cx, cy){
   const candidates = getAdjacentTiles(cx, cy, false).filter(t=>isPassable(t.x,t.y));
   let bestPath = null;
@@ -4528,12 +3462,8 @@ function findPathToChest(char, cx, cy){
     const dest = path[path.length-1];
     const reached = (dest.x===c.x && dest.y===c.y);
     const finalDist = chebyshev(dest.x,dest.y,cx,cy);
-    // Prefer any path that fully reaches a valid opening tile over one
-    // that only gets partway there. Among equally-"reached" options, pick
-    // whichever ends closest to the chest, then whichever is cheapest.
-    if(reached && !bestReached){
-      bestPath = path; bestReached = true; bestFinalDist = finalDist;
-    } else if(reached === bestReached){
+    if(reached && !bestReached){ bestPath = path; bestReached = true; bestFinalDist = finalDist; }
+    else if(reached === bestReached){
       if(finalDist < bestFinalDist || (finalDist===bestFinalDist && bestPath && path.length < bestPath.length)){
         bestPath = path; bestFinalDist = finalDist;
       }
@@ -4542,7 +3472,6 @@ function findPathToChest(char, cx, cy){
   return bestPath;
 }
 
-// Closest unopened chest to this character (straight-line distance).
 function findClosestChest(char){
   const chests = getAllChestTiles();
   if(!chests.length) return null;
@@ -4550,8 +3479,6 @@ function findClosestChest(char){
   return chests[0];
 }
 
-// Would `char`, if standing at (x,y), still be able to hit `target` -
-// i.e. target is in weapon range and the shot isn't blocked.
 function canHitTargetFrom(char, x, y, target){
   const w = char.equippedWeapon;
   if(!w || !target || !target.alive) return false;
@@ -4563,18 +3490,12 @@ function canHitTargetFrom(char, x, y, target){
   return ok;
 }
 
-// Find a reachable tile this turn that puts the character behind cover
-// (adjacent to a Rock/Log/Tree/Chest) or on high ground, but only if the
-// player is still hittable from that tile. Returns null if the character
-// can already hit the player from where it's currently standing - there's
-// no point repositioning for cover it doesn't need this turn.
 function findDefensiveMove(char, player){
   if(!player || !player.alive) return null;
   if(canHitTargetFrom(char, char.x, char.y, player)) return null;
-
   const candidates = [];
   for(let x=0;x<=10;x++) for(let y=0;y<=8;y++){
-    if(!isPassable(x,y)) continue; // must be an empty, walkable tile
+    if(!isPassable(x,y)) continue;
     if(x===char.x && y===char.y) continue;
     let isDefensive = isHighGround(x,y);
     if(!isDefensive){
@@ -4585,12 +3506,11 @@ function findDefensiveMove(char, player){
   }
   if(!candidates.length) return null;
   candidates.sort((a,b)=>chebyshev(char.x,char.y,a.x,a.y)-chebyshev(char.x,char.y,b.x,b.y));
-
   for(const c of candidates){
     const path = findPathTo(char, c.x, c.y);
     if(!path || path.length<=1) continue;
     const dest = path[path.length-1];
-    if(dest.x!==c.x || dest.y!==c.y) continue; // only take fully-reachable tiles
+    if(dest.x!==c.x || dest.y!==c.y) continue;
     if(canHitTargetFrom(char, c.x, c.y, player)) return path;
   }
   return null;
@@ -4600,7 +3520,6 @@ function estimateDamage(char, weapon, target){
   if(!weapon) return 0;
   const w = weapon;
   let dmg = w.baseDamage;
-  // Rough average
   if(w.diceCondition==='even') dmg += w.diceCount * w.diceBonus * 0.5;
   else if(w.diceCondition==='odd') dmg += w.diceCount * w.diceBonus * 0.5;
   else if(w.diceCondition==='5or6') dmg += w.diceCount * w.diceBonus * (2/6);
@@ -4624,48 +3543,33 @@ function findHighGroundMove(char){
 }
 
 function findPathTo(char, tx, ty){
-  // Dijkstra-style search (always expands the cheapest-so-far tile next).
-  // This guarantees the AI finds the true lowest-cost route to a tile and
-  // will naturally path AROUND a blocking character/obstacle by trying the
-  // other open directions, rather than simply giving up when the direct
-  // line toward the target is blocked.
   const maxMove = char.move;
   const start = {x:char.x, y:char.y};
   const startKey = tileKey(start.x,start.y);
   const costSoFar = {}; costSoFar[startKey] = 0;
   const cameFrom = {};
   const frontier = [{x:start.x,y:start.y,cost:0}];
-
   let best = {x:start.x,y:start.y};
   let bestDist = chebyshev(start.x,start.y,tx,ty);
   let bestCost = 0;
-
   while(frontier.length){
-    // Pull the lowest-cost frontier node (priority queue behavior).
     frontier.sort((a,b)=>a.cost-b.cost);
     const cur = frontier.shift();
     const curKey = tileKey(cur.x,cur.y);
-    if(cur.cost > costSoFar[curKey]) continue; // stale entry, skip
-
+    if(cur.cost > costSoFar[curKey]) continue;
     const dist = chebyshev(cur.x,cur.y,tx,ty);
     if(dist < bestDist || (dist===bestDist && cur.cost < bestCost)){
       bestDist = dist; bestCost = cur.cost; best = {x:cur.x,y:cur.y};
     }
     if(cur.x===tx && cur.y===ty) break;
     if(cur.cost>=maxMove) continue;
-
     for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]){
       const nx=cur.x+dx, ny=cur.y+dy;
       if(nx<0||nx>10||ny<0||ny>8) continue;
       const type=getTileType(nx,ny);
       if(['pc','hc','log','chest','chest_hg'].includes(type)) continue;
-      // Tiles occupied by another character are treated as impassable,
-      // forcing the search to route around them - except the exact
-      // destination tile itself (the caller stops one tile short of it,
-      // e.g. when closing in on an enemy's square).
       const occupant = getCharAt(nx,ny);
       if(occupant && occupant!==char && !(nx===tx&&ny===ty)) continue;
-
       let cost=1;
       if(char.class!=='knight' && ['difficult','thorny','hill'].includes(type)) cost=2;
       const newCost = cur.cost + cost;
@@ -4678,8 +3582,6 @@ function findPathTo(char, tx, ty){
       }
     }
   }
-
-  // Reconstruct the path by walking back from the best reachable tile.
   const path = [{x:best.x,y:best.y}];
   let k = tileKey(best.x,best.y);
   while(k!==startKey && cameFrom[k]!==undefined){
@@ -4694,24 +3596,13 @@ function findPathTo(char, tx, ty){
 
 async function aiMoveAlongPath(char, path){
   if(!path||path.length<=1) return;
-  // Remember the original intended destination so that, if a tile along
-  // the way turns out to be blocked, we can search for a different
-  // logical route to the same place instead of simply giving up.
   const destination = path[path.length-1];
-
   let i = 1;
   while(i < path.length){
     const step = path[i];
     const occupied = getCharAt(step.x, step.y);
-
     if(occupied && occupied !== char){
-      // If the blocked tile IS the actual destination (e.g. an enemy's
-      // square), stopping one tile short of it is correct - not a problem
-      // that needs re-routing.
       if(step.x===destination.x && step.y===destination.y) break;
-
-      // Otherwise, the tile is unexpectedly occupied - try to draw a new
-      // route around it toward the same destination.
       const reroute = findPathTo(char, destination.x, destination.y);
       if(reroute && reroute.length>1 && !(reroute[1].x===step.x && reroute[1].y===step.y)){
         logMsg(`${char.name} routes around ${occupied.name}.`);
@@ -4722,7 +3613,6 @@ async function aiMoveAlongPath(char, path){
       logMsg(`${char.name} stops moving because ${occupied.name} is blocking the tile.`);
       break;
     }
-
     if(isThorny(step.x,step.y) && i<path.length-1){
       applyDamage(char,2,false);
       logMsg(`${char.name} takes 2 damage from thorny vines!`,'damage');
@@ -4730,9 +3620,7 @@ async function aiMoveAlongPath(char, path){
     char.x=step.x; char.y=step.y;
     positionIcon(char);
     await sleep(250);
-    if(isThorny(step.x,step.y) && i<path.length-1){
-      await tutorialExplainThornyVines(char, step.x, step.y);
-    }
+    if(isThorny(step.x,step.y) && i<path.length-1){ await tutorialExplainThornyVines(char, step.x, step.y); }
     i++;
   }
   const last = {x:char.x, y:char.y};
@@ -4744,22 +3632,16 @@ async function aiMoveAlongPath(char, path){
   updateEnemyPanel();
 }
 
-// Tutorial: the first time any AI takes thorny-vine damage, pause and
-// point it out to the player so they understand the mechanic.
 async function tutorialExplainThornyVines(char, x, y){
   if(!G.tutorialMode || G.tutorialThornyExplained) return;
   G.tutorialThornyExplained = true;
-  await tutorialSpotlight(`tile-${x}-${y}`,
-    `See that? <b>${char.name}</b> just walked through <b>Thorny Vines</b> (difficult terrain) and took damage for it. These tiles cost extra movement to cross and hurt anyone who stops or passes through them - avoid them when you can!`
-  );
+  await tutorialSpotlight(`tile-${x}-${y}`, `See that? <b>${char.name}</b> just walked through <b>Thorny Vines</b> (difficult terrain) and took damage for it. These tiles cost extra movement to cross and hurt anyone who stops or passes through them - avoid them when you can!`);
 }
 
 async function aiDoAttack(char, target){
   const w = char.equippedWeapon;
   if(!w) return;
-
   if(w.special==='aoe2adj'){
-    // Choose 2 best adjacent tiles
     const adjTiles = getAdjacentTiles(char.x,char.y,true);
     const targets = adjTiles.map(t=>({...t, char:getCharAt(t.x,t.y)})).filter(t=>t.char&&t.char!==char);
     targets.sort((a,b)=>a.char.hp-b.char.hp);
@@ -4769,7 +3651,6 @@ async function aiDoAttack(char, target){
   } else if(w.special==='aoe8surround'){
     await resolveDestructiveRush(char, target, w, false);
   } else if(w.special==='aoe2x2'){
-    // Choose 2x2 area that hits most enemies
     let bestArea=null, bestCount=-1;
     for(let x=0;x<=9;x++) for(let y=0;y<=7;y++){
       if(chebyshev(char.x,char.y,x,y)>w.range) continue;
@@ -4806,9 +3687,6 @@ async function aiDoAttack(char, target){
   }
 }
 
-// ============================================================
-//  CUSTOM MODAL (attack choice / number input)
-// ============================================================
 function showChoiceModal(title, choices, callback){
   document.getElementById('custom-modal-title').textContent = title;
   document.getElementById('custom-modal-body').innerHTML = '';
@@ -4818,10 +3696,7 @@ function showChoiceModal(title, choices, callback){
     const btn = document.createElement('button');
     btn.className = 'btn custom-modal-btn';
     btn.innerHTML = `${choice.label}${choice.desc?`<br><span style="font-size:0.72em;font-weight:400;opacity:0.85;">${choice.desc}</span>`:''}`;
-    btn.onclick = ()=>{
-      closeCustomModal();
-      callback(choice.value);
-    };
+    btn.onclick = ()=>{ closeCustomModal(); callback(choice.value); };
     btnContainer.appendChild(btn);
   });
   document.getElementById('custom-modal-overlay').classList.add('active');
@@ -4850,21 +3725,13 @@ function showNumberInputModal(title, bodyText, min, max, callback){
   setTimeout(()=>{ const inp=document.getElementById('custom-modal-number-input'); if(inp) inp.focus(); }, 50);
 }
 
-function closeCustomModal(){
-  document.getElementById('custom-modal-overlay').classList.remove('active');
-}
+function closeCustomModal(){ document.getElementById('custom-modal-overlay').classList.remove('active'); }
 
-// ============================================================
-//  DICE OVERLAY
-// ============================================================
 let diceResolve = null;
 let diceHasRolled = false;
 let diceMaxResult = null;
 let diceEvaluate = null;
 
-// Rolls a d6 either instantly (normal/AI play) or, when the player has
-// opted in via Settings, by popping up the same interactive dice modal
-// used for chest loot / turn order, so they can click Roll and watch it.
 async function rollD6(interactive, label, onEvaluate=null){
   if(!interactive) return roll(6);
   return await new Promise(resolve=>{ openDice(label, resolve, null, onEvaluate); });
@@ -4892,21 +3759,16 @@ function rollTheDice(){
   face.textContent = '?';
   document.getElementById('dice-roll-btn').disabled = true;
   document.getElementById('dice-result-text').textContent = 'Rolling...';
-
-  // Animate then reveal
   let flicker = 0;
   const flickerInt = setInterval(()=>{
     face.textContent = roll(6);
     if(++flicker>8) clearInterval(flickerInt);
   }, 60);
-
   setTimeout(()=>{
     const result = roll(6);
     G._lastDiceResult = result;
     let evalText = '';
-    if(diceEvaluate){
-      evalText = diceEvaluate(result);
-    }
+    if(diceEvaluate){ evalText = diceEvaluate(result); }
     face.textContent = result;
     face.classList.remove('rolling');
     document.getElementById('dice-result-text').textContent = evalText || `You rolled: ${result}`;
@@ -4916,17 +3778,12 @@ function rollTheDice(){
   }, 700);
 }
 
-// Vial of Red Liquid: after a roll is revealed, show one +1 button per
-// unused vial the player is carrying. Each button can only be clicked
-// once - clicking it spends one vial (removing it from inventory) and
-// adds 1 to the current roll. Since each remaining vial gets its own
-// button, a player with several can stack multiple +1s on one roll.
 function renderVialButtons(){
   const container = document.getElementById('dice-vial-buttons');
   container.innerHTML = '';
   const player = G.characters.find(c=>c.isPlayer&&c.alive);
   if(!player) return;
-  if(diceMaxResult!==null && G._lastDiceResult>=diceMaxResult) return; // already at the cap
+  if(diceMaxResult!==null && G._lastDiceResult>=diceMaxResult) return;
   const charges = player.inventory.filter(i=>i.name==='Vial of Red Liquid').length;
   for(let i=0;i<charges;i++){
     const btn = document.createElement('button');
@@ -4941,23 +3798,20 @@ function useVialOnRoll(btn){
   if(btn.disabled) return;
   const player = G.characters.find(c=>c.isPlayer&&c.alive);
   if(!player) return;
-  if(diceMaxResult!==null && G._lastDiceResult>=diceMaxResult) return; // capped
+  if(diceMaxResult!==null && G._lastDiceResult>=diceMaxResult) return;
   const idx = player.inventory.findIndex(i=>i.name==='Vial of Red Liquid');
   if(idx<0) return;
   player.inventory.splice(idx,1);
   G._lastDiceResult += 1;
   if(diceMaxResult!==null && G._lastDiceResult>diceMaxResult) G._lastDiceResult = diceMaxResult;
   let evalText = '';
-  if(diceEvaluate){
-    evalText = diceEvaluate(G._lastDiceResult);
-  }
+  if(diceEvaluate){ evalText = diceEvaluate(G._lastDiceResult); }
   document.getElementById('dice-face').textContent = G._lastDiceResult;
   document.getElementById('dice-result-text').textContent = evalText || `You rolled: ${G._lastDiceResult}`;
   logMsg(`${player.name} uses a Vial of Red Liquid! +1 to the roll (now ${G._lastDiceResult}).`, 'heal');
   btn.disabled = true;
   btn.textContent = 'Used!';
   updateStatPanel();
-  // Refresh the remaining vial buttons in case the cap was just reached
   renderVialButtons();
 }
 
@@ -4969,14 +3823,6 @@ function diceOk(){
   diceEvaluate = null;
 }
 
-// ============================================================
-//  INIT
-// ============================================================
-// Make sure page starts fresh
-
-// ============================================================
-//  TOUCH SCREEN SUPPORT
-// ============================================================
 function getTouchTile(touch){
   const el = document.elementFromPoint(touch.clientX, touch.clientY);
   return el ? el.closest('.tile') : null;
@@ -4985,25 +3831,16 @@ function getTouchTile(touch){
 function onTouchMove(e){
   if(!isDraggingMove || !moveStartChar) return;
   if(!e.touches || !e.touches.length) return;
-  // Stop the page itself from scrolling/bouncing while a move is being
-  // dragged out across the board.
   e.preventDefault();
   const tile = getTouchTile(e.touches[0]);
   if(!tile) return;
   onTileMouseOver({target: tile});
 }
 
-// Starting a drag: tapping and holding a character icon behaves the same
-// as a mousedown on it. onCharIconMouseDown itself also registers a
-// one-time 'touchend' listener (alongside 'mouseup') to end the drag, so
-// no separate touchend handler is needed here.
 document.addEventListener('touchstart', e=>{
   const icon = e.target.closest('.char-icon');
   if(!icon) return;
-  onCharIconMouseDown({
-    target: icon,
-    preventDefault(){ e.preventDefault(); }
-  });
+  onCharIconMouseDown({ target: icon, preventDefault(){ e.preventDefault(); } });
 },{passive:false});
 
 document.addEventListener('touchmove', onTouchMove, {passive:false});
