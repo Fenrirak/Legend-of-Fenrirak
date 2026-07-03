@@ -4907,10 +4907,9 @@ function rollTheDice(){
     if(diceEvaluate){
       evalText = diceEvaluate(result);
     }
-    let baseText = `You rolled: ${result}`;
     face.textContent = result;
     face.classList.remove('rolling');
-    document.getElementById('dice-result-text').textContent = evalText ? `${baseText} - ${evalText}` : baseText;
+    document.getElementById('dice-result-text').textContent = evalText || `You rolled: ${result}`;
     document.getElementById('dice-ok-btn').style.display = 'inline-block';
     diceHasRolled = true;
     renderVialButtons();
@@ -4952,9 +4951,8 @@ function useVialOnRoll(btn){
   if(diceEvaluate){
     evalText = diceEvaluate(G._lastDiceResult);
   }
-  let baseText = `You rolled: ${G._lastDiceResult}`;
   document.getElementById('dice-face').textContent = G._lastDiceResult;
-  document.getElementById('dice-result-text').textContent = evalText ? `${baseText} - ${evalText}` : baseText;
+  document.getElementById('dice-result-text').textContent = evalText || `You rolled: ${G._lastDiceResult}`;
   logMsg(`${player.name} uses a Vial of Red Liquid! +1 to the roll (now ${G._lastDiceResult}).`, 'heal');
   btn.disabled = true;
   btn.textContent = 'Used!';
