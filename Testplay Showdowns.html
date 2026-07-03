@@ -311,6 +311,43 @@
     filter: brightness(1.2);
   }
 
+  /* ===== SETTINGS GEAR ===== */
+  #settings-gear-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1500;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  #settings-gear-btn:hover {
+    filter: brightness(1.25);
+    transform: rotate(20deg);
+    border-color: var(--gold);
+  }
+  #settings-gear-btn.hidden { display: none; }
+  #settings-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75);
+    z-index: 1600;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  #settings-modal-overlay.active { display: flex; }
+
   input[type="text"] {
     background: #111;
     border: 1px solid var(--panel-border);
@@ -1020,6 +1057,30 @@
 </head>
 <body>
 
+<button id="settings-gear-btn" onclick="openSettingsModal()" aria-label="Settings" title="Settings">
+  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+</button>
+
+<div id="settings-modal-overlay">
+  <div class="custom-modal-box">
+    <div class="dice-title">Settings</div>
+    <label class="dice-setting-toggle" for="interactive-dice-toggle" style="margin-bottom: 14px;">
+      <input type="checkbox" id="interactive-dice-toggle" onchange="setInteractiveDice(this.checked)">
+      <span class="dice-setting-box" aria-hidden="true"></span>
+      <span>Roll &amp; watch my own Hit Throw and Damage dice</span>
+    </label>
+    <label class="dice-setting-toggle" for="watch-enemy-rolls-toggle" style="margin-bottom: 20px;">
+      <input type="checkbox" id="watch-enemy-rolls-toggle" onchange="setWatchEnemyRolls(this.checked)">
+      <span class="dice-setting-box" aria-hidden="true"></span>
+      <span>Watch enemies roll their Hit Throw and Damage dice</span>
+    </label>
+    <button class="btn secondary" onclick="closeSettingsModal()">Close</button>
+  </div>
+</div>
+
 <div id="rotate-overlay">
   <div class="rotate-card">
     <div class="rotate-icon">🔄</div>
@@ -1088,11 +1149,6 @@
       </div>
       <button class="board-arrow" id="board-arrow-right" onclick="cycleBoardPreview(1)" aria-label="Next board"></button>
     </div>
-    <label class="dice-setting-toggle" for="interactive-dice-toggle" style="margin-bottom: 18px;">
-      <input type="checkbox" id="interactive-dice-toggle" onchange="setInteractiveDice(this.checked)">
-      <span class="dice-setting-box" aria-hidden="true"></span>
-      <span>Roll &amp; watch my own Hit Throw and Damage dice</span>
-    </label>
     <button class="btn" id="select-board-btn" onclick="confirmBoardPreviewSelection()">Select Board</button>
     <div class="board-select-extra-btns">
       <button class="btn success" onclick="selectRandomBoard()">🎲 Random Board</button>
@@ -1365,7 +1421,7 @@ let G = {
   pendingAttack: null, pendingChestOpener: null, aoeSelectedTiles: [],
   activeItemUser: null, activeItem: null, turnEffects: {}, thornyDmgCounters: {},
   damageTakenThisTurn: {}, reachBonusActive: false, godlyStrengthActive: false,
-  vialBluePending: false, settings: { interactiveDice: false },
+  vialBluePending: false, settings: { interactiveDice: false, watchEnemyRolls: false },
 };
 
 try {
@@ -1378,9 +1434,34 @@ function setInteractiveDice(val){
   try { localStorage.setItem('showdowns_settings', JSON.stringify(G.settings)); } catch(e){}
 }
 
+function setWatchEnemyRolls(val){
+  G.settings.watchEnemyRolls = !!val;
+  try { localStorage.setItem('showdowns_settings', JSON.stringify(G.settings)); } catch(e){}
+}
+
+function openSettingsModal(){
+  const t1 = document.getElementById('interactive-dice-toggle');
+  const t2 = document.getElementById('watch-enemy-rolls-toggle');
+  if(t1) t1.checked = !!G.settings.interactiveDice;
+  if(t2) t2.checked = !!G.settings.watchEnemyRolls;
+  document.getElementById('settings-modal-overlay').classList.add('active');
+}
+
+function closeSettingsModal(){
+  document.getElementById('settings-modal-overlay').classList.remove('active');
+}
+
+function getDiceMode(isPlayer){
+  if(isPlayer && G.settings.interactiveDice) return 'interactive';
+  if(!isPlayer && G.settings.watchEnemyRolls) return 'watch';
+  return 'silent';
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
   const toggle = document.getElementById('interactive-dice-toggle');
   if(toggle) toggle.checked = !!G.settings.interactiveDice;
+  const toggle2 = document.getElementById('watch-enemy-rolls-toggle');
+  if(toggle2) toggle2.checked = !!G.settings.watchEnemyRolls;
 });
 
 function tileKey(x,y){ return `${x},${y}`; }
@@ -1425,6 +1506,8 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
   if(id==='screen-game') fitGameScreen();
   if(id==='screen-board') renderBoardPreview();
+  const gearBtn = document.getElementById('settings-gear-btn');
+  if(gearBtn) gearBtn.classList.toggle('hidden', id==='screen-game');
 }
 
 function isTouchPrimaryDevice(){ return window.matchMedia && window.matchMedia('(pointer: coarse)').matches; }
@@ -2593,7 +2676,7 @@ async function initiatePlayerAttack(attacker, target, weapon){
 
 async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOverride=null){
   const w = weapon;
-  const interactive = isPlayer && G.settings.interactiveDice;
+  const diceMode = getDiceMode(isPlayer);
   let range = rangeOverride !== null ? rangeOverride : getEffectiveRange(attacker, w, target, isPlayer);
   if(!inRange(attacker, target, range)){
     logMsg(`${attacker.name}'s attack on ${target.name} failed: target out of range!`);
@@ -2617,7 +2700,7 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     G.vialBonusHit = 0;
   }
   const targetDef = target.defence + coverRes.defBonus;
-  let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!', (res) => {
+  let hitRoll = await rollD6(diceMode, 'Roll your Hit Throw!', (res) => {
     const totalHit = res + hitMod;
     return totalHit >= targetDef ? "HIT!" : "MISS!";
   });
@@ -2651,7 +2734,7 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   } else if(w.id==='circle_of_calamity'){
     dmg = w.baseDamage;
   } else {
-    dmg = await calcWeaponDamage(w, attacker, target, isPlayer, interactive);
+    dmg = await calcWeaponDamage(w, attacker, target, isPlayer, diceMode);
   }
   dmg += extraDmg;
   if(isPlayer && G.vialBonusDamage){
@@ -2702,7 +2785,7 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   return true;
 }
 
-async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false){
+async function calcWeaponDamage(w, attacker, target, isPlayer, diceMode='silent'){
   let dmg = w.baseDamage;
   const cond = w.diceCondition;
   if(cond==='distance'){
@@ -2710,7 +2793,7 @@ async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false
     dmg = Math.max(0, 22 - dist*2);
   } else if(cond==='crossbow'){
     for(let i=0;i<w.diceCount;i++){
-      const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
+      const r = await rollD6(diceMode, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
         if(res%2===0) return "-4 damage!";
         return "+1 damage!";
       });
@@ -2725,7 +2808,7 @@ async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false
     const damageTaken = target.maxHp - target.hp;
     dmg = w.baseDamage + Math.floor(damageTaken/2);
   } else if(cond==='oblivion'){
-    const r = await rollD6(interactive, 'Oblivion roll', (res) => {
+    const r = await rollD6(diceMode, 'Oblivion roll', (res) => {
       return res%2!==0 ? "50 damage!" : "25 damage.";
     });
     dmg = r%2!==0 ? 50 : 25;
@@ -2733,7 +2816,7 @@ async function calcWeaponDamage(w, attacker, target, isPlayer, interactive=false
     dmg = w.baseDamage + (attacker.hp<=40 ? 20 : 0);
   } else {
     for(let i=0;i<w.diceCount;i++){
-      const r = await rollD6(interactive, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
+      const r = await rollD6(diceMode, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
         let matches = false;
         if(cond==='even') matches = res%2===0;
         else if(cond==='odd') matches = res%2!==0;
@@ -3002,7 +3085,7 @@ async function playerAOEGreataxe(attacker, primaryTarget, weapon){
 
 async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
   const w = weapon;
-  const interactive = isPlayer && G.settings.interactiveDice;
+  const diceMode = getDiceMode(isPlayer);
   logMsg(`${attacker.name} uses Destructive Rush!`);
   const coverRes = checkCoverLOS(attacker.x,attacker.y,target.x,target.y,attacker,target);
   if(coverRes.blocked){ logMsg(`${attacker.name}'s attack on ${target.name} blocked by cover!`); return; }
@@ -3019,7 +3102,7 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
     G.vialBonusHit = 0;
   }
   const targetDef = target.defence + coverRes.defBonus;
-  let hitRoll = await rollD6(interactive, 'Roll your Hit Throw!', (res) => {
+  let hitRoll = await rollD6(diceMode, 'Roll your Hit Throw!', (res) => {
     const totalHit = res + hitMod;
     return totalHit >= targetDef ? "HIT!" : "MISS!";
   });
@@ -3035,7 +3118,7 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
     logMsg(`Miss!`);
     return;
   }
-  let dmg = await calcWeaponDamage(w, attacker, target, isPlayer, interactive);
+  let dmg = await calcWeaponDamage(w, attacker, target, isPlayer, diceMode);
   if(isPlayer && G.vialBonusDamage){
     dmg += G.vialBonusDamage;
     logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusDamage} to Damage!`, 'heal');
@@ -3141,9 +3224,9 @@ async function playerShortbowAttack(attacker, target, weapon){
   await doAttack(attacker, target, weapon, true);
   // Roll 4 dice for spread
   const rolls=[];
-  const interactive = G.settings.interactiveDice;
+  const diceMode = getDiceMode(true);
   for(let i=0;i<4;i++) {
-    const r = await rollD6(interactive, `Effect die ${i+1} of 4`, (res) => {
+    const r = await rollD6(diceMode, `Effect die ${i+1} of 4`, (res) => {
       if (res >= 5) return "Spread hit!";
       return "No spread.";
     });
@@ -3732,9 +3815,41 @@ let diceHasRolled = false;
 let diceMaxResult = null;
 let diceEvaluate = null;
 
-async function rollD6(interactive, label, onEvaluate=null){
-  if(!interactive) return roll(6);
-  return await new Promise(resolve=>{ openDice(label, resolve, null, onEvaluate); });
+async function rollD6(diceMode, label, onEvaluate=null){
+  if(diceMode==='interactive') return await new Promise(resolve=>{ openDice(label, resolve, null, onEvaluate); });
+  if(diceMode==='watch') return await new Promise(resolve=>{ openDiceWatch(label, resolve, onEvaluate); });
+  return roll(6);
+}
+
+function openDiceWatch(title, callback, onEvaluate=null){
+  document.getElementById('dice-title').textContent = title;
+  const face = document.getElementById('dice-face');
+  face.classList.remove('rolling');
+  face.textContent = '?';
+  document.getElementById('dice-result-text').textContent = 'Rolling...';
+  document.getElementById('dice-vial-buttons').innerHTML = '';
+  document.getElementById('dice-roll-btn').style.display = 'none';
+  document.getElementById('dice-ok-btn').style.display = 'none';
+  document.getElementById('dice-overlay').classList.add('active');
+  face.classList.add('rolling');
+  let flicker = 0;
+  const flickerInt = setInterval(()=>{
+    face.textContent = roll(6);
+    if(++flicker>8) clearInterval(flickerInt);
+  }, 60);
+  setTimeout(()=>{
+    const result = roll(6);
+    let evalText = '';
+    if(onEvaluate) evalText = onEvaluate(result);
+    face.textContent = result;
+    face.classList.remove('rolling');
+    document.getElementById('dice-result-text').textContent = evalText || `Rolled: ${result}`;
+    setTimeout(()=>{
+      document.getElementById('dice-overlay').classList.remove('active');
+      document.getElementById('dice-roll-btn').style.display = 'inline-block';
+      callback(result);
+    }, 900);
+  }, 700);
 }
 
 function openDice(title, callback, maxResult=null, onEvaluate=null){
