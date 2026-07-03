@@ -2724,7 +2724,7 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   }
   const targetDef = target.defence + coverRes.defBonus;
   const diceSubtitle = `${attacker.name} attacks ${target.name}`;
-  let hitRoll = await rollD6(diceMode, 'Roll your Hit Throw!', (res) => {
+  let hitRoll = await rollD6(diceMode, diceMode==='watch' ? 'Rolling Hit Throw!' : 'Roll your Hit Throw!', (res) => {
     const totalHit = res + hitMod;
     return totalHit >= targetDef ? "HIT!" : "MISS!";
   }, diceSubtitle);
@@ -2815,7 +2815,7 @@ async function calcWeaponDamage(w, attacker, target, isPlayer, diceMode='silent'
   const cond = w.diceCondition;
   if(cond==='distance'){
     const dist = chebyshev(attacker.x,attacker.y,target.x,target.y);
-    dmg = Math.max(0, 22 - dist*2);
+    dmg = Math.max(0, w.baseDamage - dist*w.diceBonus);
   } else if(cond==='crossbow'){
     for(let i=0;i<w.diceCount;i++){
       const r = await rollD6(diceMode, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
@@ -3128,7 +3128,7 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
   }
   const targetDef = target.defence + coverRes.defBonus;
   const diceSubtitle = `${attacker.name} attacks ${target.name}`;
-  let hitRoll = await rollD6(diceMode, 'Roll your Hit Throw!', (res) => {
+  let hitRoll = await rollD6(diceMode, diceMode==='watch' ? 'Rolling Hit Throw!' : 'Roll your Hit Throw!', (res) => {
     const totalHit = res + hitMod;
     return totalHit >= targetDef ? "HIT!" : "MISS!";
   }, diceSubtitle);
