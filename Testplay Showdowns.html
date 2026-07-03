@@ -1438,24 +1438,16 @@ let G = {
   vialBluePending: false, settings: { interactiveDice: false, watchEnemyRolls: false, aiOnlyAttackPlayer: false },
 };
 
-try {
-  const savedSettings = JSON.parse(localStorage.getItem('showdowns_settings')||'{}');
-  Object.assign(G.settings, savedSettings);
-} catch(e){}
-
 function setInteractiveDice(val){
   G.settings.interactiveDice = !!val;
-  try { localStorage.setItem('showdowns_settings', JSON.stringify(G.settings)); } catch(e){}
 }
 
 function setWatchEnemyRolls(val){
   G.settings.watchEnemyRolls = !!val;
-  try { localStorage.setItem('showdowns_settings', JSON.stringify(G.settings)); } catch(e){}
 }
 
 function setAiOnlyAttackPlayer(val){
   G.settings.aiOnlyAttackPlayer = !!val;
-  try { localStorage.setItem('showdowns_settings', JSON.stringify(G.settings)); } catch(e){}
 }
 
 function openSettingsModal(){
