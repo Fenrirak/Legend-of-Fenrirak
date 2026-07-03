@@ -1647,7 +1647,7 @@ function selectBoard(id){
 }
 
 function selectRandomBoard(){
-  const ids = Object.keys(BOARD_CONFIGS).map(Number);
+  const ids = PREVIEW_BOARD_IDS;
   const pick = ids[Math.floor(Math.random()*ids.length)];
   logMsg(`Random board selected: Board ${pick}!`, 'important');
   selectBoard(pick);
