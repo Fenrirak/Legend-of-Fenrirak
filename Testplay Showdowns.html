@@ -1240,9 +1240,11 @@
     <div class="stat-title">Legend Of Fenrirak™<br><small style="font-size:0.7em; color:var(--text-dim);">-Showdowns-</small></div>
     <div class="section-header">Class</div>
     <div id="sp-class" style="font-family:'Cinzel',serif; color:var(--gold); font-size:1em; padding:4px 0;"></div>
-    <div class="stat-row"><span class="stat-label">❤️ Health:</span><span class="stat-value" id="sp-hp"></span></div>
-    <div class="stat-row"><span class="stat-label">🛡️ Defence:</span><span class="stat-value" id="sp-def"></span></div>
-    <div class="stat-row"><span class="stat-label">⚡ Move:</span><span class="stat-value" id="sp-move"></span></div>
+    <div id="sp-vitals">
+      <div class="stat-row"><span class="stat-label">❤️ Health:</span><span class="stat-value" id="sp-hp"></span></div>
+      <div class="stat-row"><span class="stat-label">🛡️ Defence:</span><span class="stat-value" id="sp-def"></span></div>
+      <div class="stat-row"><span class="stat-label">⚡ Move:</span><span class="stat-value" id="sp-move"></span></div>
+    </div>
     <div class="section-header">Ability</div>
     <div id="sp-ability" style="font-size:0.78em; color:var(--text); line-height:1.5;"></div>
     <div class="section-header">Weapon Equipped</div>
@@ -1364,7 +1366,7 @@ const CHEST_LOOT = [
   { roll: 2, name: 'Potion of Reach', type: 'potion', amount: 2, desc: 'All attacks this turn have +2 to range.' },
   { roll: 3, name: 'Vial of Blue Liquid', type: 'potion', amount: 3, desc: 'Roll a die. 1-4: heal 2 HP. 5-6: heal 15 HP.' },
   { roll: 4, name: 'Vial of Red Liquid', type: 'potion', amount: 3, desc: 'Add 1 to any dice roll.' },
-  { roll: 5, name: 'Potion of Godly Strength', type: 'potion', amount: 1, desc: 'All attacks this turn deal 3 extra damage (+5 and +1 range for Knights).' },
+  { roll: 5, name: 'Potion of Godly Strength', type: 'potion', amount: 1, desc: 'All attacks this turn deal 8 extra damage (+10 and +1 range for Knights).' },
   { roll: 6, name: 'Class Weapon', type: 'weapon', amount: 1, desc: 'Receive the weapon matching your class from the chest.' },
   { roll: 7, name: "Helen's Staff of Pure Oblivion", type: 'weapon', amount: 1, desc: 'A legendary weapon usable by any class.' }
 ];
@@ -1629,6 +1631,7 @@ function selectBoard(id){
   if(G.tutorialMode){
     G.tutorialStage = null; G.tutorialIntroDone = false; G.tutorialOfferShown = false;
     G.tutorialMoveTarget = null; G.tutorialThornyExplained = false; G.tutorialSpotsShown = new Set();
+    G.tutorialInventoryLessonShown = false;
   }
   G.boardConfig = JSON.parse(JSON.stringify(BOARD_CONFIGS[id]));
   if(G.isSpecialClass && G.playerClass){
@@ -2115,7 +2118,7 @@ function updateStatPanel(){
     invEl.appendChild(div);
   });
   const isMyTurn = getCurrentChar()?.isPlayer;
-  const tutorialForcedMove = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
+  const tutorialForcedMove = tutorialForceMoveBlocking();
   const tutorialChestNotOpened = G.tutorialMode && G.tutorialStage==='go-chest';
   document.getElementById('end-turn-btn').disabled = !isMyTurn || G.phase==='game-over' || tutorialForcedMove;
   document.getElementById('sp-attack-btn').disabled = G.hasActedThisTurn || !isMyTurn || G.phase==='game-over' || tutorialChestNotOpened;
@@ -2214,6 +2217,8 @@ function tutorialModal(text, buttons){
 
 async function runTutorialIntroSequence(){
   await tutorialSpotlight('phase-indicator', "This is the <b>Guide</b>. It always tells you what to do right now, like moving your character or picking an attack.");
+  await tutorialSpotlight('sp-vitals', "These are your own <b>Health</b>, <b>Defence</b>, and <b>Move</b> stats. Health is how much damage you can take, Defence reduces incoming damage, and Move is how many tiles you can travel each turn.");
+  await tutorialSpotlight('message-log', "This is the <b>Message Log</b>. It shows what just happened - attacks, damage, chests being opened, and other events as they occur.");
   await tutorialSpotlight('sp-inventory-block', "This is your <b>Inventory</b>. Items you find in chests (potions, vials, weapons) show up here - click one to use or equip it.");
   await tutorialSpotlight('enemy-cards', "This shows every character's <b>Health</b>, including the enemies'. Watch it to see how much damage attacks are doing.");
   await tutorialSpotlight('sp-attack-btn', "Click here to select your equipped weapon's attack. After selecting it, click an enemy on the board to attack them.");
@@ -2225,19 +2230,49 @@ async function runTutorialIntroSequence(){
   setPhaseText('Move next to the chest and click it to open it!');
 }
 
+async function runTutorialCoverIntro(){
+  if(G.tutorialSpotsShown) G.tutorialSpotsShown.delete('board-area');
+  await tutorialSpotlight('board-area', "Nicely looted! Now let's use <b>Cover</b>. Terrain like trees and rocks can shield you from attacks - standing behind it reduces incoming damage from attacks fired through it.", "Continue");
+  if(G.tutorialSpotsShown) G.tutorialSpotsShown.delete('tile-5-2');
+  await tutorialSpotlight('tile-5-2', "This <b>Tree</b> blocks line of sight. Standing on the far side of it from an enemy gives you the cover bonus against their attacks.", "Continue");
+  if(G.tutorialSpotsShown) G.tutorialSpotsShown.delete('tile-5-1');
+  await tutorialSpotlight('tile-5-1', "Move your character onto this tile, just behind the tree, to take cover.", "Got it!");
+}
+
+async function runTutorialCoverReachedLesson(){
+  if(G.tutorialSpotsShown) G.tutorialSpotsShown.delete('board-area');
+  await tutorialSpotlight('board-area', "You're behind the <b>Tree</b> now, taking cover! While you're positioned like this, attacks against you fired through the tree take a defense penalty. Now click your attack and hit an enemy!", "Got it!");
+  setPhaseText('Attack an enemy from behind cover!');
+}
+
+function tutorialAfterPlayerAttack(){
+  if(!G.tutorialMode || G.tutorialStage!=='cover-attack') return;
+  G.tutorialStage = 'attacked-from-cover';
+  setPhaseText('Nice hit! You can end your turn whenever you\'re ready.');
+  updateStatPanel();
+}
+
+async function runTutorialHighGroundIntro(){
+  if(G.tutorialSpotsShown) G.tutorialSpotsShown.delete('board-area');
+  await tutorialSpotlight('board-area', "Nice hit! Now let's try <b>High Ground</b>.", "Continue");
+  if(G.tutorialSpotsShown) G.tutorialSpotsShown.delete('tile-7-4');
+  await tutorialSpotlight('tile-7-4', "Move your character onto this highlighted <b>High Ground</b> tile.", "Got it!");
+  setPhaseText('Move onto the High Ground tile.');
+}
+
 async function runTutorialHighGroundLesson(){
+  if(G.tutorialSpotsShown) G.tutorialSpotsShown.delete('tile-7-4');
   await tutorialSpotlight('tile-7-4', "You're standing on <b>High Ground</b>! Tiles labeled High Ground give you <b>+1 to your Hit Throw</b> when attacking from them. Positioning yourself up high is a powerful tactical advantage!", "Got it!");
-  G.tutorialStage = 'inventory-lesson';
-  setTimeout(runTutorialInventoryLesson, 400);
+  G.tutorialStage = 'playing';
+  setPhaseText('Attack an enemy, then end your turn when ready. Defeat an enemy to complete the tutorial!');
+  updateStatPanel();
 }
 
 async function runTutorialInventoryLesson(){
-  G.tutorialMoveTarget = null;
   await tutorialSpotlight('sp-inventory-block', "Nice! Whatever you found is now in your <b>Inventory</b> - click an item here any time on your turn to use or equip it.");
   await tutorialSpotlight('sp-weapon-box', "Click your equipped weapon here any time to see its <b>full stats</b> - every attack's damage, dice rolls, hit throw, effect, and range.");
+  if(G.tutorialSpotsShown) G.tutorialSpotsShown.delete('stat-panel');
   await tutorialSpotlight('stat-panel', "You've learned the basics! Defeat at least one enemy to finish the tutorial. Feel free to explore your attacks and items as you go.");
-  G.tutorialStage = 'playing';
-  setPhaseText('Defeat an enemy to complete the tutorial!');
 }
 
 function showTutorialCompletionOffer(){
@@ -2298,15 +2333,24 @@ function startTurn(){
         G.tutorialStage = 'intro';
         setTimeout(runTutorialIntroSequence, 400);
       } else if(G.tutorialStage==='chest-opened'){
+        G.tutorialStage = 'go-cover';
+        G.tutorialMoveTarget = {x:5, y:1};
+        setPhaseText('Chest opened! Now move behind the tree for cover.');
+        setTimeout(runTutorialCoverIntro, 400);
+      } else if(G.tutorialStage==='attacked-from-cover'){
         G.tutorialStage = 'go-highground';
         G.tutorialMoveTarget = {x:7, y:4};
-        setPhaseText('Chest opened! Now move onto the High Ground tile.');
+        setPhaseText('Now move onto the High Ground tile.');
+        setTimeout(runTutorialHighGroundIntro, 400);
+      } else if(G.tutorialStage==='playing' && !G.tutorialInventoryLessonShown){
+        G.tutorialInventoryLessonShown = true;
+        setTimeout(runTutorialInventoryLesson, 400);
       }
     }
   } else {
     G.phase = 'ai-turn';
     document.getElementById('ai-thinking').classList.add('active');
-    setTimeout(()=>runAITurn(char), 800);
+    setTimeout(()=>runAITurn(char), 750);
   }
 }
 
@@ -2339,8 +2383,11 @@ function showWeaponStatsModal(){
 function playerEndTurn(){
   if(!getCurrentChar()?.isPlayer) return;
   if(G.phase==='game-over') return;
-  if(G.tutorialMode && G.tutorialStage==='go-chest'){ setPhaseText('Move next to the Chest and open it before ending your turn!'); return; }
-  if(G.tutorialMode && G.tutorialStage==='go-highground'){ setPhaseText('Move onto the High Ground tile before ending your turn!'); return; }
+  if(G.tutorialMode && G.tutorialStage==='cover-attack'){ setPhaseText('Attack an enemy before ending your turn!'); return; }
+  if(G.tutorialMode && G.tutorialStage==='go-chest' && !tutorialMovementExhausted()){ setPhaseText('Move next to the Chest and open it before ending your turn!'); return; }
+  if(G.tutorialMode && G.tutorialStage==='go-cover' && !tutorialMovementExhausted()){ setPhaseText('Move behind the tree for cover before ending your turn!'); return; }
+  if(G.tutorialMode && G.tutorialStage==='go-highground' && !tutorialMovementExhausted()){ setPhaseText('Move onto the High Ground tile before ending your turn!'); return; }
+  if(G.tutorialMode && G.tutorialStage==='go-highground'){ logMsg("Out of movement - keep heading for the High Ground next turn!", 'important'); }
   logMsg(`${G.playerName} ends their turn.`);
   clearMoveHighlights();
   nextTurn();
@@ -2363,6 +2410,35 @@ let moveRoute = [];
 let moveUsed = 0;
 let tutorialMoveCarry = 0;
 
+function tutorialMovementExhausted(){
+  const char = getCurrentChar();
+  if(!char || !G.tutorialMoveTarget) return true;
+  const remaining = char.move - tutorialMoveCarry;
+  if(remaining <= 0) return true;
+  const goal = G.tutorialMoveTarget;
+  const curDist = manhattan(char.x, char.y, goal.x, goal.y);
+  const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+  for(const [dx,dy] of dirs){
+    const nx = char.x+dx, ny = char.y+dy;
+    const t = getTileType(nx,ny);
+    if(['pc','hc','log','chest','chest_hg'].includes(t)) continue;
+    if(getCharAt(nx,ny) && !(nx===char.x&&ny===char.y)) continue;
+    const newDist = manhattan(nx,ny,goal.x,goal.y);
+    if(newDist > curDist) continue;
+    const cost = isDifficultForChar(char, nx, ny) ? 2 : 1;
+    if(cost <= remaining) return false;
+  }
+  return true;
+}
+
+function tutorialForceMoveBlocking(){
+  if(!G.tutorialMode) return false;
+  if(G.tutorialStage==='cover-attack') return true;
+  const forcedStage = G.tutorialStage==='go-chest' || G.tutorialStage==='go-cover' || G.tutorialStage==='go-highground';
+  if(!forcedStage) return false;
+  return !tutorialMovementExhausted();
+}
+
 function onCharIconMouseDown(e){
   if(G.phase !== 'player-move') return;
   const char = G.characters.find(c=>c.id===e.target.dataset.charid);
@@ -2372,7 +2448,7 @@ function onCharIconMouseDown(e){
   isDraggingMove = true;
   moveStartChar = char;
   moveRoute = [{x:char.x, y:char.y}];
-  const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
+  const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-cover' || G.tutorialStage==='go-highground');
   moveUsed = forcedStageActive ? tutorialMoveCarry : 0;
   document.addEventListener('mouseup', onMouseUp, {once:true});
   document.addEventListener('touchend', onMouseUp, {once:true});
@@ -2420,7 +2496,7 @@ function isDifficultForChar(char, x, y){
 
 function recalcMoveUsed(){
   const char = moveStartChar;
-  const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
+  const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-cover' || G.tutorialStage==='go-highground');
   moveUsed = forcedStageActive ? tutorialMoveCarry : 0;
   for(let i=1;i<moveRoute.length;i++){
     let cost=1;
@@ -2446,7 +2522,7 @@ function clearMoveHighlights(){
 function onMouseUp(e){
   if(!isDraggingMove) return;
   isDraggingMove = false;
-  const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
+  const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-cover' || G.tutorialStage==='go-highground');
   if(forcedStageActive) tutorialMoveCarry = moveUsed;
   if(moveRoute.length>1){ executePlayerMove(moveRoute); }
   moveRoute = [];
@@ -2455,7 +2531,7 @@ function onMouseUp(e){
 
 async function executePlayerMove(route){
   const char = moveStartChar;
-  const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-highground');
+  const forcedStageActive = G.tutorialMode && (G.tutorialStage==='go-chest' || G.tutorialStage==='go-cover' || G.tutorialStage==='go-highground');
   if(!forcedStageActive){ G.hasMovedThisTurn = true; }
   clearMoveHighlights();
   for(let i=1;i<route.length;i++){
@@ -2476,6 +2552,12 @@ async function executePlayerMove(route){
   checkWinLose();
   if(G.phase==='game-over') return;
   checkAdjacentChestAutoOpen(char);
+  if(G.tutorialMode && G.tutorialStage==='go-cover' && char.x===5 && char.y===1){
+    G.tutorialStage = 'cover-attack';
+    G.tutorialMoveTarget = null;
+    G.hasMovedThisTurn = true;
+    setTimeout(runTutorialCoverReachedLesson, 300);
+  }
   if(G.tutorialMode && G.tutorialStage==='go-highground' && char.x===7 && char.y===4){
     G.tutorialStage = 'highground-reached';
     G.tutorialMoveTarget = null;
@@ -2484,7 +2566,11 @@ async function executePlayerMove(route){
   }
   updateStatPanel();
   updateEnemyPanel();
-  setPhaseText(forcedStageActive && !G.hasMovedThisTurn ? 'Keep going!' : 'Movement done. Click an attack name or end your turn.');
+  if(G.tutorialMode && G.tutorialStage==='cover-attack'){
+    setPhaseText('Attack an enemy from behind cover!');
+  } else {
+    setPhaseText(forcedStageActive && !G.hasMovedThisTurn ? 'Keep going!' : 'Movement done. Click an attack name or end your turn.');
+  }
 }
 
 function checkAdjacentChestAutoOpen(char){
@@ -2687,7 +2773,10 @@ async function initiatePlayerAttack(attacker, target, weapon){
   checkWinLose();
   updateStatPanel();
   updateEnemyPanel();
-  if(G.phase!=='game-over') setPhaseText('Attack done. End your turn.');
+  if(G.phase!=='game-over'){
+    if(G.tutorialMode && G.tutorialStage==='cover-attack'){ tutorialAfterPlayerAttack(); }
+    else { setPhaseText('Attack done. End your turn.'); }
+  }
 }
 
 async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOverride=null){
@@ -2759,7 +2848,7 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusDamage} to Damage!`, 'heal');
     G.vialBonusDamage = 0;
   }
-  if(isPlayer && G.godlyStrengthActive){ dmg += attacker.class==='knight' ? 5 : 3; }
+  if(isPlayer && G.godlyStrengthActive){ dmg += attacker.class==='knight' ? 10 : 8; }
   if(target.equippedWeapon?.id==='sword_buckler' && dmg > 0 && dmg < 18){
     dmg = Math.max(0, dmg-4);
     logMsg(`${target.name}'s Parry reduces damage by 4!`);
@@ -2996,6 +3085,7 @@ function clickInventoryItem(idx){
     return;
   }
   if(G.tutorialMode && G.tutorialStage==='go-chest'){ setPhaseText('Find and open the Chest first - no item use until then!'); return; }
+  if(G.hasActedThisTurn){ setPhaseText("You've already acted this turn - items can't be used now."); return; }
   G.activeItemUser = player;
   G.activeItem = {item, idx};
   document.getElementById('ip-title').textContent = item.name;
@@ -3065,7 +3155,7 @@ async function useItem(char, item, idx, isPlayer){
   } else if(item.name==='Potion of Godly Strength'){
     G.godlyStrengthActive = true;
     logMsg(`${char.name} uses Potion of Godly Strength! Extra damage this turn.`, 'heal');
-    if(char.class==='knight') logMsg(`Knight bonus: +5 damage and +1 range!`);
+    if(char.class==='knight') logMsg(`Knight bonus: +10 damage and +1 range!`);
     char.inventory.splice(idx,1);
   }
   updateStatPanel();
@@ -3093,6 +3183,7 @@ async function playerAOEGreataxe(attacker, primaryTarget, weapon){
           if(tgt&&tgt!==attacker) return doAttack(attacker,tgt,weapon,true,0,999);
         })).then(()=>{
           G.hasActedThisTurn=true; G.phase='game';
+          if(G.tutorialMode && G.tutorialStage==='cover-attack'){ tutorialAfterPlayerAttack(); }
           checkWinLose(); updateStatPanel(); updateEnemyPanel();
           resolve();
         });
@@ -3143,7 +3234,7 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
     logMsg(`Vial of Red Liquid bonus applied: +${G.vialBonusDamage} to Damage!`, 'heal');
     G.vialBonusDamage = 0;
   }
-  if(isPlayer && G.godlyStrengthActive){ dmg += attacker.class==='knight' ? 5 : 3; }
+  if(isPlayer && G.godlyStrengthActive){ dmg += attacker.class==='knight' ? 10 : 8; }
   const surrounding = getAdjacentTiles(attacker.x, attacker.y, true);
   let hitAnyone = false;
   for(const t of surrounding){
@@ -3166,6 +3257,7 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
 async function playerAOESurrounding(attacker, target, weapon){
   await resolveDestructiveRush(attacker, target, weapon, true);
   G.hasActedThisTurn=true; G.phase='game';
+  if(G.tutorialMode && G.tutorialStage==='cover-attack'){ tutorialAfterPlayerAttack(); }
   checkWinLose(); updateStatPanel(); updateEnemyPanel();
 }
 
@@ -3189,6 +3281,7 @@ async function playerAOE2x2(attacker, primaryTarget, weapon){
           if(tgt) await doAttack(attacker,tgt,weapon,true,0,999);
         }
         G.hasActedThisTurn=true; G.phase='game';
+        if(G.tutorialMode && G.tutorialStage==='cover-attack'){ tutorialAfterPlayerAttack(); }
         checkWinLose(); updateStatPanel(); updateEnemyPanel();
         resolve();
       },500);
@@ -3212,6 +3305,7 @@ async function playerHelentiles(attacker, initialTarget, weapon){
       if(tgt) await doAttack(attacker,tgt,weapon,true,0,999);
     }
     G.hasActedThisTurn=true; G.phase='game';
+    if(G.tutorialMode && G.tutorialStage==='cover-attack'){ tutorialAfterPlayerAttack(); }
     checkWinLose(); updateStatPanel(); updateEnemyPanel();
     return;
   }
@@ -3230,6 +3324,7 @@ async function playerHelentiles(attacker, initialTarget, weapon){
             if(tgt) await doAttack(attacker,tgt,weapon,true,0,999);
           }
           G.hasActedThisTurn=true; G.phase='game';
+          if(G.tutorialMode && G.tutorialStage==='cover-attack'){ tutorialAfterPlayerAttack(); }
           checkWinLose(); updateStatPanel(); updateEnemyPanel();
           resolve();
         })();
@@ -3290,6 +3385,7 @@ async function playerShortbowAttack(attacker, target, weapon){
     });
   }
   G.hasActedThisTurn=true; G.phase='game';
+  if(G.tutorialMode && G.tutorialStage==='cover-attack'){ tutorialAfterPlayerAttack(); }
   checkWinLose(); updateStatPanel(); updateEnemyPanel();
 }
 
@@ -3310,10 +3406,12 @@ document.addEventListener('click', e=>{
   const adj=getAdjacentTiles(player.x,player.y,false);
   if(!adj.some(a=>a.x===x&&a.y===y)){ logMsg('Must be directly adjacent to open a chest.'); return; }
   if(G.openedChests.has(tileKey(x,y))){ logMsg('Chest has already been opened!'); return; }
+  G.hasActedThisTurn=true;
+  updateStatPanel();
   openChest(player, x, y, ()=>{
-    G.hasActedThisTurn=true;
     logMsg(`${player.name}'s turn ends (opened chest).`);
     if(G.tutorialMode && G.tutorialStage==='go-chest'){ G.tutorialStage = 'chest-opened'; }
+    setPhaseText('Chest opened!');
     updateStatPanel();
     nextTurn();
   });
