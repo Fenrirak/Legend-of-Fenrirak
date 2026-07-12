@@ -1335,7 +1335,7 @@ const WEAPONS = {
     { id: 'longbow', name: 'Longbow', class: 'archer', attackName: 'Twin Shot', baseDamage: 11, damageType: 'plus', diceCount: 3, diceCondition: '4or6', diceBonus: 7, hitThrowMod: 0, effect: '1 tile', effectTiles: 1, range: 7, desc: '11+ Damage. Roll die 3 times, for every 4 or 6, deal 7 extra damage.' },
     { id: 'shortbow', name: 'Shortbow', class: 'archer', attackName: 'Reign of Arrows', baseDamage: 10, damageType: 'flat', diceCount: 4, diceCondition: '5or6_spread', diceBonus: 0, hitThrowMod: 1, effect: '1+ tiles (spread on 5/6)', effectTiles: 1, range: 5, special: 'shortbow_spread', desc: '10 Damage. Roll die 4 times; for every 5 or 6, hit an adjacent tile of choice.' },
     { id: 'horsebow', name: "Ranger's Bow", class: 'archer', attackName: 'Blasting Arrow', baseDamage: 13, damageType: 'plus', diceCount: 2, diceCondition: 'odd', diceBonus: 4, hitThrowMod: 1, effect: '1 tile', effectTiles: 1, range: 5, desc: '13+ Damage. Roll die 2 times, for every odd number, deal 4 extra damage.' },
-    { id: 'crossbow', name: 'Crossbow', class: 'archer', attackName: 'Flaming Arrows', baseDamage: 22, damageType: 'mixed_crossbow', diceCount: 3, diceCondition: 'crossbow', hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6, desc: '22+/- Damage. Roll die 3 times. Every even: -4 damage. Every odd: +1 damage.' }
+    { id: 'crossbow', name: 'Crossbow', class: 'archer', attackName: 'Flaming Arrows', baseDamage: 22, damageType: 'mixed_crossbow', diceCount: 3, diceCondition: 'crossbow', hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 6, desc: '22+/- Damage. Roll die 3 times. Every even: -3 damage. Every odd: +1 damage.' }
   ],
   aldemar: [
     { id: 'aldemar_steel_staff', name: "Aldemar's Steel Staff", class: 'aldemar', attackName: 'Fireball', baseDamage: 25, damageType: 'plus', diceCount: 2, diceCondition: 'even', diceBonus: 6, hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4, special: 'aoe2x2', desc: '25+ Damage. Roll a die 2 times, for every even number, deal 6 more damage. Effect: 4 tiles in a 2×2 area.' },
@@ -2901,10 +2901,10 @@ async function calcWeaponDamage(w, attacker, target, isPlayer, diceMode='silent'
   } else if(cond==='crossbow'){
     for(let i=0;i<w.diceCount;i++){
       const r = await rollD6(diceMode, `Damage die ${i+1} of ${w.diceCount}`, (res) => {
-        if(res%2===0) return "-4 damage!";
+        if(res%2===0) return "-3 damage!";
         return "+1 damage!";
       }, diceSubtitle);
-      if(r%2===0) dmg -= 4; else dmg += 1;
+      if(r%2===0) dmg -= 3; else dmg += 1;
     }
   } else if(cond==='5or6_spread'){
     // Handled separately (shortbow)
@@ -2992,7 +2992,14 @@ function triggerVictory(){
   word.className='victory';
   word.textContent = (player && player.class==='helen') ? 'Victory ❤️' : 'Victory!';
   setTimeout(()=>{
-    if(G.tutorialMode){ overlay.classList.remove('active'); G.tutorialMode = false; showScreen('screen-board'); }
+    if(G.tutorialMode){
+      overlay.classList.remove('active');
+      const tutOverlay = document.getElementById('tutorial-overlay');
+      if(tutOverlay) tutOverlay.remove();
+      document.getElementById('custom-modal-overlay').classList.remove('active');
+      G.tutorialMode = false;
+      showScreen('screen-board');
+    }
     else { window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }
   }, 4500);
 }
@@ -3006,7 +3013,14 @@ function triggerDefeat(){
   word.className='defeat';
   word.textContent = (player && player.class==='ronald') ? 'How did you lose...' : 'Defeat';
   setTimeout(()=>{
-    if(G.tutorialMode){ overlay.classList.remove('active'); G.tutorialMode = false; showScreen('screen-board'); }
+    if(G.tutorialMode){
+      overlay.classList.remove('active');
+      const tutOverlay = document.getElementById('tutorial-overlay');
+      if(tutOverlay) tutOverlay.remove();
+      document.getElementById('custom-modal-overlay').classList.remove('active');
+      G.tutorialMode = false;
+      showScreen('screen-board');
+    }
     else { window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }
   }, 4500);
 }
