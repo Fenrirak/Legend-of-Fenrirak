@@ -1339,7 +1339,7 @@ const WEAPONS = {
   ],
   aldemar: [
     { id: 'aldemar_steel_staff', name: "Aldemar's Steel Staff", class: 'aldemar', attackName: 'Fireball', baseDamage: 25, damageType: 'plus', diceCount: 2, diceCondition: 'even', diceBonus: 6, hitThrowMod: 2, effect: '4 tiles in a 2×2 area', effectTiles: 4, range: 4, special: 'aoe2x2', desc: '25+ Damage. Roll a die 2 times, for every even number, deal 6 more damage. Effect: 4 tiles in a 2×2 area.' },
-    { id: 'staff_of_life', name: 'Staff of Life', class: 'aldemar', attackName: 'Storm Edge', baseDamage: 15, damageType: 'plus', diceCount: 3, diceCondition: 'even', diceBonus: 10, hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5, passive: "Forest's Grace: With every attack that hits, heal 5 health. This is not an attack, it is a passive ability.", desc: '15+ Damage. Roll a die 3 times, for every even number, deal 10 more damage.' }
+    { id: 'staff_of_life', name: 'Staff of Life', class: 'aldemar', attackName: 'Storm Edge', baseDamage: 15, damageType: 'plus', diceCount: 3, diceCondition: 'even', diceBonus: 10, hitThrowMod: 2, effect: '1 tile', effectTiles: 1, range: 5, passive: "Forest's Grace: With every attack that hits, heal 10 health. This is not an attack, it is a passive ability.", desc: '15+ Damage. Roll a die 3 times, for every even number, deal 10 more damage.' }
   ],
   helen: [
     { id: 'scarlet_void', name: "Helen's Staff of Pure Oblivion Magic", class: 'helen', attackName: 'Scarlet Void', baseDamage: 20, damageType: 'special', diceCount: 0, diceCondition: 'scarlet_void', hitThrowMod: 3, effect: '1 tile', effectTiles: 1, range: 4, special: 'scarlet_void', desc: '20+ Damage. Take up to 30 damage; this attack deals extra damage equal to the damage taken.' },
@@ -2081,7 +2081,7 @@ function updateStatPanel(){
     archer:"Hunter's Eyes: +1 Hit Throw & +1 Range vs targets on lower terrain.",
     aldemar:'Magical Barrier: All PC becomes HC for you; Thorny Vines take one extra cycle.',
     helen:'Crystal of Immortality: The first time you die, instead of dying, your Health is restored to 20.',
-    ronald:'Magic of Precision: If an attack misses, deal 5 damage instead.'
+    ronald:'Magic of Precision: If an attack misses, deal 10 damage instead.'
   };
   document.getElementById('sp-ability').textContent = passives[player.class]||'';
   const w = player.equippedWeapon;
@@ -2568,9 +2568,19 @@ async function executePlayerMove(route){
   updateEnemyPanel();
   if(G.tutorialMode && G.tutorialStage==='cover-attack'){
     setPhaseText('Attack an enemy from behind cover!');
+  } else if(G.tutorialMode && G.tutorialStage==='go-chest' && isAdjacentToUnopenedChest(char)){
+    setPhaseText('Click the Chest to open it!');
   } else {
     setPhaseText(forcedStageActive && !G.hasMovedThisTurn ? 'Keep going!' : 'Movement done. Click an attack name or end your turn.');
   }
+}
+
+function isAdjacentToUnopenedChest(char){
+  const adj = getAdjacentTiles(char.x, char.y, false);
+  return adj.some(t=>{
+    const type = getTileType(t.x,t.y);
+    return (type==='chest'||type==='chest_hg') && !G.openedChests.has(tileKey(t.x,t.y));
+  });
 }
 
 function checkAdjacentChestAutoOpen(char){
@@ -2814,8 +2824,8 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
   if(totalHit < targetDef){
     logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
     if(attacker.class==='ronald'){
-      applyDamage(target, 5, true);
-      logMsg(`Miss! But ${attacker.name}'s Magic of Precision deals 5 damage anyway!`, 'damage');
+      applyDamage(target, 10, true);
+      logMsg(`Miss! But ${attacker.name}'s Magic of Precision deals 10 damage anyway!`, 'damage');
       updateEnemyPanel();
       updateStatPanel();
       return true;
@@ -2880,7 +2890,7 @@ async function doAttack(attacker, target, weapon, isPlayer, extraDmg=0, rangeOve
     logMsg(`${target.name} cannot attack during their next turn!`);
   }
   if(w.id==='staff_of_life'){
-    const healAmt = Math.max(0, Math.min(5, attacker.maxHp - attacker.hp));
+    const healAmt = Math.max(0, Math.min(10, attacker.maxHp - attacker.hp));
     if(healAmt>0){
       attacker.hp += healAmt;
       logMsg(`${attacker.name}'s Forest's Grace heals them for ${healAmt} HP! (${attacker.hp}/${attacker.maxHp})`, 'heal');
@@ -3234,8 +3244,8 @@ async function resolveDestructiveRush(attacker, target, weapon, isPlayer){
   logMsg(`${attacker.name} attacks ${target.name}: Hit Throw ${hitRoll}+${hitMod}=${totalHit} vs Defence ${targetDef}`);
   if(totalHit < targetDef){
     if(attacker.class==='ronald'){
-      applyDamage(target, 5, true);
-      logMsg(`Miss! But ${attacker.name}'s Magic of Precision deals 5 damage anyway!`, 'damage');
+      applyDamage(target, 10, true);
+      logMsg(`Miss! But ${attacker.name}'s Magic of Precision deals 10 damage anyway!`, 'damage');
       updateEnemyPanel(); updateStatPanel();
       return;
     }
