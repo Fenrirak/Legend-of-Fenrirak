@@ -1139,7 +1139,7 @@
     <p><strong>Knight:</strong> 75 HP / Defence 5 / Move 6. Passive: Difficult terrain counts as 1 tile (no movement penalty; damage from Thorny Vines still applies).</p>
     <p><strong>Archer:</strong> 70 HP / Defence 4 / Move 5. Passive: +1 Hit Throw & +1 Range when target is on lower terrain than the Archer.</p>
   </div>
-  <button class="btn" onclick="showScreen('screen-name')">Continue</button>
+  <button class="btn" onclick="continueFromRules()">Continue</button>
 </div>
 
 <div id="screen-name" class="screen">
@@ -1381,7 +1381,7 @@ const BOARD_CONFIGS = {
       '1,4':{type:'log', label:'Log', logDir:'v-bottom'}, '1,5':{type:'log', label:'Log', logDir:'v-top'},
       '1,2':{type:'highground', label:'High Ground'}, '8,5':{type:'highground', label:'High Ground'}, '7,6':{type:'highground', label:'High Ground'}, '8,6':{type:'highground', label:'High Ground'},
       '2,2':{type:'difficult', label:'Hill', hillDir:'w'}, '1,3':{type:'difficult', label:'Hill', hillDir:'s'}, '8,4':{type:'difficult', label:'Hill', hillDir:'n'}, '7,5':{type:'difficult', label:'Hill', hillDir:'ne'},
-      '6,6':{type:'difficult', label:'Hill', hillDir:'e'}, '9,6':{type:'difficult', label:'Hill', hillDir:'s'}, '9,5':{type:'difficult', label:'Hill', hillDir:'w'}, '7,7':{type:'difficult', label:'Hill', hillDir:'s'}, '8,7':{type:'difficult', label:'Hill', hillDir:'s'},
+      '6,6':{type:'difficult', label:'Hill', hillDir:'e'}, '9,6':{type:'difficult', label:'Hill', hillDir:'w'}, '9,5':{type:'difficult', label:'Hill', hillDir:'w'}, '7,7':{type:'difficult', label:'Hill', hillDir:'s'}, '8,7':{type:'difficult', label:'Hill', hillDir:'s'},
       '3,2':{type:'chest', label:'Chest'}, '8,6':{type:'chest_hg', label:'Chest'}, '2,7':{type:'chest', label:'Chest'},
       '3,0':{type:'thorny', label:'THV'}, '4,2':{type:'thorny', label:'THV'}, '7,3':{type:'thorny', label:'THV'}, '3,5':{type:'thorny', label:'THV'},
       '6,2':{type:'hc', label:'Tree'},
@@ -3951,6 +3951,27 @@ function showNumberInputModal(title, bodyText, min, max, callback){
 }
 
 function closeCustomModal(){ document.getElementById('custom-modal-overlay').classList.remove('active'); }
+
+function showFunFactModal(title, bodyHTML, onClose){
+  document.getElementById('custom-modal-title').textContent = title;
+  document.getElementById('custom-modal-body').innerHTML = `<p style="color:var(--text-dim); font-size:0.85em; line-height:1.5;">${bodyHTML}</p>`;
+  const btnContainer = document.getElementById('custom-modal-buttons');
+  btnContainer.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.className = 'btn';
+  btn.textContent = 'Got it';
+  btn.onclick = ()=>{ closeCustomModal(); if(onClose) onClose(); };
+  btnContainer.appendChild(btn);
+  document.getElementById('custom-modal-overlay').classList.add('active');
+}
+
+function continueFromRules(){
+  if(isTouchPrimaryDevice()){
+    showFunFactModal('Fun fact!', 'This game works better with a mouse! It was designed with mouse-and-keyboard controls in mind, so if you have one handy, you\'ll get the smoothest experience.', ()=>showScreen('screen-name'));
+  } else {
+    showScreen('screen-name');
+  }
+}
 
 let diceResolve = null;
 let diceHasRolled = false;
