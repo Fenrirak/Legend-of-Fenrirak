@@ -116,11 +116,13 @@
 
             max-width: 350px;
 
-            background-color: #1e1e1e;
+            background: linear-gradient(180deg, #1e1e1e, #141414);
 
             color: white;
 
             text-decoration: none;
+
+            border: 1px solid rgba(217, 163, 92, 0.28);
 
             border-radius: 12px;
 
@@ -129,14 +131,23 @@
             font-size: 20px;
 
             transition:
-                background-color 0.3s,
-                transform 0.2s;
+                border-color 0.25s ease,
+                background-color 0.25s ease,
+                transform 0.25s ease,
+                box-shadow 0.25s ease,
+                color 0.25s ease;
         }
 
         .section:hover {
             background-color: #333333;
 
-            transform: scale(1.03);
+            border-color: rgb(217, 163, 92);
+
+            color: rgb(242, 204, 143);
+
+            transform: translateY(-2px) scale(1.03);
+
+            box-shadow: 0 10px 26px -12px rgba(193, 80, 46, 0.5);
         }
 
         /* PHONE VERSION */
@@ -255,7 +266,7 @@
 
             </p>
 
-            <a href="Testplay Showdowns.html" class="section">
+            <a href= "Testplay Showdowns.html" class="section">
                 Play Legend of Fenrirak Showdowns!
             </a>
 
@@ -310,7 +321,7 @@
         <a href="Images.html" class="section">View Photo Gallery</a>
 
         <a href="Testplay Showdowns.html" class="section">
-         Play Legend of Fenrirak Showdowns
+            Play Legend of Fenrirak Showdowns
         </a>
 
     </div>
