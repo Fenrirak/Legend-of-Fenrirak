@@ -306,7 +306,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 /* No artwork here — the title carries the page. */
 .home-hero { text-align: center; padding: 40px 0 4px; }
-.home-hero h1 { font-size: 42px; letter-spacing: 0.5px; margin-bottom: 6px; }
+.home-hero h1 {
+    font-size: 42px;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    /* Same yellow as the matching heading on the About page. */
+    color: rgb(235, 202, 19);
+}
 .home-hero p { max-width: 620px; margin: 10px auto 0; color: #b9b9b9; font-size: 16px; }
 
 .home-cards {
@@ -317,6 +323,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     margin: 26px auto 0;
 }
 .home-cards .card { display: flex; flex-direction: column; gap: 12px; }
+/* The note is pushed to the bottom so both cards' inputs and buttons sit
+   on the same lines even when one note wraps to more lines than the other. */
+.home-cards .card .note { margin-top: auto; margin-bottom: 0; font-size: 13.5px; }
+.home-cards input, .home-cards .btn { width: 100%; }
+/* The room code reads as a code without being a different size to the
+   name field next to it. */
+.code-input { letter-spacing: 6px; text-align: center; text-transform: uppercase; }
+.code-input::placeholder { letter-spacing: 6px; }
 
 .notice {
     margin: 16px auto;
@@ -331,11 +345,87 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .notice.show { display: block; }
 
+/* ---- paper cards ------------------------------------------------------
+   The real game is index cards written in pencil, and every one of them is
+   laid out the same way: the name across the top with a rule ruled under it,
+   then the body. The card stock is what tells them apart -- white for
+   character and enemy stats, yellow for weapons and armour, pink for
+   power-ups -- so that is what the colours here mean. The layout inside each
+   card is built in ui.js.
+
+   The font is whatever handwriting the reader's machine has. Nothing is
+   downloaded for it: Segoe Print ships with Windows, Bradley Hand with macOS
+   and iOS, and the generic cursive keyword catches the rest.
+   ---------------------------------------------------------------------- */
+
+.paper {
+    --paper: #efece1;
+    --paper-ink: #46433b;
+
+    background: var(--paper);
+    color: var(--paper-ink);
+    border-radius: 3px;
+    padding: 9px 11px 12px;
+    font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: left;
+    /* Paper does not glow. A hairline keeps a white card off a black page. */
+    border: 1px solid rgba(0, 0, 0, .35);
+}
+
+.paper.yellow { --paper: #ece0a0; --paper-ink: #4a4326; }
+.paper.pink   { --paper: #eec3cd; --paper-ink: #4d323a; }
+
+.paper .p-name {
+    font-size: 15px;
+    padding-bottom: 3px;
+    margin-bottom: 6px;
+    border-bottom: 1.5px solid currentColor;
+    /* Long names wrap rather than being clipped -- a card that hides half its
+       own name is worse than one that runs to two lines. */
+    overflow-wrap: break-word;
+}
+
+.paper .p-art {
+    float: right;
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+    margin: 0 0 4px 8px;
+}
+
+.paper .p-head { margin-top: 4px; }
+.paper .p-stat { padding-left: 13px; }
+
+.paper .p-move {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding-left: 13px;
+    margin-top: 4px;
+}
+.paper .p-move .p-dmg { flex: 0 0 auto; }
+.paper .p-energy { padding-left: 13px; font-size: .9em; }
+
+.paper .p-body { padding-top: 1px; }
+.paper .p-foot {
+    margin-top: 7px;
+    padding-top: 5px;
+    border-top: 1px dashed rgba(0, 0, 0, .28);
+    font-size: .85em;
+}
+
+/* Clear the floated portrait so the card always encloses it. */
+.paper::after { content: ''; display: block; clear: both; }
+
 /* ---- lobby ----------------------------------------------------------- */
 
 .lobby-grid {
     display: grid;
-    grid-template-columns: 1.15fr .85fr;
+    /* The three stat cards need the room; the roster is a short list. */
+    grid-template-columns: minmax(0, 1.9fr) minmax(230px, .75fr);
     gap: 18px;
     align-items: start;
 }
@@ -343,24 +433,23 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .class-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
 .class-card {
-    background: var(--panel);
-    border: 1px solid var(--panel-edge);
-    border-radius: 14px;
-    padding: 14px 12px;
-    text-align: center;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 3px;
     cursor: pointer;
-    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    transition: border-color .2s ease;
 }
-.class-card:hover { transform: translateY(-3px); border-color: var(--gold); }
-.class-card.selected {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 1px var(--gold), 0 12px 30px -14px rgba(217, 163, 92, .8);
+.class-card:hover { border-color: var(--gold); }
+/* Selected is shown by the border alone -- no ring, no glow. */
+.class-card.selected { border-color: var(--gold); }
+.class-card.full { opacity: .45; cursor: not-allowed; }
+.class-card .taken {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 12.5px;
+    color: #9a9a9a;
 }
-.class-card.full { opacity: .4; cursor: not-allowed; transform: none; }
-.class-card img { width: 100%; max-width: 128px; height: 118px; object-fit: contain; }
-.class-card .cname { font-size: 19px; color: var(--cream); margin-top: 6px; }
-.class-card .cstat { font-size: 13.5px; color: #a9a9a9; margin-top: 4px; }
-.class-card .cmoves { font-size: 12.5px; color: #8f8f8f; margin-top: 6px; line-height: 1.5; }
 
 .roster { list-style: none; margin: 0; padding: 0; }
 .roster li {
@@ -582,20 +671,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: 10px;
 }
-.item {
-    border: 1px solid var(--panel-edge);
-    border-radius: 10px;
-    padding: 10px 11px;
-    background: linear-gradient(180deg, #221f18, #191713);
-    font-size: 13px;
-}
-.item.equipped { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(217,163,92,.35); }
-.item .iname { color: var(--gold-bright); font-size: 14px; }
-.item .itext { color: #a3a3a3; margin-top: 4px; line-height: 1.4; }
-.item .imeta { color: #7d7d7d; margin-top: 5px; font-size: 11.5px; }
-.item .btn { margin-top: 8px; }
-.item.powerup { background: linear-gradient(180deg, #2a1f27, #1d1620); }
-.item.treasure { border-color: rgba(180,140,255,.5); }
+/* Every held card is the paper card it is in the box. Equipped and treasure
+   are marked on the card itself rather than by recolouring the stock, so the
+   yellow/pink/white still means what it means in the photographs. */
+.item .btn { margin-top: 9px; width: 100%; }
+.item.equipped { border-width: 2px; border-color: var(--gold); }
+.item.treasure .p-name::after { content: ' º6'; }
+
+.battle-statcard { max-width: 250px; margin: 16px auto 0; }
 
 /* ---- modal ----------------------------------------------------------- */
 
@@ -805,17 +888,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     <h2>Your name</h2>
                     <input type="text" id="inp-name" maxlength="16" placeholder="e.g. Nathan">
                     <button class="btn primary" id="btn-create">Create a new room</button>
-                    <p class="muted" style="font-size:13.5px;margin:0">
+                    <p class="muted note">
                         You will get a 5-letter room code and an invite link to share.
                     </p>
                 </div>
 
                 <div class="card">
                     <h2>Join a room</h2>
-                    <input type="text" id="inp-code" maxlength="5" placeholder="ABCDE"
-                           style="letter-spacing:6px;text-align:center;font-size:22px">
+                    <input type="text" id="inp-code" class="code-input" maxlength="5" placeholder="ABCDE">
                     <button class="btn" id="btn-join">Join</button>
-                    <p class="muted" style="font-size:13.5px;margin:0">
+                    <p class="muted note">
                         Ask the host for their room code, or open their invite link.
                     </p>
                 </div>
@@ -928,12 +1010,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Classes                                                             */
     /* ------------------------------------------------------------------ */
 
-    // art: the character PNGs in this folder are the canonical look.
+    // art: the character PNGs are the canonical look. They sit next to the
+    // page rather than in a subfolder, so there is one flat set of files to
+    // upload and nothing to get lost on the way to the host.
     const CLASSES = {
         knight: {
             id: 'knight',
             name: 'Knight',
-            art: 'Legend of Fenrirak, The Thunder Dragon/Knight.png',
+            art: 'Knight.png',
             hp: 100,
             defence: 15,
             weaponType: 'sword',
@@ -954,7 +1038,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         archer: {
             id: 'archer',
             name: 'Archer',
-            art: 'Legend of Fenrirak, The Thunder Dragon/Archer.png',
+            art: 'Archer.png',
             hp: 80,
             defence: 10,
             weaponType: 'bow',
@@ -975,7 +1059,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         mage: {
             id: 'mage',
             name: 'Mage',
-            art: 'Legend of Fenrirak, The Thunder Dragon/Mage.png',
+            art: 'Mage.png',
             hp: 75,
             defence: 5,
             weaponType: 'magic',
@@ -3007,6 +3091,40 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Lobby                                                               */
     /* ------------------------------------------------------------------ */
 
+    /* ------------------------------------------------------------------ */
+    /* Paper cards                                                         */
+    /*                                                                     */
+    /* Every card in the box is an index card with the name across the top, */
+    /* a rule under it, and the body beneath. Stat cards are white and list */
+    /* Stats: then Moves: with the damage out to the right and the energy   */
+    /* on the line below. Item and power-up cards are yellow and pink and   */
+    /* carry a single line of effect text. These build exactly that.        */
+    /* ------------------------------------------------------------------ */
+
+    function statCardHtml(o) {
+        return '<div class="paper stat">' +
+            '<div class="p-name">' + esc(o.name) + '</div>' +
+            (o.art ? '<img class="p-art" src="' + esc(o.art) + '" alt="">' : '') +
+            '<div class="p-head">Stats:</div>' +
+            '<div class="p-stat">Health: ' + o.hp + '</div>' +
+            '<div class="p-stat">Defence: ' + o.defence + '</div>' +
+            '<div class="p-head">Moves:</div>' +
+            o.moves.map(m =>
+                '<div class="p-move"><span>' + esc(m.name) + '</span>' +
+                '<span class="p-dmg">' + m.damage + '</span></div>' +
+                '<div class="p-energy">(' + m.energy + ' Energy)</div>').join('') +
+            (o.foot ? '<div class="p-foot">' + o.foot + '</div>' : '') +
+            '</div>';
+    }
+
+    function paperCardHtml(stock, name, text, foot) {
+        return '<div class="paper ' + stock + '">' +
+            '<div class="p-name">' + esc(name) + '</div>' +
+            '<div class="p-body">' + esc(text) + '</div>' +
+            (foot ? '<div class="p-foot">' + foot + '</div>' : '') +
+            '</div>';
+    }
+
     function renderLobby() {
         $('#lobby-code').textContent = S.code;
 
@@ -3018,14 +3136,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const sel = mine && mine.cls === id;
             return '<div class="class-card' + (sel ? ' selected' : '') + (full ? ' full' : '') +
                 '" data-cls="' + id + '">' +
-                '<img src="' + esc(c.art) + '" alt="' + esc(c.name) + '">' +
-                '<div class="cname">' + esc(c.name) + '</div>' +
-                '<div class="cstat">' + c.hp + ' HP &middot; ' + c.defence + ' Defence</div>' +
-                '<div class="cmoves">' +
-                    c.moves.map(m => esc(m.name) + ' — ' + m.damage + ' dmg (' + m.energy + 'E)').join('<br>') +
-                    '<br><span class="gold">' + esc(c.ability.name) + '</span>' +
-                '</div>' +
-                '<div class="cstat">' + taken + ' / ' + D.RULES.maxPerClass + ' taken</div>' +
+                statCardHtml({
+                    name: c.name, art: c.art, hp: c.hp, defence: c.defence, moves: c.moves,
+                    foot: 'Ability: ' + esc(c.ability.name) + '<br>' + esc(c.ability.text)
+                }) +
+                '<div class="taken">' + taken + ' / ' + D.RULES.maxPerClass + ' taken' +
+                    (sel ? ' · yours' : '') + '</div>' +
                 '</div>';
         }).join('');
 
@@ -3336,17 +3452,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 const usable = d.kind === 'weapon'
                     ? d.subtype === cls.weaponType
                     : (d.subtype === 'any' || d.subtype === cls.armourType);
+                const foot = (d.kind === 'weapon' ? 'Weapon' : 'Armour') + ' · ' +
+                    esc(d.subtype === 'any' ? 'any class' : d.subtype) +
+                    (inst.uses != null ? ' · ' + inst.uses + ' uses left' : '') +
+                    (equipped ? ' · equipped' : '') +
+                    (usable ? '' : '<br>A ' + esc(cls.name) + ' cannot use this — trade it away.');
                 return '<div class="item' + (equipped ? ' equipped' : '') +
                     (d.treasure ? ' treasure' : '') + '">' +
-                    '<div class="iname">' + esc(d.name) + '</div>' +
-                    '<div class="itext">' + esc(d.text) + '</div>' +
-                    '<div class="imeta">' + (d.kind === 'weapon' ? 'Weapon · ' : 'Armour · ') +
-                        esc(d.subtype === 'any' ? 'any class' : d.subtype) +
-                        (inst.uses != null ? ' · ' + inst.uses + ' uses left' : '') +
-                        (equipped ? ' · equipped' : '') + '</div>' +
-                    (equipped || !usable
-                        ? (usable ? '' : '<div class="imeta" style="color:#d2635a">A ' +
-                            esc(cls.name) + ' cannot use this — trade it away.</div>')
+                    paperCardHtml('yellow', d.name, d.text, foot) +
+                    (equipped || !usable ? ''
                         : '<button class="btn small" data-equip="' + inst.uid + '"' +
                           (canSwap && myTurn() && !S.battle ? '' : ' disabled') + '>Equip</button>') +
                     '</div>';
@@ -3355,8 +3469,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             html = p.powerups.map(c => {
                 const d = D.POWERUPS[c.id];
                 return '<div class="item powerup">' +
-                    '<div class="iname">' + esc(d.name) + '</div>' +
-                    '<div class="itext">' + esc(d.text) + '</div>' +
+                    paperCardHtml('pink', d.name, d.text) +
                     '<button class="btn small" data-pu="' + c.uid + '">Play card</button>' +
                     '</div>';
             }).join('') || '<div class="muted">No power-up cards.</div>';
@@ -3364,8 +3477,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             html = p.potions.map(c => {
                 const d = D.POWERUPS[c.id];
                 return '<div class="item powerup">' +
-                    '<div class="iname">' + esc(d.name) + ' potion</div>' +
-                    '<div class="itext">' + esc(d.text) + '</div>' +
+                    paperCardHtml('pink', d.name + ' potion', d.text) +
                     '<button class="btn small" data-po="' + c.uid + '">Drink</button>' +
                     '</div>';
             }).join('') || '<div class="muted">No potions.</div>';
@@ -3453,7 +3565,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                          '">', a.hp, a.maxHp, a.name, 'hp') +
                 '<div class="battle-vs">VS</div>' +
                 sideHtml(foePortrait, foeHp, foeMax, foe.name, isPvp ? 'hp' : 'enemy') +
-            '</div>';
+            '</div>' +
+            // The monster's own stat card, as it is dealt on the table.
+            (isPvp ? '' : '<div class="battle-statcard">' + statCardHtml({
+                name: foe.name, hp: foe.maxHp || b.enemyMaxHp, defence: foe.defence,
+                moves: foe.moves
+            }) + '</div>');
 
         if (b.lastRoll != null) {
             body += '<div class="die rolling">' + b.lastRoll + '</div>' +
@@ -3529,8 +3646,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     function pickFrom(title, options, onPick) {
         showModal('<h2>' + esc(title) + '</h2><div class="item-grid">' +
-            options.map(o => '<div class="item"><div class="iname">' + esc(o.name) + '</div>' +
-                '<div class="itext">' + esc(o.text || '') + '</div>' +
+            options.map(o => '<div class="item">' +
+                paperCardHtml('pink', o.name, o.text || '') +
                 '<button class="btn small" data-pick="' + esc(o.id) + '">Use</button></div>').join('') +
             '</div><div class="modal-actions"><button class="btn" id="pick-cancel">Back</button></div>', true, 'pick');
         $$('#modal [data-pick]').forEach(b =>
@@ -3565,18 +3682,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 '<div class="sub">' + esc(pend.prompt) + '</div>' +
                 '<div class="item-grid">' + pend.options.map(id => {
                     const d = D.ITEMS[id];
-                    return '<div class="item treasure"><div class="iname">' + esc(d.name) + '</div>' +
-                        '<div class="itext">' + esc(d.text) + '</div>' +
-                        '<div class="imeta">' + (d.kind === 'weapon' ? 'Weapon · ' + d.subtype
-                            : 'Armour · any class') + '</div>' +
+                    return '<div class="item treasure">' +
+                        paperCardHtml('yellow', d.name, d.text,
+                            d.kind === 'weapon' ? 'Weapon · ' + esc(d.subtype)
+                                                : 'Armour · any class') +
                         '<button class="btn small" data-choice="' + esc(id) + '">Take it</button></div>';
                 }).join('') + '</div>';
         } else if (pend.type === 'sea_of_castout') {
             body = '<h2>Sea of Castout</h2><div class="sub">' + esc(pend.prompt) + '</div>' +
                 '<div class="item-grid">' + pend.options.map(o => {
                     const d = D.ITEMS[o.id];
-                    return '<div class="item"><div class="iname">' + esc(d.name) + '</div>' +
-                        '<div class="itext">' + esc(d.text) + '</div>' +
+                    return '<div class="item">' +
+                        paperCardHtml('yellow', d.name, d.text) +
                         '<button class="btn small danger" data-choice="' + esc(o.uid) +
                         '">Let it go</button></div>';
                 }).join('') + '</div>';
@@ -3615,10 +3732,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const stock = S.merchant.gear[id] || 0;
             const afford = p.coins >= d.price && stock > 0;
             return '<div class="shop-item' + (stock ? '' : ' out') + '">' +
-                '<div class="sname">' + esc(d.name) + '</div>' +
-                '<div class="itext">' + esc(d.text) + '</div>' +
-                '<div class="sprice">' + d.price + ' coins</div>' +
-                '<div class="sstock">' + (stock ? stock + ' in stock' : 'sold out') + '</div>' +
+                paperCardHtml('yellow', d.name, d.text,
+                    d.price + ' coins · ' + (stock ? stock + ' in stock' : 'sold out')) +
                 '<button class="btn small" data-buy-gear="' + esc(id) + '"' +
                     (afford ? '' : ' disabled') + '>Buy</button></div>';
         }).join('');
@@ -3629,10 +3744,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const stock = S.merchant.potions[id] || 0;
             const afford = p.coins >= price && stock > 0;
             return '<div class="shop-item' + (stock ? '' : ' out') + '">' +
-                '<div class="sname">' + esc(d.name) + '</div>' +
-                '<div class="itext">' + esc(d.text) + '</div>' +
-                '<div class="sprice">' + price + ' coins</div>' +
-                '<div class="sstock">' + (stock ? stock + ' left' : 'sold out') + '</div>' +
+                paperCardHtml('pink', d.name + ' potion', d.text,
+                    price + ' coins · ' + (stock ? stock + ' left' : 'sold out')) +
                 '<button class="btn small" data-buy-potion="' + esc(id) + '"' +
                     (afford ? '' : ' disabled') + '>Buy</button></div>';
         }).join('');
