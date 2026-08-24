@@ -14,6 +14,8 @@
     <!-- Load fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="site-nav.css">
+
     <style>
         body {
             font-family: 'Comfortaa', sans-serif;
@@ -72,105 +74,14 @@
             margin-top: 50px;
         }
 
-    .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-            background: linear-gradient(180deg, #1c1c22, #121216);
-            border-bottom: 1px solid rgba(217, 163, 92, 0.25);
-            padding: 10px 0;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-            margin-bottom: 30px;
-            position: sticky;
-            top: 0;
-            z-index: 200;
-            width: 100%;
-        }
 
-    .topbar .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-family: Allegro, serif;
-            font-size: 19px;
-            font-weight: bold;
-            color: rgb(255, 246, 230);
-            flex-shrink: 0;
-            padding-left: 26px;
-        }
-
-    .topbar .brand img {
-            height: 36px;
-            width: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            object-position: center;
-            border: 1px solid rgba(217, 163, 92, 0.4);
-        }
-
-    .topbar .nav-links {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 4px;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-    .topbar .nav-links a {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 9px 16px;
-            border-radius: 999px;
-            color: #c9c9c9;
-            border: 1px solid transparent;
-            white-space: nowrap;
-            text-decoration: none;
-            font-family: Allegro, serif;
-            font-size: 14.5px;
-            transition: background-color 0.25s ease, color 0.25s ease;
-        }
-
-    .topbar .nav-links a svg {
-            width: 16px;
-            height: 16px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
-            flex-shrink: 0;
-        }
-
-    .topbar .nav-links a:hover {
-            background-color: rgba(217, 163, 92, 0.12);
-            color: rgb(242, 204, 143);
-        }
-
-    .topbar .nav-links a.active {
-            background-color: rgb(217, 163, 92);
-            border-color: rgb(217, 163, 92);
-            color: #1a1108;
-            font-weight: bold;
-        }
-
-    @media (max-width:600px){h1{font-size:28px;margin-top:40px;}img{width:90%;height:auto;}p{font-size:16px;padding:0 15px;} .section{width:90%;font-size:20px;} .topbar {
-                flex-direction: column;
-                padding: 10px 0;
-            } .topbar .brand{padding-left:0;} .topbar .nav-links{position:static;transform:none;width:100%;justify-content:space-evenly;} .topbar .nav-links a span{display:none;} .topbar .nav-links a{padding:9px;}}
+    @media (max-width:600px){h1{font-size:28px;margin-top:40px;}img{width:90%;height:auto;}p{font-size:16px;padding:0 15px;} .section{width:90%;font-size:20px;}}
 </style>
 </head>
 
 <body>
 
     <nav class="topbar">
-        <div class="brand">
-            <img src="Fenrirak_logo.png" alt="Fenrirak logo">
-            Legend of Fenrirak
-        </div>
         <div class="nav-links">
             <a href="index.html">
                 <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg>
@@ -188,10 +99,23 @@
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                 <span>Photo Gallery</span>
             </a>
-            <a href="Testplay Showdowns.html" class="active">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg>
-                <span>Play Showdowns</span>
-            </a>
+            <div class="nav-group">
+                <button type="button" class="nav-trigger active" aria-haspopup="true" aria-expanded="false">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="7.5" width="20" height="10" rx="5"/><path d="M7 12.5h3M8.5 11v3"/><circle cx="15.8" cy="11.6" r=".9" fill="currentColor" stroke="none"/><circle cx="17.9" cy="13.6" r=".9" fill="currentColor" stroke="none"/></svg>
+                    <span>Games</span>
+                    <svg class="caret" viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+                </button>
+                <div class="nav-menu">
+                    <a href="Testplay Showdowns.html" class="active">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg>
+                        <span>Showdowns</span>
+                    </a>
+                    <a href="Thunder Dragon.html">
+                        <svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+                        <span>The Thunder Dragon</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -238,6 +162,8 @@
         </a>
 
     </div>
+
+    <script src="site-nav.js" defer></script>
 
 </body>
 </html>

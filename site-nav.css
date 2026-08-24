@@ -5,11 +5,17 @@
    ========================================================================= */
 
 .topbar {
+    /* Set here rather than relying on a global reset: without it the side
+       padding is added on top of width:100% and the bar overflows the page. */
+    box-sizing: border-box;
+
     display: flex;
     align-items: center;
-    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
     width: 100%;
-    padding: 0 26px;
+    max-width: 100%;
+    padding: 0 12px;
     background: #16161a;
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     position: sticky;
@@ -18,46 +24,25 @@
     margin-bottom: 34px;
 }
 
-.topbar .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-    font-family: Allegro, serif;
-    font-size: 16px;
-    font-weight: normal;
-    letter-spacing: 0.4px;
-    color: #ded9d0;
-    padding: 0;
-}
-
-.topbar .brand img {
-    height: 26px;
-    width: 26px;
-    border-radius: 4px;
-    border: none;
-    object-fit: cover;
-    object-position: center;
-    opacity: 0.9;
-}
-
 .topbar .nav-links {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 2px;
-    margin-left: auto;
+    justify-content: center;
 
-    /* the old bar centred this absolutely, which let the brand overlap it */
-    position: static;
-    transform: none;
+    /* Without this a flex child refuses to shrink below its content width,
+       which is what pushed the last link off the right of the screen. */
+    min-width: 0;
+    max-width: 100%;
 }
 
-.topbar .nav-links a {
+.topbar .nav-links a,
+.topbar .nav-trigger {
     display: flex;
     align-items: center;
     gap: 7px;
     padding: 15px 14px;
+    margin: 0;
     border: none;
     border-radius: 0;
     background: none;
@@ -69,10 +54,11 @@
     letter-spacing: 0.2px;
     color: #9c9a95;
     border-bottom: 2px solid transparent;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.topbar .nav-links a svg {
+.topbar .nav-links svg {
     width: 15px;
     height: 15px;
     stroke: currentColor;
@@ -82,49 +68,117 @@
     opacity: 0.75;
 }
 
-.topbar .nav-links a:hover {
-    background: none;
+.topbar .nav-links a:hover,
+.topbar .nav-trigger:hover {
     color: #e8e4dc;
-    transform: none;
 }
 
-.topbar .nav-links a:hover svg { opacity: 1; }
+.topbar .nav-links a:hover svg,
+.topbar .nav-trigger:hover svg { opacity: 1; }
 
 /* Current page: a quiet underline, not a filled bubble. */
-.topbar .nav-links a.active {
-    background: none;
+.topbar .nav-links a.active,
+.topbar .nav-trigger.active {
     border-color: rgba(217, 163, 92, 0.85);
     color: #efe9de;
-    font-weight: normal;
 }
 
-.topbar .nav-links a.active svg { opacity: 1; }
+.topbar .nav-links a.active svg,
+.topbar .nav-trigger.active svg { opacity: 1; }
 
-@media (max-width: 900px) {
+/* ---- Games dropdown --------------------------------------------------- */
+
+.nav-group { position: relative; display: flex; }
+
+.nav-trigger .caret {
+    width: 11px;
+    height: 11px;
+    stroke-width: 2.2;
+    opacity: 0.55;
+    transition: transform 0.15s ease;
+}
+
+.nav-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 210px;
+    display: none;
+    flex-direction: column;
+    padding: 5px 0;
+    background: #1b1b20;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-top: none;
+    border-radius: 0 0 9px 9px;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+    z-index: 210;
+}
+
+/* Hover only where hovering is a real thing; taps use the .open class. */
+@media (hover: hover) {
+    .nav-group:hover .nav-menu { display: flex; }
+    .nav-group:hover .nav-trigger .caret { transform: rotate(180deg); }
+}
+.nav-group:focus-within .nav-menu,
+.nav-group.open .nav-menu { display: flex; }
+.nav-group.open .nav-trigger .caret { transform: rotate(180deg); }
+
+.topbar .nav-menu a {
+    padding: 11px 16px;
+    border-bottom: none;
+    border-left: 2px solid transparent;
+    font-size: 14px;
+}
+
+.topbar .nav-menu a:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.topbar .nav-menu a.active {
+    border-bottom: none;
+    border-left-color: rgba(217, 163, 92, 0.85);
+    color: #efe9de;
+}
+
+/* ---- narrow screens --------------------------------------------------- */
+
+@media (max-width: 760px) {
     .topbar {
-        flex-direction: column;
-        gap: 0;
         padding: 0;
         margin-bottom: 24px;
     }
 
-    .topbar .brand {
-        padding: 11px 0 9px;
-    }
-
     .topbar .nav-links {
-        margin-left: 0;
         width: 100%;
         justify-content: space-evenly;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .topbar .nav-links a {
-        padding: 11px 10px;
+    .topbar .nav-links a,
+    .topbar .nav-trigger {
+        padding: 12px 10px;
         font-size: 13px;
     }
 
-    .topbar .nav-links a span { display: none; }
+    .topbar .nav-links > a > span,
+    .topbar .nav-trigger > span { display: none; }
 
-    .topbar .nav-links a svg { width: 17px; height: 17px; }
+    .topbar .nav-links svg { width: 18px; height: 18px; }
+    .nav-trigger .caret { width: 10px; height: 10px; }
+
+    /* Anchor the menu to the bar rather than to the button, so it cannot run
+       off the edge when the Games button sits near the right of the screen.
+       .topbar is position:sticky, so it is the containing block once the
+       group itself stops being positioned. */
+    .nav-group { position: static; }
+
+    .nav-menu {
+        top: 100%;
+        left: 8px;
+        right: 8px;
+        transform: none;
+        min-width: 0;
+        border-radius: 0 0 9px 9px;
+    }
+
+    .topbar .nav-menu a span { display: inline; }
 }
