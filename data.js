@@ -93,6 +93,7 @@
         swarm_of_bats: {
             id: 'swarm_of_bats',
             name: 'Swarm of Bats',
+            crest: { initials: 'SB', tint: '#6d5f8c' },
             hp: 60,
             defence: 0,
             placeholder: true,           // PLACEHOLDER — no profile card exists for this fight
@@ -104,6 +105,7 @@
         seraphina: {
             id: 'seraphina',
             name: 'Seraphina',
+            crest: { initials: 'S',  tint: '#7a8c4a' },
             hp: 150,
             defence: 0,
             moves: [
@@ -114,6 +116,7 @@
         goblin_scout_group: {
             id: 'goblin_scout_group',
             name: 'Goblin Scout Group',
+            crest: { initials: 'GS', tint: '#8c6a3a' },
             hp: 100,
             defence: 0,
             moves: [
@@ -124,6 +127,7 @@
         goblin_hideout: {
             id: 'goblin_hideout',
             name: 'Goblin Hideout',
+            crest: { initials: 'GH', tint: '#8c4a3a' },
             hp: 180,
             defence: 0,
             noIllusion: true,
@@ -135,6 +139,7 @@
         fenrirak: {
             id: 'fenrirak',
             name: 'Fenrirak',
+            crest: { initials: 'F',  tint: '#4a6a8c', art: 'Fenrirak.png' },
             hp: 275,
             defence: 20,
             boss: true,
@@ -568,6 +573,12 @@
           text: 'The Thunder Dragon waits. Defeat Fenrirak and the legend is yours.' }
     ];
 
+
+    // Scenery, not a square you can land on — fills the gap beside the arena.
+    const DECOR = [
+        { row: 1, col: 5, name: 'The Iconic Tree', art: 'Tree.png' }
+    ];
+
     const START_INDEX = 0;
     const ARENA_INDEX = 22;
     const KEY_FRAGMENTS_NEEDED = 3;
@@ -594,7 +605,7 @@
         CLASSES, CLASS_ORDER, ENEMIES, ITEMS, TREASURE_POOL,
         ITEM_DECK, POWERUPS, POWERUP_DECK,
         MERCHANT_POTIONS, MERCHANT_GEAR,
-        BOARD, START_INDEX, ARENA_INDEX, KEY_FRAGMENTS_NEEDED, RULES
+        BOARD, DECOR, START_INDEX, ARENA_INDEX, KEY_FRAGMENTS_NEEDED, RULES
     };
 
 })(typeof window !== 'undefined' ? window : globalThis);

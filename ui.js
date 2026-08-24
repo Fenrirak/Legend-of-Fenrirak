@@ -15,8 +15,6 @@
     let unsub = null;
     let invTab = 'gear';
     let openPanel = null;      // 'merchant' | 'trade' | null
-    let lastDie = null;
-    let dieSpin = 0;
 
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -116,13 +114,22 @@
         if (unsub) unsub();
         unsub = NET.subscribe(code, onState, err => notice(err.message || 'Connection lost.'));
 
+        // No idle chatter: the only background write is retiring a turn that
+        // has genuinely run out, and only a player who is not the one being
+        // timed out may do it. Any player can, so an absent host cannot stall
+        // the whole game.
         clearInterval(enterRoom._hb);
         enterRoom._hb = setInterval(() => {
-            NET.act(ROOM, 'heartbeat', {}).catch(() => {});
-            if (S && S.phase === 'playing' && S.hostId === NET.PID) {
-                NET.act(ROOM, 'timeoutCheck', {}).catch(() => {});
-            }
-        }, 15000);
+            if (!S || S.phase !== 'playing') return;
+            if (Date.now() - (S.turnStartedAt || 0) < D.RULES.turnTimeoutMs) return;
+
+            const waitingOn = S.battle ? E.battleActorId(S) :
+                (S.pending ? S.pending.playerId :
+                    (E.currentPlayer(S) || {}).id);
+            if (!waitingOn || waitingOn === NET.PID) return;
+
+            NET.act(ROOM, 'timeoutCheck', {}).catch(() => {});
+        }, 5000);
     }
 
     function onState(state) {
@@ -307,7 +314,13 @@
             '</div>';
         }).join('');
 
-        $('#board').innerHTML = html;
+        const decor = (D.DECOR || []).map(d =>
+            '<div class="sq decor" style="grid-row:' + (d.row + 1) +
+            ';grid-column:' + (d.col + 1) + '">' +
+            '<img src="' + esc(d.art) + '" alt="">' +
+            '<div class="sq-name">' + esc(d.name) + '</div></div>').join('');
+
+        $('#board').innerHTML = html + decor;
     }
 
     /* ------------------------------------------------------------------ */
@@ -507,27 +520,42 @@
     /* Modals                                                              */
     /* ------------------------------------------------------------------ */
 
+    let shownKey = null;       // what the modal is currently displaying
+
     function closeModal() {
         $('#modal-back').classList.remove('show');
         $('#modal').innerHTML = '';
+        shownKey = null;
     }
 
-    function showModal(html, dismissable) {
+    function showModal(html, dismissable, key) {
         const back = $('#modal-back');
         $('#modal').innerHTML = html;
         back.classList.add('show');
         back.dataset.dismissable = dismissable ? '1' : '0';
+        shownKey = key || null;
     }
 
     function renderModal() {
         const incoming = (S.trades || []).find(t =>
             t.status === 'open' && t.toId === NET.PID);
 
+        if (S.battle || S.pending) openPanel = null;
+
         if (S.battle) return renderBattleModal();
         if (S.pending && S.pending.playerId === NET.PID) return renderPendingModal();
         if (incoming) return renderIncomingTrade(incoming);
-        if (openPanel === 'merchant') return renderMerchant();
-        if (openPanel === 'trade') return renderTradeBuilder();
+
+        // These two are forms the player is filling in. Re-rendering them
+        // whenever anyone else acts would wipe what they had typed or ticked.
+        if (openPanel === 'merchant') {
+            if (shownKey !== 'merchant') renderMerchant();
+            return;
+        }
+        if (openPanel === 'trade') {
+            if (shownKey !== 'trade') renderTradeBuilder();
+            return;
+        }
         closeModal();
     }
 
@@ -543,12 +571,11 @@
         const actorId = E.battleActorId(S);
         const myMove = actorId === NET.PID;
 
-        const foeArt = isPvp ? D.CLASSES[foe.cls].art : 'Fenrirak.png';
         const foeHp = isPvp ? foe.hp : b.enemyHp;
         const foeMax = isPvp ? foe.maxHp : b.enemyMaxHp;
-
-        const meSide = involved ? (b.aId === NET.PID ? a : foe) : a;
-        const themSide = involved ? (b.aId === NET.PID ? foe : a) : foe;
+        const foePortrait = isPvp
+            ? '<img src="' + esc(D.CLASSES[foe.cls].art) + '" alt="' + esc(foe.name) + '">'
+            : crestHtml(foe);
 
         let body =
             '<h2>' + (isPvp ? 'Player Battle' : esc(foe.name)) + '</h2>' +
@@ -558,14 +585,14 @@
                           : 'You are watching this battle.') +
             '</div>' +
             '<div class="battle-top">' +
-                sideHtml(a, D.CLASSES[a.cls].art, a.hp, a.maxHp, a.name, 'hp') +
+                sideHtml('<img src="' + esc(D.CLASSES[a.cls].art) + '" alt="' + esc(a.name) +
+                         '">', a.hp, a.maxHp, a.name, 'hp') +
                 '<div class="battle-vs">VS</div>' +
-                sideHtml(foe, foeArt, foeHp, foeMax,
-                         isPvp ? foe.name : foe.name, isPvp ? 'hp' : 'enemy') +
+                sideHtml(foePortrait, foeHp, foeMax, foe.name, isPvp ? 'hp' : 'enemy') +
             '</div>';
 
         if (b.lastRoll != null) {
-            body += '<div class="die' + (dieSpin ? ' rolling' : '') + '">' + b.lastRoll + '</div>' +
+            body += '<div class="die rolling">' + b.lastRoll + '</div>' +
                 '<div class="muted" style="text-align:center;font-size:13px">' +
                 (b.lastRoll % 2 === 0 ? 'Even — a hit.' : 'Odd — a miss.') + '</div>';
         }
@@ -602,9 +629,9 @@
                 .map(l => '<div class="t-' + esc(l.tone) + '">' + esc(l.t) + '</div>').join('') +
             '</div>';
 
-        showModal(body, false);
+        showModal(body, false, 'battle');
 
-        bind('b-roll', () => { dieSpin = 1; act('battleRoll', {}); });
+        bind('b-roll', () => act('battleRoll', {}));
         $$('#modal [data-move]').forEach(el =>
             el.addEventListener('click', () => act('battleAttack', { moveId: el.dataset.move })));
         bind('b-cooked', () => act('eatSteak', { type: 'cooked' }));
@@ -617,9 +644,18 @@
             uid => act('usePotion', { uid: uid })));
     }
 
-    function sideHtml(who, art, hp, max, name, barClass) {
+    // Only Fenrirak has a picture; the rest get a crest so no monster wears
+    // the dragon's portrait by mistake.
+    function crestHtml(enemy) {
+        const c = enemy.crest || {};
+        if (c.art) return '<img src="' + esc(c.art) + '" alt="' + esc(enemy.name) + '">';
+        return '<div class="crest" style="--crest:' + esc(c.tint || '#6a6a6a') + '">' +
+            esc(c.initials || enemy.name.slice(0, 1)) + '</div>';
+    }
+
+    function sideHtml(portrait, hp, max, name, barClass) {
         return '<div class="battle-side">' +
-            '<img src="' + esc(art) + '" alt="' + esc(name) + '">' +
+            portrait +
             '<div class="bname">' + esc(name) + '</div>' +
             '<div class="bar ' + barClass + '"><i style="width:' +
                 Math.max(0, Math.round(hp / max * 100)) + '%"></i></div>' +
@@ -632,7 +668,7 @@
             options.map(o => '<div class="item"><div class="iname">' + esc(o.name) + '</div>' +
                 '<div class="itext">' + esc(o.text || '') + '</div>' +
                 '<button class="btn small" data-pick="' + esc(o.id) + '">Use</button></div>').join('') +
-            '</div><div class="modal-actions"><button class="btn" id="pick-cancel">Back</button></div>', true);
+            '</div><div class="modal-actions"><button class="btn" id="pick-cancel">Back</button></div>', true, 'pick');
         $$('#modal [data-pick]').forEach(b =>
             b.addEventListener('click', () => onPick(b.dataset.pick)));
         bind('pick-cancel', renderModal);
@@ -690,7 +726,7 @@
                 '<button class="btn danger" data-choice="fight">Fight anyway</button></div>';
         }
 
-        showModal(body, false);
+        showModal(body, false, 'pending');
         $$('#modal [data-choice]').forEach(b => b.addEventListener('click', () => {
             let c = b.dataset.choice;
             if (pend.type === 'pot') c = parseInt(c, 10);
@@ -744,7 +780,7 @@
             '<h3>Weapons &amp; armour</h3><div class="shop-grid">' + gearHtml + '</div>' +
             '<h3 style="margin-top:18px">Potions</h3><div class="shop-grid">' + potionHtml + '</div>' +
             '<div class="modal-actions"><button class="btn" id="shop-close">Leave the stall</button></div>',
-            true);
+            true, 'merchant');
 
         $$('#modal [data-buy-gear]').forEach(b => b.addEventListener('click', () => {
             openPanel = null;
@@ -773,7 +809,7 @@
                     esc(D.CLASSES[o.cls].name) + ')</option>').join('') + '</select>' +
             '<div class="modal-actions">' +
             '<button class="btn primary" id="il-go">Cast (roll even to succeed)</button>' +
-            '<button class="btn" id="il-cancel">Cancel</button></div>', true);
+            '<button class="btn" id="il-cancel">Cancel</button></div>', true, 'illusion');
 
         bind('il-go', () => act('useAbility', {
             enemyId: $('#il-enemy').value,
@@ -847,7 +883,7 @@
                 bundleUi(other, 'want') +
             '<div class="modal-actions">' +
             '<button class="btn primary" id="tr-send">Send offer</button>' +
-            '<button class="btn" id="tr-close">Cancel</button></div>', true);
+            '<button class="btn" id="tr-close">Cancel</button></div>', true, 'trade');
 
         $('#tr-target').addEventListener('change', e => {
             renderTradeBuilder._target = e.target.value;
@@ -884,7 +920,7 @@
                 esc(describeBundle(t.want)) + '</div>' +
             '<div class="modal-actions">' +
             '<button class="btn primary" id="tr-yes">Accept</button>' +
-            '<button class="btn danger" id="tr-no">Decline</button></div>', false);
+            '<button class="btn danger" id="tr-no">Decline</button></div>', false, 'incoming');
         bind('tr-yes', () => act('respondTrade', { tradeId: t.id, accept: true }));
         bind('tr-no', () => act('respondTrade', { tradeId: t.id, accept: false }));
     }

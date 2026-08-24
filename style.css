@@ -489,3 +489,42 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     .arena img.dragon { width: 92px; }
     .code-box .code { font-size: 23px; letter-spacing: 4px; }
 }
+
+/* ---- enemy crest (only Fenrirak has a portrait) ----------------------- */
+
+.crest {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Allegro, serif;
+    font-size: 30px;
+    letter-spacing: 1px;
+    color: #f1e8d8;
+    background:
+        radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.16), transparent 58%),
+        var(--crest, #6a6a6a);
+    border: 2px solid rgba(0, 0, 0, 0.45);
+    box-shadow: inset 0 -8px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* ---- scenery tile ----------------------------------------------------- */
+
+.sq.decor {
+    background: linear-gradient(180deg, #1c1f1a, #151712);
+    border-style: dashed;
+    border-color: rgba(217, 163, 92, 0.13);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.sq.decor img {
+    max-width: 62%;
+    max-height: 52px;
+    object-fit: contain;
+    opacity: 0.45;
+}
+.sq.decor .sq-name { color: #6f6a5f; margin-top: 4px; }

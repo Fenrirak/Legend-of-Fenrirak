@@ -48,8 +48,6 @@
         return D.BOARD[Math.max(0, Math.min(D.BOARD.length - 1, i))];
     }
 
-    function itemDef(id) { return D.ITEMS[id]; }
-
     function ownedItem(p, itemUid) {
         return p.inventory.find(it => it.uid === itemUid) || null;
     }
@@ -295,18 +293,24 @@
         log(state, p.name + ' rolled a ' + p.orderRoll + ' for turn order.', 'roll');
 
         if (state.players.every(x => x.orderRoll !== null)) {
-            // Ties are rerolled, exactly as the rules say.
-            const byRoll = {};
-            state.players.forEach(x => {
-                byRoll[x.orderRoll] = (byRoll[x.orderRoll] || 0) + 1;
-            });
-            const tiedValues = Object.keys(byRoll).filter(v => byRoll[v] > 1);
-            if (tiedValues.length) {
+            // Ties are rerolled, exactly as the rules say. With six players a
+            // clean sweep of six different numbers is rare, so the rerolls are
+            // resolved here rather than making everyone click again and again.
+            let rounds = 0;
+            while (rounds < 400) {
+                const byRoll = {};
                 state.players.forEach(x => {
-                    if (tiedValues.indexOf(String(x.orderRoll)) >= 0) x.orderRoll = null;
+                    byRoll[x.orderRoll] = (byRoll[x.orderRoll] || 0) + 1;
                 });
-                log(state, 'A tie! Those players reroll.', 'system');
-                return ok();
+                const tied = state.players.filter(x => byRoll[x.orderRoll] > 1);
+                if (!tied.length) break;
+
+                rounds += 1;
+                tied.forEach(x => { x.orderRoll = d6(); });
+            }
+            if (rounds) {
+                log(state, 'Tied rolls were rerolled ' + rounds +
+                           (rounds === 1 ? ' time.' : ' times.'), 'muted');
             }
 
             state.turnOrder = state.players.slice()
@@ -389,13 +393,60 @@
     function checkTimeout(state, now) {
         if (state.phase !== 'playing') return false;
         if ((now - (state.turnStartedAt || 0)) < R.turnTimeoutMs) return false;
-        const p = currentPlayer(state);
-        if (!p) return false;
-        log(state, p.name + ' was away too long — turn skipped.', 'muted');
-        state.battle = null;
+
+        // A battle must be settled, not silently deleted — otherwise the AFK
+        // player escapes and the other side never gets what they earned.
+        const b = state.battle;
+        if (b) {
+            const actorId = battleActorId(state);
+            if (b.kind === 'pvp') {
+                const afk = player(state, actorId);
+                const other = player(state, actorId === b.aId ? b.bId : b.aId);
+                if (afk && other) {
+                    log(state, afk.name + ' was away too long and forfeits the duel.', 'muted');
+                    return !!winPvp(state, other, afk);
+                }
+            }
+            const p = player(state, b.aId);
+            if (p) {
+                log(state, p.name + ' was away too long and flees the fight.', 'muted');
+                const wasIllusion = b.illusion;
+                losePve(state, p);
+                if (!wasIllusion) advanceTurn(state);
+                return true;
+            }
+            state.battle = null;
+        }
+
         state.pending = null;
+        const cur = currentPlayer(state);
+        if (!cur) return false;
+        log(state, cur.name + ' was away too long — turn skipped.', 'muted');
         advanceTurn(state);
         return true;
+    }
+
+    // Someone's health hit zero outside of an attack (food poisoning). If they
+    // were mid-battle it has to be settled properly, not just abandoned.
+    function collapse(state, p, reason) {
+        const b = state.battle;
+        if (b && b.kind === 'pvp' && (b.aId === p.id || b.bId === p.id)) {
+            const other = player(state, b.aId === p.id ? b.bId : b.aId);
+            log(state, p.name + ' collapses' + (reason ? ' from ' + reason : '') + '.', 'death');
+            return winPvp(state, other, p);
+        }
+        if (b && b.kind === 'pve' && b.aId === p.id) {
+            log(state, p.name + ' collapses' + (reason ? ' from ' + reason : '') +
+                       ' and the fight is lost.', 'death');
+            const wasIllusion = b.illusion;
+            state.battle = null;
+            sendToStart(state, p, true);
+            if (wasIllusion) advanceTurn(state);
+            return ok();
+        }
+        log(state, p.name + ' collapses and returns to the Start.', 'death');
+        sendToStart(state, p, true);
+        return ok();
     }
 
     /* ------------------------------------------------------------------ */
@@ -409,6 +460,7 @@
         if (state.pending) return fail('Resolve the square first.');
         const p = currentPlayer(state);
         if (p.hasMoved) return fail('You have already moved this turn.');
+        if (p.pos >= D.ARENA_INDEX) return fail('You are already in the arena.');
 
         const raw = d6();
         const mod = diceModifier(p) + (p.agileBonus || 0);
@@ -948,11 +1000,7 @@
                 p.hp = Math.max(0, p.hp - R.foodPoisoningLoss);
                 log(state, p.name + ' rolled a 3 — food poisoning! −' +
                            R.foodPoisoningLoss + ' HP.', 'death');
-                if (p.hp <= 0) {
-                    if (state.battle) { state.battle = null; }
-                    log(state, p.name + ' collapses and returns to the Start.', 'death');
-                    sendToStart(state, p, true);
-                }
+                if (p.hp <= 0) collapse(state, p, 'food poisoning');
             } else {
                 const before = p.hp;
                 p.hp = Math.min(p.maxHp, p.hp + R.rawSteakHeal);
@@ -1275,7 +1323,7 @@
         rollMove, resolvePending,
         battleRoll, battleAttack, availableMoves, battleActorId,
         usePowerup, usePotion, eatSteak, cookSteaks, equip, useAbility, buy,
-        proposeTrade, respondTrade, cancelTrade,
+        proposeTrade, respondTrade, cancelTrade, collapse,
         totalDefence, totalAttackBonus, diceModifier,
         equippedWeapon, equippedArmour, player, square, uid, d6
     };
