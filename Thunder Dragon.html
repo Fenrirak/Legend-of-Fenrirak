@@ -535,6 +535,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     border: 1px solid var(--panel-edge);
 }
 .turn-banner.mine { border-color: var(--gold); box-shadow: 0 0 22px -8px rgba(217,163,92,.7); }
+/* The piece belonging to whoever is up, at the head of the banner. */
+.turn-banner .whose {
+    width: 34px; height: 34px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    border: 2px solid var(--panel-edge);
+    background: #f6f3e6 center/86% no-repeat;
+}
+.turn-banner.mine .whose { border-color: var(--gold); }
 .turn-banner .who { font-size: 18px; color: var(--cream); }
 .turn-banner .timer { margin-left: auto; font-size: 14px; color: #9a9a9a; }
 
@@ -578,7 +587,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     position: relative;
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    grid-template-rows: repeat(5, minmax(108px, auto));
+    /* Every row the same height, so a square with a long card on it does
+       not come out taller than its neighbours. The tracks are 1fr, which
+       levels them off at whatever the fullest square needs; the writing is
+       set small enough that this lands under the old 108px floor rather
+       than over it, so the board is shorter than it used to be, not
+       taller. */
+    grid-template-rows: repeat(5, minmax(0, 1fr));
     gap: 9px;
     padding: 20px;
     border-radius: 5px;
@@ -617,26 +632,26 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     position: relative;
     z-index: 2;
     border-radius: 2px;
-    padding: 7px 8px 6px;
+    padding: 6px 7px 5px;
     background: rgba(255, 255, 250, .30);
     border: 1px solid #78826b;
-    min-height: 108px;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     color: #3f4536;
 }
 .sq .sq-name {
-    font-size: 12.5px;
+    font-size: 11.5px;
     color: #2c3126;
     line-height: 1.2;
     padding-bottom: 3px;
     border-bottom: 1px solid #78826b;
 }
 .sq .sq-text {
-    font-size: 10.5px;
+    font-size: 9.2px;
     color: #4d5443;
-    line-height: 1.35;
+    line-height: 1.28;
     margin-top: 4px;
     flex: 1;
 }
@@ -802,6 +817,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     transition: transform .16s ease;
 }
 .token.me { border-color: #b8791f; border-width: 3px; }
+/* Whose go it is. The piece is ringed in gold and breathes gently, so the
+   turn can be found on the board without reading the banner. */
+.token.turn {
+    border-color: var(--gold-bright, #e4c14a);
+    border-width: 3px;
+    box-shadow: 0 0 0 3px rgba(228, 193, 74, .32), 0 3px 6px rgba(0,0,0,.5);
+    animation: token-turn 2s ease-in-out infinite;
+}
+@keyframes token-turn {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(228,193,74,.28), 0 3px 6px rgba(0,0,0,.5); }
+    50%      { box-shadow: 0 0 0 7px rgba(228,193,74,.10), 0 3px 6px rgba(0,0,0,.5); }
+}
 /* Lifted for the moment it is stepping onto a square. */
 .token.walking { transform: scale(1.22) translateY(-5px); }
 
@@ -823,9 +850,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 /* the disc */
 .arena .arena-disc {
     position: absolute;
-    left: 55%; top: 50%;
+    /* Sat over on the right, which put the far rim under the Gate. It is
+       pulled back towards the near bank now, so the Gate has clear water to
+       stand on between the disc and the Fountain of Life. */
+    left: 31%; top: 50%;
     transform: translate(-50%, -50%);
-    width: min(94%, 300px);
+    width: min(82%, 300px);
     aspect-ratio: 1;
     border-radius: 50%;
     background:
@@ -856,9 +886,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .arena .arena-inner {
     position: absolute;
-    left: 55%; top: 37%;
+    /* On the disc rather than over its top rim: the disc is sized off the
+       width and the arena's box is three rows tall, so a fraction of the
+       box height put the writing above the card on a narrow board. */
+    left: 31%; top: 43%;
     transform: translate(-50%, -50%);
-    width: min(86%, 262px);
+    width: min(74%, 262px);
     text-align: center;
     z-index: 2;
 }
@@ -872,9 +905,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 /* Whoever is in the arena stands in the middle of the circle. */
 .arena .tokens {
     position: absolute;
-    left: 55%; top: 52%;
+    left: 31%; top: 57%;
     transform: translate(-50%, -50%);
-    width: min(80%, 240px);
+    width: min(66%, 240px);
     display: flex; justify-content: center; flex-wrap: wrap;
     gap: 5px;
     z-index: 3;
@@ -884,16 +917,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 /* ---- the Gate ---------------------------------------------------------
    Not a square on the board: the rules put it in the gap between the
-   Fountain of Life and the arena, so it stands on the arena's rim as a
-   little stone arch.
+   Fountain of Life and the arena, so that is where it stands -- on the far
+   bank, right where the water starts, with the arena's disc pulled back off
+   it. It used to sit on the arena's rim, which read as the Gate being part
+   of the arena rather than the way in to it.
+
+   Its width is a share of the column rather than a number of pixels, so it
+   keeps the same place on the bank when the board is narrower.
    ---------------------------------------------------------------------- */
 
 .sq.gateway {
     justify-self: end;
     align-self: center;
     z-index: 5;
-    width: 78px;
-    min-height: 122px;
+    width: 56%;
+    aspect-ratio: 120 / 190;
+    min-height: 0;
     padding: 0;
     background: none;
     border: 0;
@@ -942,6 +981,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 @media (prefers-reduced-motion: reduce) {
     .sq.gateway .gate-bolt { animation: none; opacity: .6; }
+    .token.turn { animation: none; }
 }
 
 /* ---- the models standing on the grass ---------------------------------
@@ -1294,10 +1334,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 @media (max-width: 1080px) {
     .game-grid { grid-template-columns: 1fr; }
     .lobby-grid { grid-template-columns: 1fr; }
-    .board { grid-template-rows: repeat(5, minmax(84px, auto)); }
+    /* Still every row the same height, only a shorter floor. */
+    .board { grid-template-rows: repeat(5, minmax(84px, 1fr)); }
     .sq { min-height: 84px; }
     .sq .sq-text { display: none; }
-    .arena .arena-title { font-size: 21px; }
+    /* The disc is a fraction of the board's width, so the writing on it has
+       to be too -- a fixed size spilled off the card on a narrow screen. */
+    .arena .arena-title { font-size: min(21px, 3.2vw); }
+    .arena .arena-sub { font-size: min(11.5px, 1.9vw); }
 }
 
 @media (max-width: 720px) {
@@ -2212,9 +2256,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</g>' +
             // the far arm: sleeve, then the hand closed round the staff
             '<g ' + K + ' fill="#5c8fc4"><path d="M58 55h15v13H58z"/></g>' +
-            '<path d="M71 56h11v12H71z" fill="#f0d9a8" stroke="#20180f" ' +
-            'stroke-width="2" stroke-linejoin="round"/>' +
-            '<path d="M73 61h7" stroke="#c9a878" stroke-width="1.6"/>' +
+            // a fist closed round the shaft: rounded, a little wider than the
+            // staff, with two knuckle creases across it
+            '<rect x="70.5" y="54" width="14" height="14" rx="5" fill="#f0d9a8" ' +
+            'stroke="#20180f" stroke-width="2"/>' +
+            '<g stroke="#c9a878" stroke-width="1.4" stroke-linecap="round">' +
+            '<path d="M73.5 59h8M73.5 63h8"/></g>' +
             // the beard, the widest shape in the piece
             '<g ' + K + ' fill="#f4f2e8">' +
             '<path d="M32 40h36c0 20-8 32-18 32s-18-12-18-32z"/></g>' +
@@ -2237,11 +2284,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // the near arm, out in front of everything: the sleeve, then the
             // hand hanging open at his side. He carries the staff and nothing
             // else -- the orb he used to be holding has gone.
-            '<g ' + K + ' fill="#5c8fc4"><path d="M27 54h15v12H27z"/></g>' +
-            '<path d="M17 55h12v10a6 6 0 0 1-12 0z" fill="#f0d9a8" ' +
-            'stroke="#20180f" stroke-width="2" stroke-linejoin="round"/>' +
-            '<g stroke="#c9a878" stroke-width="1.4" stroke-linecap="round">' +
-            '<path d="M20 60v5M23 60v6M26 60v5"/></g>' +
+            '<g ' + K + ' fill="#5c8fc4"><path d="M28 54h14v12H28z"/></g>' +
+            '<rect x="18" y="54.5" width="12.5" height="13" rx="5.5" ' +
+            'fill="#f0d9a8" stroke="#20180f" stroke-width="2"/>' +
+            '<g stroke="#c9a878" stroke-width="1.3" stroke-linecap="round">' +
+            '<path d="M21.5 60v4.5M24.5 60.5v4.5M27.5 60v4.5"/></g>' +
             '</svg>'
     };
 
@@ -2813,7 +2860,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
           action: 'sea_of_castout', scenery: 'broken_bridge', stop: true,
           text: 'A whirlpool takes one of your items. Choose something to lose. STOP.' },
 
-        { i: 14, key: 'slivergrove',      name: 'Slivergrove Village',  row: 0, col: 4,
+        { i: 14, key: 'cloverdale',       name: 'Cloverdale Village',   row: 0, col: 4,
           action: 'heal', value: 50, text: 'Heal 50 HP.' },
 
         { i: 15, key: 'uncharted_forest', name: 'Uncharted Forest',     row: 0, col: 5,
@@ -2859,18 +2906,29 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // Scenery, not a square you can land on — fills the gap beside the arena.
     const DECOR = [
         // kind          where               how big (fraction of the cell)
-        // The big one. It stands beside the arena on the board with its
-        // foliage running right up against the disc, so it is drawn large and
-        // pushed towards the arena -- the squares paint over it, which puts
-        // the tree behind the arena exactly as it is on the table.
-        { kind: 'tree',      row: 2, col: 1, size: 1.9, nudge: 26 },
+        // The big one. It stands on the grass beside the arena, leaned a
+        // little away from it so its foliage stops short of the disc rather
+        // than running over it.
+        { kind: 'tree',      row: 2, col: 1, size: .85, nudge: -15 },
         { kind: 'ruins',     row: 2, col: 0, size: .62 },
-        { kind: 'spring',    row: 3, col: 0, size: .58 },
-        { kind: 'village',   row: 1, col: 4, size: .62 },
+        // The village stands on its own square rather than in the empty cell
+        // above it, and the two pots stand on the two Pot squares. Scenery is
+        // painted under the squares, so it shows through the ruled rectangle
+        // instead of covering what is written on it.
+        { kind: 'village',   row: 0, col: 4, size: .80 },
         { kind: 'fountain',  row: 2, col: 4, size: .72 },
-        { kind: 'pot',       row: 3, col: 4, size: .52 },
-        { kind: 'bush',      row: 1, col: 5, size: .32 },
-        { kind: 'bush',      row: 3, col: 5, size: .3 }
+        { kind: 'pot',       row: 0, col: 0, size: .46 },
+        { kind: 'pot',       row: 2, col: 6, size: .46 },
+        // Bushes dotted round the edges of the grass. Some of them are in
+        // berry, which is what the little red dots on the board are.
+        { kind: 'bush',      row: 1, col: 5, size: .30 },
+        { kind: 'bush',      row: 3, col: 5, size: .27, berries: true, nudge: -26 },
+        { kind: 'bush',      row: 3, col: 5, size: .20, nudge: 52 },
+        { kind: 'bush',      row: 1, col: 4, size: .24, berries: true, nudge: 60 },
+        { kind: 'bush',      row: 3, col: 4, size: .26, nudge: -50 },
+        { kind: 'bush',      row: 3, col: 6, size: .25, berries: true },
+        { kind: 'bush',      row: 1, col: 1, size: .24, berries: true, nudge: -70 },
+        { kind: 'bush',      row: 3, col: 1, size: .22, nudge: 78 }
     ];
 
     const START_INDEX = 0;
@@ -3997,7 +4055,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     function afterAttack(state, p, move) {
-        p.energy += 1;                       // energy is gained by attacking, never spent
+        // Energy builds up a charge, one for every swing. Spending it is what
+        // a heavy move costs: anything that needed more than a single energy
+        // burns the whole charge and drops you back to the starting one.
+        if (move.energy > R.startingEnergy) {
+            p.energy = R.startingEnergy;
+            log(state, p.name + ' spent the charge — energy back to ' +
+                       R.startingEnergy + '.', 'muted');
+        } else {
+            p.energy += 1;
+        }
         consumeBuffs(p, 'damage');
 
         // Triple Whack has to be three turns *in a row*. Swing anything else
@@ -4121,7 +4188,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const usable = e.moves.filter(m => b.enemyEnergy >= m.energy);
         const move = usable.sort((x, y) => y.damage - x.damage)[0] || e.moves[0];
         const dealt = damagePlayer(state, p, move.damage + (b.spite || 0));
-        b.enemyEnergy += 1;
+        // A monster pays for a heavy move the same way a player does.
+        if (move.energy > R.startingEnergy) b.enemyEnergy = R.startingEnergy;
+        else b.enemyEnergy += 1;
         log(state, 'The ' + e.name + ' used ' + move.name + ' for ' + dealt + ' damage.', 'enemy');
         damageArmour(state, p);
 
@@ -4896,11 +4965,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* ------------------------------------------------------------------ */
     /* Reading a fight                                                     */
     /*                                                                     */
-    /* Energy is a threshold in this game, not a cost -- you gain one every  */
-    /* time you swing and never spend any -- so the big move is not a        */
-    /* resource to husband, it is simply locked until a few blows in. That   */
-    /* is why a fight is judged on the average of the cheap move and the     */
-    /* dear one rather than on either alone.                                */
+    /* Energy is a charge you build by swinging -- one every blow -- and a   */
+    /* heavy move burns the lot, dropping you back to one. So a fight is not  */
+    /* the cheap move nor the dear one but the cycle of the two, and the only */
+    /* honest way to price it is to walk it forward blow by blow.             */
     /* ------------------------------------------------------------------ */
 
     // The hardest thing a side can reach on the energy it has. Averaging the
@@ -4912,12 +4980,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         moves.forEach(m => {
             if (energy < m.energy) return;
             const dealt = Math.max(0, m.damage + bonus - defence);
-            if (best === null || dealt > best) best = dealt;
+            if (best === null || dealt > best.dealt) best = { dealt: dealt, cost: m.energy };
         });
         if (best !== null) return best;
         // Nothing affordable yet, which is what the monster falls back on too.
         const cheapest = moves.slice().sort((a, b) => a.energy - b.energy)[0];
-        return Math.max(0, cheapest.damage + bonus - defence);
+        return { dealt: Math.max(0, cheapest.damage + bonus - defence),
+                 cost: cheapest.energy };
+    }
+
+    // What the charge stands at after a swing: spent by a heavy move, built
+    // up by a light one.
+    function spend(energy, cost) {
+        return cost > D.RULES.startingEnergy ? D.RULES.startingEnergy : energy + 1;
     }
 
     // Walk a fight forward blow by blow and see who runs out of health first.
@@ -4930,13 +5005,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         let aEnergy = D.RULES.startingEnergy, bEnergy = D.RULES.startingEnergy;
 
         for (let round = 0; round < 80; round++) {
-            bHp -= reachable(a.moves, aEnergy, a.bonus, b.defence) / 2;
-            aEnergy += 1;
+            const aSwing = reachable(a.moves, aEnergy, a.bonus, b.defence);
+            bHp -= aSwing.dealt / 2;
+            aEnergy = spend(aEnergy, aSwing.cost);
             if (a.heal) aHp = Math.min(a.hp, aHp + a.heal / 2);
             if (bHp <= 0) return { win: true, margin: Math.max(0, aHp) / a.hp };
 
-            aHp -= reachable(b.moves, bEnergy, b.bonus, a.defence) / 2;
-            bEnergy += 1;
+            const bSwing = reachable(b.moves, bEnergy, b.bonus, a.defence);
+            aHp -= bSwing.dealt / 2;
+            bEnergy = spend(bEnergy, bSwing.cost);
             if (b.heal) bHp = Math.min(b.hp, bHp + b.heal / 2);
             if (aHp <= 0) return { win: false, margin: Math.max(0, bHp) / b.hp };
         }
@@ -5712,6 +5789,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     let timer = null;
     let lastDieAt = 0;
     let lastDieSeq = 0;
+    let lastTurnKey = '';
+    let turnChangedAt = 0;
     let repeated = { sig: '', count: 0 };
 
     function save() {
@@ -5725,6 +5804,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
     }
 
+    // Whose go it is, as one string. Used only to notice the moment it
+    // changes hands.
+    function turnKey(st) {
+        if (!st) return '';
+        const cur = E.currentPlayer(st);
+        return (st.turnNo | 0) + '/' + (cur ? cur.id : '-');
+    }
+
     function emit() {
         // A fresh throw of the die pushes the bots back a beat, so the
         // overlay has time to tumble, land and be read before anything else
@@ -5732,6 +5819,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (state && (state.dieSeq | 0) !== lastDieSeq) {
             lastDieSeq = state.dieSeq | 0;
             lastDieAt = Date.now();
+        }
+        // So does the turn changing hands: the board stops for a moment on
+        // the handover, so you see whose go it has become before they start
+        // doing things with it.
+        const key = turnKey(state);
+        if (key !== lastTurnKey) {
+            lastTurnKey = key;
+            turnChangedAt = Date.now();
         }
         save();
         const snapshot = state;
@@ -5792,13 +5887,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     /* ---- how fast the other two play --------------------------------
        One pace, chosen so a person can follow it: a die is left on the table
-       long enough to be read before anything else happens, and the quiet
-       steps in between go by quickly. There is no setting for this. If you
-       want to know what is going on, the banner says whose go it is and what
-       they are doing, and the narrator says what they did.
+       long enough to be read before anything else happens, the board stops
+       for a beat every time the turn changes hands, and the quiet steps in
+       between go by quickly. There is no setting for this. If you want to
+       know what is going on, the banner says whose go it is and what they
+       are doing, their piece and their bar are ringed in gold, and the
+       narrator says what they did.
        ------------------------------------------------------------------ */
 
     const AFTER_A_DIE = 1500;      // let the overlay tumble, land and be read
+    const AT_A_HANDOVER = 1400;    // the turn has just passed to somebody else
     const BETWEEN_STEPS = 420;     // everything else
 
     function schedule() {
@@ -5811,9 +5909,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (!listeners.length) return;
         if (!nextJob()) return;
 
-        // Never on top of a die that is still in the air, and never so fast
-        // that the board changes without you seeing it.
-        const wait = Math.max(BETWEEN_STEPS, AFTER_A_DIE - (Date.now() - lastDieAt));
+        // Never on top of a die that is still in the air, never straight
+        // after the turn has changed hands, and never so fast that the board
+        // changes without you seeing it.
+        const now = Date.now();
+        const wait = Math.max(BETWEEN_STEPS,
+                              AFTER_A_DIE - (now - lastDieAt),
+                              AT_A_HANDOVER - (now - turnChangedAt));
         timer = setTimeout(run, wait);
     }
 
@@ -5868,6 +5970,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         }];
         lastDieSeq = 0;
         lastDieAt = 0;
+        lastTurnKey = '';
+        turnChangedAt = 0;
         setTimeout(emit, 0);
         return Promise.resolve(CODE);
     }
@@ -5882,6 +5986,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         state.solo = true;
         lastDieSeq = state.dieSeq | 0;
         lastDieAt = 0;
+        lastTurnKey = '';
+        turnChangedAt = 0;
         setTimeout(emit, 0);
         return Promise.resolve(CODE);
     }
@@ -6864,8 +6970,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const doing = whatIsHappening();
         const waiting = doing.who && (!cur || doing.who !== cur.id);
 
+        // The piece belonging to whoever is up, at the head of the banner,
+        // so whose go it is can be seen rather than read.
+        const curArt = cur && cur.cls ? D.CLASSES[cur.cls].art : '';
         banner.className = 'turn-banner' + (mine ? ' mine' : '');
         banner.innerHTML =
+            (curArt ? '<span class="whose" style="background-image:url(\'' +
+                      esc(curArt) + '\')"></span>' : '') +
             '<span class="who">' + (mine ? 'Your turn' : esc(cur ? cur.name : '—') + '’s turn') + '</span>' +
             '<span class="doing' + (doing.spin ? ' busy' : '') + '">' +
                 (doing.spin ? '<span class="spinner"></span>' : '') +
@@ -7026,6 +7137,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     function tokensOn(index) {
+        // Whose go it is. Their piece wears a gold ring so you can find it
+        // on the board without reading anything.
+        const cur = E.currentPlayer(S);
         return S.players.filter(p => {
             if (!p.cls) return false;
             const at = (p.id in shownPos) ? shownPos[p.id] : p.pos;
@@ -7034,6 +7148,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const c = D.CLASSES[p.cls];
             const moving = !!walkTimers[p.id] && shownPos[p.id] !== p.pos;
             return '<div class="token' + (p.id === NET.PID ? ' me' : '') +
+                (cur && cur.id === p.id ? ' turn' : '') +
                 (moving ? ' walking' : '') + '" title="' +
                 esc(p.name) + ' — ' + esc(c.name) + ' — ' + p.hp + '/' + p.maxHp + ' HP" ' +
                 'style="background-image:url(\'' + esc(c.art) + '\')"></div>';
@@ -7056,7 +7171,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Every one of these is a piece of the real board drawn as SVG: the    */
     /* big tree with its painted spiral canopy and torn paper leaves, the   */
     /* pots with blue water in them, the broken walls of the Castle Ruins,  */
-    /* the pink spring, the little cardboard house at Slivergrove, and the  */
+    /* the huddle of little houses at Cloverdale, the bushes, and the       */
     /* merchant's stall. Nothing here is a file, so nothing here can fail   */
     /* to upload.                                                          */
     /* ------------------------------------------------------------------ */
@@ -7156,7 +7271,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         '</g>' +
         '</svg>';
 
-    // One cardboard house for Slivergrove: a box with a roof pitched towards
+    // One cardboard house for Cloverdale: a box with a roof pitched towards
     // you. `back` ones are a shade darker so the huddle has some depth.
     function house(x, y, w, row) {
         const h = Math.round(w * 0.62);
@@ -7180,6 +7295,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 'v' + (h * 0.26) + 'h' + (-w * 0.2) + 'z" fill="#e0c489" stroke="none"/>' +
             '</g>';
     }
+
+    // Where the berries sit on a bush. Dotted about rather than spaced
+    // evenly, so they look dabbed on rather than printed.
+    const BERRIES = [[36, 47], [58, 43], [46, 60], [67, 55], [28, 58], [52, 31]];
 
     const SCENERY_ART = {
         // The iconic tree, seen from above: a canopy of torn paper leaves round
@@ -7234,50 +7353,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M10 74h44M62 82h46M18 88v12M40 74v26M80 62v38"/></g>' +
             '</svg>',
 
-        // The Spring. It is the square that launches you two spaces forward,
-        // so it has an actual coil on it now: a steel spring standing in the
-        // white basin on the pink block, under the gold wire arch. It used to
-        // be a pink block with a pale oval on it, which read as a wash basin.
-        spring:
-            '<svg viewBox="0 0 120 130" aria-hidden="true">' +
-            // the pink foam block, with the two tan blocks either side
-            '<rect x="12" y="74" width="96" height="34" rx="7" fill="#d9949f"/>' +
-            '<rect x="12" y="68" width="96" height="34" rx="7" fill="#efb4bd" ' +
-            'stroke="#cf8e99" stroke-width="2"/>' +
-            '<g fill="#e2a36f" stroke="#c2844f" stroke-width="1.6">' +
-            '<rect x="4" y="72" width="12" height="30" rx="5"/>' +
-            '<rect x="104" y="72" width="12" height="30" rx="5"/></g>' +
-            // the white basin the coil stands in
-            '<ellipse cx="60" cy="80" rx="27" ry="12" fill="#f6e3e6" ' +
-            'stroke="#cf8e99" stroke-width="2"/>' +
-            '<ellipse cx="60" cy="78" rx="19" ry="8" fill="#e9c3ca"/>' +
-            // the coil itself, four turns rising out of the basin
-            '<g fill="none" stroke="#7e8794" stroke-width="6" stroke-linecap="round">' +
-            '<path d="M44 74c0-7 32-7 32 0"/>' +
-            '<path d="M45 64c0-7 30-7 30 0"/>' +
-            '<path d="M47 54c0-6 26-6 26 0"/>' +
-            '<path d="M49 45c0-6 22-6 22 0"/>' +
-            '</g>' +
-            '<g fill="none" stroke="#aab3bf" stroke-width="2.6" stroke-linecap="round">' +
-            '<path d="M44 73c0-6 32-6 32 0"/>' +
-            '<path d="M45 63c0-6 30-6 30 0"/>' +
-            '<path d="M47 53c0-5 26-5 26 0"/>' +
-            '<path d="M49 44c0-5 22-5 22 0"/>' +
-            '</g>' +
-            // the plate on top of the coil, and the gold wire arch over it
-            '<ellipse cx="60" cy="38" rx="17" ry="6" fill="#c9d2dd" ' +
-            'stroke="#7e8794" stroke-width="2"/>' +
-            '<path d="M26 66c0-30 68-30 68 0" fill="none" stroke="#c79a2e" ' +
-            'stroke-width="6" stroke-linecap="round"/>' +
-            '<path d="M26 65c0-28 68-28 68 0" fill="none" stroke="#e8c65a" ' +
-            'stroke-width="3" stroke-linecap="round"/>' +
-            // the two little arrows that say which way it throws you
-            '<g fill="#c79a2e" opacity=".95">' +
-            '<path d="M60 12l9 12h-6v9h-6v-9h-6z"/>' +
-            '</g>' +
-            '</svg>',
-
-        // Slivergrove Village. It is a village, so it is a huddle of little
+        // Cloverdale Village. It is a village, so it is a huddle of little
         // brown houses rather than the one big box it used to be: seven of
         // them at different sizes, roofs pitched towards you, a couple with
         // chimneys, and a path worn between them.
@@ -7346,7 +7422,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // happens to look like from directly overhead -- but it is a bush, so
         // it is now a rounded clump of overlapping leaves with a couple of
         // twigs showing under it.
-        bush:
+        // Some of the bushes are in berry -- the little red dots dabbed on
+        // them with the end of a brush -- so this is drawn from the entry
+        // rather than being one fixed picture.
+        bush: (d) =>
             '<svg viewBox="0 0 100 100" aria-hidden="true">' +
             // the shadow it sits in
             '<ellipse cx="50" cy="80" rx="34" ry="9" fill="#7f9463" opacity=".45"/>' +
@@ -7374,6 +7453,17 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             'stroke-linecap="round" opacity=".7">' +
             '<path d="M41 45l5 7M59 41l-4 7M50 61l4-7"/>' +
             '</g>' +
+            // the berries, if this one is bearing: a few small red dots with
+            // a highlight on each, tucked in among the leaves
+            (d && d.berries
+                ? '<g>' +
+                  BERRIES.map(b =>
+                      '<circle cx="' + b[0] + '" cy="' + b[1] + '" r="4.6" fill="#8f2420"/>' +
+                      '<circle cx="' + b[0] + '" cy="' + b[1] + '" r="3.6" fill="#c8332c"/>' +
+                      '<circle cx="' + (b[0] - 1.2) + '" cy="' + (b[1] - 1.4) +
+                          '" r="1.2" fill="#f0a09a"/>').join('') +
+                  '</g>'
+                : '') +
             '</svg>',
 
         // Cardboard rocks along the top of the water.
@@ -7485,24 +7575,32 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<rect x="152" y="50" width="10" height="102" rx="3"/>' +
             '</g>' +
 
-            // the flat cardboard roof laid over the four legs, high enough to
-            // see under
+            // The flat cardboard roof, laid over the four legs. It is a
+            // proper trapezoid: wider across the front than the back,
+            // because the back legs stand closer together, and tilted a
+            // little to the right because the right-hand legs are set
+            // lower. It used to be drawn as a quad whose corners did not
+            // agree with each other, which came out looking buckled.
+            //
+            //   back  (48,18) --------- (142,24)
+            //   front (24,42) --------------- (172,50)
             '<g>' +
-            // the thickness of the card along the two near edges
-            '<path d="M24 40 L104 64 L178 44 L178 51 L104 71 L24 47 Z" fill="#7c4826"/>' +
+            // the thickness of the card along the near edge
+            '<path d="M24 42 L172 50 L172 57 L24 49 Z" fill="#7c4826"/>' +
             // the sheet itself
-            '<path d="M24 40 L80 6 L178 26 L104 64 Z" fill="#b5714a" ' +
-            'stroke="#8a5030" stroke-width="2" stroke-linejoin="round"/>' +
-            // the corrugation showing through
+            '<path d="M24 42 L48 18 L142 24 L172 50 Z" fill="#b5714a" '
+            + 'stroke="#8a5030" stroke-width="2" stroke-linejoin="round"/>' +
+            // the corrugation, running front to back across the sheet
             '<g stroke="#9c5f3c" stroke-width="1" opacity=".55">' +
-            '<path d="M38 36L91 11M54 41L108 15M71 47L125 19M88 53L142 23M104 58L160 27"/>' +
+            '<path d="M46 43L62 19M68 44L76 20M91 46L90 21M113 47L104 22'
+            + 'M135 48L119 22M157 49L133 23"/>' +
             '</g>' +
             // written on it in marker, lying flat on the sloping card
-            '<g transform="matrix(1 .2 -.55 1 0 0) translate(126 -8)">' +
-            '<text x="0" y="0" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" ' +
-            'font-size="13" fill="#2f1d12" text-anchor="middle">Poor</text>' +
-            '<text x="4" y="17" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" ' +
-            'font-size="17" font-weight="bold" fill="#231409" text-anchor="middle">' +
+            '<g transform="matrix(1 .054 -.55 .95 96 34)">' +
+            '<text x="0" y="-9" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" '
+            + 'font-size="13" fill="#2f1d12" text-anchor="middle">Poor</text>' +
+            '<text x="0" y="8" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" '
+            + 'font-size="17" font-weight="bold" fill="#231409" text-anchor="middle">' +
             'Merchant</text>' +
             '</g>' +
             '</g>' +
@@ -7549,8 +7647,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         }).join('');
 
         const decor = (D.DECOR || []).map(d => {
-            const art = SCENERY_ART[d.kind];
-            if (!art) return '';
+            const src = SCENERY_ART[d.kind];
+            if (!src) return '';
+            const art = typeof src === 'function' ? src(d) : src;
             const size = Math.round((d.size || .6) * 100);
             return '<div class="decor" style="grid-row:' + (d.row + 1) +
                 ';grid-column:' + (d.col + 1) +
