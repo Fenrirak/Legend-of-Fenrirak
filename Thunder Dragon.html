@@ -538,6 +538,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .turn-banner .who { font-size: 18px; color: var(--cream); }
 .turn-banner .timer { margin-left: auto; font-size: 14px; color: #9a9a9a; }
 
+/* A computer player is taking its turn. It moves at a readable pace on
+   purpose, so this says so rather than letting the pause look like a fault. */
+.turn-banner .thinking {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13.5px; color: #9fb4c8;
+}
+.turn-banner .thinking .spinner {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(159, 180, 200, .3);
+    border-top-color: #9fb4c8;
+    animation: enemy-spin .8s linear infinite;
+}
+
 /* ---- the board --------------------------------------------------------
    Drawn from the photograph: a sheet of grass-green card with the squares
    ruled on it in pencil, a blue river down the middle, plank bridges over
@@ -1592,9 +1606,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             <div class="home-hero">
                 <h1>The Thunder Dragon</h1>
                 <p>
-                    The full board game, online, for 2 to 6 players. Pick a Knight, an Archer
-                    or a Mage, race across the map, gather the three key fragments, and be
-                    the first to bring down Fenrirak.
+                    The full board game, online, for 2 to 6 players — or on your own
+                    against two computer players. Pick a Knight, an Archer or a Mage,
+                    race across the map, gather the three key fragments, and be the
+                    first to bring down Fenrirak.
                 </p>
             </div>
 
@@ -1605,6 +1620,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     <button class="btn primary" id="btn-create">Create a new room</button>
                     <p class="muted note">
                         You will get a 5-letter room code and an invite link to share.
+                        <span id="online-note"></span>
                     </p>
                 </div>
 
@@ -1614,6 +1630,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     <button class="btn" id="btn-join">Join</button>
                     <p class="muted note">
                         Ask the host for their room code, or open their invite link.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h2>On your own</h2>
+                    <button class="btn primary" id="btn-solo">Play against the computer</button>
+                    <button class="btn" id="btn-resume" style="display:none">Carry on your last game</button>
+                    <p class="muted note">
+                        Three at the table, one of each class. You choose first and the
+                        computer takes the other two.
                     </p>
                 </div>
             </div>
@@ -1630,6 +1656,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     arena. Land on the same square as another player and you fight them — that
                     part is not optional.
                 </p>
+                <p class="muted" style="font-size:14.5px;line-height:1.7;margin:12px 0 0">
+                    Playing on your own is the same game, not a smaller one. The two
+                    computer players choose their own gear, weigh up whether a fight is
+                    worth having, haggle at the Merchant and decide for themselves how
+                    much of a movement bonus they actually want.
+                </p>
             </div>
         </div>
     </section>
@@ -1638,7 +1670,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     <section id="screen-lobby" class="screen">
         <div class="wrap">
             <div class="code-box">
-                <span class="muted">Room code</span>
+                <span class="muted" id="code-label">Room code</span>
                 <span class="code" id="lobby-code">—</span>
                 <button class="btn small" id="btn-copy">Copy invite link</button>
                 <button class="btn small danger" id="btn-leave-lobby">Leave</button>
@@ -1647,7 +1679,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             <div class="lobby-grid">
                 <div class="card">
                     <h2>Choose your class</h2>
-                    <p class="muted" style="font-size:13.5px;margin:0 0 14px">
+                    <p class="muted" id="class-note" style="font-size:13.5px;margin:0 0 14px">
                         First come, first served. At most two of each class.
                     </p>
                     <div class="class-picker" id="class-picker"></div>
@@ -2914,7 +2946,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return stock;
     }
 
-    function addPlayer(state, pid, name) {
+    function addPlayer(state, pid, name, isBot) {
         if (state.phase !== 'lobby') return fail('The game has already started.');
         if (player(state, pid)) return ok();
         if (state.players.length >= R.maxPlayers) return fail('This room is full (6 players).');
@@ -2922,6 +2954,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         state.players.push({
             id: pid,
             name: (name || 'Adventurer').slice(0, 16),
+            bot: !!isBot,        // run by the computer, in a single-player game
             cls: null,
             ready: false,
             pos: D.START_INDEX,
@@ -2953,7 +2986,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             connected: true,
             lastSeen: Date.now()
         });
-        log(state, (name || 'An adventurer') + ' joined the room.', 'muted');
+        log(state, (name || 'An adventurer') +
+                   (isBot ? ' takes a seat at the table.' : ' joined the room.'), 'muted');
         return ok();
     }
 
@@ -4314,11 +4348,67 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     /* ------------------------------------------------------------------ */
+    /* The action table                                                    */
+    /*                                                                     */
+    /* Everything a player -- or a bot -- can do to the game, named. It     */
+    /* lives here rather than in the network layer because there are now    */
+    /* two layers that need it: net.js runs each one inside a Firestore     */
+    /* transaction, and solo.js runs it straight against the copy of the    */
+    /* state held in the tab. One table, so the two can never drift apart.  */
+    /* ------------------------------------------------------------------ */
+
+    const ACTIONS = {
+        chooseClass:   (s, pid, a) => chooseClass(s, pid, a.cls),
+        startGame:     (s, pid)    => startGame(s, pid),
+        rollForOrder:  (s, pid)    => rollForOrder(s, pid),
+        // useBonus is false to decline the bonus, a number to take part of it
+        // (the Charged Speed Set's "up to 3"), and missing to take it whole.
+        // Firestore turns a missing field into null on the way back out, so
+        // null has to mean the same thing as missing.
+        rollMove:      (s, pid, a) => rollMove(s, pid,
+            (a.useBonus === undefined || a.useBonus === null) ? true : a.useBonus),
+        endTurn:       (s, pid)    => endTurn(s, pid),
+        battleRoll:    (s, pid)    => battleRoll(s, pid),
+        battleAttack:  (s, pid, a) => battleAttack(s, pid, a.moveId),
+        enemyRoll:     (s, pid)    => enemyRoll(s, pid),
+        enemyStrike:   (s, pid)    => enemyStrike(s, pid),
+        usePowerup:    (s, pid, a) => usePowerup(s, pid, a.uid),
+        usePotion:     (s, pid, a) => usePotion(s, pid, a.uid),
+        eatSteak:      (s, pid, a) => eatSteak(s, pid, a.type),
+        cookSteaks:    (s, pid, a) => cookSteaks(s, pid, a.count),
+        equip:         (s, pid, a) => equip(s, pid, a.uid),
+        useAbility:    (s, pid, a) => useAbility(s, pid, a),
+        buy:           (s, pid, a) => buy(s, pid, a.kind, a.id),
+        payInCoins:    (s, pid, a) => payInCoins(s, pid, a.on),
+        resolvePending:(s, pid, a) => resolvePending(s, pid, a.choice),
+        proposeTrade:  (s, pid, a) => proposeTrade(s, pid, a.toId, a.give, a.want),
+        respondTrade:  (s, pid, a) => respondTrade(s, pid, a.tradeId, a.accept),
+        cancelTrade:   (s, pid, a) => cancelTrade(s, pid, a.tradeId),
+        leave:         (s, pid)    => removePlayer(s, pid),
+        closeGame:     (s, pid)    => closeGame(s, pid),
+        rename:        (s, pid, a) => {
+            const p = player(s, pid);
+            if (p) p.name = String(a.name || '').slice(0, 16) || p.name;
+            return ok();
+        },
+        heartbeat:     (s, pid) => {
+            const p = player(s, pid);
+            if (p) { p.lastSeen = Date.now(); p.connected = true; }
+            return ok();
+        },
+        timeoutCheck:  (s) => {
+            const changed = checkTimeout(s, Date.now());
+            return changed ? ok() : { ok: false, error: 'no-timeout', silent: true };
+        }
+    };
+
+    /* ------------------------------------------------------------------ */
 
     function ok(data) { return { ok: true, data: data }; }
     function fail(msg) { return { ok: false, error: msg }; }
 
     global.LOF_ENGINE = {
+        ACTIONS,
         makeRoomCode, createGame,
         addPlayer, removePlayer, chooseClass, startGame, rollForOrder,
         currentPlayer, isMyTurn, beginTurn, endTurn, advanceTurn, checkTimeout,
@@ -4337,6 +4427,1206 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     </script>
     <script>
+/* ==== game/bot.js ==== */
+/* =========================================================================
+   Legend of Fenrirak™, The Thunder Dragon — Online Version
+   bot.js — the players the computer runs.
+
+   One function matters here: decide(state, pid). Given the same game state
+   every other player can see, it answers "what would a sensible player in
+   this seat do next?" and hands back one action out of LOF_ENGINE.ACTIONS.
+   It never touches the state itself -- solo.js applies whatever comes back
+   through the ordinary action table, so a bot can only do things a person
+   sitting at the table could also do, and the rules are enforced on it the
+   same way they are on you.
+
+   The decisions are made from what the character actually has: its class
+   moves, its gear, its health against the thing in front of it, its coins,
+   how far along the track everybody is and who is closest to winning. There
+   is no cheating -- a bot does not know what the next roll will be, does not
+   see the item deck, and rolls the same crooked-proof die everyone else does.
+   ========================================================================= */
+
+(function (global) {
+    'use strict';
+
+    const D = global.LOF_DATA;
+    const E = global.LOF_ENGINE;
+
+    /* ------------------------------------------------------------------ */
+    /* Reading a character                                                 */
+    /* ------------------------------------------------------------------ */
+
+    function itemDef(inst) { return inst ? D.ITEMS[inst.id] : null; }
+
+    function fragmentCount(p) {
+        return Array.isArray(p.fragments) ? p.fragments.length : (p.keyFragments | 0);
+    }
+
+    function needsFragment(p, which) {
+        if (!which) return false;
+        return Array.isArray(p.fragments)
+            ? p.fragments.indexOf(which) < 0
+            : fragmentCount(p) < D.KEY_FRAGMENTS_NEEDED;
+    }
+
+    /* ---- the point of no return ---------------------------------------
+       The track is one way. Past the last square that could still hand you a
+       fragment you are missing there is nothing left but the Gate, and the
+       Gate throws anybody short of three straight back to the Start. So
+       walking beyond it is not progress, it is the whole journey undone --
+       and a bot that only counted squares behind it would cheerfully stroll
+       into the Fountain of Life with two fragments and lose everything.
+       -------------------------------------------------------------------- */
+
+    function lastUsefulSquare(p) {
+        let last = -1;
+        D.BOARD.forEach(sq => {
+            if (needsFragment(p, sq.keyFragment)) last = Math.max(last, sq.i);
+        });
+        return last;
+    }
+
+    // What a weapon is worth to whoever is holding it. Damage is the spine of
+    // it; the Staff of Life's healing and a chest weapon's Extra Move are both
+    // worth real damage on top, and anything that breaks after three hits is
+    // marked down because you will be empty-handed in the middle of a fight.
+    function weaponValue(def) {
+        if (!def) return -1;
+        let v = def.attack || 0;
+        if (def.healPerMove) v += def.healPerMove * 3;
+        if (def.extraMove) v += 10;
+        if (def.uses) v -= 6;
+        return v;
+    }
+
+    // Armour is defence first, but several pieces trade it for something
+    // else and those trades have to be priced. A point on the movement die is
+    // worth roughly six points of armour over a game; the Cloak's escape from
+    // a duel and the Dark Iron's first strike are worth about a good hit.
+    function armourValue(def, p) {
+        if (!def) return -1;
+        let v = def.defence || 0;
+        v += (def.attack || 0);
+        v += (def.dice || 0) * 6;
+        v += (def.diceUpTo || 0) * 4;
+        if (def.spiritRoll) v += 10;              // +5 or +15 on every swing
+        if (def.avoidPvp) v += 10;
+        if (def.firstStrikePvp) v += 8;
+        if (def.fenrirakMovesPvp) v += 10;
+        if (def.payInCoins) v += Math.min(40, (p ? p.coins : 0)) / 4;
+        if (def.uses) v -= 6;
+        return v;
+    }
+
+    function gearValue(def, p) {
+        if (!def) return -1;
+        return def.kind === 'weapon' ? weaponValue(def) : armourValue(def, p);
+    }
+
+    // The best thing of each kind this character owns and is allowed to hold.
+    function bestOwned(state, p, kind) {
+        let best = null, bestV = -1;
+        p.inventory.forEach(inst => {
+            const def = D.ITEMS[inst.id];
+            if (!def || def.kind !== kind) return;
+            if (!E.suitsClass(p, inst.id)) return;
+            const v = gearValue(def, p);
+            if (v > bestV) { bestV = v; best = inst; }
+        });
+        return best;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Reading a fight                                                     */
+    /*                                                                     */
+    /* Energy is a threshold in this game, not a cost -- you gain one every  */
+    /* time you swing and never spend any -- so the big move is not a        */
+    /* resource to husband, it is simply locked until a few blows in. That   */
+    /* is why a fight is judged on the average of the cheap move and the     */
+    /* dear one rather than on either alone.                                */
+    /* ------------------------------------------------------------------ */
+
+    // The hardest thing a side can reach on the energy it has. Averaging the
+    // cheap move with the dear one will not do: Fenrirak's Discharge is 175
+    // damage but wants 8 energy, which he does not have until the seventh
+    // blow, and most fights are decided long before that.
+    function reachable(moves, energy, bonus, defence) {
+        let best = null;
+        moves.forEach(m => {
+            if (energy < m.energy) return;
+            const dealt = Math.max(0, m.damage + bonus - defence);
+            if (best === null || dealt > best) best = dealt;
+        });
+        if (best !== null) return best;
+        // Nothing affordable yet, which is what the monster falls back on too.
+        const cheapest = moves.slice().sort((a, b) => a.energy - b.energy)[0];
+        return Math.max(0, cheapest.damage + bonus - defence);
+    }
+
+    // Walk a fight forward blow by blow and see who runs out of health first.
+    // Half of every roll is a miss, so a swing counts for half its damage;
+    // energy climbs by one each time somebody swings, which is what unlocks
+    // the heavy moves part way through. Nothing anybody might drink is
+    // counted -- you do not know in advance what you will need.
+    function fightOut(a, b) {
+        let aHp = a.hp, bHp = b.hp;
+        let aEnergy = D.RULES.startingEnergy, bEnergy = D.RULES.startingEnergy;
+
+        for (let round = 0; round < 80; round++) {
+            bHp -= reachable(a.moves, aEnergy, a.bonus, b.defence) / 2;
+            aEnergy += 1;
+            if (a.heal) aHp = Math.min(a.hp, aHp + a.heal / 2);
+            if (bHp <= 0) return { win: true, margin: Math.max(0, aHp) / a.hp };
+
+            aHp -= reachable(b.moves, bEnergy, b.bonus, a.defence) / 2;
+            bEnergy += 1;
+            if (b.heal) bHp = Math.min(b.hp, bHp + b.heal / 2);
+            if (aHp <= 0) return { win: false, margin: Math.max(0, bHp) / b.hp };
+        }
+        // Neither could finish the other. Whoever is further ahead on health.
+        const aLeft = aHp / a.hp, bLeft = bHp / b.hp;
+        return { win: aLeft >= bLeft, margin: Math.abs(aLeft - bLeft) };
+    }
+
+    // The die is still the die, so even a fight won comfortably on paper is
+    // never a certainty and a hopeless one is never quite impossible.
+    function oddsOf(res) {
+        return res.win
+            ? Math.min(0.95, 0.55 + res.margin * 0.4)
+            : Math.max(0.05, 0.45 - res.margin * 0.4);
+    }
+
+    // A character as the fight simulator wants them.
+    function asFighter(state, p, hpOverride) {
+        const cls = D.CLASSES[p.cls];
+        const wDef = itemDef(E.equippedWeapon(p));
+        const moves = cls.moves.slice();
+        if (wDef && wDef.extraMove && wDef.extraMove.damage) moves.push(wDef.extraMove);
+        return {
+            hp: hpOverride === undefined ? p.hp : hpOverride,
+            moves: moves,
+            bonus: E.totalAttackBonus(p),
+            defence: E.totalDefence(state, p),
+            heal: wDef && wDef.healPerMove ? wDef.healPerMove : 0
+        };
+    }
+
+    function asMonster(enemy) {
+        return { hp: enemy.hp, moves: enemy.moves, bonus: 0, defence: enemy.defence, heal: 0 };
+    }
+
+    function pveOdds(state, p, enemyId, hpOverride) {
+        return oddsOf(fightOut(asFighter(state, p, hpOverride),
+                               asMonster(D.ENEMIES[enemyId])));
+    }
+
+    function pvpOdds(state, p, other) {
+        return oddsOf(fightOut(asFighter(state, p), asFighter(state, other)));
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Reading the board                                                   */
+    /*                                                                     */
+    /* Every decision about where to move comes down to scoring the square  */
+    /* you would end up on. The numbers are all in the same currency --     */
+    /* roughly "points of health" -- so a fight worth winning can be        */
+    /* weighed against a chest, a heal against a whirlpool.                 */
+    /* ------------------------------------------------------------------ */
+
+    function squareValue(state, p, pos) {
+        const sq = D.BOARD[pos];
+        if (!sq) return 0;
+        const frags = fragmentCount(p);
+
+        switch (sq.action) {
+            case 'draw_item':     return 6 * (sq.count || 1);
+            case 'draw_powerup':  return 4 * (sq.count || 1);
+            case 'draw_item_key': return 6 * (sq.count || 1) + 10;
+            case 'coins':         return (sq.coins || 0) * 0.8;
+
+            case 'heal':
+                return Math.min(p.maxHp - p.hp, sq.value || 0) * 0.6;
+
+            case 'pot':
+                return p.steaks.raw > 0 ? 5 * Math.min(3, p.steaks.raw) : 0;
+
+            case 'chest':
+                // A chest is the best thing on the board if you are carrying
+                // a key for it, and an empty room if you are not.
+                return p.chestKeys > 0 ? 34 : -1;
+
+            case 'crimson_keep': {
+                // The Keep hands over one of two very strong cards. Worth
+                // rather less once you already carry one of them.
+                const have = p.inventory.some(it => D.ITEMS[it.id] &&
+                                                    D.ITEMS[it.id].keep === p.cls);
+                return have ? 8 : 40;
+            }
+
+            case 'sea_of_castout': {
+                // The whirlpool takes whatever you can most afford to lose,
+                // so the damage is the value of your *cheapest* card.
+                const worst = p.inventory.reduce((n, it) => {
+                    const v = gearValue(D.ITEMS[it.id], p);
+                    return n === null ? v : Math.min(n, v);
+                }, null);
+                return worst === null ? 0 : -Math.max(4, worst * 0.6);
+            }
+
+            case 'gate':
+                // With the three fragments the Gate is a doorway, not a prize:
+                // it hands you nothing, it merely fails to stop you. Without
+                // them it is the longest walk on the board.
+                return frags >= D.KEY_FRAGMENTS_NEEDED ? 5 : -70;
+
+            case 'battle': {
+                const e = D.ENEMIES[sq.enemy];
+                if (e.boss) {
+                    // Fenrirak is the whole game, and once you hold the three
+                    // fragments there is no alternative to him -- refusing is
+                    // not safety, it is letting somebody else win. So losing
+                    // costs the walk back and nothing more; it is not priced
+                    // by how far along the board you are, because everybody
+                    // who meets him is standing in the same place.
+                    const odds = pveOdds(state, p, sq.enemy);
+                    return odds * 260 - (1 - odds) * 45;
+                }
+                const odds = pveOdds(state, p, sq.enemy);
+                const wanted = needsFragment(p, sq.keyFragment);
+                const prize = (sq.coins || 0) * 0.8 +
+                              (wanted ? 55 : 0) +
+                              (sq.chestKey ? 10 : 0);
+                // Losing sends you back to the Start with nothing to show for
+                // however far you had walked.
+                const cost = 30 + pos * 1.6;
+                return odds * prize - (1 - odds) * cost;
+            }
+
+            default:
+                return 0;
+        }
+    }
+
+    // The value of ending a move on this square: what the square does, who is
+    // already standing on it, and how much ground it puts behind you.
+    function landingValue(state, p, pos, depth) {
+        const sq = D.BOARD[pos];
+        if (!sq) return 0;
+
+        // A spring is not a destination -- it throws you two further on.
+        if (sq.action === 'spring' && (depth || 0) < 3) {
+            return 2 + walkValue(state, p, pos, sq.value, (depth || 0) + 1);
+        }
+
+        let v = pos * 1.5 + squareValue(state, p, pos);
+
+        // Overshooting the last fragment you still need: everything ahead is
+        // the Gate, and the Gate is a long walk back to the Start.
+        if (fragmentCount(p) < D.KEY_FRAGMENTS_NEEDED) {
+            const last = lastUsefulSquare(p);
+            if (last >= 0 && pos > last) v -= 35 + (pos - last) * 4;
+        }
+
+        // Landing on somebody is a duel, and it is not optional unless one of
+        // you is wearing the Cloak.
+        const rival = state.players.find(x =>
+            x.id !== p.id && x.cls && x.pos === pos && pos !== D.START_INDEX);
+        if (rival) {
+            const odds = pvpOdds(state, p, rival);
+            v += odds * (rival.coins * 0.8 + 12) -
+                 (1 - odds) * (35 + pos * 1.6 + p.coins * 0.8);
+        }
+        return v;
+    }
+
+    // Walk `steps` from `from` the way the engine would, and value where it
+    // leaves you. Stops, the Gate and optional stops are all honoured.
+    function walkValue(state, p, from, steps, depth) {
+        let pos = from, remaining = steps;
+        const frags = fragmentCount(p);
+
+        while (remaining > 0) {
+            if (pos >= D.ARENA_INDEX) break;
+            pos += 1;
+            remaining -= 1;
+            const sq = D.BOARD[pos];
+
+            if (remaining > 0 && sq.action === 'gate' &&
+                frags < D.KEY_FRAGMENTS_NEEDED) {
+                // Walking *through* the Gate without the three fragments is
+                // the same as landing on it: straight back to the Start.
+                return landingValue(state, p, D.START_INDEX, depth) - 30;
+            }
+            if (remaining > 0 && sq.stop) break;
+            if (remaining > 0 && sq.optionalStop) {
+                // You get to choose, so take the better of the two.
+                return Math.max(
+                    landingValue(state, p, pos, depth),
+                    walkValue(state, p, pos, remaining, depth));
+            }
+        }
+        return landingValue(state, p, pos, depth);
+    }
+
+    // Averaged over the six faces, because the die has not been thrown yet.
+    function expectedRoll(state, p, mod) {
+        let total = 0;
+        for (let face = 1; face <= 6; face++) {
+            total += walkValue(state, p, p.pos, Math.max(1, face + mod), 0);
+        }
+        return total / 6;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Consumables                                                         */
+    /* ------------------------------------------------------------------ */
+
+    function cardsOf(p, list) {
+        return (p[list] || []).map(c => ({
+            uid: c.uid, list: list, def: D.POWERUPS[c.id]
+        })).filter(c => c.def);
+    }
+
+    function heldCards(p) {
+        return cardsOf(p, 'potions').concat(cardsOf(p, 'powerups'));
+    }
+
+    function useCard(card) {
+        return {
+            action: card.list === 'potions' ? 'usePotion' : 'usePowerup',
+            args: { uid: card.uid }
+        };
+    }
+
+    // The biggest heal in hand, but only counted for what it can actually put
+    // back -- a 50 card on a character missing 10 health is mostly wasted,
+    // though it does raise the ceiling when they are already full.
+    function bestHeal(p) {
+        let best = null, bestV = 0;
+        heldCards(p).forEach(c => {
+            if (c.def.effect !== 'health') return;
+            const worth = p.hp >= p.maxHp ? c.def.value : Math.min(p.maxHp - p.hp, c.def.value);
+            if (worth > bestV) { bestV = worth; best = c; }
+        });
+        return best;
+    }
+
+    function bestOf(p, effect) {
+        let best = null, bestV = 0;
+        heldCards(p).forEach(c => {
+            if (c.def.effect !== effect) return;
+            if (c.def.value > bestV) { bestV = c.def.value; best = c; }
+        });
+        return best;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Shopping                                                            */
+    /*                                                                     */
+    /* Kept to two purchases a turn, so a bot cannot stand at the stall for */
+    /* ever, and only ever on a piece that is genuinely better than what it */
+    /* is already carrying.                                                */
+    /* ------------------------------------------------------------------ */
+
+    const shopping = { key: '', bought: 0 };
+
+    function shopKey(state, pid) { return state.turnNo + ':' + pid; }
+
+    function goShopping(state, p) {
+        const key = shopKey(state, p.id);
+        if (shopping.key !== key) { shopping.key = key; shopping.bought = 0; }
+        if (shopping.bought >= 2) return null;
+
+        // Gear first: an upgrade you keep beats a potion you drink once.
+        let pick = null, gain = 0;
+        D.MERCHANT_GEAR.forEach(id => {
+            const def = D.ITEMS[id];
+            if (!def || !(state.merchant.gear[id] > 0)) return;
+            if (!E.suitsClass(p, id)) return;
+            if (p.coins < def.price) return;
+            const have = bestOwned(state, p, def.kind);
+            const improvement = gearValue(def, p) - gearValue(itemDef(have), p);
+            if (improvement > gain) { gain = improvement; pick = id; }
+        });
+        if (pick && gain >= 5) {
+            shopping.bought += 1;
+            return { action: 'buy', args: { kind: 'gear', id: pick } };
+        }
+
+        // Then a potion, but only out of money that is doing nothing else.
+        const spare = p.coins - 20;
+        if (spare > 0) {
+            const hurt = p.hp < p.maxHp * 0.6;
+            const wanted = hurt
+                ? ['super_health_up', 'health_up', 'low_health_up']
+                : ['super_strength_up', 'strength_up', 'defence_up'];
+            for (let i = 0; i < wanted.length; i++) {
+                const id = wanted[i];
+                const row = D.MERCHANT_POTIONS[id];
+                if (!row || !(state.merchant.potions[id] > 0)) continue;
+                if (row.price > spare) continue;
+                shopping.bought += 1;
+                return { action: 'buy', args: { kind: 'potions', id: id } };
+            }
+        }
+        return null;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* In a battle                                                         */
+    /* ------------------------------------------------------------------ */
+
+    // How hard the other side is about to hit, so the bot knows whether it is
+    // in danger and whether a shield or a heal is worth the turn.
+    function incomingBlow(state, b, p) {
+        if (b.kind === 'pve') {
+            const e = D.ENEMIES[b.enemyId];
+            const afford = e.moves.filter(m => b.enemyEnergy >= m.energy);
+            const move = (afford.length ? afford : e.moves)
+                .slice().sort((x, y) => y.damage - x.damage)[0];
+            return Math.max(0, move.damage - E.totalDefence(state, p));
+        }
+        const other = E.player(state, b.aId === p.id ? b.bId : b.aId);
+        if (!other) return 0;
+        const cls = D.CLASSES[other.cls];
+        const bonus = E.totalAttackBonus(other);
+        const afford = cls.moves.filter(m => other.energy >= m.energy);
+        const move = (afford.length ? afford : cls.moves)
+            .slice().sort((x, y) => y.damage - x.damage)[0];
+        return Math.max(0, move.damage + bonus - E.totalDefence(state, p));
+    }
+
+    function foeHealth(state, b) {
+        if (b.kind === 'pve') return b.enemyHp;
+        const other = E.player(state, b.turn === 'a' ? b.bId : b.aId);
+        return other ? other.hp : 0;
+    }
+
+    function battleMove(state, p, b) {
+        const moves = E.availableMoves(state, p.id).filter(m => m.usable);
+        if (!moves.length) return null;
+
+        const foeDefence = b.kind === 'pve'
+            ? D.ENEMIES[b.enemyId].defence
+            : E.totalDefence(state, E.player(state, b.aId === p.id ? b.bId : b.aId));
+        const bonus = E.totalAttackBonus(p);
+        const threat = incomingBlow(state, b, p);
+        const left = foeHealth(state, b);
+
+        const dealt = m => m.damage > 0 ? Math.max(0, m.damage + bonus - foeDefence) : 0;
+        const plainBest = moves.reduce((n, m) => Math.max(n, dealt(m)), 0);
+
+        let pick = null, best = -1;
+        moves.forEach(m => {
+            let score = dealt(m);
+            const def = itemDef(E.equippedWeapon(p));
+            const extra = m.extra && def && def.extraMove ? def.extraMove : null;
+
+            if (extra && extra.shield) {
+                // The Energy Barrier does nothing to the other side, so what
+                // it is worth is not damage but survival: everything, if the
+                // next blow would finish you and the barrier would stop it;
+                // nothing at all if you would die anyway or were never in
+                // danger.
+                const fatal = threat >= p.hp;
+                const saves = threat - extra.shield < p.hp;
+                score = (fatal && saves) ? 900
+                      : (p.hp <= threat * 2 ? Math.min(extra.shield, threat) * 0.8 : 0);
+            } else if (extra && extra.attackAgain) {
+                // Smoke Explosion hands the turn straight back, so it is worth
+                // its own damage plus half of whatever follows it.
+                score = dealt(m) + plainBest * 0.5;
+            } else if (extra && extra.turns) {
+                // Triple Whack only pays off if you keep swinging it, so once
+                // the run has started it takes a clearly better move to break.
+                score = dealt(m) * 1.08;
+            }
+
+            // Anything that finishes the job is as good as anything else that
+            // finishes the job -- prefer the ordinary move and save the card.
+            if (dealt(m) >= left && left > 0) score = 1000 - (m.extra ? 1 : 0);
+
+            if (score > best) { best = score; pick = m; }
+        });
+        return pick;
+    }
+
+    function battleStep(state, p, b) {
+        // The monster's own die and its blow. The bot is on the other side of
+        // the table, so it throws for the monster exactly as a person would.
+        if (b.phase === 'enemy_roll') return { action: 'enemyRoll', args: {} };
+        if (b.phase === 'enemy_act') return { action: 'enemyStrike', args: {} };
+
+        const threat = incomingBlow(state, b, p);
+        const dying = threat > 0 && p.hp <= threat;
+
+        // About to be knocked out: eat, drink, or put something in the way.
+        if (dying) {
+            if (p.steaks.cooked > 0 && p.hp + D.RULES.searedSteakHeal > threat) {
+                return { action: 'eatSteak', args: { type: 'cooked' } };
+            }
+            const heal = bestHeal(p);
+            if (heal && p.hp + heal.def.value > threat) return useCard(heal);
+            const guard = bestOf(p, 'defence');
+            if (guard && guard.def.value >= threat - p.hp) return useCard(guard);
+        }
+
+        if (b.phase === 'roll') return { action: 'battleRoll', args: {} };
+
+        // The die has already come up even, so this is the blow itself.
+        const move = battleMove(state, p, b);
+        if (!move) {
+            // Nothing is affordable yet. Energy cards exist for exactly this.
+            const juice = bestOf(p, 'energy');
+            if (juice) return useCard(juice);
+            const any = E.availableMoves(state, p.id).find(m => m.usable);
+            return any ? { action: 'battleAttack', args: { moveId: any.id } } : null;
+        }
+
+        const left = foeHealth(state, b);
+        const bonus = E.totalAttackBonus(p);
+        const foeDefence = b.kind === 'pve'
+            ? D.ENEMIES[b.enemyId].defence
+            : E.totalDefence(state, E.player(state, b.aId === p.id ? b.bId : b.aId));
+        const would = move.damage > 0
+            ? Math.max(0, move.damage + bonus - foeDefence) : 0;
+
+        // An energy card that unlocks a much heavier move is worth playing
+        // before the blow rather than after it.
+        const locked = E.availableMoves(state, p.id).filter(m => !m.usable);
+        if (locked.length) {
+            const juice = bestOf(p, 'energy');
+            const reachable = locked.filter(m => p.energy + (juice ? juice.def.value : 0) >= m.energy);
+            const bigger = reachable.reduce((n, m) =>
+                Math.max(n, Math.max(0, m.damage + bonus - foeDefence)), 0);
+            if (juice && bigger > would + 15) return useCard(juice);
+        }
+
+        // A strength card that turns a hit into a kill is worth it now.
+        if (would < left) {
+            const punch = bestOf(p, 'damage');
+            if (punch && would + punch.def.value >= left) return useCard(punch);
+        }
+
+        return { action: 'battleAttack', args: { moveId: move.id } };
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Squares that ask a question                                         */
+    /* ------------------------------------------------------------------ */
+
+    function pendingStep(state, p, pend) {
+        switch (pend.type) {
+            case 'steak_roll':
+                return { action: 'resolvePending', args: {} };
+
+            case 'pot':
+                // Cook the lot: a seared steak heals twice what a raw one does
+                // and cannot poison you.
+                return { action: 'resolvePending', args: { choice: p.steaks.raw } };
+
+            case 'optional_stop': {
+                const stay = landingValue(state, p, p.pos, 0);
+                const on = walkValue(state, p, p.pos, p.movesLeft || 0, 0);
+                return {
+                    action: 'resolvePending',
+                    args: { choice: stay >= on ? 'stop' : 'go' }
+                };
+            }
+
+            case 'chest':
+            case 'crimson_keep': {
+                let pick = pend.options[0], best = -Infinity;
+                pend.options.forEach(id => {
+                    const def = D.ITEMS[id];
+                    // Score it against what it would replace, not in a vacuum.
+                    const have = bestOwned(state, p, def.kind);
+                    const v = gearValue(def, p) - gearValue(itemDef(have), p) * 0.5;
+                    if (v > best) { best = v; pick = id; }
+                });
+                return { action: 'resolvePending', args: { choice: pick } };
+            }
+
+            case 'sea_of_castout': {
+                // Give up the least useful thing you own, and never the piece
+                // you are wearing if there is anything else to hand.
+                let pick = pend.options[0], worst = Infinity;
+                pend.options.forEach(o => {
+                    const def = D.ITEMS[o.id];
+                    let v = gearValue(def, p);
+                    if (o.uid === p.weaponUid || o.uid === p.armourUid) v += 25;
+                    if (v < worst) { worst = v; pick = o.uid; }
+                });
+                return { action: 'resolvePending', args: { choice: pick } };
+            }
+
+            case 'pvp_avoid': {
+                // The Cloak's wearer decides. Slip away from a fight you are
+                // likely to lose; take one you are likely to win.
+                const other = E.player(state, pend.otherId);
+                const odds = other ? pvpOdds(state, p, other) : 0.5;
+                const worth = other ? other.coins : 0;
+                return {
+                    action: 'resolvePending',
+                    args: { choice: (odds > 0.55 && worth >= 0) ? 'fight' : 'avoid' }
+                };
+            }
+
+            default:
+                return { action: 'resolvePending', args: {} };
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* An ordinary turn                                                    */
+    /* ------------------------------------------------------------------ */
+
+    function abilityStep(state, p) {
+        const cls = D.CLASSES[p.cls];
+        if (state.turnNo - p.lastAbilityTurn < D.RULES.abilityCooldownTurns) return null;
+
+        if (cls.ability.id === 'agile') {
+            // The two spaces are an offer that can be declined after the fact,
+            // so there is never a reason to hold Agile back.
+            if (p.hasMoved) return null;
+            return { action: 'useAbility', args: {} };
+        }
+        if (cls.ability.id === 'strength_up') {
+            return { action: 'useAbility', args: {} };
+        }
+        if (cls.ability.id === 'illusion') {
+            // Send the bats at whoever is closest to winning: fragments first,
+            // then whoever is furthest up the track.
+            const rivals = state.players.filter(x => x.id !== p.id && x.cls && x.connected !== false);
+            if (!rivals.length) return null;
+            const mark = rivals.slice().sort((a, b) => {
+                const f = fragmentCount(b) - fragmentCount(a);
+                return f !== 0 ? f : b.pos - a.pos;
+            })[0];
+            return {
+                action: 'useAbility',
+                args: { targetPlayerId: mark.id, enemyId: 'swarm_of_bats' }
+            };
+        }
+        return null;
+    }
+
+    function moveStep(state, p) {
+        const offered = E.diceModifier(p) + (p.agileBonus || 0);
+        if (!offered) return { action: 'rollMove', args: {} };
+
+        // The bonus is an offer. Work out how much of it is actually wanted by
+        // averaging the six faces for every amount that is allowed -- a
+        // smaller number is often the one that lands you on the Chest instead
+        // of past it, or stops you short of a fight you would lose.
+        const choosable = E.diceChoosable(p);
+        const floor = offered - choosable;
+        const amounts = [];
+        for (let n = offered; n >= floor; n--) amounts.push(n);
+        if (amounts.indexOf(0) < 0) amounts.push(0);       // declining it whole
+
+        let pick = offered, best = -Infinity;
+        amounts.forEach(n => {
+            const v = expectedRoll(state, p, n);
+            if (v > best) { best = v; pick = n; }
+        });
+        return { action: 'rollMove', args: { useBonus: pick === 0 ? false : pick } };
+    }
+
+    function turnStep(state, p) {
+        // 1. Put the best gear on. One change of each a turn, so this settles
+        //    down after a card or two.
+        if (!p.hasMoved) {
+            const w = bestOwned(state, p, 'weapon');
+            if (w && w.uid !== p.weaponUid && (p.weaponSwaps | 0) < D.RULES.equipChangesPerTurn &&
+                gearValue(D.ITEMS[w.id], p) > gearValue(itemDef(E.equippedWeapon(p)), p)) {
+                return { action: 'equip', args: { uid: w.uid } };
+            }
+            const a = bestOwned(state, p, 'armour');
+            if (a && a.uid !== p.armourUid && (p.armourSwaps | 0) < D.RULES.equipChangesPerTurn &&
+                armourValue(D.ITEMS[a.id], p) > armourValue(itemDef(E.equippedArmour(p)), p)) {
+                return { action: 'equip', args: { uid: a.uid } };
+            }
+        }
+
+        // 2. Patch yourself up before walking into something.
+        if (p.hp < p.maxHp * 0.5 && p.steaks.cooked > 0) {
+            return { action: 'eatSteak', args: { type: 'cooked' } };
+        }
+        if (p.hp < p.maxHp * 0.4) {
+            const heal = bestHeal(p);
+            if (heal) return useCard(heal);
+        }
+
+        // 3. The stall is open all turn and buying no longer ends it.
+        if (!p.hasMoved) {
+            const shop = goShopping(state, p);
+            if (shop) return shop;
+        }
+
+        // 4. The class ability, before the die goes up.
+        if (!p.hasMoved) {
+            const ability = abilityStep(state, p);
+            if (ability) return ability;
+        }
+
+        // 5. Move.
+        if (!p.hasMoved && p.pos < D.ARENA_INDEX) return moveStep(state, p);
+
+        // 6. Nothing left but the steak roll that ends a turn.
+        return { action: 'endTurn', args: {} };
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Trades                                                              */
+    /* ------------------------------------------------------------------ */
+
+    function bundleValue(state, holder, bundle) {
+        let v = bundle.coins * 0.8;
+        v += bundle.rawSteaks * 3 + bundle.cookedSteaks * 6;
+        v += bundle.keyFragments * 90;         // a fragment is a third of the game
+        v += bundle.chestKeys * 12;
+        v += bundle.powerups.length * 6 + bundle.potions.length * 6;
+        bundle.items.forEach(u => {
+            const inst = holder.inventory.find(i => i.uid === u);
+            v += Math.max(2, gearValue(inst ? D.ITEMS[inst.id] : null, holder));
+        });
+        return v;
+    }
+
+    function tradeStep(state, p, trade) {
+        const from = E.player(state, trade.fromId);
+        if (!from) return { action: 'respondTrade', args: { tradeId: trade.id, accept: false } };
+        const gain = bundleValue(state, from, trade.give);
+        const cost = bundleValue(state, p, trade.want);
+        // Take a deal that is clearly in your favour; a marginal one is not
+        // worth handing a rival what they asked for.
+        return {
+            action: 'respondTrade',
+            args: { tradeId: trade.id, accept: gain >= cost * 1.15 }
+        };
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* What to do next                                                     */
+    /* ------------------------------------------------------------------ */
+
+    function decide(state, pid) {
+        const p = E.player(state, pid);
+        if (!p || state.phase === 'over' || state.phase === 'closed') return null;
+
+        if (state.phase === 'order') {
+            return p.orderRoll === null ? { action: 'rollForOrder', args: {} } : null;
+        }
+        if (state.phase !== 'playing') return null;
+
+        // An offer on the table is answered whoever's turn it is.
+        const offer = (state.trades || []).find(t => t.status === 'open' && t.toId === pid);
+        if (offer) return tradeStep(state, p, offer);
+
+        const b = state.battle;
+        if (b) {
+            return E.battleActorId(state) === pid ? battleStep(state, p, b) : null;
+        }
+        if (state.pending) {
+            return state.pending.playerId === pid
+                ? pendingStep(state, p, state.pending) : null;
+        }
+        if (!E.isMyTurn(state, pid)) return null;
+
+        return turnStep(state, p);
+    }
+
+    global.LOF_BOT = {
+        decide: decide,
+        // Exposed for the tests and for anything that wants to explain a
+        // bot's thinking rather than just watch it act.
+        weaponValue: weaponValue,
+        armourValue: armourValue,
+        pveOdds: pveOdds,
+        pvpOdds: pvpOdds,
+        walkValue: walkValue,
+        expectedRoll: expectedRoll
+    };
+
+})(typeof window !== 'undefined' ? window : globalThis);
+
+    </script>
+    <script>
+/* ==== game/solo.js ==== */
+/* =========================================================================
+   Legend of Fenrirak™, The Thunder Dragon — Online Version
+   solo.js — the single-player game.
+
+   This wears exactly the same face as net.js: PID, createRoom, subscribe,
+   act, closeRoom. The difference is where the game lives. Online, the state
+   sits in Firestore and every action is applied inside a transaction; on
+   your own, it sits in this tab and every action is applied straight away.
+   ui.js cannot tell the two apart, so the whole game -- the board, the die,
+   the battles, the merchant, the trade screen -- works without a line of it
+   knowing there is nobody else in the room.
+
+   The two other seats are filled by bot.js. They are ordinary players in
+   every respect: they are in state.players, they take their turns in the
+   order everyone rolled for, they are bound by the same rules, and their
+   moves go through the same action table yours do. All this file does is
+   ask bot.js what its player would like to do and then do it, unhurriedly
+   enough that you can watch the die come down.
+   ========================================================================= */
+
+(function (global) {
+    'use strict';
+
+    const D = global.LOF_DATA;
+    const E = global.LOF_ENGINE;
+
+    const CODE = 'SOLO';
+    const SAVE_KEY = 'lof_solo_game';
+
+    /* ---------------------------------------------------------------- */
+    /* Identity — the same one net.js uses, so a player who has been     */
+    /* online keeps their name and their token.                          */
+    /* ---------------------------------------------------------------- */
+
+    function localId() {
+        let id = null;
+        try { id = localStorage.getItem('lof_pid'); } catch (e) { /* private mode */ }
+        if (!id) {
+            id = 'p_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+            try { localStorage.setItem('lof_pid', id); } catch (e) { }
+        }
+        return id;
+    }
+
+    function localName() {
+        try { return localStorage.getItem('lof_name') || ''; } catch (e) { return ''; }
+    }
+
+    function setLocalName(n) {
+        try { localStorage.setItem('lof_name', n); } catch (e) { }
+    }
+
+    const PID = localId();
+
+    /* ---------------------------------------------------------------- */
+    /* The two other seats                                              */
+    /* ---------------------------------------------------------------- */
+
+    // One of each class at the table, so whichever you take, the other two
+    // are taken by the computer. Their names are fixed to the class rather
+    // than to the seat, so the Knight is always Sir Aldric.
+    const BOTS = {
+        knight: { id: 'bot_knight', name: 'Sir Aldric' },
+        archer: { id: 'bot_archer', name: 'Wren' },
+        mage:   { id: 'bot_mage',   name: 'Ilyana' }
+    };
+
+    function isBotId(id) {
+        return id === BOTS.knight.id || id === BOTS.archer.id || id === BOTS.mage.id;
+    }
+
+    // Called after anything that happens in the lobby. You pick first; the
+    // moment you have a class, the other two are filled in behind you, and if
+    // you change your mind they move out of your way.
+    function fillSeats(state) {
+        if (!state || state.phase !== 'lobby') return;
+        const you = E.player(state, PID);
+        const mine = you ? you.cls : null;
+
+        // Anybody sitting in a seat that is no longer theirs gets up first,
+        // so swapping to the Knight does not collide with the Knight bot.
+        state.players.slice().forEach(p => {
+            if (!isBotId(p.id)) return;
+            const wanted = BOTS[p.cls] && BOTS[p.cls].id === p.id;
+            if (!mine || !wanted || p.cls === mine) {
+                state.players = state.players.filter(x => x.id !== p.id);
+            }
+        });
+
+        if (!mine) return;
+        D.CLASS_ORDER.forEach(cls => {
+            if (cls === mine) return;
+            const seat = BOTS[cls];
+            if (E.player(state, seat.id)) return;
+            E.addPlayer(state, seat.id, seat.name, true);
+            E.chooseClass(state, seat.id, cls);
+        });
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The game, and who is watching it                                 */
+    /* ---------------------------------------------------------------- */
+
+    let state = null;
+    let listeners = [];
+    let timer = null;
+    let lastDieAt = 0;
+    let lastDieSeq = 0;
+    let repeated = { sig: '', count: 0 };
+
+    function save() {
+        try {
+            if (state) localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+            else localStorage.removeItem(SAVE_KEY);
+        } catch (e) { /* out of room, or private mode — the game still runs */ }
+    }
+
+    function hasGame() {
+        try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
+    }
+
+    function emit() {
+        // A fresh throw of the die pushes the bots back a beat, so the
+        // overlay has time to tumble, land and be read before anything else
+        // happens on the board.
+        if (state && (state.dieSeq | 0) !== lastDieSeq) {
+            lastDieSeq = state.dieSeq | 0;
+            lastDieAt = Date.now();
+        }
+        save();
+        const snapshot = state;
+        listeners.slice().forEach(fn => {
+            try { fn(snapshot); } catch (e) { /* one bad listener is not fatal */ }
+        });
+        schedule();
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Letting the bots play                                            */
+    /* ---------------------------------------------------------------- */
+
+    // Whose go is it, and what do they want to do? Asked in turn order so
+    // that during the roll for order they go round the table rather than all
+    // at once.
+    function nextJob() {
+        if (!state || !global.LOF_BOT) return null;
+        if (state.phase !== 'order' && state.phase !== 'playing') return null;
+
+        const order = state.turnOrder && state.turnOrder.length
+            ? state.turnOrder.map(id => E.player(state, id)).filter(Boolean)
+            : state.players;
+
+        for (let i = 0; i < order.length; i++) {
+            const p = order[i];
+            if (!p || !isBotId(p.id)) continue;
+            let job = null;
+            try { job = global.LOF_BOT.decide(state, p.id); } catch (e) {
+                job = fallback(p);
+            }
+            if (job) return { pid: p.id, action: job.action, args: job.args || {} };
+        }
+        return null;
+    }
+
+    // If a bot's thinking throws, or the engine keeps refusing what it asks
+    // for, it does the dullest legal thing rather than freezing the game.
+    function fallback(p) {
+        if (state.battle && E.battleActorId(state) === p.id) {
+            const b = state.battle;
+            if (b.phase === 'enemy_roll') return { action: 'enemyRoll', args: {} };
+            if (b.phase === 'enemy_act') return { action: 'enemyStrike', args: {} };
+            if (b.phase === 'roll') return { action: 'battleRoll', args: {} };
+            const move = E.availableMoves(state, p.id).find(m => m.usable);
+            if (move) return { action: 'battleAttack', args: { moveId: move.id } };
+        }
+        if (state.pending && state.pending.playerId === p.id) {
+            return { action: 'resolvePending', args: {} };
+        }
+        if (E.isMyTurn(state, p.id)) {
+            return p.hasMoved
+                ? { action: 'endTurn', args: {} }
+                : { action: 'rollMove', args: {} };
+        }
+        return null;
+    }
+
+    /* ---- how fast the other two play --------------------------------
+       A whole game is a couple of thousand small actions, most of which are
+       not a die coming down, so two numbers set the pace: how long to leave
+       a die on the table before anything else happens, and how long to pause
+       between the quiet things. Watching two people think is the point, but
+       not everybody wants to watch it at the same speed.
+       ------------------------------------------------------------------ */
+
+    const PACES = {
+        relaxed: { die: 1950, quiet: 600, label: 'Relaxed' },
+        brisk:   { die: 1200, quiet: 300, label: 'Brisk' },
+        fast:    { die: 520,  quiet: 120, label: 'Fast' }
+    };
+    const PACE_ORDER = ['relaxed', 'brisk', 'fast'];
+    let paceName = 'brisk';
+    try {
+        const saved = localStorage.getItem('lof_solo_pace');
+        if (saved && PACES[saved]) paceName = saved;
+    } catch (e) { }
+
+    function pace() { return { name: paceName, label: PACES[paceName].label }; }
+
+    function setPace(name) {
+        if (!PACES[name]) return;
+        paceName = name;
+        try { localStorage.setItem('lof_solo_pace', name); } catch (e) { }
+        schedule();
+    }
+
+    function nextPace() {
+        const i = PACE_ORDER.indexOf(paceName);
+        setPace(PACE_ORDER[(i + 1) % PACE_ORDER.length]);
+        return pace();
+    }
+
+    function schedule() {
+        clearTimeout(timer);
+        if (!state || (state.phase !== 'order' && state.phase !== 'playing')) return;
+        // Nobody is watching, so the game stands still. Without this the other
+        // two would carry on playing to an empty room after you walked away,
+        // and the game you came back to would not be the one you left.
+        if (!listeners.length) return;
+        if (!nextJob()) return;
+
+        // Never on top of a die that is still in the air, and never so fast
+        // that the board changes without you seeing it.
+        const p = PACES[paceName];
+        const wait = Math.max(p.quiet, p.die - (Date.now() - lastDieAt));
+        timer = setTimeout(run, wait);
+    }
+
+    function run() {
+        const job = nextJob();
+        if (!job) return;
+
+        // A bot that asks for the same refused thing over and over is stuck.
+        // Give it three goes, then take the turn off it.
+        const sig = job.pid + '/' + job.action + '/' + JSON.stringify(job.args);
+        repeated = (repeated.sig === sig)
+            ? { sig: sig, count: repeated.count + 1 }
+            : { sig: sig, count: 1 };
+
+        const fn = E.ACTIONS[job.action];
+        let res = fn ? fn(state, job.pid, job.args) : { ok: false, error: 'unknown action' };
+
+        if (!res || !res.ok) {
+            if (repeated.count >= 3) {
+                const alt = fallback(E.player(state, job.pid));
+                if (alt && alt.action !== job.action) {
+                    const altFn = E.ACTIONS[alt.action];
+                    res = altFn ? altFn(state, job.pid, alt.args) : res;
+                }
+                if (!res || !res.ok) {
+                    // Truly wedged: retire the turn the way the clock would.
+                    E.checkTimeout(state,
+                        (state.turnStartedAt || 0) + D.RULES.turnTimeoutMs + 1);
+                    repeated = { sig: '', count: 0 };
+                }
+            }
+        }
+
+        state.updatedAt = Date.now();
+        emit();
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The face net.js also wears                                       */
+    /* ---------------------------------------------------------------- */
+
+    function createRoom(name) {
+        setLocalName(name);
+        state = E.createGame(CODE, PID, name);
+        state.solo = true;
+        // createGame opens with "Room SOLO opened, waiting for adventurers",
+        // which is not what is happening here.
+        state.log = [{
+            t: 'A game for one. Choose your class and the other two seats fill ' +
+               'themselves.',
+            tone: 'muted', at: Date.now()
+        }];
+        lastDieSeq = 0;
+        lastDieAt = 0;
+        setTimeout(emit, 0);
+        return Promise.resolve(CODE);
+    }
+
+    // Picking up a game that was left half way through. Refreshing the page
+    // should not cost you an evening's progress.
+    function resumeRoom() {
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { }
+        if (!saved || !saved.players) return Promise.reject(new Error('No saved game.'));
+        state = saved;
+        state.solo = true;
+        lastDieSeq = state.dieSeq | 0;
+        lastDieAt = 0;
+        setTimeout(emit, 0);
+        return Promise.resolve(CODE);
+    }
+
+    function joinRoom() {
+        return Promise.reject(new Error('A single-player game has no room to join.'));
+    }
+
+    function roomExists() { return Promise.resolve(!!state); }
+
+    function act(code, action, args) {
+        return new Promise((resolve, reject) => {
+            if (!state) return reject(new Error('There is no game running.'));
+            const fn = E.ACTIONS[action];
+            if (!fn) return reject(new Error('Unknown action: ' + action));
+
+            const res = fn(state, PID, args || {}) || { ok: true };
+            if (!res.ok) {
+                const err = new Error(res.error || 'That is not allowed.');
+                err.silent = !!res.silent;
+                return reject(err);
+            }
+            fillSeats(state);
+            state.updatedAt = Date.now();
+            emit();
+            resolve(state);
+        });
+    }
+
+    function subscribe(code, onState, onError) {
+        listeners.push(onState);
+        if (state) setTimeout(() => onState(state), 0);
+        else if (onError) setTimeout(() => onError(new Error('The room was closed.')), 0);
+        return function unsubscribe() {
+            listeners = listeners.filter(fn => fn !== onState);
+            if (!listeners.length) clearTimeout(timer);
+        };
+    }
+
+    function closeRoom() {
+        clearTimeout(timer);
+        state = null;
+        listeners = [];
+        save();
+        return Promise.resolve();
+    }
+
+    global.LOF_SOLO = {
+        PID: PID,
+        solo: true,
+        localName: localName,
+        setLocalName: setLocalName,
+        createRoom: createRoom,
+        resumeRoom: resumeRoom,
+        hasGame: hasGame,
+        joinRoom: joinRoom,
+        roomExists: roomExists,
+        act: act,
+        subscribe: subscribe,
+        closeRoom: closeRoom,
+        isBotId: isBotId,
+        pace: pace,
+        setPace: setPace,
+        nextPace: nextPace
+    };
+
+})(typeof window !== 'undefined' ? window : globalThis);
+
+    </script>
+    <script>
 /* ==== game/ui.js ==== */
 /* =========================================================================
    Legend of Fenrirak™, The Thunder Dragon — Online Version
@@ -4348,7 +5638,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     const D = window.LOF_DATA;
     const E = window.LOF_ENGINE;
-    let NET = null;
+
+    // Two ways to play, behind one interface. SOLO keeps the game in this tab
+    // and fills the other seats with bots; ONLINE keeps it in Firestore and
+    // fills them with people. NET is whichever one is in use, and nothing
+    // below this line has to care which.
+    const SOLO = window.LOF_SOLO;
+    let ONLINE = null;
+    let NET = SOLO;
 
     let S = null;              // latest game state
     let ROOM = null;           // room code
@@ -4587,17 +5884,54 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function initHome() {
         $('#inp-name').value = NET.localName();
 
+        // Until Firestore has loaded there is no room to make or join. Solo
+        // needs none of it and is live from the first paint.
+        $('#btn-create').disabled = !ONLINE;
+        $('#btn-join').disabled = !ONLINE;
+        if (!ONLINE) $('#online-note').textContent = 'Connecting…';
+
         $('#btn-create').addEventListener('click', async () => {
             const name = $('#inp-name').value.trim();
             if (!name) return notice('Please enter a name first.');
+            if (!ONLINE) return notice('Still connecting — try again in a moment.');
+            NET = ONLINE;
             $('#btn-create').disabled = true;
             try {
                 const code = await NET.createRoom(name);
                 enterRoom(code);
             } catch (err) {
+                NET = SOLO;
                 notice(err.message || 'Could not create a room.');
             } finally {
                 $('#btn-create').disabled = false;
+            }
+        });
+
+        // A game for one. You are the host, you pick your class first, and the
+        // other two seats fill themselves the moment you have.
+        $('#btn-resume').style.display = SOLO.hasGame() ? '' : 'none';
+
+        $('#btn-solo').addEventListener('click', async () => {
+            const name = $('#inp-name').value.trim() || 'You';
+            $('#inp-name').value = name;
+            NET = SOLO;
+            $('#btn-solo').disabled = true;
+            try {
+                enterRoom(await SOLO.createRoom(name));
+            } catch (err) {
+                notice(err.message || 'Could not start a game.');
+            } finally {
+                $('#btn-solo').disabled = false;
+            }
+        });
+
+        $('#btn-resume').addEventListener('click', async () => {
+            NET = SOLO;
+            try {
+                enterRoom(await SOLO.resumeRoom());
+            } catch (err) {
+                $('#btn-resume').style.display = 'none';
+                notice(err.message || 'There is no game to carry on.');
             }
         });
 
@@ -4615,11 +5949,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const code = $('#inp-code').value.trim().toUpperCase();
         if (!name) return notice('Please enter a name first.');
         if (code.length !== 5) return notice('Room codes are 5 letters, like ABCDE.');
+        if (!ONLINE) return notice('Still connecting — try again in a moment.');
+        NET = ONLINE;
         $('#btn-join').disabled = true;
         try {
             await NET.joinRoom(code, name);
             enterRoom(code);
         } catch (err) {
+            NET = SOLO;
             notice(err.message || 'Could not join that room.');
         } finally {
             $('#btn-join').disabled = false;
@@ -4628,9 +5965,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     function enterRoom(code) {
         ROOM = code;
-        try {
-            history.replaceState(null, '', location.pathname + '?room=' + code);
-        } catch (e) { /* file:// — no history API */ }
+        // A solo game has nothing to invite anybody to, so it does not go in
+        // the address bar.
+        if (NET !== SOLO) {
+            try {
+                history.replaceState(null, '', location.pathname + '?room=' + code);
+            } catch (e) { /* file:// — no history API */ }
+        }
 
         if (unsub) unsub();
         unsub = NET.subscribe(code, onState, err => {
@@ -4652,7 +5993,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // has genuinely run out, and only a player who is not the one being
         // timed out may do it. Any player can, so an absent host cannot stall
         // the whole game.
+        // Playing on your own there is nobody to be absent: the other two
+        // always act. Left running it would do harm rather than good, because
+        // a browser throttles timers in a background tab and the clock could
+        // "time out" a computer player that was only waiting its turn.
         clearInterval(enterRoom._hb);
+        if (NET === SOLO) return;
+
         enterRoom._hb = setInterval(() => {
             if (!S || S.phase !== 'playing') return;
             if (Date.now() - (S.turnStartedAt || 0) < D.RULES.turnTimeoutMs) return;
@@ -4991,8 +6338,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     name: c.name, art: c.art, hp: c.hp, defence: c.defence, moves: c.moves,
                     foot: 'Ability: ' + esc(c.ability.name) + '<br>' + esc(c.ability.text)
                 }) +
-                '<div class="taken">' + taken + ' / ' + D.RULES.maxPerClass + ' taken' +
-                    (sel ? ' · yours' : '') + '</div>' +
+                // In a game for one there is exactly one of each class, so the
+                // "1 / 2 taken" tally means nothing: say who has it instead.
+                '<div class="taken">' +
+                    (S.solo
+                        ? (sel ? 'Yours' : soloHolder(id))
+                        : taken + ' / ' + D.RULES.maxPerClass + ' taken' + (sel ? ' · yours' : '')) +
+                '</div>' +
                 '</div>';
         }).join('');
 
@@ -5010,6 +6362,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<span class="' + (p.id === NET.PID ? 'you' : '') + '">' + esc(p.name) +
                 (p.id === NET.PID ? ' (you)' : '') + '</span>' +
             '<span class="tag">' + (p.cls ? esc(D.CLASSES[p.cls].name) : 'choosing…') +
+                (p.bot ? ' · computer' : '') +
                 (p.id === S.hostId ? ' · host' : '') + '</span>' +
             '</li>'
         ).join('');
@@ -5019,11 +6372,31 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                               S.players.every(p => p.cls);
         $('#btn-start').style.display = isHost ? '' : 'none';
         $('#btn-start').disabled = !everyoneReady;
-        $('#lobby-hint').textContent = !isHost
-            ? 'Waiting for the host to begin.'
-            : S.players.length < D.RULES.minPlayers
-                ? 'You need at least 2 players.'
-                : everyoneReady ? 'Everyone is ready.' : 'Waiting for everyone to pick a class.';
+        $('#lobby-hint').textContent = S.solo
+            ? (everyoneReady
+                ? 'Sir Aldric and the rest are ready when you are.'
+                : 'Choose your class. The other two seats fill themselves.')
+            : !isHost
+                ? 'Waiting for the host to begin.'
+                : S.players.length < D.RULES.minPlayers
+                    ? 'You need at least 2 players.'
+                    : everyoneReady ? 'Everyone is ready.'
+                                    : 'Waiting for everyone to pick a class.';
+
+        // Nothing to copy and nobody to invite in a game for one.
+        $('#btn-copy').style.display = S.solo ? 'none' : '';
+        $('#class-note').textContent = S.solo
+            ? 'You choose first. Whichever you take, the computer takes the other two.'
+            : 'First come, first served. At most two of each class.';
+        $('#code-label').textContent = S.solo ? 'Playing' : 'Room code';
+        $('#lobby-code').textContent = S.solo ? 'On your own' : S.code;
+        $('#btn-leave-lobby').textContent = S.solo ? 'Back' : 'Leave';
+    }
+
+    // Who is sitting in a class in a solo game, for the picker.
+    function soloHolder(clsId) {
+        const holder = S.players.find(p => p.cls === clsId);
+        return holder ? 'Taken by ' + esc(holder.name) : 'Free';
     }
 
     function initLobby() {
@@ -5043,12 +6416,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     async function leaveRoom() {
-        try { await NET.act(ROOM, 'leave', {}); } catch (e) { /* ignore */ }
+        // A solo game is not left, it is put down: walk away and it is still
+        // there under "Carry on your last game".
+        if (NET !== SOLO) {
+            try { await NET.act(ROOM, 'leave', {}); } catch (e) { /* ignore */ }
+        }
+        backHome();
+    }
+
+    function backHome() {
         if (unsub) unsub();
         unsub = null;
         clearInterval(enterRoom._hb);
         ROOM = null; S = null;
+        closeModal();
         try { history.replaceState(null, '', location.pathname); } catch (e) {}
+        $('#btn-resume').style.display = SOLO.hasGame() ? '' : 'none';
         showScreen('screen-home');
     }
 
@@ -5083,8 +6466,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         banner.className = 'turn-banner' + (mine ? ' mine' : '');
         banner.innerHTML =
             '<span class="who">' + (mine ? 'Your turn' : esc(cur ? cur.name : '—') + '’s turn') + '</span>' +
+            // A computer player takes a beat between each thing it does, so
+            // say plainly that it is going rather than leaving you wondering
+            // whether the game has stopped.
+            (cur && cur.bot && !mine
+                ? '<span class="thinking"><span class="spinner"></span>thinking…</span>' : '') +
             '<span class="muted">Turn ' + S.turnNo + '</span>' +
-            '<span class="timer" id="turn-timer"></span>';
+            // The clock only exists to stop an absent player stalling everyone
+            // else. On your own there is nobody to stall, so take your time.
+            (S.solo ? '' : '<span class="timer" id="turn-timer"></span>');
     }
 
     function tickTimer() {
@@ -5579,6 +6969,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             buttons.push(btn('a-coinpay',
                 p.payInCoins === false ? 'Paying in health' : 'Paying in coins', '', false));
         }
+        // How fast the other two take their turns. A whole game is a couple of
+        // thousand small actions, and not everyone wants to watch them at the
+        // same speed.
+        if (S.solo) {
+            buttons.push(btn('a-pace', 'Pace: ' + SOLO.pace().label, '', false));
+        }
         buttons.push(btn('a-steak-raw', 'Eat raw steak', '', p.steaks.raw < 1));
         buttons.push(btn('a-steak-cooked', 'Eat seared steak', '', p.steaks.cooked < 1));
         buttons.push(btn('a-end', 'End turn', '', !mine || blocked));
@@ -5615,6 +7011,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         bind('a-steak-cooked', () => act('eatSteak', { type: 'cooked' }));
         bind('a-end', () => act('endTurn', {}));
         bind('a-coinpay', () => act('payInCoins', { on: p.payInCoins === false }));
+        bind('a-pace', () => {
+            const set = SOLO.nextPace();
+            $('#a-pace').textContent = 'Pace: ' + set.label;
+            notice('The computer players now take their turns at a ' +
+                   set.label.toLowerCase() + ' pace.');
+        });
         bind('a-close', confirmCloseGame);
     }
 
@@ -5685,15 +7087,25 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // sitting in the database: a finished game should not go on costing reads
     // and writes for the rest of time.
     function confirmCloseGame() {
+        const solo = NET === SOLO;
         showModal('<h2>End the game?</h2>' +
-            '<div class="sub">This closes the room for everybody and deletes it. ' +
-            'It cannot be undone, and nothing about this game is kept.</div>' +
+            '<div class="sub">' + (solo
+                ? 'This throws the game away. It cannot be undone, and there will be ' +
+                  'nothing left to carry on.'
+                : 'This closes the room for everybody and deletes it. ' +
+                  'It cannot be undone, and nothing about this game is kept.') + '</div>' +
             '<div class="modal-actions">' +
             '<button class="btn danger" id="close-yes">End it and close the room</button>' +
             '<button class="btn" id="close-no">Keep playing</button></div>', true, 'close');
         bind('close-no', () => { openPanel = null; renderModal(); });
         bind('close-yes', async () => {
             const code = ROOM;
+            if (solo) {
+                await SOLO.closeRoom();
+                backHome();
+                notice('Game ended.');
+                return;
+            }
             try {
                 await NET.act(code, 'closeGame', {});
             } catch (err) { /* the room may already be gone */ }
@@ -6490,11 +7902,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<button class="btn primary" id="over-home">Back to the start</button></div>' +
             '</div>';
         bind('over-home', () => {
-            if (unsub) unsub();
-            clearInterval(enterRoom._hb);
-            ROOM = null; S = null;
-            try { history.replaceState(null, '', location.pathname); } catch (e) {}
-            showScreen('screen-home');
+            // A finished solo game is finished: it is not offered back to you
+            // as something to carry on.
+            if (NET === SOLO) SOLO.closeRoom();
+            backHome();
         });
     }
 
@@ -6502,8 +7913,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Boot                                                                */
     /* ------------------------------------------------------------------ */
 
+    /* The page used to wait for Firebase before it would do anything at all,
+       which meant a single-player game -- which needs no network whatever --
+       could not start until a server on the other side of the world had
+       answered. So the page boots on the solo layer, which is always there,
+       and the two online buttons switch themselves on when Firestore arrives. */
+
     function boot() {
-        NET = window.LOF_NET;
+        NET = SOLO;
         initHome();
         initLobby();
 
@@ -6516,25 +7933,39 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         });
 
         $('#btn-leave-game').addEventListener('click', leaveRoom);
+        showScreen('screen-home');
+        if (window.LOF_NET) onlineReady();
+    }
+
+    function onlineReady() {
+        ONLINE = window.LOF_NET;
+        $('#btn-create').disabled = false;
+        $('#btn-join').disabled = false;
+        $('#online-note').textContent = '';
 
         const params = new URLSearchParams(location.search);
         const room = (params.get('room') || '').toUpperCase();
-        if (/^[A-Z]{5}$/.test(room)) {
-            $('#inp-code').value = room;
-            if (NET.localName()) {
-                $('#inp-name').value = NET.localName();
-                NET.joinRoom(room, NET.localName())
-                    .then(() => enterRoom(room))
-                    .catch(err => notice(err.message || 'Could not rejoin that room.'));
-            } else {
-                notice('Enter a name, then press Join to enter room ' + room + '.');
-            }
+        if (!/^[A-Z]{5}$/.test(room) || ROOM) return;
+
+        $('#inp-code').value = room;
+        if (ONLINE.localName()) {
+            $('#inp-name').value = ONLINE.localName();
+            NET = ONLINE;
+            ONLINE.joinRoom(room, ONLINE.localName())
+                .then(() => enterRoom(room))
+                .catch(err => {
+                    NET = SOLO;
+                    notice(err.message || 'Could not rejoin that room.');
+                });
+        } else {
+            notice('Enter a name, then press Join to enter room ' + room + '.');
         }
-        showScreen(ROOM ? 'screen-lobby' : 'screen-home');
     }
 
-    if (window.LOF_NET) boot();
-    else window.addEventListener('lof-net-ready', boot, { once: true });
+    boot();
+    if (!window.LOF_NET) {
+        window.addEventListener('lof-net-ready', onlineReady, { once: true });
+    }
 })();
 
     </script>
@@ -6597,47 +8028,12 @@ const PID = localId();
 
 /* ---------------------------------------------------------------------- */
 /* Actions the engine exposes to the network layer                         */
+/*                                                                         */
+/* The table itself lives in engine.js, because solo.js needs exactly the   */
+/* same one. All this layer adds is the transaction around it.             */
 /* ---------------------------------------------------------------------- */
 
-const ACTIONS = {
-    chooseClass:   (s, pid, a) => E.chooseClass(s, pid, a.cls),
-    startGame:     (s, pid)    => E.startGame(s, pid),
-    rollForOrder:  (s, pid)    => E.rollForOrder(s, pid),
-    rollMove:      (s, pid, a) => E.rollMove(s, pid, a.useBonus !== false),
-    endTurn:       (s, pid)    => E.endTurn(s, pid),
-    battleRoll:    (s, pid)    => E.battleRoll(s, pid),
-    battleAttack:  (s, pid, a) => E.battleAttack(s, pid, a.moveId),
-    enemyRoll:     (s, pid)    => E.enemyRoll(s, pid),
-    enemyStrike:   (s, pid)    => E.enemyStrike(s, pid),
-    usePowerup:    (s, pid, a) => E.usePowerup(s, pid, a.uid),
-    usePotion:     (s, pid, a) => E.usePotion(s, pid, a.uid),
-    eatSteak:      (s, pid, a) => E.eatSteak(s, pid, a.type),
-    cookSteaks:    (s, pid, a) => E.cookSteaks(s, pid, a.count),
-    equip:         (s, pid, a) => E.equip(s, pid, a.uid),
-    useAbility:    (s, pid, a) => E.useAbility(s, pid, a),
-    buy:           (s, pid, a) => E.buy(s, pid, a.kind, a.id),
-    payInCoins:    (s, pid, a) => E.payInCoins(s, pid, a.on),
-    resolvePending:(s, pid, a) => E.resolvePending(s, pid, a.choice),
-    proposeTrade:  (s, pid, a) => E.proposeTrade(s, pid, a.toId, a.give, a.want),
-    respondTrade:  (s, pid, a) => E.respondTrade(s, pid, a.tradeId, a.accept),
-    cancelTrade:   (s, pid, a) => E.cancelTrade(s, pid, a.tradeId),
-    leave:         (s, pid)    => E.removePlayer(s, pid),
-    closeGame:     (s, pid)    => E.closeGame(s, pid),
-    rename:        (s, pid, a) => {
-        const p = E.player(s, pid);
-        if (p) p.name = String(a.name || '').slice(0, 16) || p.name;
-        return { ok: true };
-    },
-    heartbeat:     (s, pid) => {
-        const p = E.player(s, pid);
-        if (p) { p.lastSeen = Date.now(); p.connected = true; }
-        return { ok: true };
-    },
-    timeoutCheck:  (s) => {
-        const changed = E.checkTimeout(s, Date.now());
-        return changed ? { ok: true } : { ok: false, error: 'no-timeout', silent: true };
-    }
-};
+const ACTIONS = E.ACTIONS;
 
 /* ---------------------------------------------------------------------- */
 /* Room lifecycle                                                          */
