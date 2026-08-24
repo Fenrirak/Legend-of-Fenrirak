@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Legend of Fenrirak | The Thunder Dragon — Play Online</title>
+
+    <link rel="icon" type="image/png" href="Favicon.png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+        content="Play Legend of Fenrirak™, The Thunder Dragon online with up to 6 players.">
+
+    <link rel="stylesheet" href="site-nav.css">
+
+    <link rel="stylesheet" href="game/style.css">
+
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <div class="brand">
+            <img src="Fenrirak_logo.png" alt="Fenrirak logo">
+            Legend of Fenrirak
+        </div>
+        <div class="nav-links">
+            <a href="index.html">
+                <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg>
+                <span>Home</span>
+            </a>
+            <a href="About.html">
+                <svg viewBox="0 0 24 24"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5V4.5Z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg>
+                <span>About</span>
+            </a>
+            <a href="Creators.html">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><circle cx="17" cy="7" r="3"/><path d="M22 21v-1.5a4 4 0 0 0-3-3.87"/></svg>
+                <span>Creators</span>
+            </a>
+            <a href="Images.html">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <span>Photo Gallery</span>
+            </a>
+            <a href="Testplay Showdowns.html">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg>
+                <span>Play Showdowns</span>
+            </a>
+            <a href="Thunder Dragon.html" class="active">
+                <svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+                <span>The Thunder Dragon</span>
+            </a>
+        </div>
+    </nav>
+
+    <div id="notice" class="notice"></div>
+
+    <!-- ================= HOME ================= -->
+    <section id="screen-home" class="screen active">
+        <div class="wrap">
+            <div class="home-hero">
+                <img src="Fenrirak.png" alt="Fenrirak, the Thunder Dragon">
+                <h1>The Thunder Dragon</h1>
+                <p>
+                    The full board game, online, for 2 to 6 players. Pick a Knight, an Archer
+                    or a Mage, race across the map, gather the three key fragments, and be
+                    the first to bring down Fenrirak.
+                </p>
+            </div>
+
+            <div class="home-cards">
+                <div class="card">
+                    <h2>Your name</h2>
+                    <input type="text" id="inp-name" maxlength="16" placeholder="e.g. Nathan">
+                    <button class="btn primary" id="btn-create">Create a new room</button>
+                    <p class="muted" style="font-size:13.5px;margin:0">
+                        You will get a 5-letter room code and an invite link to share.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h2>Join a room</h2>
+                    <input type="text" id="inp-code" maxlength="5" placeholder="ABCDE"
+                           style="letter-spacing:6px;text-align:center;font-size:22px">
+                    <button class="btn" id="btn-join">Join</button>
+                    <p class="muted" style="font-size:13.5px;margin:0">
+                        Ask the host for their room code, or open their invite link.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card" style="max-width:860px;margin:22px auto 0">
+                <h2>How it plays</h2>
+                <p class="muted" style="font-size:14.5px;line-height:1.7;margin:0">
+                    Roll one die to move. Land on a square and do what it says. Monsters are
+                    run by the computer — they roll to hit just like you do, and always use the
+                    hardest attack they have the energy for. In battle, an even roll is a hit
+                    and an odd roll is a miss; damage is your attack minus the target's defence.
+                    Beat Seraphina, the Goblin Scout Group and the Goblin Hideout to collect all
+                    three key fragments, open the Gate past the Fountain of Life, and enter the
+                    arena. Land on the same square as another player and you fight them — that
+                    part is not optional.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= LOBBY ================= -->
+    <section id="screen-lobby" class="screen">
+        <div class="wrap">
+            <div class="code-box">
+                <span class="muted">Room code</span>
+                <span class="code" id="lobby-code">—</span>
+                <button class="btn small" id="btn-copy">Copy invite link</button>
+                <button class="btn small danger" id="btn-leave-lobby">Leave</button>
+            </div>
+
+            <div class="lobby-grid">
+                <div class="card">
+                    <h2>Choose your class</h2>
+                    <p class="muted" style="font-size:13.5px;margin:0 0 14px">
+                        First come, first served. At most two of each class.
+                    </p>
+                    <div class="class-picker" id="class-picker"></div>
+                </div>
+
+                <div class="card">
+                    <h2>Players</h2>
+                    <ul class="roster" id="roster"></ul>
+                    <p class="muted" id="lobby-hint" style="font-size:13.5px;margin:14px 0"></p>
+                    <button class="btn primary" id="btn-start">Start the game</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= GAME ================= -->
+    <section id="screen-game" class="screen">
+        <div class="wrap">
+            <div id="turn-banner" class="turn-banner"></div>
+
+            <div class="game-grid">
+                <div>
+                    <div class="board" id="board"></div>
+
+                    <div class="card" style="margin-top:16px">
+                        <h2>Your things</h2>
+                        <div class="inv-tabs" id="inv-tabs"></div>
+                        <div id="inventory"></div>
+                    </div>
+                </div>
+
+                <div class="side">
+                    <div class="card" id="side-hero"></div>
+                    <div class="card">
+                        <h3>Actions</h3>
+                        <div id="side-actions"></div>
+                        <div style="margin-top:12px">
+                            <button class="btn small danger" id="btn-leave-game">Leave game</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>The narrator</h3>
+                        <div class="log" id="log"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= GAME OVER ================= -->
+    <section id="screen-over" class="screen">
+        <div class="wrap" id="over-body"></div>
+    </section>
+
+    <!-- ================= MODAL ================= -->
+    <div class="modal-back" id="modal-back">
+        <div class="modal" id="modal"></div>
+    </div>
+
+    <script src="game/data.js"></script>
+    <script src="game/engine.js"></script>
+    <script src="game/ui.js"></script>
+    <script type="module" src="game/net.js"></script>
+
+</body>
+</html>
