@@ -229,10 +229,23 @@
 
 body {
     font-family: Allegro, serif;
-    background-color: var(--ink);
     color: #e6e6e6;
     margin: 0;
     padding: 0;
+
+    /* The page is the table the game is laid out on: dark stained wood with
+       the grain running across it. The board, the cards and the panels all
+       sit on top of this. */
+    background-color: var(--ink);
+    background-image:
+        repeating-linear-gradient(91deg,
+            rgba(255, 255, 255, .014) 0 2px,
+            transparent 2px 7px,
+            rgba(0, 0, 0, .05) 7px 9px),
+        radial-gradient(ellipse at 50% 0%, rgba(120, 92, 58, .16), transparent 60%),
+        linear-gradient(180deg, #1b1714, #131110 60%, #0f0d0c);
+    background-attachment: fixed;
+    min-height: 100vh;
 }
 
 /* ---- shared bits ----------------------------------------------------- */
@@ -497,128 +510,235 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .turn-banner .who { font-size: 18px; color: var(--cream); }
 .turn-banner .timer { margin-left: auto; font-size: 14px; color: #9a9a9a; }
 
-/* ---- the board ------------------------------------------------------- */
+/* ---- the board --------------------------------------------------------
+   Drawn to match the photograph of the real one: squares ruled in pencil on
+   a sheet of cream card, a blue river running top to bottom with cardboard
+   plank bridges over it, cut-paper trees, and the brown arena disc in the
+   middle. Everything here is CSS -- there is no picture of the board to load.
+   ---------------------------------------------------------------------- */
 
 .board {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    grid-template-rows: repeat(5, minmax(96px, auto));
-    gap: 8px;
-    padding: 14px;
-    border-radius: 16px;
+    grid-template-rows: repeat(5, minmax(104px, auto));
+    gap: 10px;
+    padding: 18px;
+    border-radius: 4px;
+    /* Card stock: a warm sheet with the faint mottling of real paper. */
     background:
-        radial-gradient(ellipse at 50% 45%, rgba(60, 78, 60, .30), transparent 62%),
-        linear-gradient(180deg, #1a1c19, #121311);
-    border: 1px solid var(--panel-edge);
+        radial-gradient(ellipse at 22% 18%, rgba(255,255,255,.55), transparent 45%),
+        radial-gradient(ellipse at 78% 82%, rgba(150,140,115,.18), transparent 50%),
+        #e4e0cd;
+    border: 1px solid #b9b39a;
+    box-shadow: 0 18px 40px -22px rgba(0,0,0,.85);
+    font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive;
 }
 
+/* The river, drawn behind everything, straight down the middle column. */
+.board .river {
+    grid-column: 4;
+    grid-row: 1 / -1;
+    margin: -18px 0;
+    z-index: 0;
+    background:
+        repeating-linear-gradient(180deg,
+            rgba(255,255,255,.16) 0 3px, transparent 3px 22px),
+        linear-gradient(90deg, #93b4d4, #b4cee4 45%, #93b4d4);
+    border-left: 1px solid #7d9dbc;
+    border-right: 1px solid #7d9dbc;
+}
+
+/* A square: a rectangle ruled in pencil, nothing more. */
 .sq {
     position: relative;
-    border-radius: 10px;
-    padding: 8px 8px 6px;
-    background: linear-gradient(180deg, #23241f, #1a1b17);
-    border: 1px solid rgba(217, 163, 92, .18);
-    min-height: 96px;
+    z-index: 1;
+    border-radius: 2px;
+    padding: 7px 8px 6px;
+    background: rgba(255, 253, 245, .55);
+    border: 1px solid #8c8672;
+    min-height: 104px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    color: #4a4538;
 }
 .sq .sq-name {
-    font-size: 12px;
-    color: var(--gold-bright);
-    line-height: 1.25;
-    letter-spacing: .3px;
+    font-size: 12.5px;
+    color: #35312a;
+    line-height: 1.2;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #8c8672;
 }
 .sq .sq-text {
     font-size: 10.5px;
-    color: #9d9d9d;
+    color: #5c5648;
     line-height: 1.35;
-    margin-top: 3px;
+    margin-top: 4px;
     flex: 1;
 }
+
+/* The optional-stop marker sits on its own line in the bottom-right corner.
+   It is laid out in flow rather than floated over the square, which is the
+   only way it can be guaranteed never to cover the square's own writing. */
 .sq .sq-badge {
-    position: absolute; top: 6px; right: 7px;
-    font-size: 9px; letter-spacing: .6px;
-    color: #1a1108; background: var(--gold);
-    border-radius: 999px; padding: 1px 6px;
+    align-self: flex-end;
+    margin-top: 4px;
+    z-index: 3;
+    font-size: 8.5px;
+    letter-spacing: .5px;
+    color: #6b3f1d;
+    background: rgba(242, 209, 138, .95);
+    border: 1px solid #b78b46;
+    border-radius: 2px;
+    padding: 1px 5px;
+    pointer-events: none;
 }
-.sq.stop .sq-badge { background: var(--crimson); color: #ffe9e6; }
 
-.sq.kind-battle  { background: linear-gradient(180deg, #2b1d1c, #1c1413); border-color: rgba(168,53,44,.42); }
-.sq.kind-chest   { background: linear-gradient(180deg, #2b2618, #1b1811); border-color: rgba(217,163,92,.45); }
-.sq.kind-heal    { background: linear-gradient(180deg, #17251f, #121a16); border-color: rgba(111,191,115,.35); }
-.sq.kind-water   { background: linear-gradient(180deg, #16202b, #111820); border-color: rgba(127,182,255,.32); }
-.sq.kind-start   { background: linear-gradient(180deg, #26241a, #191811); border-color: var(--gold); }
-.sq.kind-gate    { background: linear-gradient(180deg, #241a2b, #16111c); border-color: rgba(180,140,255,.45); }
+/* Square types, as coloured on the board itself. */
+.sq.kind-battle  { background: rgba(226, 196, 176, .55); }
+.sq.kind-chest   { background: rgba(240, 226, 186, .6); }
+.sq.kind-heal    { background: rgba(206, 224, 199, .55); }
+.sq.kind-start   { background: rgba(240, 228, 178, .75); border-width: 2px; }
+.sq.kind-gate    { background: rgba(214, 202, 224, .6); }
 
+/* Midnight Desert is the yellow blob card stuck onto the board. */
+.sq.key-midnight_desert {
+    background: #f2d18a;
+    border-color: #c39b4d;
+    border-radius: 14px 4px 16px 5px;
+}
+
+/* Squares that sit on the water get planks under them. */
+.sq.scenery-bridge, .sq.scenery-broken_bridge {
+    background:
+        repeating-linear-gradient(90deg,
+            #b5714a 0 15px, #a3623d 15px 17px) center/100% 74% no-repeat,
+        transparent;
+    border-color: #8a5030;
+    color: #2f1d12;
+}
+.sq.scenery-bridge .sq-name,
+.sq.scenery-broken_bridge .sq-name { color: #2f1d12; border-bottom-color: #8a5030; }
+.sq.scenery-bridge .sq-text,
+.sq.scenery-broken_bridge .sq-text { color: #40281a; }
+
+/* ...and the crossing by the Sea of Castout is the broken one: the middle
+   planks have gone into the water. */
+.sq.scenery-broken_bridge {
+    background:
+        repeating-linear-gradient(90deg,
+            #b5714a 0 15px, #a3623d 15px 17px) left center/34% 74% no-repeat,
+        repeating-linear-gradient(90deg,
+            #b5714a 0 15px, #a3623d 15px 17px) right center/26% 74% no-repeat,
+        transparent;
+    border-style: dashed;
+}
+.sq.scenery-broken_bridge::after {
+    content: '';
+    position: absolute;
+    left: 36%; right: 28%; top: 34%;
+    height: 26%;
+    background:
+        linear-gradient(28deg, transparent 46%, #a3623d 46% 54%, transparent 54%),
+        linear-gradient(-40deg, transparent 44%, #8a5030 44% 52%, transparent 52%);
+    opacity: .85;
+    pointer-events: none;
+}
+
+/* Tokens: the character's own picture, standing on the square. */
 .sq .tokens {
-    display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-top: 4px;
+    position: relative; z-index: 2;
 }
 .token {
-    width: 28px; height: 28px; border-radius: 50%;
-    border: 2px solid var(--gold);
-    background: #0d0d0d center/78% no-repeat;
-    box-shadow: 0 2px 8px rgba(0,0,0,.6);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 2px solid #4a4538;
+    background: #f3f0e4 center/86% no-repeat;
+    box-shadow: 0 2px 5px rgba(0,0,0,.45);
+    transition: transform .16s ease;
 }
-.token.me { border-color: var(--gold-bright); box-shadow: 0 0 0 2px rgba(242,204,143,.35); }
+.token.me { border-color: #b8791f; border-width: 3px; }
+/* Lifted for the moment it is stepping onto a square. */
+.token.walking { transform: scale(1.22) translateY(-4px); }
 
-/* the arena — deliberately the grandest thing on the board */
+/* ---- the arena --------------------------------------------------------
+   The brown disc in the middle. No dragon picture on it -- on the real
+   board it is bare card.
+   ---------------------------------------------------------------------- */
+
 .arena {
     grid-row: 2 / span 3;
     grid-column: 2 / span 4;
     position: relative;
-    border-radius: 18px;
-    border: 2px solid rgba(217, 163, 92, .55);
-    background:
-        radial-gradient(circle at 50% 46%, rgba(127,182,255,.20), transparent 55%),
-        radial-gradient(circle at 50% 50%, #4a2f22 0%, #35211a 42%, #23150f 70%, #16100c 100%);
+    z-index: 2;
+    border: none;
+    background: none;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     text-align: center;
-    overflow: hidden;
-    box-shadow: inset 0 0 70px rgba(0,0,0,.75), 0 0 40px -18px rgba(217,163,92,.6);
+    overflow: visible;
 }
 .arena::before {
     content: '';
-    position: absolute; inset: 9%;
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(96%, 420px);
+    aspect-ratio: 1;
     border-radius: 50%;
-    border: 2px solid rgba(217, 163, 92, .30);
-    box-shadow: inset 0 0 60px rgba(168,53,44,.35);
+    background:
+        radial-gradient(circle at 38% 32%, rgba(255,255,255,.22), transparent 55%),
+        #b5714a;
+    border: 2px solid #8a5030;
+    box-shadow: 0 10px 26px -12px rgba(0,0,0,.7);
 }
-.arena::after {
-    content: '';
-    position: absolute; inset: 20%;
-    border-radius: 50%;
-    border: 1px dashed rgba(217, 163, 92, .22);
-    animation: arena-spin 44s linear infinite;
+.arena .arena-inner {
+    position: relative;
+    z-index: 2;
+    padding: 14px;
+    max-width: 74%;
 }
-@keyframes arena-spin { to { transform: rotate(360deg); } }
+.arena .arena-title { font-size: 24px; color: #3a2213; letter-spacing: 1px; }
+.arena .arena-sub { font-size: 12.5px; color: #5b3520; margin-top: 4px; }
+.arena .arena-note { font-size: 11px; color: #6b4229; margin-top: 8px; }
+.arena .tokens { justify-content: center; margin-top: 10px; }
+.arena.lit .arena-title { color: #2a1408; }
 
-.arena .arena-glow {
-    position: absolute; inset: -30%;
-    background: radial-gradient(circle at 50% 50%, rgba(127,182,255,.16), transparent 58%);
-    animation: arena-pulse 5.5s ease-in-out infinite;
+/* ---- cut-paper scenery ------------------------------------------------ */
+
+.decor {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     pointer-events: none;
 }
-@keyframes arena-pulse { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+.decor img { width: 82%; max-height: 84px; object-fit: contain; }
+.decor .decor-name { font-size: 10px; color: #6a6454; margin-top: 3px; }
 
-.arena .arena-inner { position: relative; z-index: 2; padding: 14px; }
-.arena .arena-title {
-    font-size: 27px; color: var(--gold-bright);
-    letter-spacing: 3px; text-transform: uppercase;
-    text-shadow: 0 0 22px rgba(217,163,92,.6), 0 3px 0 #000;
+/* The Poor Merchant's sign, propped at the edge of the board as in the photo. */
+.merchant-sign {
+    position: absolute;
+    right: -6px;
+    bottom: 18%;
+    z-index: 4;
+    padding: 10px 14px;
+    background: linear-gradient(180deg, #b5714a, #a3623d);
+    border: 1px solid #8a5030;
+    border-radius: 3px;
+    color: #2f1d12;
+    font-size: 13px;
+    line-height: 1.15;
+    text-align: center;
+    transform: rotate(-3deg);
+    box-shadow: 0 6px 14px -6px rgba(0,0,0,.7);
+    pointer-events: none;
 }
-.arena .arena-sub { font-size: 13px; color: #d3b98f; margin-top: 5px; letter-spacing: 1.5px; }
-.arena .arena-note { font-size: 11.5px; color: #a08d72; margin-top: 9px; max-width: 340px; }
-.arena img.dragon {
-    width: 210px; max-width: 52%; height: auto;
-    filter: drop-shadow(0 0 26px rgba(127,182,255,.45));
-    margin-bottom: 4px;
-}
-.arena .tokens { justify-content: center; margin-top: 10px; }
-
-.arena.lit { border-color: var(--thunder); }
-.arena.lit .arena-title { color: var(--thunder); text-shadow: 0 0 30px rgba(127,182,255,.9); }
 
 /* ---- sidebar --------------------------------------------------------- */
 
@@ -757,6 +877,50 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .victory img { width: 200px; max-width: 55%; margin: 16px auto; display: block; }
 
+/* ---- whose die is it ---------------------------------------------------
+   One hit each, so the single most useful thing on screen during a fight is
+   who is holding the die. It gets its own line at the top of the modal.
+   ---------------------------------------------------------------------- */
+
+.turn-flag {
+    margin: 4px 0 10px;
+    padding: 9px 14px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 15px;
+    color: #d9cfba;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .12);
+}
+.turn-flag.mine {
+    color: #1a1108;
+    background: var(--gold);
+    border-color: var(--gold);
+    font-weight: bold;
+}
+
+/* ---- monster pictures -------------------------------------------------- */
+
+.enemy-pic {
+    display: block;
+    object-fit: contain;
+}
+.paper .p-art .enemy-pic { width: 100%; height: 100%; }
+
+/* ---- everyone's stats -------------------------------------------------- */
+
+.who-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+/* ---- trades ------------------------------------------------------------ */
+
+.trade-cards { margin-top: 8px; }
+.trade-cards .paper { font-size: 12px; }
+
 /* ---- responsive ------------------------------------------------------ */
 
 @media (max-width: 1080px) {
@@ -807,23 +971,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     box-shadow: inset 0 -8px 20px rgba(0, 0, 0, 0.45);
 }
 
-/* ---- scenery tile ----------------------------------------------------- */
-
-.sq.decor {
-    background: linear-gradient(180deg, #1c1f1a, #151712);
-    border-style: dashed;
-    border-color: rgba(217, 163, 92, 0.13);
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-.sq.decor img {
-    max-width: 62%;
-    max-height: 52px;
-    object-fit: contain;
-    opacity: 0.45;
-}
-.sq.decor .sq-name { color: #6f6a5f; margin-top: 4px; }
 
     </style>
 
@@ -1091,7 +1238,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         swarm_of_bats: {
             id: 'swarm_of_bats',
             name: 'Swarm of Bats',
-            crest: { initials: 'SB', tint: '#6d5f8c' },
+            crest: { initials: 'SB', tint: '#6d5f8c' }, pic: 'bats',
             hp: 60,
             defence: 0,
             placeholder: true,           // PLACEHOLDER — no profile card exists for this fight
@@ -1103,7 +1250,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         seraphina: {
             id: 'seraphina',
             name: 'Seraphina',
-            crest: { initials: 'S',  tint: '#7a8c4a' },
+            crest: { initials: 'S',  tint: '#7a8c4a' }, pic: 'seraphina',
             hp: 150,
             defence: 0,
             moves: [
@@ -1114,7 +1261,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         goblin_scout_group: {
             id: 'goblin_scout_group',
             name: 'Goblin Scout Group',
-            crest: { initials: 'GS', tint: '#8c6a3a' },
+            crest: { initials: 'GS', tint: '#8c6a3a' }, pic: 'goblins',
             hp: 100,
             defence: 0,
             moves: [
@@ -1125,7 +1272,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         goblin_hideout: {
             id: 'goblin_hideout',
             name: 'Goblin Hideout',
-            crest: { initials: 'GH', tint: '#8c4a3a' },
+            crest: { initials: 'GH', tint: '#8c4a3a' }, pic: 'hideout',
             hp: 180,
             defence: 0,
             noIllusion: true,
@@ -1137,7 +1284,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         fenrirak: {
             id: 'fenrirak',
             name: 'Fenrirak',
-            crest: { initials: 'F',  tint: '#4a6a8c', art: 'Fenrirak.png' },
+            crest: { initials: 'F',  tint: '#4a6a8c', art: 'Fenrirak.png' }, pic: 'fenrirak',
             hp: 275,
             defence: 20,
             boss: true,
@@ -1499,7 +1646,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         { i: 3,  key: 'draw_item',        name: 'Draw 1 Item Card',     row: 4, col: 3,
           action: 'draw_item', count: 1, scenery: 'bridge',
-          text: 'The bridge over the Sea of Castout. Draw 1 item card.' },
+          text: 'Draw 1 item card.' },
 
         { i: 4,  key: 'draw_powerup',     name: 'Draw 2 Power-Ups',     row: 4, col: 2,
           action: 'draw_powerup', count: 2, text: 'Draw 2 power-up cards.' },
@@ -1514,7 +1661,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
           action: 'spring', value: 2, text: 'Move forward two spaces.' },
 
         { i: 8,  key: 'castle_ruins',     name: 'Castle Ruins',         row: 2, col: 0,
-          action: 'battle', enemy: 'swarm_of_bats', coins: 3, chestKey: 1, stop: true,
+          action: 'battle', enemy: 'swarm_of_bats', coins: 3, chestKey: 1,
           text: 'You have to fight a swarm of bats. Finds 3 coins and a chest key.' },
 
         { i: 9,  key: 'sack_of_gold',     name: 'Sack of Gold',         row: 1, col: 0,
@@ -1524,25 +1671,25 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
           action: 'pot', text: 'You may cook steak!' },
 
         { i: 11, key: 'midnight_desert',  name: 'Midnight Desert',      row: 0, col: 1,
-          action: 'battle', enemy: 'seraphina', coins: 8, keyFragment: 1, stop: true,
+          action: 'battle', enemy: 'seraphina', coins: 8, keyFragment: 1,
           text: 'You have to fight Seraphina. Drops 8 coins and a key fragment.' },
 
         { i: 12, key: 'chest',            name: 'Chest',                row: 0, col: 2,
           action: 'chest', text: 'Get an armour set or special weapon. (Cost: 1 chest key)' },
 
         { i: 13, key: 'sea_of_castout',   name: 'Sea of Castout',       row: 0, col: 3,
-          action: 'sea_of_castout', stop: true, scenery: 'water',
-          text: 'A whirlpool takes one of your items. Choose something to lose. STOP.' },
+          action: 'sea_of_castout', scenery: 'broken_bridge',
+          text: 'A whirlpool takes one of your items. Choose something to lose.' },
 
         { i: 14, key: 'slivergrove',      name: 'Slivergrove Village',  row: 0, col: 4,
           action: 'heal', value: 50, text: 'Heal 50 HP.' },
 
         { i: 15, key: 'uncharted_forest', name: 'Uncharted Forest',     row: 0, col: 5,
-          action: 'battle', enemy: 'goblin_scout_group', coins: 5, keyFragment: 1, stop: true,
+          action: 'battle', enemy: 'goblin_scout_group', coins: 5, keyFragment: 1,
           text: 'You have to fight a goblin scout group. Drops 5 coins and a key fragment.' },
 
         { i: 16, key: 'crimson_keep',     name: 'Crimson Keep',         row: 0, col: 6,
-          action: 'crimson_keep', stop: true,
+          action: 'crimson_keep',
           text: 'CHOOSE 1 — sword, armour, bow or wand that suits your class.' },
 
         { i: 17, key: 'chest',            name: 'Chest',                row: 1, col: 6,
@@ -1552,7 +1699,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
           action: 'pot', text: 'You may cook steak!' },
 
         { i: 19, key: 'goblin_hideout',   name: 'Goblin Hideout',       row: 3, col: 6,
-          action: 'battle', enemy: 'goblin_hideout', coins: 15, keyFragment: 1, stop: true,
+          action: 'battle', enemy: 'goblin_hideout', coins: 15, keyFragment: 1,
           text: 'You stumble across a goblin hideout. You fight the goblins! ' +
                 'Drops 15 coins and a key fragment.' },
 
@@ -1561,13 +1708,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
           text: 'Heal 100 HP. Optional stop.' },
 
         { i: 21, key: 'gate',             name: 'The Gate',             row: 2, col: 5,
-          action: 'gate', stop: true,
+          action: 'gate',
           text: 'Three different key fragments open the way. Without them, you are cast ' +
                 'back to the Start.' },
 
         { i: 22, key: 'arena',            name: "Fenrirak's Arena",     row: 1, col: 1,
           rowSpan: 3, colSpan: 4,
-          action: 'battle', enemy: 'fenrirak', stop: true, arena: true,
+          action: 'battle', enemy: 'fenrirak', arena: true,
           text: 'The Thunder Dragon waits. Defeat Fenrirak and the legend is yours.' }
     ];
 
@@ -1829,6 +1976,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             lastEquipTurn: -99,
             lastAbilityTurn: -99,
             pendingIllusion: null,
+            path: [],
             movesLeft: 0,
             hasMoved: false,
             connected: true,
@@ -1952,6 +2100,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (!p) return;
         p.hasMoved = false;
         p.movesLeft = 0;
+        p.path = [];          // last turn's walk, cleared so it is not replayed
         state.turnStartedAt = Date.now();
 
         // A Mage's illusion forces a fight before anything else.
@@ -1974,18 +2123,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (!isMyTurn(state, pid)) return fail('It is not your turn.');
         if (state.battle) return fail('Finish the battle first.');
         if (state.pending) return fail('Resolve the square first.');
-        return advanceTurn(state);
+
+        // Ending your turn means rolling for a raw steak, by hand.
+        state.pending = {
+            type: 'steak_roll',
+            playerId: pid,
+            prompt: 'Roll for a raw steak. A ' + R.steakRolls.join(', ') + ' finds one.'
+        };
+        return ok();
     }
 
     function advanceTurn(state) {
         const p = currentPlayer(state);
         if (p) {
-            // End of turn: roll for a raw steak.
-            const roll = d6();
-            if (R.steakRolls.indexOf(roll) >= 0) {
-                p.steaks.raw += 1;
-                log(state, p.name + ' rolled a ' + roll + ' and found a raw steak.', 'muted');
-            }
+            // The steak roll is not made here. Nothing in this game rolls a die
+            // on its own -- endTurn hands the player the die first and only
+            // calls this once they have thrown it.
             // Defence buffs last one turn.
             p.buffs = (p.buffs || []).filter(b => b.kind !== 'defence');
             p.turnsTaken += 1;
@@ -2088,14 +2241,33 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return walk(state, p, total);
     }
 
-    // Step square by square so Stop squares can interrupt movement.
+    // Step square by square. Nothing on the board forces a stop any more --
+    // the only interruption is a square that *offers* one, and the Gate, which
+    // is a locked door rather than a stop.
+    //
+    // Every square stepped through is recorded in p.path so the board can walk
+    // the token along instead of teleporting it. It is cleared at the start of
+    // the next turn.
     function walk(state, p, steps) {
         let remaining = steps;
+        p.path = [p.pos];
         while (remaining > 0) {
             if (p.pos >= D.ARENA_INDEX) break;
             p.pos += 1;
             remaining -= 1;
+            p.path.push(p.pos);
             const sq = square(p.pos);
+
+            // The Gate stops nobody, but it does not let anyone through
+            // without the three fragments -- walking past it is still walking
+            // through it.
+            if (remaining > 0 && sq.action === 'gate' && p.keyFragments < D.KEY_FRAGMENTS_NEEDED) {
+                log(state, 'The Gate refuses ' + p.name + '. Back to the Start.', 'death');
+                p.movesLeft = 0;
+                sendToStart(state, p, false);
+                p.path.push(p.pos);
+                return ok();
+            }
 
             if (remaining > 0 && sq.optionalStop) {
                 p.movesLeft = remaining;
@@ -2106,10 +2278,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     prompt: sq.name + ' — ' + sq.text
                 };
                 return ok();
-            }
-            if (remaining > 0 && sq.stop) {
-                log(state, p.name + ' must stop at ' + sq.name + '.', 'muted');
-                remaining = 0;
             }
         }
         p.movesLeft = 0;
@@ -2304,7 +2472,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function battleActorId(state) {
         const b = state.battle;
         if (!b) return null;
-        if (b.kind === 'pve') return b.turn === 'a' ? b.aId : null;   // null = the enemy AI
+        // In a monster fight the same player acts on both sides: their own
+        // moves, and the monster's die.
+        if (b.kind === 'pve') return b.aId;
         return b.turn === 'a' ? b.aId : b.bId;
     }
 
@@ -2421,29 +2591,54 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     function passBattleTurn(state) {
         const b = state.battle;
-        b.phase = 'roll';
         b.turn = b.turn === 'a' ? 'b' : 'a';
         state.turnStartedAt = Date.now();
-        if (b.kind === 'pve' && b.turn === 'b') runEnemyTurn(state);
+        // The monster does not move on its own. Its die is thrown by the player
+        // it is fighting, exactly as somebody has to throw it at the table --
+        // one roll, one strike, then the turn comes back.
+        b.phase = (b.kind === 'pve' && b.turn === 'b') ? 'enemy_roll' : 'roll';
     }
 
-    // Deterministic monster AI: roll to hit, then always the highest damage
-    // attack it currently has the energy for.
-    function runEnemyTurn(state) {
+    // Throw the monster's die. Even and it will connect; odd and the turn
+    // comes straight back to the player.
+    function enemyRoll(state, pid) {
         const b = state.battle;
-        if (!b || b.kind !== 'pve' || b.turn !== 'b') return;
-        const e = D.ENEMIES[b.enemyId];
-        const p = player(state, b.aId);
+        if (!b || b.kind !== 'pve') return fail('There is no monster to roll for.');
+        if (b.aId !== pid) return fail('This is not your fight.');
+        if (b.phase !== 'enemy_roll') return fail('The monster is not waiting on a roll.');
 
+        const e = D.ENEMIES[b.enemyId];
         const roll = d6();
         b.lastRoll = roll;
-        if (roll % 2 !== 0) {
+        if (roll % 2 === 0) {
+            b.phase = 'enemy_act';
+            log(state, 'The ' + e.name + ' rolled a ' + roll + ' — it connects.', 'enemy');
+        } else {
             log(state, 'The ' + e.name + ' rolled a ' + roll + ' and misses.', 'muted');
-            b.enemyEnergy += 0;
             b.phase = 'roll';
             b.turn = 'a';
-            return;
+            state.turnStartedAt = Date.now();
         }
+        return ok();
+    }
+
+    // Let the blow land. Which attack is not a choice -- the monster always
+    // uses the hardest one it has the energy for.
+    function enemyStrike(state, pid) {
+        const b = state.battle;
+        if (!b || b.kind !== 'pve') return fail('There is no monster.');
+        if (b.aId !== pid) return fail('This is not your fight.');
+        if (b.phase !== 'enemy_act') return fail('The monster has not rolled a hit.');
+        return runEnemyTurn(state);
+    }
+
+    // The monster has already rolled its hit; this lands it. It always uses
+    // the hardest attack it has the energy for.
+    function runEnemyTurn(state) {
+        const b = state.battle;
+        if (!b || b.kind !== 'pve' || b.turn !== 'b') return ok();
+        const e = D.ENEMIES[b.enemyId];
+        const p = player(state, b.aId);
 
         const usable = e.moves.filter(m => b.enemyEnergy >= m.energy);
         const move = usable.sort((x, y) => y.damage - x.damage)[0] || e.moves[0];
@@ -2453,10 +2648,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         log(state, 'The ' + e.name + ' used ' + move.name + ' for ' + dealt + ' damage.', 'enemy');
         damageArmour(state, p);
 
-        if (p.hp <= 0) { losePve(state, p); return; }
+        if (p.hp <= 0) { losePve(state, p); return ok(); }
 
         b.phase = 'roll';
         b.turn = 'a';
+        state.turnStartedAt = Date.now();
+        return ok();
     }
 
     function winPve(state, p) {
@@ -2760,6 +2957,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 return walk(state, p, left);
             }
 
+            case 'steak_roll': {
+                const roll = d6();
+                state.lastDie = { roll: roll, who: p.name, why: 'steak' };
+                if (R.steakRolls.indexOf(roll) >= 0) {
+                    p.steaks.raw += 1;
+                    log(state, p.name + ' rolled a ' + roll + ' and found a raw steak.', 'item');
+                } else {
+                    log(state, p.name + ' rolled a ' + roll + ' — no steak this time.', 'muted');
+                }
+                state.pending = null;
+                return advanceTurn(state);
+            }
+
             case 'pot':
                 state.pending = null;
                 return cookSteaksDirect(state, p, choice === undefined ? p.steaks.raw : choice);
@@ -2934,7 +3144,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         addPlayer, removePlayer, chooseClass, startGame, rollForOrder,
         currentPlayer, isMyTurn, beginTurn, endTurn, advanceTurn, checkTimeout,
         rollMove, resolvePending,
-        battleRoll, battleAttack, availableMoves, battleActorId,
+        battleRoll, battleAttack, enemyRoll, enemyStrike, availableMoves, battleActorId,
         usePowerup, usePotion, eatSteak, cookSteaks, equip, useAbility, buy,
         proposeTrade, respondTrade, cancelTrade, collapse,
         totalDefence, totalAttackBonus, diceModifier,
@@ -3091,6 +3301,78 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Lobby                                                               */
     /* ------------------------------------------------------------------ */
 
+
+    /* ------------------------------------------------------------------ */
+    /* Enemy pictures                                                      */
+    /*                                                                     */
+    /* Drawn here rather than loaded, so there is nothing extra to upload  */
+    /* and nothing that can 404. Fenrirak keeps his painting; the four     */
+    /* monsters that never had one get these.                              */
+    /* ------------------------------------------------------------------ */
+
+    const ENEMY_ART = {
+        bats:
+            '<path d="M50 44c-4-7-11-11-19-11-5 0-9 2-12 5 3 0 6 1 8 3-4 1-7 4-8 8 ' +
+            '5-4 12-4 17-1 5 3 9 8 14 8s9-5 14-8c5-3 12-3 17 1-1-4-4-7-8-8 2-2 5-3 8-3 ' +
+            '-3-3-7-5-12-5-8 0-15 4-19 11z" fill="currentColor"/>' +
+            '<circle cx="46" cy="45" r="1.6" fill="#f4e7b8"/>' +
+            '<circle cx="54" cy="45" r="1.6" fill="#f4e7b8"/>' +
+            '<g opacity=".65" transform="translate(-24 22) scale(.52)">' +
+            '<path d="M50 44c-4-7-11-11-19-11-5 0-9 2-12 5 3 0 6 1 8 3-4 1-7 4-8 8 ' +
+            '5-4 12-4 17-1 5 3 9 8 14 8s9-5 14-8c5-3 12-3 17 1-1-4-4-7-8-8 2-2 5-3 8-3 ' +
+            '-3-3-7-5-12-5-8 0-15 4-19 11z" fill="currentColor"/></g>' +
+            '<g opacity=".5" transform="translate(30 26) scale(.44)">' +
+            '<path d="M50 44c-4-7-11-11-19-11-5 0-9 2-12 5 3 0 6 1 8 3-4 1-7 4-8 8 ' +
+            '5-4 12-4 17-1 5 3 9 8 14 8s9-5 14-8c5-3 12-3 17 1-1-4-4-7-8-8 2-2 5-3 8-3 ' +
+            '-3-3-7-5-12-5-8 0-15 4-19 11z" fill="currentColor"/></g>',
+
+        seraphina:
+            '<path d="M26 82c10 2 17-3 20-11 3-9-2-16-9-19-5-2-8-6-6-11 2-6 9-9 16-7 ' +
+            '9 2 14 10 14 19 0 6-2 11-6 15" fill="none" stroke="currentColor" ' +
+            'stroke-width="7" stroke-linecap="round"/>' +
+            '<path d="M62 24c6-4 14-3 18 3 3 5 2 11-3 15-4 3-9 3-13 0" fill="currentColor"/>' +
+            '<circle cx="70" cy="30" r="2.4" fill="#f4e7b8"/>' +
+            '<path d="M64 38l3 6 3-6M72 38l3 6 3-6" stroke="#f4e7b8" stroke-width="2" ' +
+            'fill="none" stroke-linecap="round"/>',
+
+        goblins:
+            '<g fill="currentColor">' +
+            '<path d="M30 60c0-9 6-15 13-15s13 6 13 15c0 7-6 12-13 12s-13-5-13-12z"/>' +
+            '<path d="M30 54l-9-9 3 12zM56 54l9-9-3 12z"/>' +
+            '<path d="M62 70c0-7 5-12 11-12s11 5 11 12c0 6-5 10-11 10s-11-4-11-10z" opacity=".75"/>' +
+            '<path d="M62 66l-7-7 2 9zM84 66l7-7-2 9z" opacity=".75"/>' +
+            '<rect x="14" y="24" width="5" height="34" rx="2.5" transform="rotate(-22 16 41)"/>' +
+            '<circle cx="12" cy="24" r="7"/>' +
+            '</g>' +
+            '<circle cx="38" cy="57" r="2.2" fill="#f4e7b8"/>' +
+            '<circle cx="48" cy="57" r="2.2" fill="#f4e7b8"/>' +
+            '<circle cx="69" cy="68" r="1.8" fill="#f4e7b8"/>' +
+            '<circle cx="77" cy="68" r="1.8" fill="#f4e7b8"/>',
+
+        hideout:
+            '<path d="M12 82V52L50 22l38 30v30z" fill="currentColor"/>' +
+            '<path d="M50 22 8 54h84z" fill="currentColor" opacity=".8"/>' +
+            '<path d="M36 82V62c0-8 6-14 14-14s14 6 14 14v20z" fill="#1c1a17"/>' +
+            '<circle cx="44" cy="68" r="2.4" fill="#e4c14a"/>' +
+            '<circle cx="56" cy="68" r="2.4" fill="#e4c14a"/>' +
+            '<circle cx="47" cy="78" r="1.8" fill="#e4c14a" opacity=".7"/>'
+    };
+
+    // A monster's picture at whatever size the caller wants.
+    function enemyPic(enemy, px) {
+        const size = px || 96;
+        if (enemy.crest && enemy.crest.art) {
+            return '<img class="enemy-pic" src="' + esc(enemy.crest.art) + '" alt="' +
+                esc(enemy.name) + '" style="width:' + size + 'px;height:' + size + 'px">';
+        }
+        const art = ENEMY_ART[enemy.pic];
+        const tint = (enemy.crest && enemy.crest.tint) || '#6a6a6a';
+        if (!art) return crestHtml(enemy);
+        return '<svg class="enemy-pic" viewBox="0 0 100 100" role="img" aria-label="' +
+            esc(enemy.name) + '" style="width:' + size + 'px;height:' + size +
+            'px;color:' + esc(tint) + '">' + art + '</svg>';
+    }
+
     /* ------------------------------------------------------------------ */
     /* Paper cards                                                         */
     /*                                                                     */
@@ -3104,7 +3386,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function statCardHtml(o) {
         return '<div class="paper stat">' +
             '<div class="p-name">' + esc(o.name) + '</div>' +
-            (o.art ? '<img class="p-art" src="' + esc(o.art) + '" alt="">' : '') +
+            (o.svg ? '<div class="p-art">' + o.svg + '</div>'
+                   : o.art ? '<img class="p-art" src="' + esc(o.art) + '" alt="">' : '') +
             '<div class="p-head">Stats:</div>' +
             '<div class="p-stat">Health: ' + o.hp + '</div>' +
             '<div class="p-stat">Defence: ' + o.defence + '</div>' +
@@ -3206,6 +3489,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* ------------------------------------------------------------------ */
 
     function renderGame() {
+        playWalks();
         renderBanner();
         renderBoard();
         renderHero();
@@ -3267,15 +3551,76 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return 'plain';
     }
 
+    /* Where each token is drawn right now. While a player is walking this
+       trails behind their real position, one square at a time. */
+    const shownPos = {};
+    const walkedKey = {};
+    const walkTimers = {};
+
+    // Play back the walk the engine recorded, so a move is seen as a move
+    // rather than the token appearing somewhere else.
+    function playWalks() {
+        if (!S || !S.players) return;
+        S.players.forEach(p => {
+            const path = (p.path || []);
+            const key = path.join('-');
+            if (walkedKey[p.id] === key) return;
+
+            const first = !(p.id in walkedKey);
+            walkedKey[p.id] = key;
+            clearInterval(walkTimers[p.id]);
+
+            // Nothing to replay: a fresh join, a reload, or a one-square hop.
+            if (first || path.length < 2) { shownPos[p.id] = p.pos; return; }
+
+            let step = 0;
+            shownPos[p.id] = path[0];
+            walkTimers[p.id] = setInterval(() => {
+                step += 1;
+                if (step >= path.length) {
+                    clearInterval(walkTimers[p.id]);
+                    shownPos[p.id] = p.pos;
+                } else {
+                    shownPos[p.id] = path[step];
+                }
+                renderBoard();
+            }, 210);
+        });
+    }
+
+    function tokensOn(index) {
+        return S.players.filter(p => {
+            if (!p.cls) return false;
+            const at = (p.id in shownPos) ? shownPos[p.id] : p.pos;
+            return at === index;
+        }).map(p => {
+            const c = D.CLASSES[p.cls];
+            const moving = !!walkTimers[p.id] && shownPos[p.id] !== p.pos;
+            return '<div class="token' + (p.id === NET.PID ? ' me' : '') +
+                (moving ? ' walking' : '') + '" title="' +
+                esc(p.name) + ' — ' + esc(c.name) + ' — ' + p.hp + '/' + p.maxHp + ' HP" ' +
+                'style="background-image:url(\'' + esc(c.art) + '\')"></div>';
+        }).join('');
+    }
+
+    function squareKind(sq) {
+        if (sq.arena) return 'arena';
+        if (sq.key === 'start') return 'start';
+        if (sq.key === 'gate') return 'gate';
+        if (sq.action === 'battle') return 'battle';
+        if (sq.action === 'chest' || sq.action === 'crimson_keep') return 'chest';
+        if (sq.action === 'heal') return 'heal';
+        return 'plain';
+    }
+
     function renderBoard() {
         const anyoneInArena = S.players.some(p => p.pos === D.ARENA_INDEX);
 
         const html = D.BOARD.map(sq => {
             if (sq.arena) {
+                // Bare brown card, as on the board. No picture in the middle.
                 return '<div class="arena' + (anyoneInArena ? ' lit' : '') + '">' +
-                    '<div class="arena-glow"></div>' +
                     '<div class="arena-inner">' +
-                        '<img class="dragon" src="Fenrirak.png" alt="Fenrirak">' +
                         '<div class="arena-title">Fenrirak’s Arena</div>' +
                         '<div class="arena-sub">The Thunder Dragon</div>' +
                         '<div class="arena-note">' + esc(sq.text) + '</div>' +
@@ -3283,29 +3628,28 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     '</div>' +
                 '</div>';
             }
-            const kind = squareKind(sq);
-            const badge = sq.stop ? 'STOP' : (sq.optionalStop ? 'OPTIONAL' : '');
-            return '<div class="sq kind-' + kind + (sq.stop ? ' stop' : '') + '" ' +
+            // Only optional stops carry a marker now, and it sits in the corner.
+            const badge = sq.optionalStop ? 'OPTIONAL STOP' : '';
+            return '<div class="sq kind-' + squareKind(sq) + ' key-' + esc(sq.key) +
+                (sq.scenery ? ' scenery-' + esc(sq.scenery) : '') + '" ' +
                 'style="grid-row:' + (sq.row + 1) + ';grid-column:' + (sq.col + 1) + '">' +
-                (badge ? '<div class="sq-badge">' + badge + '</div>' : '') +
                 '<div class="sq-name">' + esc(sq.name) + '</div>' +
                 '<div class="sq-text">' + esc(sq.text) + '</div>' +
                 '<div class="tokens">' + tokensOn(sq.i) + '</div>' +
+                (badge ? '<div class="sq-badge">' + badge + '</div>' : '') +
             '</div>';
         }).join('');
 
         const decor = (D.DECOR || []).map(d =>
-            '<div class="sq decor" style="grid-row:' + (d.row + 1) +
+            '<div class="decor" style="grid-row:' + (d.row + 1) +
             ';grid-column:' + (d.col + 1) + '">' +
             '<img src="' + esc(d.art) + '" alt="">' +
-            '<div class="sq-name">' + esc(d.name) + '</div></div>').join('');
+            '<div class="decor-name">' + esc(d.name) + '</div></div>').join('');
 
-        $('#board').innerHTML = html + decor;
+        $('#board').innerHTML =
+            '<div class="river"></div>' + html + decor +
+            '<div class="merchant-sign">Poor<br><b>Merchant</b></div>';
     }
-
-    /* ------------------------------------------------------------------ */
-    /* Game — hero panel                                                   */
-    /* ------------------------------------------------------------------ */
 
     function renderHero() {
         const p = me();
@@ -3383,6 +3727,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             (cls.ability.id === 'agile' && p.hasMoved)));
         buttons.push(btn('a-shop', 'Visit the Merchant', '', !mine || blocked));
         buttons.push(btn('a-trade', 'Propose a trade', '', S.players.length < 2));
+        buttons.push(btn('a-who', 'Everyone’s stats', '', false));
         buttons.push(btn('a-steak-raw', 'Eat raw steak', '', p.steaks.raw < 1));
         buttons.push(btn('a-steak-cooked', 'Eat seared steak', '', p.steaks.cooked < 1));
         buttons.push(btn('a-end', 'End turn', '', !mine || blocked));
@@ -3398,6 +3743,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         });
         bind('a-shop', () => { openPanel = 'merchant'; renderModal(); });
         bind('a-trade', () => { openPanel = 'trade'; renderModal(); });
+        bind('a-who', () => { openPanel = 'roster'; renderModal(); });
         bind('a-steak-raw', () => act('eatSteak', { type: 'raw' }));
         bind('a-steak-cooked', () => act('eatSteak', { type: 'cooked' }));
         bind('a-end', () => act('endTurn', {}));
@@ -3532,6 +3878,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             if (shownKey !== 'trade') renderTradeBuilder();
             return;
         }
+        if (openPanel === 'roster') { renderRosterPanel(); return; }
         closeModal();
     }
 
@@ -3551,13 +3898,28 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const foeMax = isPvp ? foe.maxHp : b.enemyMaxHp;
         const foePortrait = isPvp
             ? '<img src="' + esc(D.CLASSES[foe.cls].art) + '" alt="' + esc(foe.name) + '">'
-            : crestHtml(foe);
+            : enemyPic(foe, 96);
+
+        // Whose die it is, spelled out. One roll, one strike, then it changes
+        // hands -- so this line is the most important thing in the modal.
+        const enemyPhase = b.phase === 'enemy_roll' || b.phase === 'enemy_act';
+        const roller = isPvp
+            ? (b.turn === 'a' ? a.name : foe.name)
+            : (enemyPhase ? foe.name : a.name);
+        const rollerIsMe = !isPvp ? !enemyPhase && a.id === NET.PID
+                                  : (myMove && involved);
 
         let body =
             '<h2>' + (isPvp ? 'Player Battle' : esc(foe.name)) + '</h2>' +
+            '<div class="turn-flag' + (rollerIsMe ? ' mine' : '') + '">' +
+                esc(roller) + (rollerIsMe ? ' — your go' : '') + ': ' +
+                (b.phase === 'roll' || b.phase === 'enemy_roll'
+                    ? 'roll the die' : 'strike') +
+            '</div>' +
             '<div class="sub">' +
                 (b.illusion ? 'A Mage’s illusion — you will earn coins only. ' : '') +
-                (involved ? (myMove ? 'Your move.' : 'Waiting for the other side…')
+                (involved ? (myMove ? 'One hit each: roll, strike, then it is their go.'
+                                    : 'Waiting for the other side…')
                           : 'You are watching this battle.') +
             '</div>' +
             '<div class="battle-top">' +
@@ -3569,7 +3931,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // The monster's own stat card, as it is dealt on the table.
             (isPvp ? '' : '<div class="battle-statcard">' + statCardHtml({
                 name: foe.name, hp: foe.maxHp || b.enemyMaxHp, defence: foe.defence,
-                moves: foe.moves
+                moves: foe.moves, svg: enemyPic(foe, 58)
             }) + '</div>');
 
         if (b.lastRoll != null) {
@@ -3578,7 +3940,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 (b.lastRoll % 2 === 0 ? 'Even — a hit.' : 'Odd — a miss.') + '</div>';
         }
 
-        if (involved && myMove) {
+        // The monster's die is thrown by the player fighting it -- somebody
+        // has to pick it up at the table, and there is nobody else here.
+        if (involved && !isPvp && enemyPhase) {
+            body += '<div class="modal-actions" style="justify-content:center">' +
+                (b.phase === 'enemy_roll'
+                    ? '<button class="btn" id="b-eroll">Roll for the ' + esc(foe.name) + '</button>'
+                    : '<button class="btn danger" id="b-estrike">Let the ' +
+                      esc(foe.name) + ' strike</button>') +
+                '</div>';
+        }
+
+        if (involved && myMove && !enemyPhase) {
             if (b.phase === 'roll') {
                 body += '<div class="modal-actions" style="justify-content:center">' +
                     '<button class="btn primary" id="b-roll">Roll to strike</button></div>';
@@ -3613,6 +3986,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         showModal(body, false, 'battle');
 
         bind('b-roll', () => act('battleRoll', {}));
+        bind('b-eroll', () => act('enemyRoll', {}));
+        bind('b-estrike', () => act('enemyStrike', {}));
         $$('#modal [data-move]').forEach(el =>
             el.addEventListener('click', () => act('battleAttack', { moveId: el.dataset.move })));
         bind('b-cooked', () => act('eatSteak', { type: 'cooked' }));
@@ -3644,6 +4019,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</div>';
     }
 
+    // The last die anyone threw, shown so no roll happens out of sight.
+    function dieHtml() {
+        const d = S.lastDie;
+        if (!d) return '';
+        return '<div class="die rolling">' + d.roll + '</div>' +
+            '<div class="muted" style="text-align:center;font-size:13px">' +
+            esc(d.who) + ' rolled ' + d.roll + '.</div>';
+    }
+
     function pickFrom(title, options, onPick) {
         showModal('<h2>' + esc(title) + '</h2><div class="item-grid">' +
             options.map(o => '<div class="item">' +
@@ -3662,7 +4046,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const p = me();
         let body = '';
 
-        if (pend.type === 'optional_stop') {
+        if (pend.type === 'steak_roll') {
+            body = '<h2>End of your turn</h2>' +
+                '<div class="sub">' + esc(pend.prompt) + '</div>' +
+                dieHtml() +
+                '<div class="modal-actions" style="justify-content:center">' +
+                '<button class="btn primary" data-choice="roll">Roll the die</button></div>';
+        } else if (pend.type === 'optional_stop') {
             body = '<h2>Optional stop</h2><div class="sub">' + esc(pend.prompt) + '</div>' +
                 '<div class="modal-actions">' +
                 '<button class="btn primary" data-choice="stop">Stop here</button>' +
@@ -3875,6 +4265,42 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         bind('tr-close', () => { openPanel = null; renderModal(); });
     }
 
+    // A trade bundle, drawn as the cards and counters it really is rather
+    // than summed up as "3 card(s)".
+    function bundleCardsHtml(b, owner) {
+        const bits = [];
+        const chip = (label) => '<span class="chip">' + label + '</span>';
+        if (b.coins) bits.push(chip(b.coins + ' coins'));
+        if (b.rawSteaks) bits.push(chip(b.rawSteaks + ' raw steak'));
+        if (b.cookedSteaks) bits.push(chip(b.cookedSteaks + ' seared steak'));
+        if (b.keyFragments) bits.push(chip(b.keyFragments + ' key fragment'));
+        if (b.chestKeys) bits.push(chip(b.chestKeys + ' chest key'));
+
+        const cards = [];
+        (b.items || []).forEach(u => {
+            const inst = owner && owner.inventory.find(x => x.uid === u);
+            const d = inst && D.ITEMS[inst.id];
+            cards.push(d ? paperCardHtml('yellow', d.name, d.text)
+                         : paperCardHtml('yellow', 'A card', 'No longer held.'));
+        });
+        (b.powerups || []).forEach(u => {
+            const inst = owner && owner.powerups.find(x => x.uid === u);
+            const d = inst && D.POWERUPS[inst.id];
+            cards.push(d ? paperCardHtml('pink', d.name, d.text)
+                         : paperCardHtml('pink', 'A card', 'No longer held.'));
+        });
+        (b.potions || []).forEach(u => {
+            const inst = owner && owner.potions.find(x => x.uid === u);
+            const d = inst && D.POWERUPS[inst.id];
+            cards.push(d ? paperCardHtml('pink', d.name + ' potion', d.text)
+                         : paperCardHtml('pink', 'A potion', 'No longer held.'));
+        });
+
+        if (!bits.length && !cards.length) return '<div class="muted">Nothing.</div>';
+        return (bits.length ? '<div class="stat-row">' + bits.join('') + '</div>' : '') +
+            (cards.length ? '<div class="item-grid trade-cards">' + cards.join('') + '</div>' : '');
+    }
+
     function describeBundle(b) {
         const parts = [];
         if (b.coins) parts.push(b.coins + ' coins');
@@ -3891,10 +4317,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const from = E.player(S, t.fromId);
         showModal('<h2>Trade offer</h2>' +
             '<div class="sub">' + esc(from.name) + ' wants to trade.</div>' +
-            '<div class="card"><b class="gold">They give you:</b><br>' +
-                esc(describeBundle(t.give)) + '</div>' +
-            '<div class="card" style="margin-top:10px"><b class="gold">They want from you:</b><br>' +
-                esc(describeBundle(t.want)) + '</div>' +
+            '<div class="card"><b class="gold">They give you</b>' +
+                bundleCardsHtml(t.give, from) + '</div>' +
+            '<div class="card" style="margin-top:10px"><b class="gold">They want from you</b>' +
+                bundleCardsHtml(t.want, me()) + '</div>' +
             '<div class="modal-actions">' +
             '<button class="btn primary" id="tr-yes">Accept</button>' +
             '<button class="btn danger" id="tr-no">Decline</button></div>', false, 'incoming');
@@ -3905,6 +4331,43 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* ------------------------------------------------------------------ */
     /* Victory                                                             */
     /* ------------------------------------------------------------------ */
+
+    // Everyone's stat card, side by side, plus what they are carrying. Any
+    // player can open this at any time -- at a table you can see the other
+    // side of the board.
+    function renderRosterPanel() {
+        const rows = S.players.filter(p => p.cls).map(p => {
+            const c = D.CLASSES[p.cls];
+            const w = E.equippedWeapon(p), ar = E.equippedArmour(p);
+            const foot =
+                'Coins ' + p.coins + ' · Keys ' + p.keyFragments + '/3 · Chest keys ' +
+                p.chestKeys + '<br>' +
+                'Weapon: ' + esc(w ? D.ITEMS[w.id].name : 'none') + '<br>' +
+                'Armour: ' + esc(ar ? D.ITEMS[ar.id].name : 'none') + '<br>' +
+                'Steaks: ' + p.steaks.raw + ' raw, ' + p.steaks.cooked + ' seared<br>' +
+                'Cards held: ' + p.inventory.length + ' gear, ' + p.powerups.length +
+                ' power-up, ' + p.potions.length + ' potion<br>' +
+                'On ' + esc(E.square(p.pos).name);
+            return '<div class="who">' +
+                statCardHtml({
+                    name: p.name + (p.id === NET.PID ? ' (you)' : ''),
+                    art: c.art,
+                    hp: p.hp + ' / ' + p.maxHp,
+                    defence: E.totalDefence(S, p),
+                    moves: c.moves,
+                    foot: foot
+                }) +
+                '</div>';
+        }).join('');
+
+        showModal('<h2>Everyone’s stats</h2>' +
+            '<div class="sub">Health and defence are live. Defence includes armour ' +
+            'and anything in play.</div>' +
+            '<div class="who-grid">' + rows + '</div>' +
+            '<div class="modal-actions"><button class="btn" id="who-close">Close</button></div>',
+            true, 'roster');
+        bind('who-close', () => { openPanel = null; closeModal(); });
+    }
 
     function renderOver() {
         closeModal();
@@ -4038,6 +4501,8 @@ const ACTIONS = {
     endTurn:       (s, pid)    => E.endTurn(s, pid),
     battleRoll:    (s, pid)    => E.battleRoll(s, pid),
     battleAttack:  (s, pid, a) => E.battleAttack(s, pid, a.moveId),
+    enemyRoll:     (s, pid)    => E.enemyRoll(s, pid),
+    enemyStrike:   (s, pid)    => E.enemyStrike(s, pid),
     usePowerup:    (s, pid, a) => E.usePowerup(s, pid, a.uid),
     usePotion:     (s, pid, a) => E.usePotion(s, pid, a.uid),
     eatSteak:      (s, pid, a) => E.eatSteak(s, pid, a.type),
