@@ -538,14 +538,26 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .turn-banner .who { font-size: 18px; color: var(--cream); }
 .turn-banner .timer { margin-left: auto; font-size: 14px; color: #9a9a9a; }
 
-/* A computer player is taking its turn. It moves at a readable pace on
-   purpose, so this says so rather than letting the pause look like a fault. */
-.turn-banner .thinking {
-    display: inline-flex; align-items: center; gap: 7px;
-    font-size: 13.5px; color: #9fb4c8;
+/* What the game is waiting on, in words. There is no pace control, so a gap
+   between two things has to explain itself: this line is never empty, and it
+   names whoever the game is waiting on and what they are doing about it. */
+.turn-banner .doing {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px;
+    color: #9fb4c8;
+    padding: 3px 11px;
+    border-radius: 999px;
+    background: rgba(127, 182, 255, .09);
+    border: 1px solid rgba(127, 182, 255, .2);
 }
-.turn-banner .thinking .spinner {
+.turn-banner.mine .doing {
+    color: var(--gold-bright);
+    background: rgba(217, 163, 92, .12);
+    border-color: rgba(217, 163, 92, .34);
+}
+.turn-banner .doing .spinner {
     width: 12px; height: 12px;
+    flex: 0 0 auto;
     border-radius: 50%;
     border: 2px solid rgba(159, 180, 200, .3);
     border-top-color: #9fb4c8;
@@ -946,7 +958,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     pointer-events: none;
     overflow: visible;
 }
-.decor > span { flex: 0 0 auto; }
+.decor > span {
+    flex: 0 0 auto;
+    /* Some models lean off their own cell -- the big tree leans towards the
+       arena so its foliage meets the disc instead of stopping short of it. */
+    transform: translateX(var(--decor-nudge, 0));
+}
 
 /* ---- the Fountain of Life is running ----------------------------------
    The jets pulse, the drops rise and fall, and the rings spread across the
@@ -1766,6 +1783,17 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     border: 1px solid rgba(217,163,92,.4);
 }
 
+
+/* ---- Single Player runs the width of the two above it ------------------ */
+
+.home-cards .card.wide { grid-column: 1 / -1; }
+.home-cards .solo-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.home-cards .solo-buttons .btn { flex: 1 1 240px; width: auto; }
+
     </style>
 
 </head>
@@ -1845,10 +1873,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     </p>
                 </div>
 
-                <div class="card">
-                    <h2>On your own</h2>
-                    <button class="btn primary" id="btn-solo">Play against the computer</button>
-                    <button class="btn" id="btn-resume" style="display:none">Carry on your last game</button>
+                <div class="card wide">
+                    <h2>Single Player</h2>
+                    <div class="solo-buttons">
+                        <button class="btn primary" id="btn-solo">Play against the computer</button>
+                        <button class="btn" id="btn-resume" style="display:none">Carry on your last game</button>
+                    </div>
                     <p class="muted note">
                         Three at the table, one of each class. You choose first and the
                         computer takes the other two.
@@ -2205,25 +2235,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M42 20l1.8 3.8 4.2.4-3.2 2.8.9 4.1L42 29l-3.7 2.1.9-4.1-3.2-2.8 4.2-.4z"/>' +
             '</g>' +
             // the near arm, out in front of everything: the sleeve, then the
-            // hand cupped under the orb with the fingers closing over the
-            // front of it, so it is plainly being held and not just floating
-            '<g ' + K + ' fill="#5c8fc4"><path d="M28 54h15v12H28z"/></g>' +
-            // the palm, a cup rather than a mitten
-            '<path d="M13 57h16v7a8 8 0 0 1-16 0z" fill="#f0d9a8" ' +
+            // hand hanging open at his side. He carries the staff and nothing
+            // else -- the orb he used to be holding has gone.
+            '<g ' + K + ' fill="#5c8fc4"><path d="M27 54h15v12H27z"/></g>' +
+            '<path d="M17 55h12v10a6 6 0 0 1-12 0z" fill="#f0d9a8" ' +
             'stroke="#20180f" stroke-width="2" stroke-linejoin="round"/>' +
-            // the orb resting in it
-            '<circle cx="21" cy="50" r="15" fill="#8fd0ee" opacity=".28"/>' +
-            '<circle cx="21" cy="50" r="10" fill="#6fc0e8" ' +
-            'stroke="#20180f" stroke-width="2.4"/>' +
-            '<path d="M21 41a9 9 0 0 0-7 7c3 1 9-2 7-7z" fill="#e8f8ff" opacity=".95"/>' +
-            '<circle cx="17" cy="46" r="2.4" fill="#ffffff"/>' +
-            // and the fingers curling up over it
-            '<g fill="#f0d9a8" stroke="#20180f" stroke-width="1.7" ' +
-            'stroke-linejoin="round" stroke-linecap="round">' +
-            '<path d="M14 58c0-4 1-6 3-6s3 2 3 6z"/>' +
-            '<path d="M21 58c0-5 1-7 3-7s3 2 3 7z"/>' +
-            '<path d="M27 59c0-4 1-6 2.5-6s2.5 2 2.5 6z"/>' +
-            '</g>' +
+            '<g stroke="#c9a878" stroke-width="1.4" stroke-linecap="round">' +
+            '<path d="M20 60v5M23 60v6M26 60v5"/></g>' +
             '</svg>'
     };
 
@@ -2841,7 +2859,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // Scenery, not a square you can land on — fills the gap beside the arena.
     const DECOR = [
         // kind          where               how big (fraction of the cell)
-        { kind: 'tree',      row: 2, col: 1, size: 1.35 },
+        // The big one. It stands beside the arena on the board with its
+        // foliage running right up against the disc, so it is drawn large and
+        // pushed towards the arena -- the squares paint over it, which puts
+        // the tree behind the arena exactly as it is on the table.
+        { kind: 'tree',      row: 2, col: 1, size: 1.9, nudge: 26 },
         { kind: 'ruins',     row: 2, col: 0, size: .62 },
         { kind: 'spring',    row: 3, col: 0, size: .58 },
         { kind: 'village',   row: 1, col: 4, size: .62 },
@@ -5769,39 +5791,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     /* ---- how fast the other two play --------------------------------
-       A whole game is a couple of thousand small actions, most of which are
-       not a die coming down, so two numbers set the pace: how long to leave
-       a die on the table before anything else happens, and how long to pause
-       between the quiet things. Watching two people think is the point, but
-       not everybody wants to watch it at the same speed.
+       One pace, chosen so a person can follow it: a die is left on the table
+       long enough to be read before anything else happens, and the quiet
+       steps in between go by quickly. There is no setting for this. If you
+       want to know what is going on, the banner says whose go it is and what
+       they are doing, and the narrator says what they did.
        ------------------------------------------------------------------ */
 
-    const PACES = {
-        relaxed: { die: 1950, quiet: 600, label: 'Relaxed' },
-        brisk:   { die: 1200, quiet: 300, label: 'Brisk' },
-        fast:    { die: 520,  quiet: 120, label: 'Fast' }
-    };
-    const PACE_ORDER = ['relaxed', 'brisk', 'fast'];
-    let paceName = 'brisk';
-    try {
-        const saved = localStorage.getItem('lof_solo_pace');
-        if (saved && PACES[saved]) paceName = saved;
-    } catch (e) { }
-
-    function pace() { return { name: paceName, label: PACES[paceName].label }; }
-
-    function setPace(name) {
-        if (!PACES[name]) return;
-        paceName = name;
-        try { localStorage.setItem('lof_solo_pace', name); } catch (e) { }
-        schedule();
-    }
-
-    function nextPace() {
-        const i = PACE_ORDER.indexOf(paceName);
-        setPace(PACE_ORDER[(i + 1) % PACE_ORDER.length]);
-        return pace();
-    }
+    const AFTER_A_DIE = 1500;      // let the overlay tumble, land and be read
+    const BETWEEN_STEPS = 420;     // everything else
 
     function schedule() {
         clearTimeout(timer);
@@ -5815,8 +5813,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         // Never on top of a die that is still in the air, and never so fast
         // that the board changes without you seeing it.
-        const p = PACES[paceName];
-        const wait = Math.max(p.quiet, p.die - (Date.now() - lastDieAt));
+        const wait = Math.max(BETWEEN_STEPS, AFTER_A_DIE - (Date.now() - lastDieAt));
         timer = setTimeout(run, wait);
     }
 
@@ -5945,10 +5942,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         act: act,
         subscribe: subscribe,
         closeRoom: closeRoom,
-        isBotId: isBotId,
-        pace: pace,
-        setPace: setPace,
-        nextPace: nextPace
+        isBotId: isBotId
     };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -6864,18 +6858,114 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             return;
         }
 
+        // Whose go it is, and what they are doing about it. A pause with no
+        // explanation reads as a fault, so the second line is never empty:
+        // it says what the game is waiting on, whoever it is waiting on.
+        const doing = whatIsHappening();
+        const waiting = doing.who && (!cur || doing.who !== cur.id);
+
         banner.className = 'turn-banner' + (mine ? ' mine' : '');
         banner.innerHTML =
             '<span class="who">' + (mine ? 'Your turn' : esc(cur ? cur.name : '—') + '’s turn') + '</span>' +
-            // A computer player takes a beat between each thing it does, so
-            // say plainly that it is going rather than leaving you wondering
-            // whether the game has stopped.
-            (cur && cur.bot && !mine
-                ? '<span class="thinking"><span class="spinner"></span>thinking…</span>' : '') +
+            '<span class="doing' + (doing.spin ? ' busy' : '') + '">' +
+                (doing.spin ? '<span class="spinner"></span>' : '') +
+                esc(doing.text) +
+            '</span>' +
             '<span class="muted">Turn ' + S.turnNo + '</span>' +
             // The clock only exists to stop an absent player stalling everyone
             // else. On your own there is nobody to stall, so take your time.
             (S.solo ? '' : '<span class="timer" id="turn-timer"></span>');
+    }
+
+    /* ---- what the game is waiting on -------------------------------------
+       There is no pace control any more, so a gap between two things has to
+       explain itself. This reads the state and says, in one line, who the
+       game is waiting on and what they are doing about it -- the phase of a
+       battle, the question a square is asking, the die that has not been
+       thrown yet.
+
+       It is not a solo thing. Online you can no more see what another player
+       is doing than you can see what a bot is thinking, and this answers it
+       for both.
+       -------------------------------------------------------------------- */
+
+    function whatIsHappening() {
+        const b = S.battle;
+
+        if (b) {
+            const actorId = E.battleActorId(S);
+            const actor = E.player(S, actorId);
+            const mine = actorId === NET.PID;
+            const you = (verb) => mine ? 'you are ' + verb
+                                       : esc(actor ? actor.name : 'they') + ' is ' + verb;
+
+            if (b.kind === 'pve') {
+                const foe = D.ENEMIES[b.enemyId];
+                if (b.phase === 'enemy_roll') {
+                    return { who: null, spin: true,
+                             text: 'the ' + foe.name + ' is rolling its die' };
+                }
+                if (b.phase === 'enemy_act') {
+                    return { who: null, spin: true,
+                             text: 'the ' + foe.name + ' rolled ' + b.lastRoll +
+                                   ' and is about to strike' };
+                }
+                return {
+                    who: actorId, spin: !mine,
+                    text: b.phase === 'roll'
+                        ? you('rolling to strike the ' + foe.name)
+                        : you('choosing an attack')
+                };
+            }
+
+            const other = E.player(S, actorId === b.aId ? b.bId : b.aId);
+            // If the one being struck at is you, say so -- "is rolling to
+            // strike Nathan" reads oddly when Nathan is the one reading it.
+            const target = !other ? 'them'
+                         : (other.id === NET.PID ? 'you' : esc(other.name));
+            return {
+                who: actorId, spin: !mine,
+                text: b.phase === 'roll'
+                    ? you('rolling to strike ' + target)
+                    : you('choosing an attack')
+            };
+        }
+
+        if (S.pending) {
+            const who = E.player(S, S.pending.playerId);
+            const mine = S.pending.playerId === NET.PID;
+            const WORDS = {
+                move_bonus:     'deciding how far that roll should carry',
+                steak_roll:     'rolling for a raw steak',
+                optional_stop:  'deciding whether to stop here',
+                pot:            'at the pot, deciding what to cook',
+                chest:          'choosing what to take from the chest',
+                crimson_keep:   'choosing at the Crimson Keep',
+                sea_of_castout: 'choosing what the whirlpool takes',
+                pvp_avoid:      'deciding whether to fight'
+            };
+            const what = WORDS[S.pending.type] || 'deciding';
+            return {
+                who: S.pending.playerId, spin: !mine,
+                text: (mine ? 'you are ' : esc(who ? who.name : 'they') + ' is ') + what
+            };
+        }
+
+        const cur = E.currentPlayer(S);
+        if (!cur) return { who: null, spin: false, text: '' };
+        const mine = cur.id === NET.PID;
+        const name = mine ? 'you' : esc(cur.name);
+        if (cur.pos >= D.ARENA_INDEX) {
+            return { who: cur.id, spin: !mine, text: name + ' in the arena' };
+        }
+        if (!cur.hasMoved) {
+            return { who: cur.id, spin: !mine,
+                     text: mine ? 'your go — roll to move'
+                                : name + ' is getting ready to move' };
+        }
+        return { who: cur.id, spin: !mine,
+                 text: mine ? 'you have moved — end your turn when you are ready'
+                            : name + ' has moved' };
     }
 
     function tickTimer() {
@@ -6971,22 +7061,46 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* to upload.                                                          */
     /* ------------------------------------------------------------------ */
 
-    // The leaves round the tree: torn scraps of pale green paper, angled
-    // outwards from the middle.
-    function treeLeaves() {
+    /* ---- the iconic big tree -------------------------------------------
+       On the board this is one great mass of pale torn paper with the painted
+       spiral disc sitting in the middle of it, spreading far enough to touch
+       the arena. It used to be drawn as a ring of separate scraps, which read
+       as confetti blowing past rather than as a tree.
+
+       So the canopy is built out of lobes that every one of them overlaps its
+       neighbours and the middle. There is no arrangement of these that can
+       come apart, which is the whole point.
+       ------------------------------------------------------------------- */
+
+    // One connected canopy: [x, y, radius], all overlapping.
+    const TREE_LOBES = [
+        [100, 102, 60],
+        [56, 62, 32], [144, 60, 34], [38, 112, 30], [162, 110, 32],
+        [66, 154, 32], [136, 156, 30], [100, 40, 28], [100, 164, 28],
+        [24, 80, 21], [178, 78, 21], [28, 146, 20], [174, 144, 20],
+        [76, 22, 18], [126, 20, 18], [46, 184, 17], [154, 182, 17]
+    ];
+
+    function treeCanopy(fill, edge, grow) {
+        return TREE_LOBES.map(l =>
+            '<circle cx="' + l[0] + '" cy="' + l[1] + '" r="' + (l[2] + (grow || 0)) +
+            '" fill="' + fill + '"' + (edge ? ' stroke="' + edge + '" stroke-width="2"' : '') +
+            '/>').join('');
+    }
+
+    // The torn notches round the rim, so the mass still reads as cut paper
+    // rather than as a cloud.
+    function treeNotches() {
         const out = [];
-        const leaf = [
-            [100, 24, 8], [140, 38, -26], [166, 74, -52], [172, 116, -78],
-            [148, 152, -108], [108, 172, -140], [66, 168, -166], [32, 138, 158],
-            [22, 96, 128], [34, 56, 104], [66, 30, 66], [128, 150, -122],
-            [56, 118, 168], [146, 96, -66]
-        ];
-        for (let i = 0; i < leaf.length; i++) {
-            const x = leaf[i][0], y = leaf[i][1], r = leaf[i][2];
-            const shade = (i % 3 === 0) ? '#c6d8bd' : (i % 3 === 1 ? '#d6e4cd' : '#b9cdae');
-            out.push('<g transform="translate(' + x + ' ' + y + ') rotate(' + r + ')">' +
-                '<path d="M0 -22 L13 -6 L9 4 L18 14 L2 22 L-9 12 L-16 16 L-12 -2 Z" ' +
-                'fill="' + shade + '" stroke="#9db393" stroke-width="1"/></g>');
+        for (let i = 0; i < 20; i++) {
+            const a = (i / 20) * Math.PI * 2;
+            const r = 88 + (i % 3) * 5;
+            const x = 100 + Math.cos(a) * r;
+            const y = 102 + Math.sin(a) * r;
+            const d = (i % 2 ? 9 : 13);
+            out.push('<path d="M' + (x - d) + ' ' + y + ' L' + x + ' ' + (y - d) +
+                     ' L' + (x + d) + ' ' + y + ' L' + x + ' ' + (y + d) + ' Z" ' +
+                     'fill="' + (i % 3 === 0 ? '#d6e4cd' : '#c2d5b9') + '"/>');
         }
         return out.join('');
     }
@@ -7042,23 +7156,59 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         '</g>' +
         '</svg>';
 
+    // One cardboard house for Slivergrove: a box with a roof pitched towards
+    // you. `back` ones are a shade darker so the huddle has some depth.
+    function house(x, y, w, row) {
+        const h = Math.round(w * 0.62);
+        const wall = row === 'back' ? '#8f5533' : '#a3623d';
+        const side = row === 'back' ? '#7a4526' : '#8f5533';
+        const roof = row === 'back' ? '#a3623d' : '#b5714a';
+        const eave = Math.round(w * 0.16);
+        return '<g stroke="#6f4227" stroke-width="1.6" stroke-linejoin="round">' +
+            // the body
+            '<path d="M' + x + ' ' + y + 'h' + w + 'v' + h + 'h' + (-w) + 'z" fill="' + wall + '"/>' +
+            // the shaded gable end
+            '<path d="M' + (x + w * 0.68) + ' ' + y + 'h' + (w * 0.32) + 'v' + h +
+                'h' + (-w * 0.32) + 'z" fill="' + side + '" stroke="none"/>' +
+            // the roof, overhanging a little either side
+            '<path d="M' + (x - eave) + ' ' + y + 'L' + (x + w / 2) + ' ' + (y - h * 0.62) +
+                'L' + (x + w + eave) + ' ' + y + 'z" fill="' + roof + '"/>' +
+            // the door, and one window
+            '<path d="M' + (x + w * 0.16) + ' ' + (y + h) + 'v' + (-h * 0.55) +
+                'h' + (w * 0.24) + 'v' + (h * 0.55) + 'z" fill="#5f3b23" stroke="none"/>' +
+            '<path d="M' + (x + w * 0.52) + ' ' + (y + h * 0.22) + 'h' + (w * 0.2) +
+                'v' + (h * 0.26) + 'h' + (-w * 0.2) + 'z" fill="#e0c489" stroke="none"/>' +
+            '</g>';
+    }
+
     const SCENERY_ART = {
         // The iconic tree, seen from above: a canopy of torn paper leaves round
         // a spiral of green paint over corrugated card. No label -- it is
         // scenery, not a square.
         tree:
-            '<svg viewBox="0 0 200 200" aria-hidden="true">' +
-            treeLeaves() +
-            '<circle cx="100" cy="100" r="46" fill="#a3623d"/>' +
-            '<circle cx="100" cy="100" r="44" fill="#9ec394"/>' +
+            '<svg viewBox="-6 -6 212 212" aria-hidden="true">' +
+            // the darker underside of the canopy, offset down and out
+            '<g transform="translate(3 6)" opacity=".55">' + treeCanopy('#9db393') + '</g>' +
+            // the torn rim, then the canopy itself over the top of it
+            treeNotches() +
+            treeCanopy('#c6d8bd') +
+            // a lighter pass on the sunlit side, still part of the same mass
+            '<g opacity=".7">' +
+            '<circle cx="78" cy="76" r="40" fill="#d6e4cd"/>' +
+            '<circle cx="118" cy="66" r="26" fill="#d6e4cd"/>' +
+            '<circle cx="52" cy="112" r="24" fill="#d6e4cd"/>' +
+            '</g>' +
+            // the painted spiral disc, sitting in the middle of the foliage
+            '<circle cx="100" cy="102" r="47" fill="#a3623d"/>' +
+            '<circle cx="100" cy="102" r="44" fill="#9ec394"/>' +
             '<g fill="none" stroke="#7fa876" stroke-width="4" opacity=".95">' +
-            '<circle cx="100" cy="100" r="36"/><circle cx="100" cy="100" r="27"/>' +
-            '<circle cx="100" cy="100" r="18"/><circle cx="100" cy="100" r="9"/>' +
+            '<circle cx="100" cy="102" r="36"/><circle cx="100" cy="102" r="27"/>' +
+            '<circle cx="100" cy="102" r="18"/><circle cx="100" cy="102" r="9"/>' +
             '</g>' +
             '<g fill="none" stroke="#b0793f" stroke-width="2.4" opacity=".75">' +
-            '<path d="M74 78c14 6 30 4 44-4M70 116c16-6 34-4 48 6M112 66c-4 16-2 34 6 48"/>' +
+            '<path d="M74 80c14 6 30 4 44-4M70 118c16-6 34-4 48 6M112 68c-4 16-2 34 6 48"/>' +
             '</g>' +
-            '<circle cx="100" cy="100" r="46" fill="none" stroke="#86a37c" stroke-width="3"/>' +
+            '<circle cx="100" cy="102" r="47" fill="none" stroke="#86a37c" stroke-width="3"/>' +
             '</svg>',
 
         // A cardboard pot with blue water folded into it.
@@ -7084,29 +7234,64 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M10 74h44M62 82h46M18 88v12M40 74v26M80 62v38"/></g>' +
             '</svg>',
 
-        // The Spring: a pink block with a white basin and a wire arch.
+        // The Spring. It is the square that launches you two spaces forward,
+        // so it has an actual coil on it now: a steel spring standing in the
+        // white basin on the pink block, under the gold wire arch. It used to
+        // be a pink block with a pale oval on it, which read as a wash basin.
         spring:
-            '<svg viewBox="0 0 120 120" aria-hidden="true">' +
-            '<rect x="14" y="52" width="92" height="46" rx="6" fill="#efb4bd" ' +
+            '<svg viewBox="0 0 120 130" aria-hidden="true">' +
+            // the pink foam block, with the two tan blocks either side
+            '<rect x="12" y="74" width="96" height="34" rx="7" fill="#d9949f"/>' +
+            '<rect x="12" y="68" width="96" height="34" rx="7" fill="#efb4bd" ' +
             'stroke="#cf8e99" stroke-width="2"/>' +
-            '<g fill="#e2a36f"><rect x="8" y="56" width="10" height="38" rx="4"/>' +
-            '<rect x="102" y="56" width="10" height="38" rx="4"/></g>' +
-            '<path d="M34 60c0-20 52-20 52 0" fill="none" stroke="#d9b23c" stroke-width="5" ' +
-            'stroke-linecap="round"/>' +
-            '<ellipse cx="66" cy="76" rx="24" ry="18" fill="#f6e3e6" stroke="#cf8e99" ' +
-            'stroke-width="2"/>' +
-            '<ellipse cx="66" cy="76" rx="13" ry="9" fill="#e9c3ca"/>' +
+            '<g fill="#e2a36f" stroke="#c2844f" stroke-width="1.6">' +
+            '<rect x="4" y="72" width="12" height="30" rx="5"/>' +
+            '<rect x="104" y="72" width="12" height="30" rx="5"/></g>' +
+            // the white basin the coil stands in
+            '<ellipse cx="60" cy="80" rx="27" ry="12" fill="#f6e3e6" ' +
+            'stroke="#cf8e99" stroke-width="2"/>' +
+            '<ellipse cx="60" cy="78" rx="19" ry="8" fill="#e9c3ca"/>' +
+            // the coil itself, four turns rising out of the basin
+            '<g fill="none" stroke="#7e8794" stroke-width="6" stroke-linecap="round">' +
+            '<path d="M44 74c0-7 32-7 32 0"/>' +
+            '<path d="M45 64c0-7 30-7 30 0"/>' +
+            '<path d="M47 54c0-6 26-6 26 0"/>' +
+            '<path d="M49 45c0-6 22-6 22 0"/>' +
+            '</g>' +
+            '<g fill="none" stroke="#aab3bf" stroke-width="2.6" stroke-linecap="round">' +
+            '<path d="M44 73c0-6 32-6 32 0"/>' +
+            '<path d="M45 63c0-6 30-6 30 0"/>' +
+            '<path d="M47 53c0-5 26-5 26 0"/>' +
+            '<path d="M49 44c0-5 22-5 22 0"/>' +
+            '</g>' +
+            // the plate on top of the coil, and the gold wire arch over it
+            '<ellipse cx="60" cy="38" rx="17" ry="6" fill="#c9d2dd" ' +
+            'stroke="#7e8794" stroke-width="2"/>' +
+            '<path d="M26 66c0-30 68-30 68 0" fill="none" stroke="#c79a2e" ' +
+            'stroke-width="6" stroke-linecap="round"/>' +
+            '<path d="M26 65c0-28 68-28 68 0" fill="none" stroke="#e8c65a" ' +
+            'stroke-width="3" stroke-linecap="round"/>' +
+            // the two little arrows that say which way it throws you
+            '<g fill="#c79a2e" opacity=".95">' +
+            '<path d="M60 12l9 12h-6v9h-6v-9h-6z"/>' +
+            '</g>' +
             '</svg>',
 
-        // Slivergrove: a little cardboard house.
+        // Slivergrove Village. It is a village, so it is a huddle of little
+        // brown houses rather than the one big box it used to be: seven of
+        // them at different sizes, roofs pitched towards you, a couple with
+        // chimneys, and a path worn between them.
         village:
-            '<svg viewBox="0 0 140 120" aria-hidden="true">' +
-            '<path d="M18 44l38-22 38 22v50l-38 22-38-22z" fill="#a3623d"/>' +
-            '<path d="M56 22l38 22v50l-38-22z" fill="#8f5533"/>' +
-            '<path d="M18 44l38 22 38-22-38-22z" fill="#b5714a"/>' +
-            '<g stroke="#7a4526" stroke-width="1.6" fill="none" opacity=".75">' +
-            '<path d="M18 60l38 22M18 76l38 22M56 66l38-22M56 82l38-22"/></g>' +
-            '<rect x="30" y="74" width="14" height="20" fill="#6f4227"/>' +
+            '<svg viewBox="0 0 160 130" aria-hidden="true">' +
+            // the packed earth they stand on
+            '<ellipse cx="80" cy="106" rx="72" ry="20" fill="#8a9a6d" opacity=".45"/>' +
+            // the path
+            '<path d="M56 116c8-14 30-18 46-10" fill="none" stroke="#c2a479" ' +
+            'stroke-width="5" stroke-linecap="round" opacity=".8"/>' +
+            house(16, 62, 30, 'back') + house(50, 54, 34, 'back') +
+            house(92, 58, 30, 'back') + house(124, 66, 26, 'back') +
+            house(30, 82, 34, 'front') + house(70, 78, 40, 'front') +
+            house(112, 84, 32, 'front') +
             '</svg>',
 
         // The Fountain of Life: the round cardboard basin with the column
@@ -7157,13 +7342,38 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</g>' +
             '</svg>',
 
-        // A tuft of the same torn green paper.
+        // A bush. It was drawn as a star, which is what a torn scrap of paper
+        // happens to look like from directly overhead -- but it is a bush, so
+        // it is now a rounded clump of overlapping leaves with a couple of
+        // twigs showing under it.
         bush:
             '<svg viewBox="0 0 100 100" aria-hidden="true">' +
-            '<g fill="#c6d8bd" stroke="#9db393" stroke-width="1.5">' +
-            '<path d="M50 14 62 34 84 30 74 50 88 66 66 70 58 90 44 74 24 82 28 60 12 46 32 38z"/>' +
+            // the shadow it sits in
+            '<ellipse cx="50" cy="80" rx="34" ry="9" fill="#7f9463" opacity=".45"/>' +
+            // the twigs
+            '<g stroke="#7a5a34" stroke-width="3" stroke-linecap="round">' +
+            '<path d="M50 80V62M50 72l-9-8M50 68l9-7"/></g>' +
+            // the clump: lobes that all overlap, so it is one bush
+            '<g fill="#9db393">' +
+            '<circle cx="50" cy="52" r="26"/><circle cx="28" cy="60" r="17"/>' +
+            '<circle cx="72" cy="60" r="17"/><circle cx="38" cy="36" r="15"/>' +
+            '<circle cx="63" cy="34" r="16"/>' +
             '</g>' +
-            '<path d="M40 50l10 12 12-14" fill="none" stroke="#9db393" stroke-width="2"/>' +
+            '<g fill="#c6d8bd">' +
+            '<circle cx="50" cy="50" r="23"/><circle cx="30" cy="57" r="14"/>' +
+            '<circle cx="70" cy="57" r="14"/><circle cx="39" cy="35" r="13"/>' +
+            '<circle cx="62" cy="33" r="14"/>' +
+            '</g>' +
+            // the sunlit side
+            '<g fill="#d6e4cd" opacity=".8">' +
+            '<circle cx="43" cy="40" r="12"/><circle cx="59" cy="34" r="8"/>' +
+            '</g>' +
+            // the notches between the leaves -- enough to say leaves, not so
+            // much that they read as scratches at the size this is drawn
+            '<g fill="none" stroke="#9db393" stroke-width="2.2" ' +
+            'stroke-linecap="round" opacity=".7">' +
+            '<path d="M41 45l5 7M59 41l-4 7M50 61l4-7"/>' +
+            '</g>' +
             '</svg>',
 
         // Cardboard rocks along the top of the water.
@@ -7175,69 +7385,120 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</g></svg>'
     };
 
-    // The Poor Merchant's stall: a cardboard canopy on four lolly-stick legs
-    // with the merchant standing under it.
-    function merchantStallSvg() {
-        // Built exactly as it is on the board: four lolly-stick legs standing
-        // on the grass, and one flat square of cardboard laid across the top
-        // of them with POOR MERCHANT written on it. No walls, no pitched roof
-        // -- it is a canopy, and you can see straight under it to the
-        // merchant standing in the middle.
-        //
-        // The roof is a parallelogram rather than a rectangle because you are
-        // looking down at the board at an angle, and it carries a thin dark
-        // edge along its two near sides so it reads as a sheet with a
-        // thickness rather than a flat brown patch.
-        return '<svg viewBox="0 0 180 160" role="img" aria-label="The Poor Merchant">' +
-            // the shadow the whole stall throws on the grass
-            '<ellipse cx="92" cy="144" rx="66" ry="12" fill="rgba(60,74,48,.30)"/>' +
+    /* ---- the Poor Merchant's stand ---------------------------------------
+       On the board this is a square of corrugated card laid over four
+       lolly-stick legs with POOR MERCHANT written on it in marker, and a
+       little drawn figure standing underneath. That is all still here -- but
+       it was reading as an empty bus shelter, because a merchant with nothing
+       in front of him is just a man standing under a roof.
 
-            // the two back legs, behind the merchant
+       So he has a stand now: a plank counter across the front of the pitch
+       with his stock laid out along it -- sacks, a crate of apples, bottles,
+       a stack of coins, a sword leaning against the end -- and him behind it
+       with a hand up, hailing you over. The canopy sits high enough that you
+       can see his head and shoulders over the counter, which is how you look
+       at a market stall.
+
+       Everything is still cardboard, lolly sticks and marker pen.
+       -------------------------------------------------------------------- */
+
+    function merchantStallSvg() {
+        return '<svg viewBox="0 0 200 180" role="img" aria-label="The Poor Merchant">' +
+            // the shadow the whole pitch throws on the grass
+            '<ellipse cx="100" cy="158" rx="78" ry="13" fill="rgba(60,74,48,.30)"/>' +
+
+            // the two back legs
             '<g fill="#dcb686" stroke="#b8905e" stroke-width="1.4">' +
-            '<rect x="54" y="46" width="9" height="74" rx="3"/>' +
-            '<rect x="122" y="52" width="9" height="74" rx="3"/>' +
+            '<rect x="58" y="34" width="9" height="92" rx="3"/>' +
+            '<rect x="130" y="40" width="9" height="90" rx="3"/>' +
             '</g>' +
 
-            // the merchant, standing under the middle of the canopy
+            // a bolt of cloth hung across the back of the pitch
+            '<path d="M62 56h74v30l-12-5-13 6-12-6-13 6-12-6-12 5z" fill="#8a5a3a" ' +
+            'stroke="#5f3b23" stroke-width="1.6" stroke-linejoin="round" opacity=".92"/>' +
+
+            // the merchant, standing behind his counter with a hand up
             '<g>' +
-            '<ellipse cx="90" cy="128" rx="15" ry="4" fill="rgba(60,74,48,.34)"/>' +
-            // cloak
-            '<path d="M90 74l17 20-5 34H78l-5-34z" fill="#8a5a3a" stroke="#5f3b23" ' +
+            // cloak — the bottom of it goes behind the counter
+            '<path d="M99 94l16 19-4 34H87l-4-34z" fill="#8a5a3a" stroke="#5f3b23" ' +
             'stroke-width="2" stroke-linejoin="round"/>' +
             // hood and face
-            '<path d="M90 56c9 0 14 7 14 14 0 6-6 10-14 10s-14-4-14-10c0-7 5-14 14-14z" ' +
+            '<path d="M99 76c9 0 14 7 14 14 0 6-6 10-14 10s-14-4-14-10c0-7 5-14 14-14z" ' +
             'fill="#7a4c2f" stroke="#5f3b23" stroke-width="2"/>' +
-            '<ellipse cx="90" cy="72" rx="8" ry="7" fill="#d3a475"/>' +
-            '<circle cx="87" cy="71" r="1.4" fill="#3a2a1c"/>' +
-            '<circle cx="93" cy="71" r="1.4" fill="#3a2a1c"/>' +
-            // arms and legs
+            '<ellipse cx="99" cy="92" rx="8" ry="7" fill="#d3a475"/>' +
+            '<circle cx="96" cy="91" r="1.4" fill="#3a2a1c"/>' +
+            '<circle cx="102" cy="91" r="1.4" fill="#3a2a1c"/>' +
+            // one arm down on the counter, one raised in greeting
             '<g stroke="#5f3b23" stroke-width="4" stroke-linecap="round" fill="none">' +
-            '<path d="M75 94l-8 14M105 94l8 14M84 128v6M96 128v6"/>' +
+            '<path d="M85 112l-8 6M113 106l12-16"/>' +
+            '</g>' +
+            '<circle cx="127" cy="86" r="5" fill="#d3a475" stroke="#5f3b23" ' +
+            'stroke-width="1.6"/>' +
+            '</g>' +
+
+            // his stock, standing on the counter (drawn before the plank so
+            // they sit on top of it once the plank is laid under them)
+            '<g stroke="#5f3b23" stroke-width="1.6" stroke-linejoin="round">' +
+            // two tied sacks
+            '<path d="M50 110c-4-8 0-17 6-17s10 9 6 17z" fill="#cbb08a"/>' +
+            '<path d="M54 94l4-5 4 5z" fill="#a68a63" stroke="none"/>' +
+            '<path d="M64 110c-3-6 0-13 5-13s8 7 5 13z" fill="#bda27c"/>' +
+            // an open crate of apples
+            '<path d="M77 110V97h14v13z" fill="#a3623d"/>' +
+            '<g fill="#b8453a" stroke="none">' +
+            '<circle cx="81" cy="98" r="3.2"/><circle cx="87" cy="98" r="3.2"/>' +
+            '<circle cx="84" cy="94" r="3.2"/></g>' +
+            // three bottles, kept clear of his face
+            '<g fill="#6f8f6a">' +
+            '<path d="M114 110v-9l2-4v-4h3v4l2 4v9z"/>' +
+            '<path d="M124 110v-8l2-3v-4h3v4l2 3v8z"/>' +
+            '<path d="M134 110v-7l2-3v-4h3v4l2 3v7z"/>' +
+            '</g>' +
+            // a stack of coins at the far end
+            '<g fill="#e8c65a" stroke="#b08f2c">' +
+            '<ellipse cx="149" cy="107" rx="7" ry="2.6"/>' +
+            '<ellipse cx="149" cy="103" rx="7" ry="2.6"/>' +
+            '<ellipse cx="149" cy="99" rx="7" ry="2.6"/>' +
             '</g>' +
             '</g>' +
 
-            // the two front legs, in front of the merchant
+            // the counter: a plank laid across two cardboard crates
+            '<g stroke="#6f4227" stroke-width="1.8" stroke-linejoin="round">' +
+            '<path d="M52 122h20v28H52z" fill="#8f5533"/>' +
+            '<path d="M128 122h20v28h-20z" fill="#8f5533"/>' +
+            '<path d="M42 110h116v12H42z" fill="#b5714a"/>' +
+            '<path d="M42 122h116v5H42z" fill="#7c4826" stroke="none"/>' +
+            '</g>' +
+            '<g stroke="#9c5f3c" stroke-width="1" opacity=".6">' +
+            '<path d="M48 115h104M48 119h62M100 113h52"/></g>' +
+
+            // a sword leaning against the end of the counter
+            '<g stroke="#5f3b23" stroke-width="1.6" stroke-linejoin="round">' +
+            '<path d="M162 148 170 96l4 52z" fill="#c9d2dd"/>' +
+            '<path d="M160 146h16v5h-16z" fill="#8a5a3a"/>' +
+            '<path d="M166 151h5v9h-5z" fill="#6f4227"/>' +
+            '</g>' +
+
+            // the two front legs, standing in front of the counter
             '<g fill="#e6c396" stroke="#bd9463" stroke-width="1.4">' +
-            '<rect x="34" y="58" width="10" height="76" rx="3"/>' +
-            '<rect x="140" y="64" width="10" height="76" rx="3"/>' +
+            '<rect x="36" y="44" width="10" height="106" rx="3"/>' +
+            '<rect x="152" y="50" width="10" height="102" rx="3"/>' +
             '</g>' +
 
-            // the flat cardboard roof laid over the four legs
+            // the flat cardboard roof laid over the four legs, high enough to
+            // see under
             '<g>' +
-            // the thickness of the card, along the two near edges
-            '<path d="M22 66 L96 88 L164 70 L164 76 L96 94 L22 72 Z" fill="#7c4826"/>' +
+            // the thickness of the card along the two near edges
+            '<path d="M24 40 L104 64 L178 44 L178 51 L104 71 L24 47 Z" fill="#7c4826"/>' +
             // the sheet itself
-            '<path d="M22 66 L74 34 L164 52 L96 88 Z" fill="#b5714a" ' +
+            '<path d="M24 40 L80 6 L178 26 L104 64 Z" fill="#b5714a" ' +
             'stroke="#8a5030" stroke-width="2" stroke-linejoin="round"/>' +
-            // the corrugation showing through the card
+            // the corrugation showing through
             '<g stroke="#9c5f3c" stroke-width="1" opacity=".55">' +
-            '<path d="M35 62L84 39M50 67L100 43M66 72L116 47M82 78L132 51M97 83L148 55"/>' +
+            '<path d="M38 36L91 11M54 41L108 15M71 47L125 19M88 53L142 23M104 58L160 27"/>' +
             '</g>' +
-            // written on it in marker, following the slope of the card
-            // Sheared to lie flat on the sloping card. The offsets are worked
-            // back through that shear so the writing lands in the middle of
-            // the roof rather than beside it.
-            '<g transform="matrix(1 .2 -.55 1 0 0) translate(104 28)">' +
+            // written on it in marker, lying flat on the sloping card
+            '<g transform="matrix(1 .2 -.55 1 0 0) translate(126 -8)">' +
             '<text x="0" y="0" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" ' +
             'font-size="13" fill="#2f1d12" text-anchor="middle">Poor</text>' +
             '<text x="4" y="17" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" ' +
@@ -7293,7 +7554,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const size = Math.round((d.size || .6) * 100);
             return '<div class="decor" style="grid-row:' + (d.row + 1) +
                 ';grid-column:' + (d.col + 1) +
-                ';--decor-size:' + size + '%"><span style="width:' + size +
+                ';--decor-size:' + size + '%' +
+                ';--decor-nudge:' + (d.nudge || 0) + '%"><span style="width:' + size +
                 '%;display:block">' + art + '</span></div>';
         }).join('');
 
@@ -7464,12 +7726,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             buttons.push(btn('a-coinpay',
                 p.payInCoins === false ? 'Paying in health' : 'Paying in coins', '', false));
         }
-        // How fast the other two take their turns. A whole game is a couple of
-        // thousand small actions, and not everyone wants to watch them at the
-        // same speed.
-        if (S.solo) {
-            buttons.push(btn('a-pace', 'Pace: ' + SOLO.pace().label, '', false));
-        }
         buttons.push(btn('a-steak-raw', 'Eat raw steak', '',
             p.steaks.raw < 1 || !!S.paused));
         buttons.push(btn('a-steak-cooked', 'Eat seared steak', '',
@@ -7516,12 +7772,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         bind('a-steak-cooked', () => act('eatSteak', { type: 'cooked' }));
         bind('a-end', () => act('endTurn', {}));
         bind('a-coinpay', () => act('payInCoins', { on: p.payInCoins === false }));
-        bind('a-pace', () => {
-            const set = SOLO.nextPace();
-            $('#a-pace').textContent = 'Pace: ' + set.label;
-            notice('The computer players now take their turns at a ' +
-                   set.label.toLowerCase() + ' pace.');
-        });
         bind('a-close', confirmCloseGame);
         bind('a-leave', leaveRoom);
         bind('a-pause', () => act('setPaused', { on: !S.paused }));
