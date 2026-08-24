@@ -95,8 +95,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 /* ---- home ------------------------------------------------------------ */
 
-.home-hero { text-align: center; padding: 26px 0 10px; }
-.home-hero img { width: 300px; max-width: 68%; height: auto; }
+/* No artwork here — the title carries the page. */
+.home-hero { text-align: center; padding: 40px 0 4px; }
+.home-hero h1 { font-size: 42px; letter-spacing: 0.5px; margin-bottom: 6px; }
 .home-hero p { max-width: 620px; margin: 10px auto 0; color: #b9b9b9; font-size: 16px; }
 
 .home-cards {
@@ -478,6 +479,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 @media (max-width: 720px) {
     h1 { font-size: 25px; }
+    /* .home-hero h1 is more specific than the rule above, so it needs its own. */
+    .home-hero { padding: 26px 0 4px; }
+    .home-hero h1 { font-size: 30px; }
     .class-picker { grid-template-columns: 1fr; }
     .board { gap: 5px; padding: 8px; grid-template-rows: repeat(5, minmax(66px, auto)); }
     .sq { min-height: 66px; padding: 5px; }
