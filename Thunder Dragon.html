@@ -389,6 +389,34 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 .paper.yellow { --paper: #ece0a0; --paper-ink: #4a4326; }
 .paper.pink   { --paper: #eec3cd; --paper-ink: #4d323a; }
+/* The chest cards are the orange stock. */
+.paper.orange { --paper: #f0955a; --paper-ink: #43220f; }
+
+/* The other half of a chest weapon's card: the move it lends you for as long
+   as you are holding the weapon. It is folded under the card it is printed
+   on, the way the real card folds. */
+.extra-move {
+    margin-top: -1px;
+    padding: 8px 11px 9px;
+    border: 1px solid rgba(0, 0, 0, .35);
+    border-top: 1px dashed rgba(67, 34, 15, .45);
+    border-radius: 0 0 3px 3px;
+    background: #e4854c;
+    color: #43220f;
+    font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive;
+    font-size: 12px;
+    line-height: 1.35;
+    text-align: left;
+}
+.extra-move .xm-head {
+    font-size: 9.5px;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    opacity: .72;
+}
+.extra-move .xm-name { font-size: 13.5px; margin-top: 1px; }
+.extra-move .xm-text { margin-top: 3px; }
+.extra-move .xm-cost { margin-top: 4px; font-size: 11px; opacity: .78; }
 
 .paper .p-name {
     font-size: 15px;
@@ -1076,6 +1104,32 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .move:disabled { opacity: .35; cursor: not-allowed; }
 .move .mname { color: var(--gold-bright); font-size: 15px; }
 .move .mmeta { font-size: 12.5px; color: #9a9a9a; margin-top: 3px; }
+
+/* An Extra Move is not one of your class moves — it comes off a chest weapon
+   and goes away with it, so it is marked out from the other buttons. */
+.move.extra {
+    border-color: rgba(228, 193, 74, .45);
+    background: linear-gradient(180deg, #2b2418, #1d1811);
+}
+.move.extra:hover:not(:disabled) { border-color: var(--gold-bright); }
+.move .mname .tag {
+    float: right;
+    font-size: 10px;
+    letter-spacing: .5px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    color: #1a1108;
+    background: var(--gold);
+}
+.move .mextra {
+    margin-top: 7px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(228, 193, 74, .28);
+    font-size: 12px;
+    line-height: 1.4;
+    color: #c4b795;
+}
+.move .mextra i { color: #8f866f; font-style: italic; }
 
 /* ---- merchant -------------------------------------------------------- */
 
@@ -1976,12 +2030,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         fenrirak: {
             id: 'fenrirak',
             name: 'Fenrirak',
-            // Fenrirak.png is the wide hero banner with the game's title
-            // printed across half of it — it makes a poor square portrait, so
-            // he is drawn in ui.js in the same style as the other four
-            // instead. Put a real boss picture beside the page and name it
-            // here as `art:` and it will be used in place of the drawing.
-            crest: { initials: 'F',  tint: '#4a6a8c' }, pic: 'fenrirak',
+            // The boss portrait. `Fenrirak Boss.png` is the painting of him
+            // on his own, with no title across it, so it is used wherever he
+            // appears. The drawing of him in ui.js is the fallback if the
+            // file is ever missing.
+            crest: { initials: 'F', tint: '#4a6a8c', art: 'Fenrirak Boss.png' },
+            pic: 'fenrirak',
             hp: 275,
             defence: 20,
             boss: true,
@@ -2200,48 +2254,136 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             text: 'Take 5 less damage and do 5 more damage.'
         },
 
-        /* --- Crimson Keep / Chest treasure ------------------------------ */
+        /* --- The Crimson Keep -------------------------------------------
+           Six cards, two for each class. `keep` is who may take it: the
+           Crimson Keep offers you only your own pair, so a Knight is choosing
+           between the Broadsword and the Dark Iron Armour and nothing else.
+           These no longer appear in a Chest — the Chest has its own cards.
+           ---------------------------------------------------------------- */
         cloak_of_invisibility: {
             id: 'cloak_of_invisibility', name: 'Cloak of Invisibility',
-            kind: 'armour', subtype: 'any', treasure: true,
+            kind: 'armour', subtype: 'mage', treasure: true, keep: 'mage',
             defence: 20, avoidPvp: true,
             text: 'Take 20 less damage. You may choose to avoid PvP battles.'
         },
         dark_iron_armour: {
             id: 'dark_iron_armour', name: 'Dark Iron Armour',
-            kind: 'armour', subtype: 'any', treasure: true,
+            kind: 'armour', subtype: 'knight', treasure: true, keep: 'knight',
             defence: 30, firstStrikePvp: true,
             text: 'Take 30 less damage. You will always attack first in a PvP battle.'
         },
         dragon_scale_armour: {
             id: 'dragon_scale_armour', name: 'Dragon Scale Armour',
-            kind: 'armour', subtype: 'any', treasure: true,
+            kind: 'armour', subtype: 'archer', treasure: true, keep: 'archer',
             defence: 35, fenrirakMovesPvp: true,
             text: 'Take 35 less damage. You may use one of Fenrirak’s attacks in a PvP ' +
                   'battle (requires the same amount of energy as Fenrirak).'
         },
         great_bulging_broadsword: {
             id: 'great_bulging_broadsword', name: 'Great Bulging Broadsword',
-            kind: 'weapon', subtype: 'sword', treasure: true,
+            kind: 'weapon', subtype: 'sword', treasure: true, keep: 'knight',
             attack: 30, text: 'Do 30 more damage.'
         },
         compound_bow: {
             id: 'compound_bow', name: 'Compound Bow',
-            kind: 'weapon', subtype: 'bow', treasure: true,
+            kind: 'weapon', subtype: 'bow', treasure: true, keep: 'archer',
             attack: 40, text: 'Do 40 more damage.'
         },
         staff_of_life: {
             id: 'staff_of_life', name: 'Staff of Life',
-            kind: 'weapon', subtype: 'magic', treasure: true,
+            kind: 'weapon', subtype: 'magic', treasure: true, keep: 'mage',
             attack: 45, healPerMove: 5,
             text: 'Do 45 more damage and with every attack heal 5 HP.'
+        },
+
+        /* --- The Chest ---------------------------------------------------
+           Seven orange cards: four armour sets that anyone may wear, and one
+           special weapon for each class. Every chest weapon carries an Extra
+           Move — a move printed on the other half of the card that you may
+           use in a battle while you are holding the weapon.
+
+           The cards do not print an energy cost for the Extra Moves. See
+           NOTES.md: they are pitched against the class moves, which cost 1
+           for a small hit and 5 for a big one.
+           ---------------------------------------------------------------- */
+
+        /* four armour sets — any class may wear armour out of a chest */
+        gold_forged_armour_set: {
+            id: 'gold_forged_armour_set', name: 'Gold Forged Armour Set',
+            kind: 'armour', subtype: 'any', chest: true,
+            defence: 0, payInCoins: true,
+            text: 'Instead of losing health, you may lose coins instead. (You lose as ' +
+                  'much coins as you would have had if it was health.)'
+        },
+        royal_armour_set: {
+            id: 'royal_armour_set', name: 'Royal Armour Set',
+            kind: 'armour', subtype: 'any', chest: true,
+            defence: 5, attack: 10,
+            text: 'Take 5 less damage and do 10 more damage.'
+        },
+        dark_spirits_set: {
+            id: 'dark_spirits_set', name: 'Dark Spirits Set',
+            kind: 'armour', subtype: 'any', chest: true,
+            defence: 5, spiritRoll: true,
+            text: 'Take 5 less damage, and when you attack you may roll a die: on an ' +
+                  'even number do 15 more damage, on an odd number do 5 more damage.'
+        },
+        charged_speed_set: {
+            id: 'charged_speed_set', name: 'Charged Speed Set',
+            kind: 'armour', subtype: 'any', chest: true,
+            defence: 5, diceUpTo: 3,
+            text: 'Take 5 less damage and you may add up to 3 to your dice roll.'
+        },
+
+        /* one special weapon for each class, each with its Extra Move */
+        iron_boomerang: {
+            id: 'iron_boomerang', name: 'Iron Boomerang',
+            kind: 'weapon', subtype: 'sword', chest: true,
+            attack: 10,
+            extraMove: {
+                id: 'triple_whack', name: 'Triple Whack',
+                damage: 60, energy: 5, turns: 3,
+                text: 'Do 60 damage for 3 turns in a row.'
+            },
+            text: 'Do 10 more damage. You may use the extra move.'
+        },
+        smoke_arrows: {
+            id: 'smoke_arrows', name: 'Smoke Arrows',
+            kind: 'weapon', subtype: 'bow', chest: true,
+            attack: 10,
+            extraMove: {
+                id: 'smoke_explosion', name: 'Smoke Explosion',
+                damage: 15, energy: 2, attackAgain: true,
+                text: 'Do 15 damage, you may attack again.'
+            },
+            text: 'Do 10 more damage. You can use the extra move.'
+        },
+        sceptre_of_protection: {
+            id: 'sceptre_of_protection', name: 'Sceptre Of Protection',
+            kind: 'weapon', subtype: 'magic', chest: true,
+            attack: 10,
+            extraMove: {
+                id: 'energy_barrier', name: 'Energy Barrier',
+                damage: 0, energy: 3, shield: 40,
+                text: 'Take 40 less damage for 1 turn.'
+            },
+            text: 'Do 10 more damage. You may use the extra move.'
         }
     };
 
-    // The six treasures behind a Chest square / the Crimson Keep.
+    // The Crimson Keep's six, two to a class.
     const TREASURE_POOL = [
         'cloak_of_invisibility', 'dark_iron_armour', 'dragon_scale_armour',
         'great_bulging_broadsword', 'compound_bow', 'staff_of_life'
+    ];
+
+    // What is actually inside a Chest: the seven orange cards. The four
+    // armour sets are open to anyone; the three weapons are filtered to the
+    // class that can hold them.
+    const CHEST_POOL = [
+        'gold_forged_armour_set', 'royal_armour_set', 'dark_spirits_set',
+        'charged_speed_set', 'iron_boomerang', 'smoke_arrows',
+        'sceptre_of_protection'
     ];
 
     /* ------------------------------------------------------------------ */
@@ -2469,7 +2611,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     };
 
     global.LOF_DATA = {
-        CLASSES, CLASS_ORDER, ENEMIES, ITEMS, TREASURE_POOL,
+        CLASSES, CLASS_ORDER, ENEMIES, ITEMS, TREASURE_POOL, CHEST_POOL,
         ITEM_DECK, POWERUPS, POWERUP_DECK,
         MERCHANT_POTIONS, MERCHANT_GEAR, SUBTYPE_OWNER,
         BOARD, DECOR, START_INDEX, ARENA_INDEX, KEY_FRAGMENTS_NEEDED, RULES
@@ -2608,10 +2750,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                buffTotal(p, 'damage');
     }
 
-    // Modifier applied to every dice roll this player makes.
+    // Modifier applied to every dice roll this player makes. This is the
+    // most it can be; the Charged Speed Set says "up to 3", so the player is
+    // asked how much of it they actually want before the die goes up.
     function diceModifier(p) {
         const armour = defOf(equippedArmour(p));
-        return (armour && armour.dice ? armour.dice : 0) + buffTotal(p, 'dice');
+        const fixed = (armour && armour.dice ? armour.dice : 0);
+        const upTo = (armour && armour.diceUpTo ? armour.diceUpTo : 0);
+        return fixed + upTo + buffTotal(p, 'dice');
+    }
+
+    // How much of the bonus the player may dial down rather than take whole.
+    function diceChoosable(p) {
+        const armour = defOf(equippedArmour(p));
+        return armour && armour.diceUpTo ? armour.diceUpTo : 0;
     }
 
     function consumeBuffs(p, kind) {
@@ -2791,6 +2943,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             turnsTaken: 0,
             weaponSwaps: 0,
             armourSwaps: 0,
+            extraRun: null,       // a multi-turn Extra Move part way through
+            payInCoins: true,     // Gold Forged Armour Set: pay in coins first
             lastAbilityTurn: -99,
             pendingIllusion: null,
             path: [],
@@ -3052,7 +3206,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         const raw = throwDie(state, p.name, 'move');
         const offered = diceModifier(p) + (p.agileBonus || 0);
-        const mod = useBonus === false ? 0 : offered;
+        // useBonus is false to decline it, true to take it whole, or a number
+        // when the armour offers a range ("add up to 3") and the player has
+        // picked how much of it to use.
+        let mod;
+        if (useBonus === false) mod = 0;
+        else if (typeof useBonus === 'number') {
+            mod = Math.max(Math.min(useBonus, offered), offered - diceChoosable(p));
+        } else mod = offered;
         const total = Math.max(1, raw + mod);
         p.agileBonus = 0;
         consumeBuffs(p, 'dice');
@@ -3194,29 +3355,30 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     log(state, p.name + ' has no chest key — the chest stays shut.', 'muted');
                     return ok();
                 }
-                // Any class may wear armour out of a chest, but a special
-                // weapon still has to be one you can hold.
+                // The chest holds its own seven cards. Any class may wear one
+                // of the four armour sets; the three special weapons still
+                // have to be ones you can hold.
                 state.pending = {
                     type: 'chest', playerId: p.id,
-                    options: D.TREASURE_POOL.filter(id => {
+                    options: D.CHEST_POOL.filter(id => {
                         const it = D.ITEMS[id];
                         return it.kind === 'armour' || suitsClass(p, id);
                     }),
-                    prompt: 'Spend a chest key and choose one treasure. Any class may wear ' +
-                            'armour found in a chest.'
+                    prompt: 'Spend a chest key and choose one. Any class may wear an ' +
+                            'armour set found in a chest.'
                 };
                 return ok();
 
             case 'crimson_keep': {
+                // The Keep holds six, two to a class, and shows you only your
+                // own pair: a Knight chooses between the Great Bulging
+                // Broadsword and the Dark Iron Armour and nothing else.
                 const cls = D.CLASSES[p.cls];
-                const options = D.TREASURE_POOL.filter(id => {
-                    const it = D.ITEMS[id];
-                    if (it.kind === 'armour') return true;
-                    return it.subtype === cls.weaponType;
-                });
+                const options = D.TREASURE_POOL.filter(id => D.ITEMS[id].keep === p.cls);
                 state.pending = {
                     type: 'crimson_keep', playerId: p.id, options: options,
-                    prompt: 'The Crimson Keep. Choose one item that suits a ' + cls.name + '.'
+                    prompt: 'The Crimson Keep. Choose one of the two kept for a ' +
+                            cls.name + '.'
                 };
                 return ok();
             }
@@ -3268,6 +3430,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function startEnemyBattle(state, p, enemyId, squareIndex, isIllusion) {
         const e = D.ENEMIES[enemyId];
         p.energy = R.startingEnergy;
+        p.extraRun = null;              // a fresh fight, a fresh Triple Whack
         state.battle = {
             kind: 'pve',
             enemyId: enemyId,
@@ -3288,6 +3451,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function startPvp(state, a, b) {
         a.energy = R.startingEnergy;
         b.energy = R.startingEnergy;
+        a.extraRun = null;              // a fresh fight, a fresh Triple Whack
+        b.extraRun = null;
 
         // Dark Iron Armour always strikes first.
         const aArmour = defOf(equippedArmour(a));
@@ -3332,10 +3497,42 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 damage: m.damage, energy: m.energy
             })));
         }
-        return moves.map(m => ({
-            id: m.id, name: m.name, damage: m.damage, energy: m.energy,
-            usable: p.energy >= m.energy
-        }));
+
+        // A chest weapon carries an Extra Move printed on the other half of
+        // its card. You have it for as long as you are holding the weapon.
+        const weapon = defOf(equippedWeapon(p));
+        const extra = weapon && weapon.extraMove;
+        if (extra) {
+            moves = moves.concat([{
+                id: 'extra_' + extra.id, name: extra.name, damage: extra.damage,
+                energy: extra.energy, extra: extra, weaponName: weapon.name
+            }]);
+        }
+
+        return moves.map(m => {
+            const spent = m.extra ? extraMoveSpent(p, m.extra) : false;
+            return {
+                id: m.id, name: m.name, damage: m.damage, energy: m.energy,
+                extra: !!m.extra,
+                from: m.weaponName || null,
+                note: m.extra ? m.extra.text : null,
+                usable: p.energy >= m.energy && !spent
+            };
+        });
+    }
+
+    /* ---- the Extra Moves ------------------------------------------------
+       Triple Whack is the only one that spans turns. "Do 60 damage for 3
+       turns in a row" is read as: you may swing it on three battle turns in a
+       row, and each swing still has to connect. Break the run by using
+       anything else and it is finished. See NOTES.md.
+       -------------------------------------------------------------------- */
+
+    function extraMoveSpent(p, extra) {
+        if (!extra.turns) return false;
+        const run = p.extraRun;
+        if (!run || run.id !== extra.id) return false;   // not started yet
+        return run.used >= extra.turns || run.broken;
     }
 
     function battleRoll(state, pid) {
@@ -3369,7 +3566,33 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (!move) return fail('Unknown move.');
         if (!move.usable) return fail('Not enough energy for ' + move.name + '.');
 
-        const bonus = totalAttackBonus(p);
+        const extra = extraMoveOf(p, move.id);
+
+        // Energy Barrier does no damage: it puts a wall up for a turn.
+        if (extra && extra.shield) {
+            addBuff(p, 'defence', extra.shield, 1);
+            log(state, p.name + ' raises an ' + extra.name + ' — ' + extra.shield +
+                       ' less damage for a turn.', 'item');
+            noteExtraUse(p, extra);
+            afterAttack(state, p, move);
+            passBattleTurn(state);
+            return ok();
+        }
+
+        let bonus = totalAttackBonus(p);
+
+        // The Dark Spirits Set throws its own die on every attack: even is
+        // +15, odd is +5. It is thrown on the table like every other die, so
+        // the overlay shows it and the log says what it came to.
+        const armour = defOf(equippedArmour(p));
+        if (armour && armour.spiritRoll && move.damage > 0) {
+            const sp = throwDie(state, p.name, 'dark spirits');
+            const add = sp % 2 === 0 ? 15 : 5;
+            bonus += add;
+            log(state, 'The Dark Spirits Set rolled a ' + sp + ' — ' +
+                       (sp % 2 === 0 ? 'even' : 'odd') + ', +' + add + ' damage.', 'roll');
+        }
+
         const raw = move.damage > 0 ? move.damage + bonus : 0;
 
         if (b.kind === 'pve') {
@@ -3377,26 +3600,61 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const dealt = Math.max(0, raw - e.defence);
             b.enemyHp = Math.max(0, b.enemyHp - dealt);
             log(state, p.name + ' used ' + move.name + ' for ' + dealt + ' damage.', 'hit');
+            if (extra) noteExtraUse(p, extra);
             afterAttack(state, p, move);
             if (b.enemyHp <= 0) return winPve(state, p);
         } else {
             const other = player(state, pid === b.aId ? b.bId : b.aId);
-            const dealt = Math.max(0, raw - totalDefence(state, other));
-            other.hp = Math.max(0, other.hp - dealt);
+            const dealt = damagePlayer(state, other, raw);
             log(state, p.name + ' used ' + move.name + ' on ' + other.name +
                        ' for ' + dealt + ' damage.', 'hit');
             damageArmour(state, other);
+            if (extra) noteExtraUse(p, extra);
             afterAttack(state, p, move);
             if (other.hp <= 0) return winPvp(state, p, other);
+        }
+
+        // Smoke Explosion lets you swing again rather than handing the turn
+        // over: back to the roll, still your go.
+        if (extra && extra.attackAgain) {
+            log(state, p.name + ' may attack again.', 'item');
+            b.phase = 'roll';
+            state.turnStartedAt = Date.now();
+            return ok();
         }
 
         passBattleTurn(state);
         return ok();
     }
 
+    // Which Extra Move a move id refers to, if any.
+    function extraMoveOf(p, moveId) {
+        const weapon = defOf(equippedWeapon(p));
+        const extra = weapon && weapon.extraMove;
+        if (!extra || moveId !== 'extra_' + extra.id) return null;
+        return extra;
+    }
+
+    // Count a swing of an Extra Move that runs for several turns, and break
+    // the run the moment anything else is used.
+    function noteExtraUse(p, extra) {
+        if (!extra.turns) return;
+        if (!p.extraRun || p.extraRun.id !== extra.id) {
+            p.extraRun = { id: extra.id, used: 0, broken: false };
+        }
+        p.extraRun.used += 1;
+    }
+
     function afterAttack(state, p, move) {
         p.energy += 1;                       // energy is gained by attacking, never spent
         consumeBuffs(p, 'damage');
+
+        // Triple Whack has to be three turns *in a row*. Swing anything else
+        // and the run is over.
+        const extra = extraMoveOf(p, move.id);
+        if (p.extraRun && !p.extraRun.broken && (!extra || extra.id !== p.extraRun.id)) {
+            p.extraRun.broken = true;
+        }
 
         const weaponInst = equippedWeapon(p);
         const weapon = defOf(weaponInst);
@@ -3415,6 +3673,36 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 p.weaponUid = null;
             }
         }
+    }
+
+    /* ---- taking a hit ---------------------------------------------------
+       Everything that hurts a player goes through here, so the Gold Forged
+       Armour Set only has to be understood in one place: while its wearer has
+       the coins and has left the setting on, the hit comes out of their purse
+       instead of their health, coin for point.
+       -------------------------------------------------------------------- */
+
+    function damagePlayer(state, target, raw) {
+        const dealt = Math.max(0, raw - totalDefence(state, target));
+        if (!dealt) return 0;
+
+        const armour = defOf(equippedArmour(target));
+        if (armour && armour.payInCoins && target.payInCoins !== false && target.coins > 0) {
+            const paid = Math.min(target.coins, dealt);
+            target.coins -= paid;
+            log(state, target.name + ' pays ' + paid + ' coins instead of losing health.',
+                'item');
+            const spill = dealt - paid;
+            if (spill > 0) {
+                target.hp = Math.max(0, target.hp - spill);
+                log(state, target.name + ' runs out of coins and takes the last ' +
+                           spill + ' as damage.', 'muted');
+            }
+            return dealt;
+        }
+
+        target.hp = Math.max(0, target.hp - dealt);
+        return dealt;
     }
 
     function damageArmour(state, target) {
@@ -3481,8 +3769,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         const usable = e.moves.filter(m => b.enemyEnergy >= m.energy);
         const move = usable.sort((x, y) => y.damage - x.damage)[0] || e.moves[0];
-        const dealt = Math.max(0, move.damage - totalDefence(state, p));
-        p.hp = Math.max(0, p.hp - dealt);
+        const dealt = damagePlayer(state, p, move.damage);
         b.enemyEnergy += 1;
         log(state, 'The ' + e.name + ' used ' + move.name + ' for ' + dealt + ' damage.', 'enemy');
         damageArmour(state, p);
@@ -3755,6 +4042,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return ok();
     }
 
+    // The Gold Forged Armour Set says you *may* pay in coins. Being asked on
+    // every hit would be unbearable, so it is a standing choice the wearer
+    // can flip whenever they like.
+    function payInCoins(state, pid, on) {
+        const p = player(state, pid);
+        if (!p) return fail('Unknown player.');
+        p.payInCoins = !!on;
+        log(state, p.name + ' will pay for hits in ' + (on ? 'coins' : 'health') +
+                   ' while the Gold Forged Armour Set holds.', 'item');
+        return ok();
+    }
+
     /* ------------------------------------------------------------------ */
     /* Merchant                                                            */
     /* ------------------------------------------------------------------ */
@@ -4024,11 +4323,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         addPlayer, removePlayer, chooseClass, startGame, rollForOrder,
         currentPlayer, isMyTurn, beginTurn, endTurn, advanceTurn, checkTimeout,
         rollMove, resolvePending,
-        battleRoll, battleAttack, enemyRoll, enemyStrike, availableMoves, battleActorId,
+        battleRoll, battleAttack, enemyRoll, enemyStrike,
+        startEnemyBattle, startPvp, availableMoves, battleActorId,
         usePowerup, usePotion, eatSteak, cookSteaks, equip, useAbility, buy,
+        payInCoins,
         proposeTrade, respondTrade, cancelTrade, collapse, closeGame,
         fragmentsOf, suitsClass,
-        totalDefence, totalAttackBonus, diceModifier,
+        totalDefence, totalAttackBonus, diceModifier, diceChoosable,
         equippedWeapon, equippedArmour, player, square, uid, d6
     };
 
@@ -4165,6 +4466,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 return die.roll % 2 === 0
                     ? 'Even — ' + die.who + ' connects.'
                     : 'Odd — ' + die.who + ' misses.';
+            }
+            // The Dark Spirits Set adds on either number — the die only says
+            // how much.
+            if (why === 'dark spirits') {
+                return die.roll % 2 === 0
+                    ? 'Even — the Dark Spirits Set adds 15 damage.'
+                    : 'Odd — the Dark Spirits Set adds 5 damage.';
             }
             // Class abilities: even works, odd fizzles.
             return die.roll % 2 === 0
@@ -5262,6 +5570,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         buttons.push(btn('a-shop', 'Visit the Merchant', '', !mine || blocked));
         buttons.push(btn('a-trade', 'Propose a trade', '', S.players.length < 2));
         buttons.push(btn('a-who', 'Everyone’s stats', '', false));
+        // The Gold Forged Armour Set says you *may* pay in coins. Asking on
+        // every single hit would be unbearable, so it is a standing choice
+        // you can flip whenever you like.
+        const aInst = E.equippedArmour(p);
+        const aItem = aInst ? D.ITEMS[aInst.id] : null;
+        if (aItem && aItem.payInCoins) {
+            buttons.push(btn('a-coinpay',
+                p.payInCoins === false ? 'Paying in health' : 'Paying in coins', '', false));
+        }
         buttons.push(btn('a-steak-raw', 'Eat raw steak', '', p.steaks.raw < 1));
         buttons.push(btn('a-steak-cooked', 'Eat seared steak', '', p.steaks.cooked < 1));
         buttons.push(btn('a-end', 'End turn', '', !mine || blocked));
@@ -5297,6 +5614,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                                          { type: 'raw' }, 'A 3 is food poisoning.'));
         bind('a-steak-cooked', () => act('eatSteak', { type: 'cooked' }));
         bind('a-end', () => act('endTurn', {}));
+        bind('a-coinpay', () => act('payInCoins', { on: p.payInCoins === false }));
         bind('a-close', confirmCloseGame);
     }
 
@@ -5306,7 +5624,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const out = [];
         const armour = E.equippedArmour(p);
         const aDef = armour ? D.ITEMS[armour.id] : null;
-        if (aDef && aDef.dice) out.push(aDef.name);
+        if (aDef && (aDef.dice || aDef.diceUpTo)) out.push(aDef.name);
         if (p.agileBonus) out.push('Agile');
         if ((p.buffs || []).some(b => b.kind === 'dice')) out.push('a power-up');
         return out;
@@ -5316,29 +5634,50 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const p = me();
         const sign = bonus > 0 ? '+' : '';
         const from = bonusSources(p);
-        showModal('<h2>Take the ' + sign + bonus + '?</h2>' +
+
+        // The Charged Speed Set says "up to 3", so that part of the bonus is
+        // a dial rather than a switch: every amount it allows gets a button.
+        const choosable = E.diceChoosable(p);
+        const floor = bonus - choosable;
+
+        let buttons = '';
+        if (choosable > 0) {
+            for (let n = bonus; n >= floor; n--) {
+                buttons += '<button class="btn' + (n === bonus ? ' primary' : '') +
+                    '" data-bonus="' + n + '">' +
+                    (n === 0 ? 'Plain die' : 'Roll ' + (n > 0 ? '+' : '') + n) +
+                    '</button>';
+            }
+            if (floor > 0) buttons += '<button class="btn" data-bonus="0">Plain die</button>';
+        } else {
+            buttons =
+                '<button class="btn primary" data-bonus="' + bonus + '">Roll with ' +
+                    sign + bonus + '</button>' +
+                '<button class="btn" data-bonus="0">Roll the plain die</button>';
+        }
+
+        showModal('<h2>' + (choosable > 0 ? 'How much do you want?' : 'Take the ' + sign + bonus + '?') +
+            '</h2>' +
             '<div class="sub">' +
                 (from.length ? esc(from.join(' and ')) + ' ' +
-                    (from.length > 1 ? 'give' : 'gives') + ' you ' + sign + bonus +
+                    (from.length > 1 ? 'give' : 'gives') + ' you ' +
+                    (choosable > 0 ? 'up to ' + sign + bonus : sign + bonus) +
                     ' on this roll. ' : '') +
                 'You do not have to use it — a smaller number is sometimes the one ' +
-                'you want.' +
+                'you want, to stop short of a fight or to land exactly on the Gate.' +
             '</div>' +
-            '<div class="modal-actions">' +
-            '<button class="btn primary" id="bonus-yes">Roll with ' + sign + bonus + '</button>' +
-            '<button class="btn" id="bonus-no">Roll the plain die</button>' +
+            '<div class="modal-actions">' + buttons +
             '<button class="btn" id="bonus-cancel">Not yet</button>' +
             '</div>', true, 'bonus');
-        bind('bonus-yes', () => {
+
+        $$('#modal [data-bonus]').forEach(b => b.addEventListener('click', () => {
+            const n = parseInt(b.dataset.bonus, 10);
             closeModal();
-            rollAct('Rolling to move', 'rollMove', { useBonus: true },
-                    'One die, ' + sign + bonus + ' on top.');
-        });
-        bind('bonus-no', () => {
-            closeModal();
-            rollAct('Rolling to move', 'rollMove', { useBonus: false },
-                    'One die, no bonus.');
-        });
+            rollAct('Rolling to move', 'rollMove',
+                    { useBonus: n === 0 ? false : n },
+                    n === 0 ? 'One die, no bonus.'
+                            : 'One die, ' + (n > 0 ? '+' : '') + n + ' on top.');
+        }));
         bind('bonus-cancel', () => { openPanel = null; renderModal(); });
     }
 
@@ -5440,8 +5779,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     (usable && !equipped && !spare
                         ? '<br>You have already changed your ' + slot + ' this turn.' : '');
                 return '<div class="item' + (equipped ? ' equipped' : '') +
-                    (d.treasure ? ' treasure' : '') + '">' +
-                    paperCardHtml('yellow', d.name, d.text, foot) +
+                    (d.treasure || d.chest ? ' treasure' : '') + '">' +
+                    paperCardHtml(d.chest ? 'orange' : 'yellow', d.name, d.text, foot) +
+                    // A chest weapon's Extra Move travels with the weapon, so
+                    // it is shown on the card you are holding.
+                    (d.extraMove
+                        ? '<div class="extra-move">' +
+                            '<div class="xm-head">Extra Move' +
+                                (equipped ? '' : ' — while you hold it') + '</div>' +
+                            '<div class="xm-name">' + esc(d.extraMove.name) + '</div>' +
+                            '<div class="xm-text">' + esc(d.extraMove.text) + '</div>' +
+                            '<div class="xm-cost">' + d.extraMove.energy + ' energy</div>' +
+                          '</div>'
+                        : '') +
                     (equipped || !usable ? ''
                         : '<button class="btn small" data-equip="' + inst.uid + '"' +
                           (spare && myTurn() && !S.battle ? '' : ' disabled') + '>Equip</button>') +
@@ -5604,11 +5954,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 const moves = E.availableMoves(S, NET.PID);
                 body += '<h3 style="margin-top:18px">Choose your attack</h3><div class="moves">' +
                     moves.map(m =>
-                        '<button class="move" data-move="' + esc(m.id) + '"' +
+                        '<button class="move' + (m.extra ? ' extra' : '') +
+                        '" data-move="' + esc(m.id) + '"' +
                         (m.usable ? '' : ' disabled') + '>' +
-                        '<div class="mname">' + esc(m.name) + '</div>' +
-                        '<div class="mmeta">' + m.damage + ' damage · needs ' + m.energy +
-                            ' energy' + (m.usable ? '' : ' (you have ' + p.energy + ')') + '</div>' +
+                        '<div class="mname">' + esc(m.name) +
+                            (m.extra ? '<span class="tag">Extra Move</span>' : '') + '</div>' +
+                        '<div class="mmeta">' +
+                            (m.damage ? m.damage + ' damage · ' : '') +
+                            'needs ' + m.energy + ' energy' +
+                            (m.usable ? '' : ' (you have ' + p.energy + ')') + '</div>' +
+                        // The Extra Move's own printed line, and which weapon
+                        // it came off, because it is not one of your class moves.
+                        (m.extra ? '<div class="mextra">' + esc(m.note) +
+                            '<br><i>off the ' + esc(m.from) + '</i></div>' : '') +
                         '</button>').join('') + '</div>';
             }
         }
@@ -5771,10 +6129,24 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 '<div class="sub">' + esc(pend.prompt) + '</div>' +
                 '<div class="item-grid">' + pend.options.map(id => {
                     const d = D.ITEMS[id];
+                    // A chest card is orange, the Keep's are yellow, which is
+                    // the colour each one is in the box.
+                    const stock = d.chest ? 'orange' : 'yellow';
+                    const foot = d.kind === 'weapon'
+                        ? 'Weapon · ' + esc(d.subtype)
+                        : 'Armour · ' + (d.subtype === 'any' ? 'any class' : esc(d.subtype));
                     return '<div class="item treasure">' +
-                        paperCardHtml('yellow', d.name, d.text,
-                            d.kind === 'weapon' ? 'Weapon · ' + esc(d.subtype)
-                                                : 'Armour · any class') +
+                        paperCardHtml(stock, d.name, d.text, foot) +
+                        // The other half of a chest weapon's card: the move it
+                        // lends you for as long as you are holding it.
+                        (d.extraMove
+                            ? '<div class="extra-move">' +
+                                '<div class="xm-head">Extra Move</div>' +
+                                '<div class="xm-name">' + esc(d.extraMove.name) + '</div>' +
+                                '<div class="xm-text">' + esc(d.extraMove.text) + '</div>' +
+                                '<div class="xm-cost">' + d.extraMove.energy + ' energy</div>' +
+                              '</div>'
+                            : '') +
                         '<button class="btn small" data-choice="' + esc(id) + '">Take it</button></div>';
                 }).join('') + '</div>';
         } else if (pend.type === 'sea_of_castout') {
@@ -6244,6 +6616,7 @@ const ACTIONS = {
     equip:         (s, pid, a) => E.equip(s, pid, a.uid),
     useAbility:    (s, pid, a) => E.useAbility(s, pid, a),
     buy:           (s, pid, a) => E.buy(s, pid, a.kind, a.id),
+    payInCoins:    (s, pid, a) => E.payInCoins(s, pid, a.on),
     resolvePending:(s, pid, a) => E.resolvePending(s, pid, a.choice),
     proposeTrade:  (s, pid, a) => E.proposeTrade(s, pid, a.toId, a.give, a.want),
     respondTrade:  (s, pid, a) => E.respondTrade(s, pid, a.tradeId, a.accept),
