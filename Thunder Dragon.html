@@ -880,31 +880,57 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     justify-self: end;
     align-self: center;
     z-index: 5;
-    width: 54px;
-    min-height: 84px;
-    padding: 5px 4px 4px;
-    background: linear-gradient(180deg, #b3aec0, #9c96ac);
-    border: 1px solid #6e6880;
-    border-radius: 8px 8px 2px 2px;
+    width: 78px;
+    min-height: 122px;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: 0;
     align-items: center;
     text-align: center;
-    box-shadow: 0 6px 14px -8px rgba(0,0,0,.8);
+    overflow: visible;
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,.75));
 }
-.sq.gateway::before {
-    content: '';
+.sq.gateway .gate-svg {
     position: absolute;
-    left: 26%; right: 26%; bottom: 0; top: 34%;
-    border-radius: 40% 40% 0 0;
-    background: #43405a;
-    box-shadow: inset 0 6px 10px rgba(0,0,0,.5);
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+/* The lightning standing in the doorway breathes rather than sits still. */
+.sq.gateway .gate-bolt { animation: gate-flicker 3.4s ease-in-out infinite; }
+@keyframes gate-flicker {
+    0%, 44%, 100% { opacity: .32; }
+    48%           { opacity: .95; }
+    52%           { opacity: .4; }
+    56%           { opacity: 1; }
+    62%           { opacity: .35; }
 }
 .sq.gateway .sq-name {
-    font-size: 9.5px; border: 0; padding: 0;
-    color: #2c2937;
+    position: absolute;
+    left: 50%; bottom: -15px;
+    transform: translateX(-50%);
+    font-size: 9.5px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: 0; padding: 0;
+    color: #cfc8e2;
+    text-shadow: 0 1px 3px rgba(0,0,0,.9);
 }
 .sq.gateway .sq-text { display: none; }
-.sq.gateway .tokens { margin-top: auto; z-index: 4; }
+.sq.gateway .tokens {
+    position: absolute;
+    left: 0; right: 0; bottom: 6px;
+    justify-content: center;
+    z-index: 4;
+}
 .sq.gateway .token { width: 30px; height: 30px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .sq.gateway .gate-bolt { animation: none; opacity: .6; }
+}
 
 /* ---- the models standing on the grass ---------------------------------
    Drawn as inline SVG so nothing has to be uploaded. The big tree is
@@ -1554,6 +1580,192 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .shop-item.not-yours .paper { opacity: .58; }
 
+
+/* ---- turned away at the Gate ------------------------------------------
+   The board goes white, a bolt comes down the middle of it and the name of
+   whoever the Gate caught is said out loud. It lasts a beat and a half, and
+   it is the difference between "my token moved" and "the Gate threw me".
+   ---------------------------------------------------------------------- */
+
+.zap-back {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+}
+.zap-back.on { visibility: visible; animation: zap-hold 1.6s linear forwards; }
+@keyframes zap-hold { 0%, 92% { opacity: 1; } 100% { opacity: 0; } }
+
+.zap-back .zap-flash {
+    position: absolute;
+    inset: 0;
+    background: #e8e2ff;
+}
+.zap-back.on .zap-flash { animation: zap-flash 1.1s ease-out forwards; }
+@keyframes zap-flash {
+    0%   { opacity: 0; }
+    6%   { opacity: .92; }
+    12%  { opacity: .12; }
+    20%  { opacity: .8; }
+    30%  { opacity: .08; }
+    42%  { opacity: .5; }
+    100% { opacity: 0; }
+}
+
+.zap-back .zap-bolt {
+    position: relative;
+    width: min(220px, 40vw);
+    height: min(440px, 70vh);
+    overflow: visible;
+}
+.zap-back .zap-bolt path {
+    fill: #b9a6ff;
+    filter: drop-shadow(0 0 18px rgba(190, 165, 255, .95));
+}
+.zap-back .zap-bolt path.core {
+    fill: #ffffff;
+    transform-box: fill-box;          /* without this, "center" is the viewBox */
+    transform-origin: center;
+    transform: scale(.55);
+}
+.zap-back.on .zap-bolt { animation: zap-strike 1.1s ease-out forwards; }
+@keyframes zap-strike {
+    0%   { opacity: 0; transform: scaleY(.15) translateY(-30%); }
+    8%   { opacity: 1; transform: scaleY(1) translateY(0); }
+    26%  { opacity: .25; }
+    36%  { opacity: 1; }
+    54%  { opacity: .2; }
+    64%  { opacity: .9; }
+    100% { opacity: 0; transform: scaleY(1) translateY(0); }
+}
+
+.zap-back .zap-who {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 20%;
+    text-align: center;
+    font-size: 19px;
+    letter-spacing: .04em;
+    color: #2a2338;
+    text-shadow: 0 1px 0 rgba(255,255,255,.6);
+}
+.zap-back.on .zap-who { animation: zap-say 1.6s ease-out forwards; }
+@keyframes zap-say {
+    0%, 20% { opacity: 0; }
+    34%     { opacity: 1; }
+    82%     { opacity: 1; }
+    100%    { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .zap-back.on .zap-flash,
+    .zap-back.on .zap-bolt { animation: none; opacity: .5; }
+    .zap-back .zap-bolt path { filter: none; }
+}
+
+/* ---- the die you have already thrown ----------------------------------
+   Shown at the top of the question about your movement bonus, because the
+   question only makes sense next to the number it is about.
+   ---------------------------------------------------------------------- */
+
+.rolled {
+    width: 74px; height: 74px;
+    margin: 14px auto 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px;
+    padding: 9px;
+    border-radius: 12px;
+    background: #f4f1e6;
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,.16), 0 8px 18px -10px rgba(0,0,0,.9);
+}
+.rolled i { border-radius: 50%; background: transparent; }
+.rolled i.on { background: #24211c; }
+
+.modal-actions.bonus-row { flex-wrap: wrap; justify-content: center; }
+.modal-actions.bonus-row .btn i {
+    font-style: normal;
+    opacity: .65;
+    font-size: 12px;
+    margin-left: 3px;
+}
+
+/* ---- the things that end the game -------------------------------------
+   Pause, leave and end sit together underneath the actions rather than in
+   amongst them: a matched row, set apart by a rule, so nobody ends a game
+   while reaching for "End turn".
+   ---------------------------------------------------------------------- */
+
+.actions-end {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--panel-edge);
+}
+.actions-end .btn {
+    width: 100%;
+    margin: 0;
+    padding: 9px 6px;
+    font-size: 12.5px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ---- the game is stopped ---------------------------------------------- */
+
+.turn-banner.paused {
+    border-color: #d7a13c;
+    background: linear-gradient(180deg, rgba(215,161,60,.16), rgba(215,161,60,.05));
+    box-shadow: 0 0 22px -8px rgba(215,161,60,.75);
+}
+.turn-banner.paused .who { color: #f0c374; }
+.turn-banner.paused .btn { margin-left: auto; }
+
+/* ---- one stat block at a time ------------------------------------------
+   Whoever is not open is a bar you can click. It lifts under the pointer so
+   it is plainly a thing you may press, rather than a read-out.
+   ---------------------------------------------------------------------- */
+
+.me-card .mate {
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 4px 6px;
+    margin: 0 -6px;
+    transition: background .12s ease, transform .12s ease;
+}
+.me-card .mate:hover,
+.me-card .mate:focus-visible {
+    background: rgba(255,255,255,.07);
+    transform: translateX(2px);
+    outline: none;
+}
+.me-card .mate:focus-visible { box-shadow: 0 0 0 2px var(--gold); }
+.me-card .mate.you .mname { color: var(--gold); }
+
+/* Whose block is open, when it is not your own. */
+.me-name .whose {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    vertical-align: middle;
+    color: #cbb99a;
+    background: rgba(217,163,92,.16);
+    border: 1px solid rgba(217,163,92,.4);
+}
+
     </style>
 
 </head>
@@ -1716,9 +1928,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     <div class="card">
                         <h3>Actions</h3>
                         <div id="side-actions"></div>
-                        <div style="margin-top:12px">
-                            <button class="btn small danger" id="btn-leave-game">Leave game</button>
-                        </div>
                     </div>
                     <div class="card">
                         <h3>The narrator</h3>
@@ -1819,8 +2028,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 id: 'illusion',
                 name: 'Illusion',
                 text: 'Roll a die. On an even number, conjure a Swarm of Bats and choose ' +
-                      'another player to fight it. They lose their turn and receive only ' +
-                      'the coins.'
+                      'another player to fight it. The conjured swarm hits for 15 more ' +
+                      'and has 20 less health than a real one. They lose their turn and ' +
+                      'receive only the coins.'
             },
             colour: '#5c8fc4'
         }
@@ -1949,15 +2159,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</svg>',
 
         // The Mage: the tall blue star-spangled hat pulled down over his
-        // eyes, the great white beard under it, and the staff with its gold
-        // hexagon head.
+        // eyes, the great white beard under it. Both arms are on him -- the
+        // far one gripping the staff, the near one held out with the Orb of
+        // Power resting over the open palm, which is where an orb belongs.
         mage:
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
-            // the staff, leaning across him
-            '<path d="M26 92 78 58" fill="none" stroke="#20180f" stroke-width="9" ' +
+            // the staff, standing at his far side with the gold hexagon at
+            // the head of it rather than lying on the floor
+            '<path d="M79 26 76 96" fill="none" stroke="#20180f" stroke-width="8.5" ' +
             'stroke-linecap="round"/>' +
-            '<path d="M26 92 78 58" fill="none" stroke="#a8752f" stroke-width="5.5" ' +
+            '<path d="M79 26 76 96" fill="none" stroke="#a8752f" stroke-width="5" ' +
             'stroke-linecap="round"/>' +
+            '<path d="M79 8 88 13v10l-9 5-9-5V13z" fill="#f0c33c" ' +
+            'stroke="#20180f" stroke-width="2.4" stroke-linejoin="round"/>' +
+            '<path d="M79 13 84 16v5l-5 3-5-3v-5z" fill="#fbe6a8"/>' +
             // the robe
             '<g ' + K + ' fill="#4f7fb0">' +
             '<path d="M30 96 40 52h20l10 44z"/></g>' +
@@ -1965,9 +2180,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<circle cx="44" cy="66" r="2.4"/><circle cx="56" cy="70" r="2.4"/>' +
             '<circle cx="48" cy="82" r="2.4"/><circle cx="60" cy="88" r="2.4"/>' +
             '</g>' +
-            // the sleeve and hand on the staff
-            '<g ' + K + ' fill="#5c8fc4">' +
-            '<path d="M56 56h20v13H56z"/></g>' +
+            // the far arm: sleeve, then the hand closed round the staff
+            '<g ' + K + ' fill="#5c8fc4"><path d="M58 55h15v13H58z"/></g>' +
+            '<path d="M71 56h11v12H71z" fill="#f0d9a8" stroke="#20180f" ' +
+            'stroke-width="2" stroke-linejoin="round"/>' +
+            '<path d="M73 61h7" stroke="#c9a878" stroke-width="1.6"/>' +
             // the beard, the widest shape in the piece
             '<g ' + K + ' fill="#f4f2e8">' +
             '<path d="M32 40h36c0 20-8 32-18 32s-18-12-18-32z"/></g>' +
@@ -1987,10 +2204,26 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M56 8l2.4 5 5.6.6-4.2 3.8 1.2 5.4L56 20l-5 2.8 1.2-5.4L48 13.6l5.6-.6z"/>' +
             '<path d="M42 20l1.8 3.8 4.2.4-3.2 2.8.9 4.1L42 29l-3.7 2.1.9-4.1-3.2-2.8 4.2-.4z"/>' +
             '</g>' +
-            // the gold hexagon on the head of the staff
-            '<path d="M22 82 32 76l10 6v12l-10 6-10-6z" fill="#f0c33c" ' +
-            'stroke="#20180f" stroke-width="2.4" stroke-linejoin="round"/>' +
-            '<path d="M27 85 32 82l5 3v6l-5 3-5-3z" fill="#fbe6a8"/>' +
+            // the near arm, out in front of everything: the sleeve, then the
+            // hand cupped under the orb with the fingers closing over the
+            // front of it, so it is plainly being held and not just floating
+            '<g ' + K + ' fill="#5c8fc4"><path d="M28 54h15v12H28z"/></g>' +
+            // the palm, a cup rather than a mitten
+            '<path d="M13 57h16v7a8 8 0 0 1-16 0z" fill="#f0d9a8" ' +
+            'stroke="#20180f" stroke-width="2" stroke-linejoin="round"/>' +
+            // the orb resting in it
+            '<circle cx="21" cy="50" r="15" fill="#8fd0ee" opacity=".28"/>' +
+            '<circle cx="21" cy="50" r="10" fill="#6fc0e8" ' +
+            'stroke="#20180f" stroke-width="2.4"/>' +
+            '<path d="M21 41a9 9 0 0 0-7 7c3 1 9-2 7-7z" fill="#e8f8ff" opacity=".95"/>' +
+            '<circle cx="17" cy="46" r="2.4" fill="#ffffff"/>' +
+            // and the fingers curling up over it
+            '<g fill="#f0d9a8" stroke="#20180f" stroke-width="1.7" ' +
+            'stroke-linejoin="round" stroke-linecap="round">' +
+            '<path d="M14 58c0-4 1-6 3-6s3 2 3 6z"/>' +
+            '<path d="M21 58c0-5 1-7 3-7s3 2 3 7z"/>' +
+            '<path d="M27 59c0-4 1-6 2.5-6s2.5 2 2.5 6z"/>' +
+            '</g>' +
             '</svg>'
     };
 
@@ -2019,16 +2252,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             defence: 0,
             placeholder: true,           // PLACEHOLDER — no profile card exists for this fight
             moves: [
-                { id: 'bite', name: 'Bite', damage: 20, energy: 1 },
-                { id: 'frenzy', name: 'Frenzy', damage: 45, energy: 5 }
+                { id: 'bite', name: 'Bite', damage: 30, energy: 1 },
+                { id: 'frenzy', name: 'Frenzy', damage: 60, energy: 5 }
             ]
         },
         seraphina: {
             id: 'seraphina',
             name: 'Seraphina',
             crest: { initials: 'S',  tint: '#7a8c4a' }, pic: 'seraphina',
-            hp: 150,
-            defence: 0,
+            hp: 125,
+            defence: 10,
             noIllusion: true,
             moves: [
                 { id: 'poison_fang', name: 'Poison Fang', damage: 40, energy: 1 },
@@ -2040,7 +2273,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             name: 'Goblin Scout Group',
             crest: { initials: 'GS', tint: '#8c6a3a' }, pic: 'goblins',
             hp: 100,
-            defence: 0,
+            defence: 5,
             noIllusion: true,
             moves: [
                 { id: 'club_bash', name: 'Club Bash', damage: 40, energy: 1 },
@@ -2609,7 +2842,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     const DECOR = [
         // kind          where               how big (fraction of the cell)
         { kind: 'tree',      row: 2, col: 1, size: 1.35 },
-        { kind: 'pot',       row: 1, col: 0, size: .52 },
         { kind: 'ruins',     row: 2, col: 0, size: .62 },
         { kind: 'spring',    row: 3, col: 0, size: .58 },
         { kind: 'village',   row: 1, col: 4, size: .62 },
@@ -2634,6 +2866,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // One weapon change and one armour change per turn, counted separately.
         equipChangesPerTurn: 1,
         abilityCooldownTurns: 2,       // one ability every 2 turns
+        // A Mage's conjured swarm is not the real animal.
+        illusionDamageBoost: 15,
+        illusionHpDrop: 20,
         startingEnergy: 1,
         rawSteakHeal: 5,
         searedSteakHeal: 10,
@@ -3165,6 +3400,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     function checkTimeout(state, now) {
         if (state.phase !== 'playing') return false;
+        if (state.paused) return false;        // the clock stops with everything else
         if ((now - (state.turnStartedAt || 0)) < R.turnTimeoutMs) return false;
 
         // A battle must be settled, not silently deleted — otherwise the AFK
@@ -3226,10 +3462,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Movement                                                            */
     /* ------------------------------------------------------------------ */
 
-    // useBonus: the +1 from Light Armour and the like is an offer, not a rule.
-    // Sometimes a smaller number is the one you want -- to stop short of a
-    // fight, or to land exactly on the Gate -- so you may decline it.
-    function rollMove(state, pid, useBonus) {
+    /* ---- rolling to move ----------------------------------------------
+       The bonus off your armour, off Agile and off a power-up is an offer and
+       not a rule -- a smaller number is sometimes the one you want, to stop
+       short of a fight or to land exactly on the Chest.
+
+       You are asked *after* the die has landed, because until you know
+       whether you rolled a 2 or a 6 the question cannot honestly be answered.
+       So the throw and the decision are two separate steps: the die goes up,
+       and if there is anything on offer the game stops and asks before you
+       take a single step.
+       -------------------------------------------------------------------- */
+
+    function rollMove(state, pid) {
         if (state.phase !== 'playing') return fail('The game is not running.');
         if (!isMyTurn(state, pid)) return fail('It is not your turn.');
         if (state.battle) return fail('You are in a battle.');
@@ -3239,27 +3484,63 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (p.pos >= D.ARENA_INDEX) return fail('You are already in the arena.');
 
         const raw = throwDie(state, p.name, 'move');
+        p.hasMoved = true;                  // the die is thrown; there is no second go
+        log(state, p.name + ' rolled a ' + raw + '.', 'roll');
+
+        // Everything being offered on top of the die. Agile, the armour and a
+        // power-up all pile up together -- they are one total, not a choice
+        // between them.
         const offered = diceModifier(p) + (p.agileBonus || 0);
-        // useBonus is false to decline it, true to take it whole, or a number
-        // when the armour offers a range ("add up to 3") and the player has
-        // picked how much of it to use.
+        if (!offered) {
+            consumeBuffs(p, 'dice');
+            return walk(state, p, raw);
+        }
+
+        state.pending = {
+            type: 'move_bonus',
+            playerId: p.id,
+            raw: raw,
+            offered: offered,
+            choosable: diceChoosable(p),
+            sources: bonusSources(p),
+            prompt: 'You rolled a ' + raw + '.'
+        };
+        return ok();
+    }
+
+    // Where the bonus is coming from, so the question can name the things
+    // offering it rather than just quoting a number.
+    function bonusSources(p) {
+        const out = [];
+        const armour = defOf(equippedArmour(p));
+        if (armour && (armour.dice || armour.diceUpTo)) out.push(armour.name);
+        if (p.agileBonus) out.push('Agile');
+        if (buffTotal(p, 'dice')) out.push('a power-up');
+        return out;
+    }
+
+    // The answer: false to refuse it outright, a number to take that much of
+    // it, anything else to take the lot.
+    function takeMoveBonus(state, p, pend, useBonus) {
+        const offered = pend.offered;
         let mod;
         if (useBonus === false) mod = 0;
         else if (typeof useBonus === 'number') {
-            mod = Math.max(Math.min(useBonus, offered), offered - diceChoosable(p));
+            mod = Math.max(Math.min(useBonus, offered), offered - (pend.choosable || 0));
         } else mod = offered;
-        const total = Math.max(1, raw + mod);
+
+        const total = Math.max(1, pend.raw + mod);
         p.agileBonus = 0;
         consumeBuffs(p, 'dice');
-        p.hasMoved = true;
+        state.pending = null;
 
-        log(state, p.name + ' rolled a ' + raw +
-                   (mod ? ' (' + (mod > 0 ? '+' : '') + mod + ' = ' + total + ')' : '') +
-                   (offered && !mod
-                       ? ' — the ' + (offered > 0 ? '+' : '') + offered +
-                         ' was declined, so it stands at ' + raw
-                       : '') + '.', 'roll');
-
+        if (mod) {
+            log(state, p.name + ' takes ' + (mod > 0 ? '+' : '') + mod +
+                       ' — the ' + pend.raw + ' stands at ' + total + '.', 'roll');
+        } else {
+            log(state, p.name + ' declines the ' + (offered > 0 ? '+' : '') + offered +
+                       ' and moves ' + total + '.', 'roll');
+        }
         return walk(state, p, total);
     }
 
@@ -3284,7 +3565,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // without the three fragments -- walking past it is still walking
             // through it.
             if (remaining > 0 && sq.action === 'gate' && p.keyFragments < D.KEY_FRAGMENTS_NEEDED) {
-                log(state, 'The Gate refuses ' + p.name + '. Back to the Start.', 'death');
+                zap(state, p);
                 p.movesLeft = 0;
                 sendToStart(state, p, false);
                 p.path.push(p.pos);
@@ -3436,7 +3717,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 if (p.keyFragments >= D.KEY_FRAGMENTS_NEEDED) {
                     log(state, p.name + ' turns three key fragments — the Gate grinds open!', 'system');
                 } else {
-                    log(state, 'The Gate refuses ' + p.name + '. Back to the Start.', 'death');
+                    zap(state, p);
                     sendToStart(state, p, false);
                 }
                 return ok();
@@ -3447,6 +3728,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             default:
                 return ok();
         }
+    }
+
+    // The Gate does not politely decline you, it throws you off. Stamped on
+    // the state with a running number, exactly the way a throw of the die is,
+    // so every client plays the flash once and nobody sees it twice.
+    function zap(state, p) {
+        state.zapSeq = (state.zapSeq | 0) + 1;
+        state.lastZap = { who: p.name, playerId: p.id, n: state.zapSeq };
+        log(state, 'The Gate refuses ' + p.name + ' — lightning throws them the ' +
+                   'whole way back to the Start.', 'death');
     }
 
     function sendToStart(state, p, keepCoins) {
@@ -3465,11 +3756,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const e = D.ENEMIES[enemyId];
         p.energy = R.startingEnergy;
         p.extraRun = null;              // a fresh fight, a fresh Triple Whack
+        // A Mage's conjuring is a nastier thing than the real animal: it hits
+        // for 15 more and there is 20 less of it.
+        const conjuredHp = Math.max(1, e.hp - (isIllusion ? R.illusionHpDrop : 0));
         state.battle = {
             kind: 'pve',
             enemyId: enemyId,
-            enemyHp: e.hp,
-            enemyMaxHp: e.hp,
+            enemyHp: conjuredHp,
+            enemyMaxHp: conjuredHp,
+            spite: isIllusion ? R.illusionDamageBoost : 0,
             enemyEnergy: R.startingEnergy,
             squareIndex: (squareIndex === undefined || squareIndex === null) ? p.pos : squareIndex,
             illusion: !!isIllusion,
@@ -3803,7 +4098,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         const usable = e.moves.filter(m => b.enemyEnergy >= m.energy);
         const move = usable.sort((x, y) => y.damage - x.damage)[0] || e.moves[0];
-        const dealt = damagePlayer(state, p, move.damage);
+        const dealt = damagePlayer(state, p, move.damage + (b.spite || 0));
         b.enemyEnergy += 1;
         log(state, 'The ' + e.name + ' used ' + move.name + ' for ' + dealt + ' damage.', 'enemy');
         damageArmour(state, p);
@@ -4145,6 +4440,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 return walk(state, p, left);
             }
 
+            case 'move_bonus':
+                return takeMoveBonus(state, p, pend, choice);
+
             case 'steak_roll': {
                 const roll = throwDie(state, p.name, 'steak');
                 if (R.steakRolls.indexOf(roll) >= 0) {
@@ -4328,6 +4626,25 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return ok();
     }
 
+    /* ---- pausing --------------------------------------------------------
+       Somebody has to answer the door. The host may stop the game dead, and
+       while it is stopped nothing at all can happen -- not a roll, not a
+       blow, not a purchase, and not the clock that retires an idle turn.
+       The turn timer is restarted on the way out, so a pause never costs the
+       player whose turn it was the time they were paused for.
+       -------------------------------------------------------------------- */
+
+    function setPaused(state, pid, on) {
+        if (pid !== state.hostId) return fail('Only the host can pause the game.');
+        const want = !!on;
+        if (!!state.paused === want) return { ok: false, error: 'no-change', silent: true };
+        state.paused = want;
+        if (!want) state.turnStartedAt = Date.now();
+        log(state, want ? 'The host paused the game.'
+                        : 'The host resumed the game.', 'system');
+        return ok();
+    }
+
     // The host ending the game early. The room document is deleted by the
     // network layer straight afterwards; this only marks the state so anyone
     // mid-render sees why.
@@ -4365,8 +4682,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // (the Charged Speed Set's "up to 3"), and missing to take it whole.
         // Firestore turns a missing field into null on the way back out, so
         // null has to mean the same thing as missing.
-        rollMove:      (s, pid, a) => rollMove(s, pid,
-            (a.useBonus === undefined || a.useBonus === null) ? true : a.useBonus),
+        rollMove:      (s, pid)    => rollMove(s, pid),
         endTurn:       (s, pid)    => endTurn(s, pid),
         battleRoll:    (s, pid)    => battleRoll(s, pid),
         battleAttack:  (s, pid, a) => battleAttack(s, pid, a.moveId),
@@ -4380,6 +4696,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         useAbility:    (s, pid, a) => useAbility(s, pid, a),
         buy:           (s, pid, a) => buy(s, pid, a.kind, a.id),
         payInCoins:    (s, pid, a) => payInCoins(s, pid, a.on),
+        setPaused:     (s, pid, a) => setPaused(s, pid, a.on),
         resolvePending:(s, pid, a) => resolvePending(s, pid, a.choice),
         proposeTrade:  (s, pid, a) => proposeTrade(s, pid, a.toId, a.give, a.want),
         respondTrade:  (s, pid, a) => respondTrade(s, pid, a.tradeId, a.accept),
@@ -4402,6 +4719,23 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         }
     };
 
+    /* While the host has the game stopped, nothing that moves it forward is
+       allowed. Leaving, closing, renaming, saying hello and un-pausing still
+       are -- otherwise a paused room could not be got out of. */
+
+    const THROUGH_A_PAUSE = {
+        setPaused: 1, leave: 1, closeGame: 1, rename: 1, heartbeat: 1, timeoutCheck: 1
+    };
+
+    Object.keys(ACTIONS).forEach(name => {
+        if (THROUGH_A_PAUSE[name]) return;
+        const fn = ACTIONS[name];
+        ACTIONS[name] = function (state, pid, args) {
+            if (state.paused) return { ok: false, error: 'The game is paused.' };
+            return fn(state, pid, args);
+        };
+    });
+
     /* ------------------------------------------------------------------ */
 
     function ok(data) { return { ok: true, data: data }; }
@@ -4416,7 +4750,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         battleRoll, battleAttack, enemyRoll, enemyStrike,
         startEnemyBattle, startPvp, availableMoves, battleActorId,
         usePowerup, usePotion, eatSteak, cookSteaks, equip, useAbility, buy,
-        payInCoins,
+        payInCoins, setPaused,
         proposeTrade, respondTrade, cancelTrade, collapse, closeGame,
         fragmentsOf, suitsClass,
         totalDefence, totalAttackBonus, diceModifier, diceChoosable,
@@ -4769,15 +5103,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return landingValue(state, p, pos, depth);
     }
 
-    // Averaged over the six faces, because the die has not been thrown yet.
-    function expectedRoll(state, p, mod) {
-        let total = 0;
-        for (let face = 1; face <= 6; face++) {
-            total += walkValue(state, p, p.pos, Math.max(1, face + mod), 0);
-        }
-        return total / 6;
-    }
-
     /* ------------------------------------------------------------------ */
     /* Consumables                                                         */
     /* ------------------------------------------------------------------ */
@@ -5018,6 +5343,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     function pendingStep(state, p, pend) {
         switch (pend.type) {
+            case 'move_bonus':
+                return bonusStep(state, p, pend);
+
             case 'steak_roll':
                 return { action: 'resolvePending', args: {} };
 
@@ -5112,26 +5440,24 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return null;
     }
 
-    function moveStep(state, p) {
-        const offered = E.diceModifier(p) + (p.agileBonus || 0);
-        if (!offered) return { action: 'rollMove', args: {} };
-
-        // The bonus is an offer. Work out how much of it is actually wanted by
-        // averaging the six faces for every amount that is allowed -- a
-        // smaller number is often the one that lands you on the Chest instead
-        // of past it, or stops you short of a fight you would lose.
-        const choosable = E.diceChoosable(p);
-        const floor = offered - choosable;
+    // The die is thrown first and the bonus offered afterwards, so there is
+    // nothing left to average over: the number is on the table and the only
+    // question is how far it should carry you.
+    function bonusStep(state, p, pend) {
+        const floor = pend.offered - (pend.choosable || 0);
         const amounts = [];
-        for (let n = offered; n >= floor; n--) amounts.push(n);
-        if (amounts.indexOf(0) < 0) amounts.push(0);       // declining it whole
+        for (let n = pend.offered; n >= floor; n--) amounts.push(n);
+        if (amounts.indexOf(0) < 0) amounts.push(0);       // refusing it whole
 
-        let pick = offered, best = -Infinity;
+        let pick = pend.offered, best = -Infinity;
         amounts.forEach(n => {
-            const v = expectedRoll(state, p, n);
+            const v = walkValue(state, p, p.pos, Math.max(1, pend.raw + n), 0);
             if (v > best) { best = v; pick = n; }
         });
-        return { action: 'rollMove', args: { useBonus: pick === 0 ? false : pick } };
+        return {
+            action: 'resolvePending',
+            args: { choice: pick === 0 ? false : pick }
+        };
     }
 
     function turnStep(state, p) {
@@ -5171,8 +5497,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             if (ability) return ability;
         }
 
-        // 5. Move.
-        if (!p.hasMoved && p.pos < D.ARENA_INDEX) return moveStep(state, p);
+        // 5. Move. The die is thrown blind; the bonus is answered afterwards,
+        //    once the number is known.
+        if (!p.hasMoved && p.pos < D.ARENA_INDEX) return { action: 'rollMove', args: {} };
 
         // 6. Nothing left but the steak roll that ends a turn.
         return { action: 'endTurn', args: {} };
@@ -5215,6 +5542,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function decide(state, pid) {
         const p = E.player(state, pid);
         if (!p || state.phase === 'over' || state.phase === 'closed') return null;
+        if (state.paused) return null;          // the host has stopped everything
 
         if (state.phase === 'order') {
             return p.orderRoll === null ? { action: 'rollForOrder', args: {} } : null;
@@ -5246,8 +5574,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         armourValue: armourValue,
         pveOdds: pveOdds,
         pvpOdds: pvpOdds,
-        walkValue: walkValue,
-        expectedRoll: expectedRoll
+        walkValue: walkValue
     };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -5479,6 +5806,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function schedule() {
         clearTimeout(timer);
         if (!state || (state.phase !== 'order' && state.phase !== 'playing')) return;
+        if (state.paused) return;               // the host has stopped everything
         // Nobody is watching, so the game stands still. Without this the other
         // two would carry on playing to an empty room after you walked away,
         // and the game you came back to would not be the one you left.
@@ -5824,6 +6152,63 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     })();
 
     /* ------------------------------------------------------------------ */
+    /* Turned away at the Gate                                             */
+    /*                                                                     */
+    /* Walking into the Gate without the three fragments used to move your */
+    /* token back to the Start between one frame and the next, which read  */
+    /* as a glitch rather than as something the Gate did to you. Now the   */
+    /* screen takes the hit: the board flashes white, a bolt comes down    */
+    /* the middle of it, and the name of whoever it caught is said out     */
+    /* loud before they turn up back at the Start.                         */
+    /*                                                                     */
+    /* Driven off a running number on the state, exactly the way the die   */
+    /* overlay is, so every player at the table sees it once.              */
+    /* ------------------------------------------------------------------ */
+
+    const ZAP = (function () {
+        let back = null, whoEl = null, hideT = null;
+        let primed = false, seen = 0;
+
+        function build() {
+            if (back) return;
+            back = document.createElement('div');
+            back.className = 'zap-back';
+            back.innerHTML =
+                '<div class="zap-flash"></div>' +
+                '<svg class="zap-bolt" viewBox="0 0 200 400" aria-hidden="true">' +
+                    '<path d="M126 4 56 206h44L74 396 152 170h-46z"/>' +
+                    '<path d="M126 4 56 206h44L74 396 152 170h-46z" class="core"/>' +
+                '</svg>' +
+                '<div class="zap-who"></div>';
+            document.body.appendChild(back);
+            whoEl = back.querySelector('.zap-who');
+        }
+
+        function play(who) {
+            build();
+            whoEl.textContent = who + ' is thrown back to the Start.';
+            back.classList.remove('on');
+            void back.offsetWidth;              // restart the animation
+            back.classList.add('on');
+            clearTimeout(hideT);
+            hideT = setTimeout(() => back.classList.remove('on'), 1600);
+        }
+
+        return {
+            saw(state) {
+                const z = state && state.lastZap;
+                const n = (z && typeof z.n === 'number') ? z.n : 0;
+                // The first snapshot of a room is history, not something that
+                // just happened.
+                if (!primed) { primed = true; seen = n; return; }
+                if (!z || n === seen) return;
+                seen = n;
+                play(z.who || 'Somebody');
+            }
+        };
+    })();
+
+    /* ------------------------------------------------------------------ */
     /* The faces of the die                                                */
     /*                                                                     */
     /* A die has pips, not printed numerals, so every face here is drawn as */
@@ -6016,6 +6401,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function onState(state) {
         S = state;
         DICE.saw(state);
+        ZAP.saw(state);
         if (state.phase === 'lobby') { showScreen('screen-lobby'); renderLobby(); }
         else if (state.phase === 'over') { showScreen('screen-over'); renderOver(); }
         else { showScreen('screen-game'); renderGame(); }
@@ -6463,6 +6849,21 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         }
         const cur = E.currentPlayer(S);
         const mine = cur && cur.id === NET.PID;
+
+        if (S.paused) {
+            banner.className = 'turn-banner paused';
+            banner.innerHTML =
+                '<span class="who">Paused</span>' +
+                '<span class="muted">The host has stopped the game' +
+                    (cur ? ' on ' + esc(cur.name) + '\u2019s turn' : '') + '.</span>' +
+                (S.hostId === NET.PID
+                    ? '<button class="btn small primary" id="banner-resume">Resume</button>'
+                    : '');
+            const r = $('#banner-resume');
+            if (r) r.addEventListener('click', () => act('setPaused', { on: false }));
+            return;
+        }
+
         banner.className = 'turn-banner' + (mine ? ' mine' : '');
         banner.innerHTML =
             '<span class="who">' + (mine ? 'Your turn' : esc(cur ? cur.name : '—') + '’s turn') + '</span>' +
@@ -6589,6 +6990,57 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         }
         return out.join('');
     }
+
+    // The Gate. Drawn rather than styled, so it can carry the three sockets
+    // that the fragments turn in and the lightning that lives behind it.
+    const GATE_ART =
+        '<svg viewBox="0 0 120 190" aria-hidden="true" class="gate-svg">' +
+        // the storm inside the archway, behind the stone
+        '<defs>' +
+            '<linearGradient id="gateGlow" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="#6b5fa8"/>' +
+                '<stop offset="55%" stop-color="#2b2542"/>' +
+                '<stop offset="100%" stop-color="#15121f"/>' +
+            '</linearGradient>' +
+        '</defs>' +
+        '<path d="M30 178V74a30 30 0 0 1 60 0v104z" fill="url(#gateGlow)"/>' +
+        // the arc of lightning standing in the doorway
+        '<g class="gate-bolt" fill="none" stroke="#cbb8ff" stroke-width="2.6" ' +
+            'stroke-linecap="round" stroke-linejoin="round" opacity=".85">' +
+            '<path d="M60 84 52 112h13l-9 30"/>' +
+            '<path d="M74 96 68 116h7l-5 18" stroke-width="1.6" opacity=".65"/>' +
+            '<path d="M46 100 41 118h6l-4 16" stroke-width="1.6" opacity=".65"/>' +
+        '</g>' +
+        // the two pillars, each on a stepped plinth, with fluting up them
+        '<g stroke="#5f5972" stroke-width="2" stroke-linejoin="round">' +
+            '<path d="M6 190v-14h34v14z" fill="#8f89a3"/>' +
+            '<path d="M80 190v-14h34v14z" fill="#8f89a3"/>' +
+            '<path d="M12 176V66h24v110z" fill="#b3aec0"/>' +
+            '<path d="M84 176V66h24v110z" fill="#b3aec0"/>' +
+            '<path d="M8 66V54h32v12z" fill="#c6c1d4"/>' +
+            '<path d="M80 66V54h32v12z" fill="#c6c1d4"/>' +
+        '</g>' +
+        '<g stroke="#948ea8" stroke-width="1.6" opacity=".8">' +
+            '<path d="M18 72v98M24 72v98M30 72v98"/>' +
+            '<path d="M90 72v98M96 72v98M102 72v98"/>' +
+        '</g>' +
+        // the lintel across the top, and the keystone in the middle of it
+        '<g stroke="#5f5972" stroke-width="2" stroke-linejoin="round">' +
+            '<path d="M4 54V36h112v18z" fill="#c6c1d4"/>' +
+            '<path d="M0 36V22h120v14z" fill="#b3aec0"/>' +
+            '<path d="M50 22 60 6l10 16z" fill="#d8d3e4"/>' +
+        '</g>' +
+        // the three sockets the key fragments turn in
+        '<g stroke="#4a4560" stroke-width="1.8">' +
+            '<circle cx="38" cy="45" r="5" fill="#f0c33c"/>' +
+            '<circle cx="60" cy="45" r="5" fill="#f0c33c"/>' +
+            '<circle cx="82" cy="45" r="5" fill="#f0c33c"/>' +
+        '</g>' +
+        // a couple of cracks, so it reads as old stone rather than plastic
+        '<g stroke="#7d7791" stroke-width="1.4" fill="none" opacity=".9">' +
+            '<path d="M16 92l7 10-5 9M104 120l-6 9 4 8"/>' +
+        '</g>' +
+        '</svg>';
 
     const SCENERY_ART = {
         // The iconic tree, seen from above: a canopy of torn paper leaves round
@@ -6826,6 +7278,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             return '<div class="sq kind-' + squareKind(sq) + ' key-' + esc(sq.key) +
                 (sq.gateway ? ' gateway' : '') +
                 (sq.scenery ? ' scenery-' + esc(sq.scenery) : '') + '" style="' + place + '">' +
+                (sq.gateway ? GATE_ART : '') +
                 '<div class="sq-name">' + esc(sq.name) + '</div>' +
                 '<div class="sq-text">' + esc(sq.text) + '</div>' +
                 '<div class="tokens">' + tokensOn(sq.i) + '</div>' +
@@ -6852,62 +7305,104 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<div class="merchant-stall">' + merchantStallSvg() + '</div>';
     }
 
+    /* ------------------------------------------------------------------ */
+    /* The stat block                                                      */
+    /*                                                                     */
+    /* One character is open at a time. Everybody else is a bar with their */
+    /* token, their name, their health and their fragments on it -- click  */
+    /* one and it unfolds into the full block while whoever was open folds */
+    /* back down into a bar. So the box never holds two of them, and       */
+    /* looking at what a rival is carrying is one click and one click back.*/
+    /* ------------------------------------------------------------------ */
+
+    let heroFocus = null;      // whose block is open; null means your own
+
     function renderHero() {
         const p = me();
         if (!p || !p.cls) { $('#side-hero').innerHTML = ''; return; }
-        const c = D.CLASSES[p.cls];
-        const weapon = E.equippedWeapon(p);
-        const armour = E.equippedArmour(p);
-        const wDef = weapon ? D.ITEMS[weapon.id] : null;
-        const aDef = armour ? D.ITEMS[armour.id] : null;
+
+        const everyone = S.players.filter(x => x.cls);
+        // If whoever you were looking at has left, fall back to yourself.
+        let shown = heroFocus ? E.player(S, heroFocus) : p;
+        if (!shown || !shown.cls) { heroFocus = null; shown = p; }
 
         const cur = E.currentPlayer(S);
+        const others = everyone.filter(x => x.id !== shown.id);
 
         $('#side-hero').innerHTML =
             '<div class="me-card">' +
-                '<div class="me-top">' +
-                    '<div class="me-portrait" style="background-image:url(\'' +
-                        esc(c.art) + '\')"></div>' +
-                    '<div class="me-id">' +
-                        '<div class="me-name">' + esc(p.name) + '</div>' +
-                        '<div class="me-where">' + esc(c.name) + ' &middot; On ' +
-                            esc(E.square(p.pos).name) + '</div>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="me-hp">' +
-                    '<div class="bar hp"><i style="width:' +
-                        Math.max(0, Math.round(p.hp / p.maxHp * 100)) + '%"></i></div>' +
-                    '<div class="barlabel"><span>' + p.hp + ' / ' + p.maxHp + ' HP</span>' +
-                        '<span>Defence ' + E.totalDefence(S, p) + '</span></div>' +
-                '</div>' +
-                '<div class="me-stats">' +
-                    '<div><span>Coins</span><b>' + p.coins + '</b></div>' +
-                    '<div><span>Energy</span><b>' + p.energy + '</b></div>' +
-                    '<div><span>Attack</span><b>+' + E.totalAttackBonus(p) + '</b></div>' +
-                    '<div><span>Chest keys</span><b>' + p.chestKeys + '</b></div>' +
-                    '<div class="wide"><span>Key fragments</span>' +
-                        fragmentsHtml(p) + '</div>' +
-                    '<div class="wide"><span>Steaks</span><b>' + p.steaks.raw +
-                        ' raw &middot; ' + p.steaks.cooked + ' seared</b></div>' +
-                    '<div class="wide"><span>Weapon</span><b>' +
-                        esc(wDef ? wDef.name : 'none') +
-                        (weapon && weapon.uses != null ? ' (' + weapon.uses + ')' : '') +
-                        '</b></div>' +
-                    '<div class="wide"><span>Armour</span><b>' +
-                        esc(aDef ? aDef.name : 'none') +
-                        (armour && armour.uses != null ? ' (' + armour.uses + ')' : '') +
-                        '</b></div>' +
-                '</div>' +
-                '<div class="mates">' + S.players.filter(x => x.id !== p.id && x.cls).map(x =>
-                    '<div class="mate' + (cur && cur.id === x.id ? ' turn' : '') + '">' +
+                heroBlockHtml(shown, shown.id === p.id) +
+                '<div class="mates">' + others.map(x =>
+                    '<div class="mate' + (cur && cur.id === x.id ? ' turn' : '') +
+                        (x.id === p.id ? ' you' : '') +
+                        '" data-who="' + esc(x.id) + '" role="button" tabindex="0" ' +
+                        'title="Show ' + esc(x.name) + '\u2019s stats">' +
                         '<div class="mtoken" style="background-image:url(\'' +
                             esc(D.CLASSES[x.cls].art) + '\')"></div>' +
-                        '<span class="mname">' + esc(x.name) + '</span>' +
+                        '<span class="mname">' + esc(x.name) +
+                            (x.id === p.id ? ' (you)' : '') + '</span>' +
                         '<span class="mbar"><i style="width:' +
                             Math.max(0, Math.round(x.hp / x.maxHp * 100)) + '%"></i></span>' +
                         '<span>' + x.keyFragments + '/3</span>' +
                     '</div>').join('') +
                 '</div>' +
+            '</div>';
+
+        $$('#side-hero .mate').forEach(el => {
+            const open = () => {
+                heroFocus = el.dataset.who === NET.PID ? null : el.dataset.who;
+                renderHero();
+            };
+            el.addEventListener('click', open);
+            el.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+            });
+        });
+    }
+
+    // The open block. Health, defence and everything carried -- the same for
+    // everybody, because none of it is secret at a real table.
+    function heroBlockHtml(x, isMe) {
+        const c = D.CLASSES[x.cls];
+        const weapon = E.equippedWeapon(x);
+        const armour = E.equippedArmour(x);
+        const wDef = weapon ? D.ITEMS[weapon.id] : null;
+        const aDef = armour ? D.ITEMS[armour.id] : null;
+
+        return '' +
+            '<div class="me-top">' +
+                '<div class="me-portrait" style="background-image:url(\'' +
+                    esc(c.art) + '\')"></div>' +
+                '<div class="me-id">' +
+                    '<div class="me-name">' + esc(x.name) +
+                        (isMe ? '' : '<span class="whose">their stats</span>') + '</div>' +
+                    '<div class="me-where">' + esc(c.name) + ' &middot; On ' +
+                        esc(E.square(x.pos).name) + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="me-hp">' +
+                '<div class="bar hp"><i style="width:' +
+                    Math.max(0, Math.round(x.hp / x.maxHp * 100)) + '%"></i></div>' +
+                '<div class="barlabel"><span>' + x.hp + ' / ' + x.maxHp + ' HP</span>' +
+                    '<span>Defence ' + E.totalDefence(S, x) + '</span></div>' +
+            '</div>' +
+            '<div class="me-stats">' +
+                '<div><span>Coins</span><b>' + x.coins + '</b></div>' +
+                '<div><span>Energy</span><b>' + x.energy + '</b></div>' +
+                '<div><span>Attack</span><b>+' + E.totalAttackBonus(x) + '</b></div>' +
+                '<div><span>Chest keys</span><b>' + x.chestKeys + '</b></div>' +
+                '<div class="wide"><span>Key fragments</span>' +
+                    fragmentsHtml(x) + '</div>' +
+                '<div class="wide"><span>Steaks</span><b>' + x.steaks.raw +
+                    ' raw &middot; ' + x.steaks.cooked + ' seared</b></div>' +
+                '<div class="wide"><span>Weapon</span><b>' +
+                    esc(wDef ? wDef.name : 'none') +
+                    (weapon && weapon.uses != null ? ' (' + weapon.uses + ')' : '') +
+                    '</b></div>' +
+                '<div class="wide"><span>Armour</span><b>' +
+                    esc(aDef ? aDef.name : 'none') +
+                    (armour && armour.uses != null ? ' (' + armour.uses + ')' : '') +
+                    '</b></div>' +
             '</div>';
     }
 
@@ -6946,8 +7441,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             return;
         }
 
-        const mine = myTurn();
-        const blocked = !!S.battle || !!S.pending;
+        const mine = myTurn() && !S.paused;
+        const blocked = !!S.battle || !!S.pending || !!S.paused;
         const cls = D.CLASSES[p.cls];
         const abilityReady = S.turnNo - p.lastAbilityTurn >= D.RULES.abilityCooldownTurns;
 
@@ -6958,8 +7453,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             !mine || blocked || !abilityReady ||
             (cls.ability.id === 'agile' && p.hasMoved)));
         buttons.push(btn('a-shop', 'Visit the Merchant', '', !mine || blocked));
-        buttons.push(btn('a-trade', 'Propose a trade', '', S.players.length < 2));
-        buttons.push(btn('a-who', 'Everyone’s stats', '', false));
+        buttons.push(btn('a-trade', 'Propose a trade', '',
+            S.players.length < 2 || !!S.paused));
         // The Gold Forged Armour Set says you *may* pay in coins. Asking on
         // every single hit would be unbearable, so it is a standing choice
         // you can flip whenever you like.
@@ -6975,28 +7470,39 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (S.solo) {
             buttons.push(btn('a-pace', 'Pace: ' + SOLO.pace().label, '', false));
         }
-        buttons.push(btn('a-steak-raw', 'Eat raw steak', '', p.steaks.raw < 1));
-        buttons.push(btn('a-steak-cooked', 'Eat seared steak', '', p.steaks.cooked < 1));
+        buttons.push(btn('a-steak-raw', 'Eat raw steak', '',
+            p.steaks.raw < 1 || !!S.paused));
+        buttons.push(btn('a-steak-cooked', 'Eat seared steak', '',
+            p.steaks.cooked < 1 || !!S.paused));
         buttons.push(btn('a-end', 'End turn', '', !mine || blocked));
-        if (S.hostId === NET.PID) {
-            buttons.push(btn('a-close', 'End the game', 'danger', false));
-        }
+
+        // The two that end things stand together underneath, matched and
+        // side by side, set apart from the things you do on your turn.
+        const host = S.hostId === NET.PID;
+        const footer =
+            '<div class="actions-end">' +
+            // Short, because all three share a row and "Resume the game" is
+            // wider than the column it has to live in on a phone.
+            (host ? btn('a-pause', S.paused ? 'Resume game' : 'Pause game', '', false) : '') +
+            btn('a-leave', 'Leave game', 'danger', false) +
+            (host ? btn('a-close', 'End the game', 'danger', false) : '') +
+            '</div>';
 
         box.innerHTML = '<div class="actions">' + buttons.join('') + '</div>' +
-            (blocked ? '<div class="muted" style="margin-top:10px;font-size:13px">' +
-                (S.battle ? 'A battle is under way.' : 'Resolve the square first.') + '</div>' : '');
+            (blocked && !S.paused
+                ? '<div class="muted" style="margin-top:10px;font-size:13px">' +
+                  (S.battle ? 'A battle is under way.' : 'Resolve the square first.') + '</div>'
+                : '') +
+            footer;
 
         bind('a-move', () => {
-            // The bonus off your armour is an offer, not a rule. If you have
-            // one, you are asked before the die goes up, because a smaller
-            // number is sometimes the one you want -- to stop short of a
-            // fight, or to land exactly where you mean to.
+            // Just throw it. Anything on offer on top of the die is asked
+            // about afterwards, once there is a number to think about.
             const bonus = E.diceModifier(p) + (p.agileBonus || 0);
-            if (!bonus) {
-                return rollAct('Rolling to move', 'rollMove', {},
-                               'One die. Move that many squares.');
-            }
-            askAboutBonus(bonus);
+            rollAct('Rolling to move', 'rollMove', {},
+                    bonus ? 'You will be asked about your ' +
+                            (bonus > 0 ? '+' : '') + bonus + ' once it lands.'
+                          : 'One die. Move that many squares.');
         });
         bind('a-ability', () => {
             if (cls.ability.id === 'illusion') return openIllusion();
@@ -7005,7 +7511,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         });
         bind('a-shop', () => { openPanel = 'merchant'; renderModal(); });
         bind('a-trade', () => { openPanel = 'trade'; renderModal(); });
-        bind('a-who', () => { openPanel = 'roster'; renderModal(); });
         bind('a-steak-raw', () => rollAct('Eating a raw steak', 'eatSteak',
                                          { type: 'raw' }, 'A 3 is food poisoning.'));
         bind('a-steak-cooked', () => act('eatSteak', { type: 'cooked' }));
@@ -7018,69 +7523,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                    set.label.toLowerCase() + ' pace.');
         });
         bind('a-close', confirmCloseGame);
-    }
-
-    /* Where the bonus on your movement roll comes from, so the question names
-       the thing that is offering it rather than just a number. */
-    function bonusSources(p) {
-        const out = [];
-        const armour = E.equippedArmour(p);
-        const aDef = armour ? D.ITEMS[armour.id] : null;
-        if (aDef && (aDef.dice || aDef.diceUpTo)) out.push(aDef.name);
-        if (p.agileBonus) out.push('Agile');
-        if ((p.buffs || []).some(b => b.kind === 'dice')) out.push('a power-up');
-        return out;
-    }
-
-    function askAboutBonus(bonus) {
-        const p = me();
-        const sign = bonus > 0 ? '+' : '';
-        const from = bonusSources(p);
-
-        // The Charged Speed Set says "up to 3", so that part of the bonus is
-        // a dial rather than a switch: every amount it allows gets a button.
-        const choosable = E.diceChoosable(p);
-        const floor = bonus - choosable;
-
-        let buttons = '';
-        if (choosable > 0) {
-            for (let n = bonus; n >= floor; n--) {
-                buttons += '<button class="btn' + (n === bonus ? ' primary' : '') +
-                    '" data-bonus="' + n + '">' +
-                    (n === 0 ? 'Plain die' : 'Roll ' + (n > 0 ? '+' : '') + n) +
-                    '</button>';
-            }
-            if (floor > 0) buttons += '<button class="btn" data-bonus="0">Plain die</button>';
-        } else {
-            buttons =
-                '<button class="btn primary" data-bonus="' + bonus + '">Roll with ' +
-                    sign + bonus + '</button>' +
-                '<button class="btn" data-bonus="0">Roll the plain die</button>';
-        }
-
-        showModal('<h2>' + (choosable > 0 ? 'How much do you want?' : 'Take the ' + sign + bonus + '?') +
-            '</h2>' +
-            '<div class="sub">' +
-                (from.length ? esc(from.join(' and ')) + ' ' +
-                    (from.length > 1 ? 'give' : 'gives') + ' you ' +
-                    (choosable > 0 ? 'up to ' + sign + bonus : sign + bonus) +
-                    ' on this roll. ' : '') +
-                'You do not have to use it — a smaller number is sometimes the one ' +
-                'you want, to stop short of a fight or to land exactly on the Gate.' +
-            '</div>' +
-            '<div class="modal-actions">' + buttons +
-            '<button class="btn" id="bonus-cancel">Not yet</button>' +
-            '</div>', true, 'bonus');
-
-        $$('#modal [data-bonus]').forEach(b => b.addEventListener('click', () => {
-            const n = parseInt(b.dataset.bonus, 10);
-            closeModal();
-            rollAct('Rolling to move', 'rollMove',
-                    { useBonus: n === 0 ? false : n },
-                    n === 0 ? 'One die, no bonus.'
-                            : 'One die, ' + (n > 0 ? '+' : '') + n + ' on top.');
-        }));
-        bind('bonus-cancel', () => { openPanel = null; renderModal(); });
+        bind('a-leave', leaveRoom);
+        bind('a-pause', () => act('setPaused', { on: !S.paused }));
     }
 
     // Ending the game early. The room document is deleted rather than left
@@ -7282,7 +7726,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             if (shownKey !== 'trade') renderTradeBuilder();
             return;
         }
-        if (openPanel === 'roster') { renderRosterPanel(); return; }
         closeModal();
     }
 
@@ -7430,6 +7873,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     let enemyStep = '';        // the phase we have already acted on
 
+    // How long the table sits quiet between your blow landing and the monster
+    // reaching for its die. Two seconds: long enough to read what just
+    // happened before the next thing happens.
+    const ENEMY_PAUSE_MS = 2000;
+
     function driveEnemyTurn(b) {
         const mine = b && b.kind === 'pve' && b.aId === NET.PID;
         const phase = b ? b.phase : '';
@@ -7448,7 +7896,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             setTimeout(() => {
                 DICE.expect('The ' + foe.name, 'It rolls for itself — even connects, odd misses.');
                 act('enemyRoll', {});
-            }, 700);
+            }, ENEMY_PAUSE_MS);
         } else {
             // Let the die finish settling before the blow lands.
             DICE.whenIdle(() => setTimeout(() => act('enemyStrike', {}), 500));
@@ -7514,7 +7962,41 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const p = me();
         let body = '';
 
-        if (pend.type === 'steak_roll') {
+        if (pend.type === 'move_bonus') {
+            // The die is already on the table. All that is left is how far it
+            // should carry you -- and a smaller number is often the one you
+            // want, to stop short of a fight or land exactly on the Chest.
+            const sign = pend.offered > 0 ? '+' : '';
+            const from = pend.sources || [];
+            const choosable = pend.choosable || 0;
+            const floor = pend.offered - choosable;
+
+            let buttons = '';
+            const shown = [];
+            for (let n = pend.offered; n >= floor; n--) shown.push(n);
+            if (shown.indexOf(0) < 0) shown.push(0);
+            shown.forEach(n => {
+                const total = Math.max(1, pend.raw + n);
+                buttons += '<button class="btn' + (n === pend.offered ? ' primary' : '') +
+                    '" data-choice="' + n + '">' +
+                    (n === 0 ? 'Keep the ' + pend.raw : 'Move ' + total +
+                        ' <i>(' + (n > 0 ? '+' : '') + n + ')</i>') +
+                    '</button>';
+            });
+
+            body = '<h2>You rolled a ' + pend.raw + '</h2>' +
+                '<div class="rolled">' + pipsHtml(pend.raw) + '</div>' +
+                '<div class="sub">' +
+                    (from.length ? esc(from.join(' and ')) + ' ' +
+                        (from.length > 1 ? 'give' : 'gives') + ' you ' +
+                        (choosable > 0 ? 'up to ' + sign + pend.offered : sign + pend.offered) +
+                        ' on top' + (from.length > 1 ? ', and they stack' : '') + '. ' : '') +
+                    'You do not have to use it — a smaller number is sometimes the ' +
+                    'one you want, to stop short of a fight or to land exactly ' +
+                    'where you mean to.' +
+                '</div>' +
+                '<div class="modal-actions bonus-row">' + buttons + '</div>';
+        } else if (pend.type === 'steak_roll') {
             // Nothing is thrown until the button is pressed, so there is
             // deliberately no die shown here yet.
             body = '<h2>End of your turn</h2>' +
@@ -7584,6 +8066,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         $$('#modal [data-choice]').forEach(b => b.addEventListener('click', () => {
             let c = b.dataset.choice;
             if (pend.type === 'pot') c = parseInt(c, 10);
+            if (pend.type === 'move_bonus') {
+                const n = parseInt(c, 10);
+                c = n === 0 ? false : n;
+            }
             if (pend.type === 'steak_roll') {
                 return rollAct('Rolling for a raw steak', 'resolvePending', { choice: c },
                                'A ' + D.RULES.steakRolls.join(', ') + ' finds one.');
@@ -7849,44 +8335,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // Everyone's stat card, side by side, plus what they are carrying. Any
     // player can open this at any time -- at a table you can see the other
     // side of the board.
-    function renderRosterPanel() {
-        const rows = S.players.filter(p => p.cls).map(p => {
-            const c = D.CLASSES[p.cls];
-            const w = E.equippedWeapon(p), ar = E.equippedArmour(p);
-            const held = Array.isArray(p.fragments)
-                ? p.fragments
-                : [1, 2, 3].slice(0, Math.max(0, p.keyFragments | 0));
-            const foot =
-                'Coins ' + p.coins + ' · Chest keys ' + p.chestKeys + '<br>' +
-                'Key fragments: ' + (held.length ? held.join(', ') : 'none') +
-                    ' (' + held.length + '/3)<br>' +
-                'Weapon: ' + esc(w ? D.ITEMS[w.id].name : 'none') + '<br>' +
-                'Armour: ' + esc(ar ? D.ITEMS[ar.id].name : 'none') + '<br>' +
-                'Steaks: ' + p.steaks.raw + ' raw, ' + p.steaks.cooked + ' seared<br>' +
-                'Cards held: ' + p.inventory.length + ' gear, ' + p.powerups.length +
-                ' power-up, ' + p.potions.length + ' potion<br>' +
-                'On ' + esc(E.square(p.pos).name);
-            return '<div class="who">' +
-                statCardHtml({
-                    name: p.name + (p.id === NET.PID ? ' (you)' : ''),
-                    art: c.art,
-                    hp: p.hp + ' / ' + p.maxHp,
-                    defence: E.totalDefence(S, p),
-                    moves: c.moves,
-                    foot: foot
-                }) +
-                '</div>';
-        }).join('');
-
-        showModal('<h2>Everyone’s stats</h2>' +
-            '<div class="sub">Health and defence are live. Defence includes armour ' +
-            'and anything in play.</div>' +
-            '<div class="who-grid">' + rows + '</div>' +
-            '<div class="modal-actions"><button class="btn" id="who-close">Close</button></div>',
-            true, 'roster');
-        bind('who-close', () => { openPanel = null; closeModal(); });
-    }
-
     function renderOver() {
         closeModal();
         const w = E.player(S, S.winner);
@@ -7932,7 +8380,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             }
         });
 
-        $('#btn-leave-game').addEventListener('click', leaveRoom);
         showScreen('screen-home');
         if (window.LOF_NET) onlineReady();
     }
