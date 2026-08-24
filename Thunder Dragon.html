@@ -628,7 +628,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
    which is exactly how it is built. Its square is written on the deck.
    ---------------------------------------------------------------------- */
 
+/* The deck is a slab of card standing clear of the water, not a flat brown
+   rectangle. Three things give it its thickness: the planks running across
+   it, a lit top edge and a dark cut edge along the near side, and the
+   shadow it throws down onto the river underneath. */
 .sq.scenery-bridge {
+    position: relative;
     background:
         /* posts standing along the far edge */
         repeating-linear-gradient(90deg,
@@ -638,13 +643,21 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         repeating-linear-gradient(90deg,
             transparent 0 30px, #d9b183 30px 38px, transparent 38px 42px)
             bottom left / 100% 13px no-repeat,
-        /* the deck */
-        linear-gradient(180deg, #c07b50, #b06e45 55%, #9d5f3a),
+        /* the planks, laid across the span */
+        repeating-linear-gradient(90deg,
+            rgba(80, 40, 18, .30) 0 1px, transparent 1px 17px),
+        /* the deck itself, lit from above */
+        linear-gradient(180deg, #cd8b5e, #bd7a4d 30%, #a9683f 72%, #8e5433),
         transparent;
     border-color: #8a5030;
     border-width: 1px 0;
     color: #2e1c11;
-    box-shadow: 0 6px 14px -8px rgba(0,0,0,.8);
+    /* the lit top lip, the sawn edge at the near side, and the drop below */
+    box-shadow:
+        inset 0 2px 0 rgba(255, 224, 190, .55),
+        inset 0 -7px 0 rgba(74, 38, 18, .55),
+        inset 0 -9px 0 rgba(120, 68, 36, .9),
+        0 11px 16px -7px rgba(20, 40, 60, .85);
 }
 .sq.scenery-bridge .sq-name {
     color: #2e1c11;
@@ -652,29 +665,73 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .sq.scenery-bridge .sq-text { color: #3c2417; }
 
-/* The Sea of Castout: paler, greyer water with the whirlpool drawn on it in
-   pencil, the way it is on the board. */
-.sq.scenery-whirlpool {
+/* ---- the Sea of Castout -----------------------------------------------
+   The crossing here is smashed: the photograph shows the two ends of the
+   bridge still on their banks with a torn gap between them, splinters and
+   broken slats scattered across the water, and the whirlpool drawn on the
+   sea underneath.
+   ---------------------------------------------------------------------- */
+
+.sq.scenery-broken_bridge {
+    position: relative;
     background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%235f7285' stroke-width='1.1' opacity='.75'%3E%3Cpath d='M60 22c21 0 38 17 38 38s-17 38-38 38-38-17-38-38c0-17 14-31 31-31s28 13 28 28-11 25-25 25-22-10-22-22 9-19 19-19 16 7 16 16-6 13-13 13-10-4-10-9'/%3E%3Cpath d='M60 8v12M96 24l-8 9M112 60h-12M96 96l-8-9M60 112v-12M24 96l8-9M8 60h12M24 24l8 9'/%3E%3C/g%3E%3C/svg%3E")
-            center top / auto 96% no-repeat,
+        /* the whirlpool, drawn on the sea in pencil */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%235f7285' stroke-width='1.1' opacity='.7'%3E%3Cpath d='M60 22c21 0 38 17 38 38s-17 38-38 38-38-17-38-38c0-17 14-31 31-31s28 13 28 28-11 25-25 25-22-10-22-22 9-19 19-19 16 7 16 16-6 13-13 13-10-4-10-9'/%3E%3C/g%3E%3Cg fill='%23a3623d' stroke='%237a4526' stroke-width='1' opacity='.95'%3E%3Cpath d='M44 30l9 3-2 8-8-2z'/%3E%3Cpath d='M70 26l10 4-4 7-8-4z'/%3E%3Cpath d='M38 66l11 2-3 8-9-3z'/%3E%3Cpath d='M76 70l9 3-3 8-8-4z'/%3E%3Cpath d='M56 84l12 2-2 7-11-2z'/%3E%3C/g%3E%3Cg fill='%23e0bb8c' stroke='%23bd9463' stroke-width='.9'%3E%3Crect x='50' y='40' width='18' height='5' rx='2.5' transform='rotate(-24 59 42)'/%3E%3Crect x='58' y='58' width='16' height='5' rx='2.5' transform='rotate(58 66 60)'/%3E%3Crect x='30' y='48' width='14' height='4.5' rx='2.2' transform='rotate(14 37 50)'/%3E%3C/g%3E%3C/svg%3E")
+            center 52% / auto 74% no-repeat,
         linear-gradient(180deg, #b7c8d6, #a8bccc);
     border-color: #6d8496;
     color: #26333d;
+    overflow: hidden;
 }
-.sq.scenery-whirlpool .sq-name {
+
+/* The two broken ends of the deck, torn towards each other and stopping
+   short. Each keeps the lit lip and dark under-edge of the whole bridge, so
+   they read as the same slab of card, snapped. */
+.sq.scenery-broken_bridge::before,
+.sq.scenery-broken_bridge::after {
+    content: '';
+    position: absolute;
+    top: 38%;
+    height: 26%;
+    width: 34%;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(90deg,
+            rgba(80, 40, 18, .30) 0 1px, transparent 1px 14px),
+        linear-gradient(180deg, #cd8b5e, #bd7a4d 34%, #a9683f 74%, #8e5433);
+    box-shadow:
+        inset 0 2px 0 rgba(255, 224, 190, .5),
+        inset 0 -5px 0 rgba(74, 38, 18, .5),
+        0 8px 12px -5px rgba(20, 40, 60, .8);
+}
+/* the left-hand end, snapped off in a ragged diagonal */
+.sq.scenery-broken_bridge::before {
+    left: -2px;
+    clip-path: polygon(0 0, 78% 0, 92% 34%, 74% 52%, 100% 74%, 66% 100%, 0 100%);
+}
+/* the right-hand end, torn the other way, with the gap in between */
+.sq.scenery-broken_bridge::after {
+    right: -2px;
+    clip-path: polygon(30% 0, 100% 0, 100% 100%, 24% 100%, 0 76%, 28% 54%, 12% 30%);
+}
+
+/* The wreckage in the water: splinters and slats floating in the gap. */
+.sq.scenery-broken_bridge .sq-name,
+.sq.scenery-broken_bridge .sq-text { position: relative; z-index: 4; }
+.sq.scenery-broken_bridge .sq-name {
     color: #1e2a33;
     border-bottom-color: #6d8496;
-    background: rgba(255,255,255,.55);
+    background: rgba(255,255,255,.62);
     margin: -7px -8px 0;
     padding: 4px 8px 3px;
 }
-.sq.scenery-whirlpool .sq-text {
+.sq.scenery-broken_bridge .sq-text {
     color: #26333d;
-    background: rgba(255,255,255,.5);
+    background: rgba(255,255,255,.55);
     margin: 4px -8px 0;
     padding: 3px 8px;
 }
+.sq.scenery-broken_bridge .tokens { position: relative; z-index: 5; }
 
 /* Tokens: the character's own picture, standing on the square. */
 .sq .tokens {
@@ -822,26 +879,48 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     overflow: visible;
 }
 .decor > span { flex: 0 0 auto; }
+
+/* ---- the Fountain of Life is running ----------------------------------
+   The jets pulse, the drops rise and fall, and the rings spread across the
+   basin where the water lands, so it reads as spraying rather than as a
+   drawing of a fountain.
+   ---------------------------------------------------------------------- */
+
+.decor .fx-jet { animation: spray 1.9s ease-in-out infinite; transform-origin: 75px 34px; }
+@keyframes spray {
+    0%, 100% { opacity: .78; transform: scaleY(.94); }
+    50%      { opacity: 1;   transform: scaleY(1.04); }
+}
+
+.decor .fx-drop circle { animation: droplet 1.9s ease-in-out infinite; }
+.decor .fx-drop circle:nth-child(2) { animation-delay: -.35s; }
+.decor .fx-drop circle:nth-child(3) { animation-delay: -.7s; }
+.decor .fx-drop circle:nth-child(4) { animation-delay: -1.05s; }
+.decor .fx-drop circle:nth-child(5) { animation-delay: -1.4s; }
+@keyframes droplet {
+    0%       { opacity: 0;  transform: translateY(10px); }
+    30%      { opacity: .95; transform: translateY(-4px); }
+    70%      { opacity: .7; transform: translateY(2px); }
+    100%     { opacity: 0;  transform: translateY(12px); }
+}
+
+.decor .fx-ripple ellipse { animation: ripple 2.4s ease-out infinite; transform-origin: 75px 104px; }
+.decor .fx-ripple ellipse:nth-child(2) { animation-delay: -1.2s; }
+@keyframes ripple {
+    0%   { opacity: .85; transform: scale(.25); }
+    100% { opacity: 0;   transform: scale(1.15); }
+}
+
+/* Somebody who has asked for less movement gets a still fountain. */
+@media (prefers-reduced-motion: reduce) {
+    .decor .fx-jet,
+    .decor .fx-drop circle,
+    .decor .fx-ripple ellipse { animation: none; }
+}
 .decor svg {
     width: 100%;
     height: auto;
     filter: drop-shadow(3px 6px 5px rgba(40,50,30,.42));
-}
-
-/* The two stick footbridges over the river, above and below the arena. */
-.crossing {
-    position: relative;
-    z-index: 3;
-    align-self: center;
-    justify-self: stretch;
-    height: 15px;
-    margin: 0 -10px;
-    pointer-events: none;
-    background:
-        repeating-linear-gradient(90deg,
-            #d9b183 0 4px, #c69a68 4px 5px) center/100% 7px no-repeat,
-        linear-gradient(180deg, transparent 44%, #b98d5f 44% 56%, transparent 56%);
-    filter: drop-shadow(0 3px 3px rgba(40,50,30,.45));
 }
 
 /* ---- the Poor Merchant ------------------------------------------------
@@ -964,14 +1043,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .battle-side .bname { font-size: 17px; color: var(--cream); margin-top: 4px; }
 .battle-vs { font-size: 24px; color: var(--crimson); letter-spacing: 3px; }
 
+/* The same die as the overlay's, in miniature, showing what was just thrown. */
 .die {
-    width: 62px; height: 62px; margin: 16px auto 6px;
-    border-radius: 12px;
+    width: 52px; height: 52px; margin: 16px auto 6px;
+    border-radius: 10px;
     background: linear-gradient(180deg, #f4ecdc, #ded2b8);
-    color: #241a10; font-size: 30px;
-    display: flex; align-items: center; justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    place-items: center;
+    padding: 7px;
     box-shadow: 0 8px 22px -8px #000;
 }
+.die i { width: 9px; height: 9px; border-radius: 50%; background: transparent; }
+.die i.on { background: radial-gradient(circle at 34% 30%, #4a423a, #16110c 70%); }
 .die.rolling { animation: die-shake .5s ease; }
 @keyframes die-shake {
     0%,100% { transform: rotate(0) scale(1); }
@@ -1034,11 +1119,50 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 /* ---- monster pictures -------------------------------------------------- */
 
+/* Centred, always. A block-level picture with no margin sat hard against the
+   left of its side of the fight while the player's portrait sat in the
+   middle, which made the two sides look misaligned. */
 .enemy-pic {
     display: block;
+    margin-inline: auto;
     object-fit: contain;
 }
-.paper .p-art .enemy-pic { width: 100%; height: 100%; }
+.paper .p-art .enemy-pic { width: 100%; height: 100%; margin: 0; }
+
+/* Both fighters' pictures sit in the middle of their own half, whichever
+   kind of picture it is. (The bars below them still want the full width, so
+   this centres the pictures rather than the whole column.) */
+.battle-side > img,
+.battle-side > svg { display: block; margin-inline: auto; }
+
+/* ---- the monster taking its own turn ----------------------------------
+   Nobody throws the monster's die for it any more, so this says what is
+   happening while it does.
+   ---------------------------------------------------------------------- */
+
+.enemy-acting {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 16px auto 0;
+    padding: 10px 16px;
+    max-width: 420px;
+    border-radius: 4px;
+    font-size: 14.5px;
+    color: #e6b9a8;
+    background: rgba(140, 47, 40, .18);
+    border: 1px solid rgba(210, 99, 90, .45);
+}
+.enemy-acting .spinner {
+    width: 14px; height: 14px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    border: 2px solid rgba(226, 168, 155, .35);
+    border-top-color: #e2a89b;
+    animation: enemy-spin .8s linear infinite;
+}
+@keyframes enemy-spin { to { transform: rotate(360deg); } }
 
 /* ---- everyone's stats -------------------------------------------------- */
 
@@ -1143,17 +1267,30 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .dice-box .dice-sub:empty { display: none; }
 
+/* The face carries pips, not a printed numeral -- a real die has dots. The
+   nine positions are a 3x3 grid and each face lights the ones it uses, so 1
+   is the middle, 6 is two columns of three, and so on. */
 .dice-face {
-    width: 92px; height: 92px;
+    width: 80px; height: 80px;
     margin: 0 auto 16px;
-    border-radius: 14px;
+    border-radius: 13px;
     background: linear-gradient(180deg, #f9f1da, #e0d3b6);
     border: 3px solid #8a6a20;
-    display: flex; align-items: center; justify-content: center;
-    font-family: Allegro, serif;
-    font-size: 46px;
-    color: #1a0f04;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    place-items: center;
+    padding: 11px;
     box-shadow: inset 0 3px 10px rgba(0,0,0,.28), 0 8px 22px rgba(0,0,0,.6);
+}
+.dice-face i {
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: transparent;
+}
+.dice-face i.on {
+    background: radial-gradient(circle at 34% 30%, #4a423a, #16110c 70%);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,.28), 0 1px 1px rgba(255,255,255,.5);
 }
 .dice-face.tumbling { animation: dice-tumble .62s linear infinite; }
 @keyframes dice-tumble {
@@ -1534,14 +1671,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Classes                                                             */
     /* ------------------------------------------------------------------ */
 
-    // art: the character PNGs are the canonical look. They sit next to the
-    // page rather than in a subfolder, so there is one flat set of files to
-    // upload and nothing to get lost on the way to the host.
+    // `art` is filled in further down: each class is drawn as flat vector art
+    // and handed out as a data: URI, so there are no character PNGs to upload
+    // any more. Knight.png, Archer.png and Mage.png are what those drawings
+    // were taken from.
     const CLASSES = {
         knight: {
             id: 'knight',
             name: 'Knight',
-            art: 'Knight.png',
             hp: 100,
             defence: 15,
             weaponType: 'sword',
@@ -1562,7 +1699,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         archer: {
             id: 'archer',
             name: 'Archer',
-            art: 'Archer.png',
             hp: 80,
             defence: 10,
             weaponType: 'bow',
@@ -1583,7 +1719,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         mage: {
             id: 'mage',
             name: 'Mage',
-            art: 'Mage.png',
             hp: 75,
             defence: 5,
             weaponType: 'magic',
@@ -1597,13 +1732,191 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             ability: {
                 id: 'illusion',
                 name: 'Illusion',
-                text: 'Roll a die. On an even number, conjure an enemy (not Fenrirak or the ' +
-                      'Goblin Hideout) and choose another player to fight it. They lose their ' +
-                      'turn and receive only the coins.'
+                text: 'Roll a die. On an even number, conjure a Swarm of Bats and choose ' +
+                      'another player to fight it. They lose their turn and receive only ' +
+                      'the coins.'
             },
             colour: '#5c8fc4'
         }
     };
+
+    /* ------------------------------------------------------------------ */
+    /* The characters, drawn                                               */
+    /*                                                                     */
+    /* Knight.png, Archer.png and Mage.png are the canonical look, and      */
+    /* these are those three redrawn as flat vector art: blocks of colour   */
+    /* inside one hard dark outline, straight edges and simple curves, no   */
+    /* shading and no gradients -- the same way the monsters and the board  */
+    /* models are cut, so the whole game is one set.                        */
+    /*                                                                     */
+    /* Each one is handed out as a data: URI rather than a file, so the     */
+    /* tokens, the portraits, the battle screen and the lobby cards all go  */
+    /* on asking for `art` exactly as they did before and there is nothing  */
+    /* left to upload and nothing that can 404.                             */
+    /*                                                                     */
+    /* Written without apostrophes on purpose: the strings are dropped into */
+    /* HTML attributes, and an apostrophe would be escaped and break the    */
+    /* URI.                                                                 */
+    /* ------------------------------------------------------------------ */
+
+    // The outline everything is cut with.
+    const K = 'stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" ' +
+              'stroke-linecap="round"';
+
+    const CHARACTER_ART = {
+        // The Knight: steel plate, the red plume over the visor, the big
+        // pauldron on his near shoulder, the shield standing behind him and
+        // the sword held across the front.
+        knight:
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+            // the shield, standing behind him on his far side
+            '<g ' + K + ' fill="#9aa1aa">' +
+            '<path d="M60 26h34v30c0 16-17 24-17 24s-17-8-17-24z"/>' +
+            '</g>' +
+            '<path d="M65 31h24v24c0 12-12 18-12 18s-12-6-12-18z" fill="none" ' +
+            'stroke="#6d737b" stroke-width="2"/>' +
+            // legs
+            '<g ' + K + ' fill="#c3c9d1">' +
+            '<path d="M36 72h13v22H36zM53 72h13v22H53z"/>' +
+            '</g>' +
+            // the body, and the dark undersuit at the waist
+            '<g ' + K + ' fill="#b9bec7">' +
+            '<path d="M32 40c0-7 8-12 18-12s18 5 18 12v30H32z"/>' +
+            '</g>' +
+            '<path d="M32 58h36v9H32z" fill="#4a4e55"/>' +
+            '<path d="M44 42h12v18H44z" fill="#9aa1aa" stroke="#20180f" stroke-width="1.8"/>' +
+            // the near pauldron
+            '<g ' + K + ' fill="#cfd5dc">' +
+            '<path d="M18 44c0-9 7-15 15-15s10 6 10 12-5 11-12 11-13-2-13-8z"/>' +
+            '</g>' +
+            // the far arm
+            '<g ' + K + ' fill="#a6acb5"><path d="M66 44h11v22H66z"/></g>' +
+            // the great helm: a dome that tapers to the chin, with the visor
+            // slit across it and the breaths punched in below
+            '<g ' + K + ' fill="#c3c9d1">' +
+            '<path d="M36 18c0-9 6-15 14-15s14 6 14 15v6c0 8-6 14-14 14s-14-6-14-14z"/>' +
+            '</g>' +
+            '<path d="M37 20h26v6H37z" fill="#20180f"/>' +
+            '<g fill="#20180f">' +
+            '<path d="M44 30h3v5h-3zM53 30h3v5h-3z"/></g>' +
+            '<path d="M36 24h28" fill="none" stroke="#8f959e" stroke-width="1.6"/>' +
+            // the plume, swept back off the crown
+            '<g ' + K + ' fill="#c8342b">' +
+            '<path d="M44 6c0-7 3-11 6-11s6 4 6 11l-2 3h-8z"/>' +
+            '<path d="M50 -3 62 -8 56 4z"/>' +
+            '</g>' +
+            // the sword, held across the front
+            '<g ' + K + ' fill="#e4e8ee">' +
+            '<path d="M30 74 84 66l6 4-6 4-54 8z"/>' +
+            '</g>' +
+            '<path d="M28 70h6v14h-6z" fill="#6d737b" stroke="#20180f" stroke-width="2"/>' +
+            '</svg>',
+
+        // The Archer: the gold helmet with its dark red crest, the studded
+        // brown tunic and strap skirt, and the red bow drawn with an arrow
+        // on the string.
+        archer:
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+            // the bow, behind the figure
+            '<path d="M74 12c14 12 14 64 0 76" fill="none" stroke="#20180f" ' +
+            'stroke-width="9" stroke-linecap="round"/>' +
+            '<path d="M74 12c14 12 14 64 0 76" fill="none" stroke="#b8342c" ' +
+            'stroke-width="5.5" stroke-linecap="round"/>' +
+            '<path d="M74 12 60 50l14 38" fill="none" stroke="#20180f" stroke-width="1.6"/>' +
+            // legs and boots
+            '<g ' + K + ' fill="#e8b98a">' +
+            '<path d="M32 74h11v14H32zM56 74h11v14H56z"/></g>' +
+            '<g ' + K + ' fill="#8a5a3a">' +
+            '<path d="M28 86h17v10H28zM54 86h17v10H54z"/></g>' +
+            // the strap skirt
+            '<g ' + K + ' fill="#a06a3f">' +
+            '<path d="M32 62h36v14H32z"/></g>' +
+            '<g stroke="#6f4227" stroke-width="1.6"><path d="M40 62v14M50 62v14M60 62v14"/></g>' +
+            // the tunic, with its gold boss
+            '<g ' + K + ' fill="#8a5a3a">' +
+            '<path d="M34 38c0-5 7-9 16-9s16 4 16 9v26H34z"/></g>' +
+            '<path d="M50 42l8 8-8 8-8-8z" fill="#f0c33c" stroke="#20180f" stroke-width="2"/>' +
+            // arms: one drawing the string, one holding the bow
+            '<g ' + K + ' fill="#e8b98a">' +
+            '<path d="M18 44h18v9H18zM66 44h14v9H66z"/></g>' +
+            // the face under the helmet
+            '<g ' + K + ' fill="#f0c9a0">' +
+            '<path d="M38 20h24v18c0 4-5 7-12 7s-12-3-12-7z"/></g>' +
+            '<g fill="#20180f"><circle cx="44" cy="30" r="2"/><circle cx="56" cy="30" r="2"/>' +
+            '<path d="M44 38h12" stroke="#20180f" stroke-width="2" stroke-linecap="round"/></g>' +
+            // the gold helmet, with the cheek plates and the nose bar
+            '<g ' + K + ' fill="#f0c33c">' +
+            '<path d="M36 22c0-10 6-16 14-16s14 6 14 16v4H36z"/>' +
+            '<path d="M36 26h7v18h-7zM57 26h7v18h-7z"/>' +
+            '<path d="M47 24h6v14h-6z"/>' +
+            '</g>' +
+            // the crest
+            '<g ' + K + ' fill="#8c2a24">' +
+            '<path d="M44 8c0-6 3-10 6-10s6 4 6 10l-3 4h-6z"/>' +
+            '<path d="M50 2 40 0l4 8z"/>' +
+            '</g>' +
+            // the arrow, nocked and pointing out
+            '<path d="M20 48h62" fill="none" stroke="#c9c2b4" stroke-width="3" ' +
+            'stroke-linecap="round"/>' +
+            '<path d="M96 48 80 42v12z" fill="#8f959e" stroke="#20180f" stroke-width="2"/>' +
+            '<path d="M20 48 12 43v10z" fill="#b8342c" stroke="#20180f" stroke-width="1.8"/>' +
+            '</svg>',
+
+        // The Mage: the tall blue star-spangled hat pulled down over his
+        // eyes, the great white beard under it, and the staff with its gold
+        // hexagon head.
+        mage:
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+            // the staff, leaning across him
+            '<path d="M26 92 78 58" fill="none" stroke="#20180f" stroke-width="9" ' +
+            'stroke-linecap="round"/>' +
+            '<path d="M26 92 78 58" fill="none" stroke="#a8752f" stroke-width="5.5" ' +
+            'stroke-linecap="round"/>' +
+            // the robe
+            '<g ' + K + ' fill="#4f7fb0">' +
+            '<path d="M30 96 40 52h20l10 44z"/></g>' +
+            '<g fill="#f0c33c" opacity=".9">' +
+            '<circle cx="44" cy="66" r="2.4"/><circle cx="56" cy="70" r="2.4"/>' +
+            '<circle cx="48" cy="82" r="2.4"/><circle cx="60" cy="88" r="2.4"/>' +
+            '</g>' +
+            // the sleeve and hand on the staff
+            '<g ' + K + ' fill="#5c8fc4">' +
+            '<path d="M56 56h20v13H56z"/></g>' +
+            // the beard, the widest shape in the piece
+            '<g ' + K + ' fill="#f4f2e8">' +
+            '<path d="M32 40h36c0 20-8 32-18 32s-18-12-18-32z"/></g>' +
+            // the face, what little of it shows
+            '<path d="M36 30h28v12H36z" fill="#f0d9a8" stroke="#20180f" stroke-width="2"/>' +
+            '<g fill="#20180f"><circle cx="44" cy="37" r="2"/><circle cx="58" cy="37" r="2"/></g>' +
+            // the moustache over the beard
+            '<path d="M38 44c5 4 19 4 24 0" fill="none" stroke="#d8d4c6" stroke-width="3" ' +
+            'stroke-linecap="round"/>' +
+            // the hat: brim, then the cone folding over
+            '<g ' + K + ' fill="#5c8fc4">' +
+            '<path d="M26 32h48c0-4-4-6-24-6s-24 2-24 6z"/>' +
+            '<path d="M32 28C32 12 42 2 54 2c10 0 16 6 16 12 0 8-6 14-14 14z"/>' +
+            '</g>' +
+            // the stars on it
+            '<g fill="#f0a93c" stroke="#20180f" stroke-width="1.2">' +
+            '<path d="M56 8l2.4 5 5.6.6-4.2 3.8 1.2 5.4L56 20l-5 2.8 1.2-5.4L48 13.6l5.6-.6z"/>' +
+            '<path d="M42 20l1.8 3.8 4.2.4-3.2 2.8.9 4.1L42 29l-3.7 2.1.9-4.1-3.2-2.8 4.2-.4z"/>' +
+            '</g>' +
+            // the gold hexagon on the head of the staff
+            '<path d="M22 82 32 76l10 6v12l-10 6-10-6z" fill="#f0c33c" ' +
+            'stroke="#20180f" stroke-width="2.4" stroke-linejoin="round"/>' +
+            '<path d="M27 85 32 82l5 3v6l-5 3-5-3z" fill="#fbe6a8"/>' +
+            '</svg>'
+    };
+
+    // Percent-encode the lot, including apostrophes, so the URI survives
+    // being written straight into an HTML attribute.
+    function artUri(svg) {
+        return 'data:image/svg+xml,' + encodeURIComponent(svg).replace(/'/g, '%27');
+    }
+
+    CLASSES.knight.art = artUri(CHARACTER_ART.knight);
+    CLASSES.archer.art = artUri(CHARACTER_ART.archer);
+    CLASSES.mage.art   = artUri(CHARACTER_ART.mage);
 
     const CLASS_ORDER = ['knight', 'archer', 'mage'];
 
@@ -1630,6 +1943,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             crest: { initials: 'S',  tint: '#7a8c4a' }, pic: 'seraphina',
             hp: 150,
             defence: 0,
+            noIllusion: true,
             moves: [
                 { id: 'poison_fang', name: 'Poison Fang', damage: 40, energy: 1 },
                 { id: 'tail_slam', name: 'Tail Slam', damage: 120, energy: 5 }
@@ -1641,6 +1955,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             crest: { initials: 'GS', tint: '#8c6a3a' }, pic: 'goblins',
             hp: 100,
             defence: 0,
+            noIllusion: true,
             moves: [
                 { id: 'club_bash', name: 'Club Bash', damage: 40, energy: 1 },
                 { id: 'heavy_wack', name: 'Heavy Wack', damage: 60, energy: 5 }
@@ -1654,14 +1969,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             defence: 0,
             noIllusion: true,
             moves: [
-                { id: 'charge', name: 'Charge', damage: 30, energy: 1 },
+                { id: 'charge', name: 'Charge', damage: 50, energy: 1 },
                 { id: 'all_out_wacks', name: 'All Out Wacks', damage: 120, energy: 5 }
             ]
         },
         fenrirak: {
             id: 'fenrirak',
             name: 'Fenrirak',
-            crest: { initials: 'F',  tint: '#4a6a8c', art: 'Fenrirak.png' }, pic: 'fenrirak',
+            // Fenrirak.png is the wide hero banner with the game's title
+            // printed across half of it — it makes a poor square portrait, so
+            // he is drawn in ui.js in the same style as the other four
+            // instead. Put a real boss picture beside the page and name it
+            // here as `art:` and it will be used in place of the drawing.
+            crest: { initials: 'F',  tint: '#4a6a8c' }, pic: 'fenrirak',
             hp: 275,
             defence: 20,
             boss: true,
@@ -1705,18 +2025,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         },
         rusted_armour: {
             id: 'rusted_armour', name: 'Rusted Armour', kind: 'armour', subtype: 'knight',
-            defence: 5, uses: 3, starter: true,
-            text: 'Take 5 less damage. Breaks after 3 hits.'
+            defence: 0, uses: 3, starter: true,
+            text: 'Worn through — it stops nothing. Falls apart after 3 hits.'
         },
         old_rag_armour: {
             id: 'old_rag_armour', name: 'Old Rag Armour', kind: 'armour', subtype: 'mage',
-            defence: 5, uses: 3, starter: true,
-            text: 'Take 5 less damage. Breaks after 3 hits.'
+            defence: 0, uses: 3, starter: true,
+            text: 'Worn through — it stops nothing. Falls apart after 3 hits.'
         },
         ripped_chest_plate: {
             id: 'ripped_chest_plate', name: 'Ripped Chest Plate', kind: 'armour', subtype: 'archer',
-            defence: 5, uses: 3, starter: true,
-            text: 'Take 5 less damage. Breaks after 3 hits.'
+            defence: 0, uses: 3, starter: true,
+            text: 'Worn through — it stops nothing. Falls apart after 3 hits.'
         },
 
         /* --- Knight: swords -------------------------------------------- */
@@ -1740,17 +2060,17 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         /* --- Knight: armour -------------------------------------------- */
         full_body_armour: {
             id: 'full_body_armour', name: 'Full Body Armour', kind: 'armour', subtype: 'knight',
-            defence: 10, text: 'Take 10 less damage.'
+            defence: 5, text: 'Take 5 less damage.'
         },
         heavy_armour: {
             id: 'heavy_armour', name: 'Heavy Armour', kind: 'armour', subtype: 'knight',
-            defence: 20, dice: -1,
-            text: 'Take 20 less damage, but every dice roll is reduced by 1.'
+            defence: 15, dice: -1,
+            text: 'Take 15 less damage, but every dice roll is reduced by 1.'
         },
         royal_guards_uniform: {
             id: 'royal_guards_uniform', name: "Royal Guard's Uniform", kind: 'armour', subtype: 'knight',
-            defence: 30, attack: 5,
-            text: 'Take 30 less damage and do 5 more damage.'
+            defence: 25, attack: 5,
+            text: 'Take 25 less damage and do 5 more damage.'
         },
 
         /* --- Archer: bows ---------------------------------------------- */
@@ -1774,18 +2094,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         /* --- Archer: armour -------------------------------------------- */
         light_armour: {
             id: 'light_armour', name: 'Light Armour', kind: 'armour', subtype: 'archer',
-            defence: 5, dice: 1,
-            text: 'Take 5 less damage and add 1 to your dice roll.'
+            defence: 0, dice: 1,
+            text: 'Add 1 to your dice roll.'
         },
         plated_light_armour: {
             id: 'plated_light_armour', name: 'Plated Light Armour', kind: 'armour', subtype: 'archer',
-            defence: 10, dice: 1,
-            text: 'Take 10 less damage and add 1 to your dice roll.'
+            defence: 5, dice: 1,
+            text: 'Take 5 less damage and add 1 to your dice roll.'
         },
         royal_archers_suit: {
             id: 'royal_archers_suit', name: "Royal Archer's Suit", kind: 'armour', subtype: 'archer',
-            defence: 25, dice: 1,
-            text: 'Take 25 less damage and add 1 to your dice roll.'
+            defence: 20, dice: 1,
+            text: 'Take 20 less damage and add 1 to your dice roll.'
         },
 
         /* --- Mage: magic ----------------------------------------------- */
@@ -1809,22 +2129,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         /* --- Mage: armour ---------------------------------------------- */
         light_cloak: {
             id: 'light_cloak', name: 'Light Cloak', kind: 'armour', subtype: 'mage',
-            defence: 10, text: 'Take 10 less damage.'
+            defence: 5, text: 'Take 5 less damage.'
         },
         light_cloak_swift: {
             id: 'light_cloak_swift', name: 'Light Cloak', kind: 'armour', subtype: 'mage',
-            defence: 10, dice: 1,
-            text: 'Take 10 less damage. Add one to your dice roll.'
+            defence: 5, dice: 1,
+            text: 'Take 5 less damage. Add one to your dice roll.'
         },
         royal_mages_robe: {
             id: 'royal_mages_robe', name: "Royal Mage's Robe", kind: 'armour', subtype: 'mage',
-            defence: 10, attack: 10,
-            text: 'Take 10 less damage and do 10 more damage.'
+            defence: 5, attack: 10,
+            text: 'Take 5 less damage and do 10 more damage.'
         },
         mystical_robe: {
             id: 'mystical_robe', name: 'Mystical Robe', kind: 'armour', subtype: 'mage',
-            defence: 15, attack: 15,
-            text: 'Take 15 less damage and do 15 more damage.'
+            defence: 10, attack: 15,
+            text: 'Take 10 less damage and do 15 more damage.'
         },
 
         /* --- Merchant stock -------------------------------------------- */
@@ -1867,17 +2187,17 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         reinforced_light_armour: {
             id: 'reinforced_light_armour', name: 'Reinforced Light Armour',
             kind: 'armour', subtype: 'any',
-            defence: 15, dice: 1, price: 12,
-            text: 'Take 15 less damage and add 1 to your dice roll.'
+            defence: 10, dice: 1, price: 12,
+            text: 'Take 10 less damage and add 1 to your dice roll.'
         },
         iron_armour: {
             id: 'iron_armour', name: 'Iron Armour', kind: 'armour', subtype: 'any',
-            defence: 20, price: 15, text: 'Take 20 less damage.'
+            defence: 15, price: 15, text: 'Take 15 less damage.'
         },
         spiked_armour: {
             id: 'spiked_armour', name: 'Spiked Armour', kind: 'armour', subtype: 'any',
-            defence: 10, attack: 5, price: 85,
-            text: 'Take 10 less damage and do 5 more damage.'
+            defence: 5, attack: 5, price: 85,
+            text: 'Take 5 less damage and do 5 more damage.'
         },
 
         /* --- Crimson Keep / Chest treasure ------------------------------ */
@@ -1914,7 +2234,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             id: 'staff_of_life', name: 'Staff of Life',
             kind: 'weapon', subtype: 'magic', treasure: true,
             attack: 45, healPerMove: 5,
-            text: 'Do 45 more damage and with every move heal 5 HP.'
+            text: 'Do 45 more damage and with every attack heal 5 HP.'
         }
     };
 
@@ -2065,7 +2385,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
           action: 'chest', text: 'Get an armour set or special weapon. (Cost: 1 chest key)' },
 
         { i: 13, key: 'sea_of_castout',   name: 'Sea of Castout',       row: 0, col: 3,
-          action: 'sea_of_castout', scenery: 'whirlpool', stop: true,
+          action: 'sea_of_castout', scenery: 'broken_bridge', stop: true,
           text: 'A whirlpool takes one of your items. Choose something to lose. STOP.' },
 
         { i: 14, key: 'slivergrove',      name: 'Slivergrove Village',  row: 0, col: 4,
@@ -2087,9 +2407,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         { i: 19, key: 'goblin_hideout',   name: 'Goblin Hideout',       row: 2, col: 5,
           action: 'battle', enemy: 'goblin_hideout', coins: 15, keyFragment: 3,
-          stop: true,
           text: 'You stumble across a goblin hideout. You fight the goblins! ' +
-                'Drops 15 coins and a key fragment. STOP.' },
+                'Drops 15 coins and a key fragment.' },
 
         { i: 20, key: 'fountain_of_life', name: 'Fountain of Life',     row: 2, col: 4,
           action: 'heal', value: 100, optionalStop: true,
@@ -2120,6 +2439,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         { kind: 'ruins',     row: 2, col: 0, size: .62 },
         { kind: 'spring',    row: 3, col: 0, size: .58 },
         { kind: 'village',   row: 1, col: 4, size: .62 },
+        { kind: 'fountain',  row: 2, col: 4, size: .72 },
         { kind: 'pot',       row: 3, col: 4, size: .52 },
         { kind: 'bush',      row: 1, col: 5, size: .32 },
         { kind: 'bush',      row: 3, col: 5, size: .3 }
@@ -2135,9 +2455,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         minPlayers: 2,
         maxPlayers: 6,
         maxPerClass: 2,
-        turnTimeoutMs: 60000,          // auto-skip after 1 minute of inactivity
+        turnTimeoutMs: 120000,         // auto-skip after 2 minutes of inactivity
         startingCoins: 0,
-        equipCooldownTurns: 2,         // change weapon/armour every 2 turns
+        // One weapon change and one armour change per turn, counted separately.
+        equipChangesPerTurn: 1,
         abilityCooldownTurns: 2,       // one ability every 2 turns
         startingEnergy: 1,
         rawSteakHeal: 5,
@@ -2185,7 +2506,35 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                uidCounter.toString(36) + Math.floor(Math.random() * 1296).toString(36);
     }
 
-    function d6() { return 1 + Math.floor(Math.random() * 6); }
+    /* ---- the die ------------------------------------------------------
+       Somebody rolled five odd numbers in a row and wondered whether the die
+       was crooked. Five in a row is a 1-in-32 shot, so it happens to somebody
+       most evenings -- but "probably fine" is not good enough for the thing
+       every turn hangs on, so the die no longer depends on Math.random at all.
+
+       It draws a byte from the machine's cryptographic random source and
+       throws away anything from 252 upwards. 252 is 6 x 42, so the 252 values
+       that are kept divide exactly six ways: every face gets exactly 42 of
+       them and no face can be even slightly more likely than another. Taking
+       0-255 modulo 6 would hand faces 1-4 an extra chance each, which is the
+       usual way a die like this ends up crooked.
+
+       Math.random is kept only for machines with no crypto at all.
+       -------------------------------------------------------------------- */
+    const CRYPTO = (typeof crypto !== 'undefined' && crypto.getRandomValues)
+        ? crypto : null;
+
+    function d6() {
+        if (CRYPTO) {
+            const b = new Uint8Array(1);
+            // 252 = 6 x 42. Anything above it would skew the low faces.
+            for (let guard = 0; guard < 64; guard++) {
+                CRYPTO.getRandomValues(b);
+                if (b[0] < 252) return (b[0] % 6) + 1;
+            }
+        }
+        return 1 + Math.floor(Math.random() * 6);
+    }
 
     // Throw a die *on the table*. The result is stashed on the state with a
     // running number, so every client can tell a fresh throw from a repeat of
@@ -2440,7 +2789,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             buffs: [],
             orderRoll: null,
             turnsTaken: 0,
-            lastEquipTurn: -99,
+            weaponSwaps: 0,
+            armourSwaps: 0,
             lastAbilityTurn: -99,
             pendingIllusion: null,
             path: [],
@@ -2567,6 +2917,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (!p) return;
         p.hasMoved = false;
         p.movesLeft = 0;
+        p.weaponSwaps = 0;    // one weapon change and one armour change a turn
+        p.armourSwaps = 0;
         p.path = [];          // last turn's walk, cleared so it is not replayed
         state.turnStartedAt = Date.now();
 
@@ -2686,7 +3038,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Movement                                                            */
     /* ------------------------------------------------------------------ */
 
-    function rollMove(state, pid) {
+    // useBonus: the +1 from Light Armour and the like is an offer, not a rule.
+    // Sometimes a smaller number is the one you want -- to stop short of a
+    // fight, or to land exactly on the Gate -- so you may decline it.
+    function rollMove(state, pid, useBonus) {
         if (state.phase !== 'playing') return fail('The game is not running.');
         if (!isMyTurn(state, pid)) return fail('It is not your turn.');
         if (state.battle) return fail('You are in a battle.');
@@ -2696,14 +3051,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (p.pos >= D.ARENA_INDEX) return fail('You are already in the arena.');
 
         const raw = throwDie(state, p.name, 'move');
-        const mod = diceModifier(p) + (p.agileBonus || 0);
+        const offered = diceModifier(p) + (p.agileBonus || 0);
+        const mod = useBonus === false ? 0 : offered;
         const total = Math.max(1, raw + mod);
         p.agileBonus = 0;
         consumeBuffs(p, 'dice');
         p.hasMoved = true;
 
         log(state, p.name + ' rolled a ' + raw +
-                   (mod ? ' (' + (mod > 0 ? '+' : '') + mod + ' = ' + total + ')' : '') + '.', 'roll');
+                   (mod ? ' (' + (mod > 0 ? '+' : '') + mod + ' = ' + total + ')' : '') +
+                   (offered && !mod
+                       ? ' — the ' + (offered > 0 ? '+' : '') + offered +
+                         ' was declined, so it stands at ' + raw
+                       : '') + '.', 'roll');
 
         return walk(state, p, total);
     }
@@ -3324,9 +3684,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (!p) return fail('Unknown player.');
         if (!isMyTurn(state, pid)) return fail('You can only change gear on your turn.');
         if (state.battle) return fail('You cannot change gear during a battle.');
-        if (state.turnNo - p.lastEquipTurn < R.equipCooldownTurns) {
-            return fail('You may only change weapon or armour every 2 turns.');
-        }
         const inst = ownedItem(p, itemUid);
         if (!inst) return fail('You do not have that item.');
         const def = D.ITEMS[inst.id];
@@ -3339,9 +3696,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             return fail('That armour is not made for a ' + cls.name + '.');
         }
 
-        if (def.kind === 'weapon') p.weaponUid = inst.uid;
+        // One weapon change and one armour change a turn, counted separately:
+        // swapping a sword does not use up the swap you were saving for armour.
+        const slot = def.kind === 'weapon' ? 'weapon' : 'armour';
+        const spent = slot === 'weapon' ? (p.weaponSwaps | 0) : (p.armourSwaps | 0);
+        if (spent >= R.equipChangesPerTurn) {
+            return fail('You have already changed your ' + slot + ' this turn.');
+        }
+        // Re-equipping what you are already wearing is not a change.
+        const already = slot === 'weapon' ? p.weaponUid : p.armourUid;
+        if (already !== inst.uid) {
+            if (slot === 'weapon') p.weaponSwaps = spent + 1;
+            else p.armourSwaps = spent + 1;
+        }
+
+        if (slot === 'weapon') p.weaponUid = inst.uid;
         else p.armourUid = inst.uid;
-        p.lastEquipTurn = state.turnNo;
         log(state, p.name + ' equips the ' + def.name + '.', 'item');
         return ok();
     }
@@ -3415,8 +3785,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                        ' potion for ' + price + ' coins.', 'item');
         }
 
-        // Buying ends your turn.
-        return advanceTurn(state);
+        // Trading with the Merchant is free: your turn carries on, so you can
+        // buy a sword and still take your move with it.
+        return ok();
     }
 
     /* ------------------------------------------------------------------ */
@@ -3736,7 +4107,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 '<div class="dice-box">' +
                     '<div class="dice-title"></div>' +
                     '<div class="dice-sub"></div>' +
-                    '<div class="dice-face">?</div>' +
+                    '<div class="dice-face">' + pipsHtml(1) + '</div>' +
                     '<div class="dice-verdict"></div>' +
                 '</div>';
             document.body.appendChild(back);
@@ -3751,7 +4122,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             faceEl.classList.remove('landed');
             faceEl.classList.add('tumbling');
             flickerT = setInterval(() => {
-                faceEl.textContent = 1 + Math.floor(Math.random() * 6);
+                faceEl.innerHTML = pipsHtml(1 + Math.floor(Math.random() * 6));
             }, 65);
         }
 
@@ -3791,7 +4162,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     : 'A ' + die.roll + ' — it goes down fine.';
             }
             if (why === 'attack') {
-                return die.roll % 2 === 0 ? 'Even — a hit.' : 'Odd — a miss.';
+                return die.roll % 2 === 0
+                    ? 'Even — ' + die.who + ' connects.'
+                    : 'Odd — ' + die.who + ' misses.';
             }
             // Class abilities: even works, odd fizzles.
             return die.roll % 2 === 0
@@ -3806,7 +4179,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             titleEl.textContent = die.who || 'The die';
             faceEl.classList.remove('tumbling');
             faceEl.classList.add('landed');
-            faceEl.textContent = die.roll;
+            faceEl.innerHTML = pipsHtml(die.roll);
             verdictEl.textContent = verdictFor(die);
             settleT = setTimeout(close, 1150);
         }
@@ -3844,6 +4217,36 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             whenIdle(fn) { if (!open) fn(); else idleQueue.push(fn); }
         };
     })();
+
+    /* ------------------------------------------------------------------ */
+    /* The faces of the die                                                */
+    /*                                                                     */
+    /* A die has pips, not printed numerals, so every face here is drawn as */
+    /* dots in the arrangement they sit in on a real one. The nine possible */
+    /* positions are a 3x3 grid; each face lights the ones it uses.         */
+    /*                                                                     */
+    /*      1 . .        . . 3        1 . 3                                */
+    /*      . 5 .        . 5 .        . . .                                */
+    /*      . . 9        7 . .        7 . 9        ... and so on.          */
+    /* ------------------------------------------------------------------ */
+
+    const PIP_LAYOUT = {
+        1: [5],
+        2: [1, 9],
+        3: [1, 5, 9],
+        4: [1, 3, 7, 9],
+        5: [1, 3, 5, 7, 9],
+        6: [1, 3, 4, 6, 7, 9]
+    };
+
+    function pipsHtml(n) {
+        const on = PIP_LAYOUT[n] || [];
+        let out = '';
+        for (let i = 1; i <= 9; i++) {
+            out += '<i' + (on.indexOf(i) >= 0 ? ' class="on"' : '') + '></i>';
+        }
+        return out;
+    }
 
     /* ------------------------------------------------------------------ */
     /* Server actions                                                      */
@@ -3971,58 +4374,249 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* ------------------------------------------------------------------ */
     /* Enemy pictures                                                      */
     /*                                                                     */
-    /* Drawn here rather than loaded, so there is nothing extra to upload  */
-    /* and nothing that can 404. Fenrirak keeps his painting; the four     */
-    /* monsters that never had one get these.                              */
+    /* Drawn here rather than loaded, so there is nothing extra to upload   */
+    /* and nothing that can 404.                                           */
+    /*                                                                     */
+    /* All five are cut the same way as the character art: flat blocks of   */
+    /* colour inside one hard dark outline, built out of straight edges and */
+    /* simple curves, no shading and no gradients. A monster has to be      */
+    /* recognisable at token size, so each one leads with its single        */
+    /* clearest shape -- the serpent's diamond head, the goblins' ears, the */
+    /* dragon's spread wings.                                              */
     /* ------------------------------------------------------------------ */
 
+    // The outline every piece is cut with.
+    const OUT = 'stroke="#20180f" stroke-width="2.6" stroke-linejoin="round" ' +
+                'stroke-linecap="round"';
+
     const ENEMY_ART = {
+        // A swarm, so three of them: one big in front and two smaller ones
+        // thrown out to the sides and above, each with the scalloped wing
+        // that reads as "bat" even at token size.
         bats:
-            '<path d="M50 44c-4-7-11-11-19-11-5 0-9 2-12 5 3 0 6 1 8 3-4 1-7 4-8 8 ' +
-            '5-4 12-4 17-1 5 3 9 8 14 8s9-5 14-8c5-3 12-3 17 1-1-4-4-7-8-8 2-2 5-3 8-3 ' +
-            '-3-3-7-5-12-5-8 0-15 4-19 11z" fill="currentColor"/>' +
-            '<circle cx="46" cy="45" r="1.6" fill="#f4e7b8"/>' +
-            '<circle cx="54" cy="45" r="1.6" fill="#f4e7b8"/>' +
-            '<g opacity=".65" transform="translate(-24 22) scale(.52)">' +
-            '<path d="M50 44c-4-7-11-11-19-11-5 0-9 2-12 5 3 0 6 1 8 3-4 1-7 4-8 8 ' +
-            '5-4 12-4 17-1 5 3 9 8 14 8s9-5 14-8c5-3 12-3 17 1-1-4-4-7-8-8 2-2 5-3 8-3 ' +
-            '-3-3-7-5-12-5-8 0-15 4-19 11z" fill="currentColor"/></g>' +
-            '<g opacity=".5" transform="translate(30 26) scale(.44)">' +
-            '<path d="M50 44c-4-7-11-11-19-11-5 0-9 2-12 5 3 0 6 1 8 3-4 1-7 4-8 8 ' +
-            '5-4 12-4 17-1 5 3 9 8 14 8s9-5 14-8c5-3 12-3 17 1-1-4-4-7-8-8 2-2 5-3 8-3 ' +
-            '-3-3-7-5-12-5-8 0-15 4-19 11z" fill="currentColor"/></g>',
-
-        seraphina:
-            '<path d="M26 82c10 2 17-3 20-11 3-9-2-16-9-19-5-2-8-6-6-11 2-6 9-9 16-7 ' +
-            '9 2 14 10 14 19 0 6-2 11-6 15" fill="none" stroke="currentColor" ' +
-            'stroke-width="7" stroke-linecap="round"/>' +
-            '<path d="M62 24c6-4 14-3 18 3 3 5 2 11-3 15-4 3-9 3-13 0" fill="currentColor"/>' +
-            '<circle cx="70" cy="30" r="2.4" fill="#f4e7b8"/>' +
-            '<path d="M64 38l3 6 3-6M72 38l3 6 3-6" stroke="#f4e7b8" stroke-width="2" ' +
-            'fill="none" stroke-linecap="round"/>',
-
-        goblins:
-            '<g fill="currentColor">' +
-            '<path d="M30 60c0-9 6-15 13-15s13 6 13 15c0 7-6 12-13 12s-13-5-13-12z"/>' +
-            '<path d="M30 54l-9-9 3 12zM56 54l9-9-3 12z"/>' +
-            '<path d="M62 70c0-7 5-12 11-12s11 5 11 12c0 6-5 10-11 10s-11-4-11-10z" opacity=".75"/>' +
-            '<path d="M62 66l-7-7 2 9zM84 66l7-7-2 9z" opacity=".75"/>' +
-            '<rect x="14" y="24" width="5" height="34" rx="2.5" transform="rotate(-22 16 41)"/>' +
-            '<circle cx="12" cy="24" r="7"/>' +
+            // the small one, top left
+            '<g ' + OUT + ' fill="#5a4d78">' +
+            '<path d="M20 20 4 12l3 8-5 3 9 4 9 4 4-6z"/>' +
+            '<path d="M20 20 36 12l-3 8 5 3-9 4-9 4-4-6z"/>' +
+            '<path d="M20 16c4 0 7 3 7 7 0 5-3 9-7 9s-7-4-7-9c0-4 3-7 7-7z"/>' +
+            '<path d="M15 17 13 8l6 5zM25 17l2-9-6 5z"/>' +
             '</g>' +
-            '<circle cx="38" cy="57" r="2.2" fill="#f4e7b8"/>' +
-            '<circle cx="48" cy="57" r="2.2" fill="#f4e7b8"/>' +
-            '<circle cx="69" cy="68" r="1.8" fill="#f4e7b8"/>' +
-            '<circle cx="77" cy="68" r="1.8" fill="#f4e7b8"/>',
+            '<g fill="#f4e7b8"><circle cx="17" cy="22" r="1.5"/>' +
+            '<circle cx="23" cy="22" r="1.5"/></g>' +
 
+            // the small one, top right
+            '<g ' + OUT + ' fill="#5a4d78">' +
+            '<path d="M80 26 64 18l3 8-5 3 9 4 9 4 4-6z"/>' +
+            '<path d="M80 26 96 18l-3 8 5 3-9 4-9 4-4-6z"/>' +
+            '<path d="M80 22c4 0 7 3 7 7 0 5-3 9-7 9s-7-4-7-9c0-4 3-7 7-7z"/>' +
+            '<path d="M75 23 73 14l6 5zM85 23l2-9-6 5z"/>' +
+            '</g>' +
+            '<g fill="#f4e7b8"><circle cx="77" cy="28" r="1.5"/>' +
+            '<circle cx="83" cy="28" r="1.5"/></g>' +
+
+            // the big one in front
+            '<g ' + OUT + ' fill="#6d5f8c">' +
+            '<path d="M42 66 8 50l8 14-12 5 17 8 19 7 6-14z"/>' +
+            '<path d="M58 66 92 50l-8 14 12 5-17 8-19 7-6-14z"/>' +
+            '<path d="M50 52c9 0 15 7 15 16 0 11-7 20-15 20s-15-9-15-20c0-9 6-16 15-16z"/>' +
+            '<path d="M39 55 35 37l12 10zM61 55l4-18-12 10z"/>' +
+            '</g>' +
+            '<g fill="#f4e7b8"><circle cx="44" cy="65" r="3.2"/>' +
+            '<circle cx="56" cy="65" r="3.2"/></g>' +
+            '<g fill="#20180f"><circle cx="45" cy="65" r="1.5"/>' +
+            '<circle cx="57" cy="65" r="1.5"/></g>' +
+            // the two little fangs
+            '<path d="M45 76l2 6 2-6M51 76l2 6 2-6" fill="none" stroke="#f4e7b8" ' +
+            'stroke-width="2.4" stroke-linecap="round"/>',
+
+        // Seraphina. Poison Fang and Tail Slam are both hers, so she is the
+        // serpent those two moves belong to: a diamond head on a raised neck
+        // over a stack of coils, with the tail thrown up behind.
+        seraphina:
+            // the tail, thrown up behind the coils
+            '<path d="M74 68c12-6 17-18 12-30-3-8-10-12-17-9" fill="none" ' +
+            'stroke="#20180f" stroke-width="11" stroke-linecap="round"/>' +
+            '<path d="M74 68c12-6 17-18 12-30-3-8-10-12-17-9" fill="none" ' +
+            'stroke="#7a8c4a" stroke-width="6.5" stroke-linecap="round"/>' +
+            // the coils
+            '<g ' + OUT + ' fill="#7a8c4a">' +
+            '<path d="M14 84c0-10 16-17 36-17s36 7 36 17-16 14-36 14-36-4-36-14z"/>' +
+            '<path d="M22 68c0-9 13-15 28-15s28 6 28 15-13 13-28 13-28-4-28-13z"/>' +
+            '</g>' +
+            // the belly plates across the front coil
+            '<g fill="#c9d18c" opacity=".75">' +
+            '<path d="M30 82h9v12h-9zM45 84h9v12h-9zM60 82h9v12h-9z"/></g>' +
+            // the neck rising out of the coils
+            '<path d="M40 58c-7-11-5-22 3-29" fill="none" stroke="#20180f" ' +
+            'stroke-width="16" stroke-linecap="round"/>' +
+            '<path d="M40 58c-7-11-5-22 3-29" fill="none" stroke="#8c9e58" ' +
+            'stroke-width="11" stroke-linecap="round"/>' +
+            // the diamond head
+            '<path d="M43 33 32 20 43 7l11 13z" fill="#8c9e58" ' + OUT + '/>' +
+            '<g fill="#f4e7b8"><circle cx="38" cy="20" r="2.8"/>' +
+            '<circle cx="48" cy="20" r="2.8"/></g>' +
+            '<g fill="#20180f"><path d="M38 17v6M48 17v6" stroke="#20180f" ' +
+            'stroke-width="1.8" stroke-linecap="round"/></g>' +
+            // fangs and forked tongue
+            '<path d="M39 27l1 6 2-6M47 27l-1 6-2-6" fill="#f4e7b8" ' +
+            'stroke="#20180f" stroke-width="1.2"/>' +
+            '<path d="M43 7V0M43 2l-4-4M43 2l4-4" fill="none" stroke="#c8443a" ' +
+            'stroke-width="2.2" stroke-linecap="round"/>',
+
+        // A scouting party: two goblins, the front one shouldering a club.
+        // Long pointed ears and a wide tusked grin do the work.
+        goblins:
+            // the club, over the front goblin's shoulder
+            '<g ' + OUT + ' fill="#8a5a3a">' +
+            '<path d="M13 66 27 36l7 3-14 30z"/>' +
+            '<path d="M31 20c7-3 14 0 16 7s-3 13-10 14-13-3-14-10c-1-4 1-9 8-11z"/>' +
+            '</g>' +
+            // the goblin behind
+            '<g ' + OUT + ' fill="#6f8a3f">' +
+            '<path d="M66 68c0-10 6-17 13-17s13 7 13 17-6 15-13 15-13-5-13-15z"/>' +
+            '<path d="M67 62 55 52l9 17zM91 62l12-10-9 17z"/>' +
+            '<path d="M70 82h18v16H70z"/>' +
+            '</g>' +
+            // the goblin in front
+            '<g ' + OUT + ' fill="#87a64c">' +
+            '<path d="M28 62c0-12 8-20 17-20s17 8 17 20-8 18-17 18-17-6-17-18z"/>' +
+            '<path d="M29 53 12 40l13 21zM61 53l17-13-13 21z"/>' +
+            '<path d="M33 78h24v20H33z"/>' +
+            '</g>' +
+            // faces
+            '<g fill="#f4e7b8">' +
+            '<circle cx="38" cy="58" r="3.4"/><circle cx="52" cy="58" r="3.4"/>' +
+            '<circle cx="74" cy="65" r="2.4"/><circle cx="84" cy="65" r="2.4"/>' +
+            '</g>' +
+            '<g fill="#20180f">' +
+            '<circle cx="39" cy="58" r="1.6"/><circle cx="53" cy="58" r="1.6"/>' +
+            '<circle cx="75" cy="65" r="1.2"/><circle cx="85" cy="65" r="1.2"/>' +
+            '</g>' +
+            // the grin, with one tusk pushing up through it
+            '<path d="M37 70h16" fill="none" stroke="#20180f" stroke-width="2.6" ' +
+            'stroke-linecap="round"/>' +
+            '<path d="M41 70l-1 6-3-6z" fill="#f4e7b8" stroke="#20180f" stroke-width="1.4"/>' +
+            '<path d="M50 70l1 6 3-6z" fill="#f4e7b8" stroke="#20180f" stroke-width="1.4"/>',
+
+        // The hideout: a cave in a hillside with a stockade of sharpened
+        // stakes driven in across the bottom of the mouth. The stakes stop
+        // half way up on purpose -- the whole point of the picture is the
+        // eyes watching you out of the dark over the top of them.
         hideout:
-            '<path d="M12 82V52L50 22l38 30v30z" fill="currentColor"/>' +
-            '<path d="M50 22 8 54h84z" fill="currentColor" opacity=".8"/>' +
-            '<path d="M36 82V62c0-8 6-14 14-14s14 6 14 14v20z" fill="#1c1a17"/>' +
-            '<circle cx="44" cy="68" r="2.4" fill="#e4c14a"/>' +
-            '<circle cx="56" cy="68" r="2.4" fill="#e4c14a"/>' +
-            '<circle cx="47" cy="78" r="1.8" fill="#e4c14a" opacity=".7"/>'
+            // the hill the cave is cut into
+            '<path d="M2 94C2 52 24 26 50 26s48 26 48 68z" fill="#6b5a3f" ' + OUT + '/>' +
+            '<g stroke="#54462f" stroke-width="2" fill="none" opacity=".7">' +
+            '<path d="M14 74c8-6 14-6 20 0M66 74c8-6 14-6 20 0M30 46c8-5 14-5 20 0"/></g>' +
+            // the mouth of the cave, wide and black
+            '<path d="M22 94c0-24 12-38 28-38s28 14 28 38z" fill="#160f08" ' +
+            'stroke="#20180f" stroke-width="2.4"/>' +
+            // eyes in the dark, above the line of the stakes
+            '<g fill="#e4c14a">' +
+            '<circle cx="40" cy="70" r="3.6"/><circle cx="60" cy="70" r="3.6"/>' +
+            '<circle cx="31" cy="80" r="2.4" opacity=".8"/>' +
+            '<circle cx="69" cy="80" r="2.4" opacity=".8"/>' +
+            '<circle cx="50" cy="82" r="2.4" opacity=".65"/>' +
+            '</g>' +
+            '<g fill="#20180f">' +
+            '<path d="M40 67v6M60 67v6" stroke="#20180f" stroke-width="1.8" ' +
+            'stroke-linecap="round"/></g>' +
+            // the stakes, driven in across the bottom of the mouth
+            '<g ' + OUT + ' fill="#8a5a3a">' +
+            '<path d="M20 96V86l5-7 5 7v10z"/>' +
+            '<path d="M34 96V82l5-7 5 7v14z"/>' +
+            '<path d="M48 96V84l5-7 5 7v12z"/>' +
+            '<path d="M62 96V81l5-7 5 7v15z"/>' +
+            '<path d="M76 96V87l5-7 5 7v9z"/>' +
+            '</g>' +
+            // the rope lashing them together
+            '<path d="M18 90h68" fill="none" stroke="#5f3b23" stroke-width="3.4" ' +
+            'stroke-linecap="round"/>' +
+            // their banner on a pole beside it
+            '<path d="M92 92V10" fill="none" stroke="#20180f" stroke-width="3.4" ' +
+            'stroke-linecap="round"/>' +
+            '<path d="M92 13H70l6 9-6 9h22z" fill="#8c4a3a" ' + OUT + '/>',
+
+        /* ---- Fenrirak ---------------------------------------------------
+           Cut from the painting on the hero banner: the blue dragon reared
+           up with both wings spread behind him, the neck curving up to a
+           horned head in profile, the pale scaled belly down the front and
+           the tail curling away underneath.
+
+           You mentioned a "Fenrirak Boss.png". There is no such file on this
+           machine, so this is drawn from Fenrirak.png -- which is the wide
+           title banner and makes a poor square portrait. Drop a real boss
+           picture in beside the page, name it under `crest.art` in data.js,
+           and it is used in place of this.
+           ----------------------------------------------------------------- */
+        fenrirak:
+            // the storm he flies out of
+            '<g fill="#e8b33a" opacity=".5">' +
+            '<path d="M12 4 4 26h7l-6 18 16-24h-8l7-16z"/>' +
+            '<path d="M92 8l-7 18h6l-5 15 13-20h-6l6-13z"/>' +
+            '</g>' +
+
+            // the far wing, behind him
+            '<g ' + OUT + ' fill="#1c3963">' +
+            '<path d="M44 44 6 18l4 14-8 4 13 7 1 12 10-5 6 9 14-9z"/>' +
+            '</g>' +
+            // the near wing
+            '<g ' + OUT + ' fill="#27508a">' +
+            '<path d="M58 44 96 18l-4 14 8 4-13 7-1 12-10-5-6 9-14-9z"/>' +
+            '</g>' +
+
+            // the tail, curling away underneath
+            '<path d="M52 84c-8 12-20 14-26 8-5-5-2-12 4-12" fill="none" ' +
+            'stroke="#20180f" stroke-width="13" stroke-linecap="round"/>' +
+            '<path d="M52 84c-8 12-20 14-26 8-5-5-2-12 4-12" fill="none" ' +
+            'stroke="#2d5c9e" stroke-width="8" stroke-linecap="round"/>' +
+
+            // the body
+            '<g ' + OUT + ' fill="#2d5c9e">' +
+            '<path d="M50 36c9 0 14 7 14 16v24c0 9-5 15-14 15s-14-6-14-15V52c0-9 5-16 14-16z"/>' +
+            '</g>' +
+            // the pale scaled belly down the front
+            '<path d="M50 44c5 0 8 4 8 11v19c0 7-3 11-8 11s-8-4-8-11V55c0-7 3-11 8-11z" ' +
+            'fill="#8fbde6"/>' +
+            '<g stroke="#4e88bf" stroke-width="1.8" fill="none" stroke-linecap="round">' +
+            '<path d="M44 52h12M44 60h12M44 68h12M45 76h10"/></g>' +
+            // the two clawed feet
+            '<g ' + OUT + ' fill="#27508a">' +
+            '<path d="M36 76l-9 9 4 6 9-6z"/><path d="M64 76l9 9-4 6-9-6z"/></g>' +
+
+            // the neck, curving up out of the chest
+            '<path d="M48 44c-2-10 2-18 10-22" fill="none" stroke="#20180f" ' +
+            'stroke-width="17" stroke-linecap="round"/>' +
+            '<path d="M48 44c-2-10 2-18 10-22" fill="none" stroke="#2d5c9e" ' +
+            'stroke-width="12" stroke-linecap="round"/>' +
+
+            // the head, in profile, snout out to the right: a rounded skull
+            // that tapers into a blunt muzzle, the way it is on the banner.
+            '<g ' + OUT + ' fill="#3d6fb4">' +
+            '<path d="M42 20c0-9 6-15 15-15 6 0 11 3 13 8l10 6c2 1 2 3 0 4l-10 4' +
+            'c-2 5-7 8-13 8-9 0-15-6-15-15z"/>' +
+            '</g>' +
+            // the horns, swept back off the skull
+            '<g ' + OUT + ' fill="#1c3963">' +
+            '<path d="M50 8 34 0l4 12zM60 6 48 -3l1 12z"/>' +
+            '</g>' +
+            // the brow ridge, the eye, and the nostril at the tip
+            '<path d="M52 14h11" fill="none" stroke="#1c3963" stroke-width="3" ' +
+            'stroke-linecap="round"/>' +
+            '<ellipse cx="58" cy="19" rx="4" ry="3.4" fill="#f0c53c" ' +
+            'stroke="#20180f" stroke-width="1.6"/>' +
+            '<path d="M58 16v6" stroke="#20180f" stroke-width="1.8" ' +
+            'stroke-linecap="round"/>' +
+            '<circle cx="76" cy="21" r="1.4" fill="#1c3963"/>' +
+            // the line of the jaw, and one tooth showing at the corner
+            '<path d="M56 27h18" fill="none" stroke="#1c3963" stroke-width="2" ' +
+            'stroke-linecap="round"/>' +
+            '<path d="M70 27l1.5 4 1.5-4z" fill="#f4f0e2" stroke="#20180f" ' +
+            'stroke-width="1.2"/>' +
+            // the ridge of spines down his back
+            '<g ' + OUT + ' fill="#1c3963">' +
+            '<path d="M36 50l-7-4 6 10zM35 64l-8-3 7 10zM36 76l-8-2 7 9z"/></g>'
     };
+
 
     // A monster's picture at whatever size the caller wants.
     function enemyPic(enemy, px) {
@@ -4365,6 +4959,54 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<rect x="30" y="74" width="14" height="20" fill="#6f4227"/>' +
             '</svg>',
 
+        // The Fountain of Life: the round cardboard basin with the column
+        // standing in the middle of it and the wide flat cap on top, exactly
+        // as it is built -- and the water actually coming out of it. Six jets
+        // arc off the cap and fall back into the basin, and the drops and the
+        // rings on the water are animated in the stylesheet, so it plays
+        // rather than sits there.
+        fountain:
+            '<svg viewBox="0 0 150 150" aria-hidden="true">' +
+            // the basin: cardboard wall, water inside
+            '<ellipse cx="75" cy="112" rx="60" ry="30" fill="#8f5533"/>' +
+            '<ellipse cx="75" cy="104" rx="60" ry="30" fill="#a3623d"/>' +
+            '<ellipse cx="75" cy="104" rx="47" ry="22" fill="#7f96b8"/>' +
+            '<ellipse cx="75" cy="104" rx="47" ry="22" fill="none" stroke="#6f4227" ' +
+            'stroke-width="3"/>' +
+            // rings spreading where the water lands
+            '<g class="fx-ripple" fill="none" stroke="#cfe0f2" stroke-width="1.6" opacity=".8">' +
+            '<ellipse cx="75" cy="104" rx="16" ry="7"/>' +
+            '<ellipse cx="75" cy="104" rx="29" ry="13"/>' +
+            '</g>' +
+            // the column
+            '<path d="M63 52h24v50a40 18 0 0 1-24 0z" fill="#9fb4cc"/>' +
+            '<path d="M75 52h12v50a20 9 0 0 1-12 3z" fill="#86a0bb"/>' +
+            // the flat cap the water spills off
+            '<ellipse cx="75" cy="50" rx="35" ry="14" fill="#c3d4e6" ' +
+            'stroke="#8ba3bd" stroke-width="2"/>' +
+            '<ellipse cx="75" cy="46" rx="35" ry="14" fill="#dbe7f4" ' +
+            'stroke="#8ba3bd" stroke-width="2"/>' +
+            // the spout, and the six jets arcing off it into the basin
+            '<ellipse cx="75" cy="42" rx="7" ry="3.4" fill="#9fb4cc"/>' +
+            '<g class="fx-jet" fill="none" stroke="#cfe6f8" stroke-width="3.4" ' +
+            'stroke-linecap="round" opacity=".92">' +
+            '<path d="M75 34C56 30 34 48 30 96"/>' +
+            '<path d="M75 34C94 30 116 48 120 96"/>' +
+            '<path d="M75 32C63 24 44 34 38 66"/>' +
+            '<path d="M75 32C87 24 106 34 112 66"/>' +
+            '<path d="M75 30C71 18 60 16 52 26"/>' +
+            '<path d="M75 30C79 18 90 16 98 26"/>' +
+            '</g>' +
+            // the drops thrown clear of the jets
+            '<g class="fx-drop" fill="#e4f1fb">' +
+            '<circle cx="34" cy="62" r="3.4"/>' +
+            '<circle cx="116" cy="62" r="3.4"/>' +
+            '<circle cx="47" cy="34" r="2.6"/>' +
+            '<circle cx="103" cy="34" r="2.6"/>' +
+            '<circle cx="75" cy="20" r="3"/>' +
+            '</g>' +
+            '</svg>',
+
         // A tuft of the same torn green paper.
         bush:
             '<svg viewBox="0 0 100 100" aria-hidden="true">' +
@@ -4386,34 +5028,74 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // The Poor Merchant's stall: a cardboard canopy on four lolly-stick legs
     // with the merchant standing under it.
     function merchantStallSvg() {
-        return '<svg viewBox="0 0 170 150" role="img" aria-label="The Poor Merchant">' +
-            // the shadow it throws on the grass
-            '<ellipse cx="88" cy="138" rx="60" ry="11" fill="rgba(60,74,48,.32)"/>' +
-            // legs
-            '<g fill="#e0bb8c" stroke="#bd9463" stroke-width="1.5">' +
-            '<rect x="26" y="62" width="10" height="72" rx="3"/>' +
-            '<rect x="128" y="62" width="10" height="72" rx="3"/>' +
-            '<rect x="56" y="52" width="9" height="66" rx="3"/>' +
-            '<rect x="108" y="52" width="9" height="66" rx="3"/>' +
+        // Built exactly as it is on the board: four lolly-stick legs standing
+        // on the grass, and one flat square of cardboard laid across the top
+        // of them with POOR MERCHANT written on it. No walls, no pitched roof
+        // -- it is a canopy, and you can see straight under it to the
+        // merchant standing in the middle.
+        //
+        // The roof is a parallelogram rather than a rectangle because you are
+        // looking down at the board at an angle, and it carries a thin dark
+        // edge along its two near sides so it reads as a sheet with a
+        // thickness rather than a flat brown patch.
+        return '<svg viewBox="0 0 180 160" role="img" aria-label="The Poor Merchant">' +
+            // the shadow the whole stall throws on the grass
+            '<ellipse cx="92" cy="144" rx="66" ry="12" fill="rgba(60,74,48,.30)"/>' +
+
+            // the two back legs, behind the merchant
+            '<g fill="#dcb686" stroke="#b8905e" stroke-width="1.4">' +
+            '<rect x="54" y="46" width="9" height="74" rx="3"/>' +
+            '<rect x="122" y="52" width="9" height="74" rx="3"/>' +
             '</g>' +
-            // the merchant standing under the canopy
-            '<g stroke="#3a2a1c" stroke-width="3" fill="none" stroke-linecap="round">' +
-            '<circle cx="82" cy="80" r="8" fill="#c69a68"/>' +
-            '<path d="M82 88v24M82 94l-11 10M82 94l11 10M76 112l-4 16M88 112l4 16"/>' +
+
+            // the merchant, standing under the middle of the canopy
+            '<g>' +
+            '<ellipse cx="90" cy="128" rx="15" ry="4" fill="rgba(60,74,48,.34)"/>' +
+            // cloak
+            '<path d="M90 74l17 20-5 34H78l-5-34z" fill="#8a5a3a" stroke="#5f3b23" ' +
+            'stroke-width="2" stroke-linejoin="round"/>' +
+            // hood and face
+            '<path d="M90 56c9 0 14 7 14 14 0 6-6 10-14 10s-14-4-14-10c0-7 5-14 14-14z" ' +
+            'fill="#7a4c2f" stroke="#5f3b23" stroke-width="2"/>' +
+            '<ellipse cx="90" cy="72" rx="8" ry="7" fill="#d3a475"/>' +
+            '<circle cx="87" cy="71" r="1.4" fill="#3a2a1c"/>' +
+            '<circle cx="93" cy="71" r="1.4" fill="#3a2a1c"/>' +
+            // arms and legs
+            '<g stroke="#5f3b23" stroke-width="4" stroke-linecap="round" fill="none">' +
+            '<path d="M75 94l-8 14M105 94l8 14M84 128v6M96 128v6"/>' +
             '</g>' +
-            // the canopy, tilted the way it sits on the board
-            '<g transform="rotate(-4 85 40)">' +
-            '<path d="M6 46 L58 12 L164 22 L112 60 Z" fill="#b5714a" stroke="#8a5030" ' +
-            'stroke-width="2"/>' +
-            '<path d="M6 46 L58 12 L164 22 L112 60 Z" fill="none" stroke="#96593a" ' +
-            'stroke-width="1" opacity=".6"/>' +
-            '<text x="62" y="34" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" ' +
-            'font-size="13" fill="#2f1d12" text-anchor="middle" ' +
-            'transform="rotate(-11 62 34)">Poor</text>' +
-            '<text x="86" y="50" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" ' +
-            'font-size="17" font-weight="bold" fill="#231409" text-anchor="middle" ' +
-            'transform="rotate(-11 86 50)">Merchant</text>' +
-            '</g></svg>';
+            '</g>' +
+
+            // the two front legs, in front of the merchant
+            '<g fill="#e6c396" stroke="#bd9463" stroke-width="1.4">' +
+            '<rect x="34" y="58" width="10" height="76" rx="3"/>' +
+            '<rect x="140" y="64" width="10" height="76" rx="3"/>' +
+            '</g>' +
+
+            // the flat cardboard roof laid over the four legs
+            '<g>' +
+            // the thickness of the card, along the two near edges
+            '<path d="M22 66 L96 88 L164 70 L164 76 L96 94 L22 72 Z" fill="#7c4826"/>' +
+            // the sheet itself
+            '<path d="M22 66 L74 34 L164 52 L96 88 Z" fill="#b5714a" ' +
+            'stroke="#8a5030" stroke-width="2" stroke-linejoin="round"/>' +
+            // the corrugation showing through the card
+            '<g stroke="#9c5f3c" stroke-width="1" opacity=".55">' +
+            '<path d="M35 62L84 39M50 67L100 43M66 72L116 47M82 78L132 51M97 83L148 55"/>' +
+            '</g>' +
+            // written on it in marker, following the slope of the card
+            // Sheared to lie flat on the sloping card. The offsets are worked
+            // back through that shear so the writing lands in the middle of
+            // the roof rather than beside it.
+            '<g transform="matrix(1 .2 -.55 1 0 0) translate(104 28)">' +
+            '<text x="0" y="0" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" ' +
+            'font-size="13" fill="#2f1d12" text-anchor="middle">Poor</text>' +
+            '<text x="4" y="17" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" ' +
+            'font-size="17" font-weight="bold" fill="#231409" text-anchor="middle">' +
+            'Merchant</text>' +
+            '</g>' +
+            '</g>' +
+            '</svg>';
     }
 
     function renderBoard() {
@@ -4464,14 +5146,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 '%;display:block">' + art + '</span></div>';
         }).join('');
 
-        // The two stick footbridges over the river, one above the arena and
-        // one below it, plus the whirlpool's own stretch of water.
-        const crossings =
-            '<div class="crossing" style="grid-row:2;grid-column:4"></div>' +
-            '<div class="crossing" style="grid-row:4;grid-column:4"></div>';
-
+        // The river runs clear. The only crossing is the Draw 1 Item Card
+        // deck itself -- the two thin stick footbridges that used to lie
+        // across the water above and below the arena are gone.
         $('#board').innerHTML =
-            '<div class="river"></div>' + crossings + decor + html +
+            '<div class="river"></div>' + decor + html +
             '<div class="merchant-stall">' + merchantStallSvg() + '</div>';
     }
 
@@ -4493,7 +5172,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                         esc(c.art) + '\')"></div>' +
                     '<div class="me-id">' +
                         '<div class="me-name">' + esc(p.name) + '</div>' +
-                        '<div class="me-where">' + esc(c.name) + ' &middot; on ' +
+                        '<div class="me-where">' + esc(c.name) + ' &middot; On ' +
                             esc(E.square(p.pos).name) + '</div>' +
                     '</div>' +
                 '</div>' +
@@ -4594,8 +5273,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             (blocked ? '<div class="muted" style="margin-top:10px;font-size:13px">' +
                 (S.battle ? 'A battle is under way.' : 'Resolve the square first.') + '</div>' : '');
 
-        bind('a-move', () => rollAct('Rolling to move', 'rollMove', {},
-                                     'One die. Move that many squares.'));
+        bind('a-move', () => {
+            // The bonus off your armour is an offer, not a rule. If you have
+            // one, you are asked before the die goes up, because a smaller
+            // number is sometimes the one you want -- to stop short of a
+            // fight, or to land exactly where you mean to.
+            const bonus = E.diceModifier(p) + (p.agileBonus || 0);
+            if (!bonus) {
+                return rollAct('Rolling to move', 'rollMove', {},
+                               'One die. Move that many squares.');
+            }
+            askAboutBonus(bonus);
+        });
         bind('a-ability', () => {
             if (cls.ability.id === 'illusion') return openIllusion();
             rollAct(cls.ability.name, 'useAbility', {},
@@ -4609,6 +5298,48 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         bind('a-steak-cooked', () => act('eatSteak', { type: 'cooked' }));
         bind('a-end', () => act('endTurn', {}));
         bind('a-close', confirmCloseGame);
+    }
+
+    /* Where the bonus on your movement roll comes from, so the question names
+       the thing that is offering it rather than just a number. */
+    function bonusSources(p) {
+        const out = [];
+        const armour = E.equippedArmour(p);
+        const aDef = armour ? D.ITEMS[armour.id] : null;
+        if (aDef && aDef.dice) out.push(aDef.name);
+        if (p.agileBonus) out.push('Agile');
+        if ((p.buffs || []).some(b => b.kind === 'dice')) out.push('a power-up');
+        return out;
+    }
+
+    function askAboutBonus(bonus) {
+        const p = me();
+        const sign = bonus > 0 ? '+' : '';
+        const from = bonusSources(p);
+        showModal('<h2>Take the ' + sign + bonus + '?</h2>' +
+            '<div class="sub">' +
+                (from.length ? esc(from.join(' and ')) + ' ' +
+                    (from.length > 1 ? 'give' : 'gives') + ' you ' + sign + bonus +
+                    ' on this roll. ' : '') +
+                'You do not have to use it — a smaller number is sometimes the one ' +
+                'you want.' +
+            '</div>' +
+            '<div class="modal-actions">' +
+            '<button class="btn primary" id="bonus-yes">Roll with ' + sign + bonus + '</button>' +
+            '<button class="btn" id="bonus-no">Roll the plain die</button>' +
+            '<button class="btn" id="bonus-cancel">Not yet</button>' +
+            '</div>', true, 'bonus');
+        bind('bonus-yes', () => {
+            closeModal();
+            rollAct('Rolling to move', 'rollMove', { useBonus: true },
+                    'One die, ' + sign + bonus + ' on top.');
+        });
+        bind('bonus-no', () => {
+            closeModal();
+            rollAct('Rolling to move', 'rollMove', { useBonus: false },
+                    'One die, no bonus.');
+        });
+        bind('bonus-cancel', () => { openPanel = null; renderModal(); });
     }
 
     // Ending the game early. The room document is deleted rather than left
@@ -4685,24 +5416,35 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         let html = '';
         if (invTab === 'gear') {
             const cls = D.CLASSES[p.cls];
-            const canSwap = S.turnNo - p.lastEquipTurn >= D.RULES.equipCooldownTurns;
+            // One weapon change and one armour change a turn, counted apart:
+            // swapping a sword does not use up the swap you were saving for
+            // your armour.
+            const per = D.RULES.equipChangesPerTurn;
+            const swapsLeft = {
+                weapon: per - (p.weaponSwaps | 0),
+                armour: per - (p.armourSwaps | 0)
+            };
             html = p.inventory.map(inst => {
                 const d = D.ITEMS[inst.id];
                 const equipped = inst.uid === p.weaponUid || inst.uid === p.armourUid;
                 const usable = d.kind === 'weapon'
                     ? d.subtype === cls.weaponType
                     : (d.subtype === 'any' || d.subtype === cls.armourType);
+                const slot = d.kind === 'weapon' ? 'weapon' : 'armour';
+                const spare = swapsLeft[slot] > 0;
                 const foot = (d.kind === 'weapon' ? 'Weapon' : 'Armour') + ' · ' +
                     esc(d.subtype === 'any' ? 'any class' : d.subtype) +
                     (inst.uses != null ? ' · ' + inst.uses + ' uses left' : '') +
                     (equipped ? ' · equipped' : '') +
-                    (usable ? '' : '<br>A ' + esc(cls.name) + ' cannot use this — trade it away.');
+                    (usable ? '' : '<br>A ' + esc(cls.name) + ' cannot use this — trade it away.') +
+                    (usable && !equipped && !spare
+                        ? '<br>You have already changed your ' + slot + ' this turn.' : '');
                 return '<div class="item' + (equipped ? ' equipped' : '') +
                     (d.treasure ? ' treasure' : '') + '">' +
                     paperCardHtml('yellow', d.name, d.text, foot) +
                     (equipped || !usable ? ''
                         : '<button class="btn small" data-equip="' + inst.uid + '"' +
-                          (canSwap && myTurn() && !S.battle ? '' : ' disabled') + '>Equip</button>') +
+                          (spare && myTurn() && !S.battle ? '' : ' disabled') + '>Equip</button>') +
                     '</div>';
             }).join('') || '<div class="muted">Nothing yet.</div>';
         } else if (invTab === 'powerups') {
@@ -4762,12 +5504,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (S.pending && S.pending.playerId === NET.PID) return renderPendingModal();
         if (incoming) return renderIncomingTrade(incoming);
 
-        // These two are forms the player is filling in. Re-rendering them
-        // whenever anyone else acts would wipe what they had typed or ticked.
+        // The stall is redrawn every time, because buying no longer closes it
+        // and your coins and his stock have to come down as you spend. It is a
+        // list rather than a form, so there is nothing to lose by redrawing --
+        // only where you had scrolled to, which is put back.
         if (openPanel === 'merchant') {
-            if (shownKey !== 'merchant') renderMerchant();
+            const keep = $('#modal-back').scrollTop;
+            renderMerchant();
+            $('#modal-back').scrollTop = keep;
             return;
         }
+        // The trade builder *is* a form the player is filling in. Re-rendering
+        // it whenever anyone else acts would wipe what they had ticked.
         if (openPanel === 'trade') {
             if (shownKey !== 'trade') renderTradeBuilder();
             return;
@@ -4830,19 +5578,21 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             }) + '</div>');
 
         if (b.lastRoll != null) {
-            body += '<div class="die">' + b.lastRoll + '</div>' +
+            body += '<div class="die">' + pipsHtml(b.lastRoll) + '</div>' +
                 '<div class="muted" style="text-align:center;font-size:13px">' +
                 (b.lastRoll % 2 === 0 ? 'Even — a hit.' : 'Odd — a miss.') + '</div>';
         }
 
-        // The monster's die is thrown by the player fighting it -- somebody
-        // has to pick it up at the table, and there is nobody else here.
-        if (involved && !isPvp && enemyPhase) {
-            body += '<div class="modal-actions" style="justify-content:center">' +
+        // The monster takes its own turn. Nobody presses a button for it any
+        // more, so this line stands in for the button that used to be here:
+        // it says whose die is in the air and what is about to happen.
+        if (!isPvp && enemyPhase) {
+            body += '<div class="enemy-acting">' +
+                '<span class="spinner"></span>' +
+                esc(foe.name) +
                 (b.phase === 'enemy_roll'
-                    ? '<button class="btn" id="b-eroll">Roll for the ' + esc(foe.name) + '</button>'
-                    : '<button class="btn danger" id="b-estrike">Let the ' +
-                      esc(foe.name) + ' strike</button>') +
+                    ? ' is rolling its own die…'
+                    : ' rolled ' + b.lastRoll + ' — it is about to strike…') +
                 '</div>';
         }
 
@@ -4882,9 +5632,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         bind('b-roll', () => rollAct('Rolling to strike', 'battleRoll', {},
                                      'Even connects, odd misses.'));
-        bind('b-eroll', () => rollAct('Rolling for the ' + foe.name, 'enemyRoll', {},
-                                      'Even connects, odd misses.'));
-        bind('b-estrike', () => act('enemyStrike', {}));
         $$('#modal [data-move]').forEach(el =>
             el.addEventListener('click', () => act('battleAttack', { moveId: el.dataset.move })));
         bind('b-cooked', () => act('eatSteak', { type: 'cooked' }));
@@ -4896,6 +5643,46 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         bind('b-po', () => pickFrom('Drink a potion',
             p.potions.map(c => ({ id: c.uid, name: D.POWERUPS[c.id].name, text: D.POWERUPS[c.id].text })),
             uid => act('usePotion', { uid: uid })));
+
+        driveEnemyTurn(b);
+    }
+
+    /* ---- the monster takes its own turn --------------------------------
+       It used to hand you its die and wait for you to throw it, which read as
+       if you were fighting yourself. Now it rolls and strikes on its own.
+
+       Only the player actually in the fight sends the two actions -- everyone
+       else is watching the same state arrive -- so the monster never acts
+       twice. Each step is deliberately unhurried: the die overlay comes up
+       under the monster's name, lands, and only then does the blow follow, so
+       you can see who rolled what and what it did.
+       -------------------------------------------------------------------- */
+
+    let enemyStep = '';        // the phase we have already acted on
+
+    function driveEnemyTurn(b) {
+        const mine = b && b.kind === 'pve' && b.aId === NET.PID;
+        const phase = b ? b.phase : '';
+        if (!mine || (phase !== 'enemy_roll' && phase !== 'enemy_act')) {
+            if (phase !== 'enemy_roll' && phase !== 'enemy_act') enemyStep = '';
+            return;
+        }
+
+        // One send per phase, however many times the state re-renders.
+        const step = phase + ':' + (b.enemyHp | 0) + ':' + (b.lastRoll == null ? '-' : b.lastRoll);
+        if (enemyStep === step) return;
+        enemyStep = step;
+
+        const foe = D.ENEMIES[b.enemyId];
+        if (phase === 'enemy_roll') {
+            setTimeout(() => {
+                DICE.expect('The ' + foe.name, 'It rolls for itself — even connects, odd misses.');
+                act('enemyRoll', {});
+            }, 700);
+        } else {
+            // Let the die finish settling before the blow lands.
+            DICE.whenIdle(() => setTimeout(() => act('enemyStrike', {}), 500));
+        }
     }
 
     // Only Fenrirak has a picture; the rest get a crest so no monster wears
@@ -5074,7 +5861,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         showModal(
             '<h2>The Poor Merchant</h2>' +
             '<div class="sub">You have <span class="gold">' + p.coins + ' coins</span>. ' +
-            'Buying anything ends your turn — choose carefully.</div>' +
+            'Buying does not end your turn — stock up, then take your move.</div>' +
             '<h3>Weapons &amp; armour</h3>' +
             '<p class="shop-section-note">Everything the merchant carries. Each piece ' +
             'says which class it is cut for — you can only buy your own.</p>' +
@@ -5083,14 +5870,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<div class="modal-actions"><button class="btn" id="shop-close">Leave the stall</button></div>',
             true, 'merchant');
 
-        $$('#modal [data-buy-gear]').forEach(b => b.addEventListener('click', () => {
-            openPanel = null;
-            act('buy', { kind: 'gear', id: b.dataset.buyGear });
-        }));
-        $$('#modal [data-buy-potion]').forEach(b => b.addEventListener('click', () => {
-            openPanel = null;
-            act('buy', { kind: 'potion', id: b.dataset.buyPotion });
-        }));
+        // The stall stays open: buying is no longer the end of your turn, so
+        // you can buy a sword and a potion in one visit and still move.
+        $$('#modal [data-buy-gear]').forEach(b => b.addEventListener('click', () =>
+            act('buy', { kind: 'gear', id: b.dataset.buyGear })));
+        $$('#modal [data-buy-potion]').forEach(b => b.addEventListener('click', () =>
+            act('buy', { kind: 'potion', id: b.dataset.buyPotion })));
         bind('shop-close', () => { openPanel = null; renderModal(); });
     }
 
@@ -5098,13 +5883,24 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     function openIllusion() {
         const others = S.players.filter(x => x.id !== NET.PID && x.cls);
+        // Only the Swarm of Bats can be conjured now, so there is nothing to
+        // choose: the illusion is named rather than picked from a list.
         const enemies = Object.keys(D.ENEMIES).filter(id => !D.ENEMIES[id].noIllusion);
+        const only = enemies.length === 1 ? D.ENEMIES[enemies[0]] : null;
         showModal('<h2>Illusion</h2>' +
-            '<div class="sub">Conjure an enemy and set it on another player. They lose their ' +
-            'turn to the fight and keep only the coins.</div>' +
-            '<h3>Enemy</h3><select id="il-enemy">' +
-                enemies.map(id => '<option value="' + id + '">' + esc(D.ENEMIES[id].name) +
-                    ' — ' + D.ENEMIES[id].hp + ' HP</option>').join('') + '</select>' +
+            '<div class="sub">Conjure a ' + esc(only ? only.name : 'enemy') +
+            ' and set it on another player. They lose their turn to the fight ' +
+            'and keep only the coins.</div>' +
+            '<h3>What appears</h3>' +
+            (only
+                ? '<div class="paper stat" style="max-width:230px">' +
+                  '<div class="p-name">' + esc(only.name) + '</div>' +
+                  '<div class="p-stat">Health: ' + only.hp + '</div>' +
+                  '<div class="p-stat">Defence: ' + only.defence + '</div></div>' +
+                  '<input type="hidden" id="il-enemy" value="' + esc(enemies[0]) + '">'
+                : '<select id="il-enemy">' +
+                  enemies.map(id => '<option value="' + id + '">' + esc(D.ENEMIES[id].name) +
+                      ' — ' + D.ENEMIES[id].hp + ' HP</option>').join('') + '</select>') +
             '<h3 style="margin-top:14px">Victim</h3><select id="il-target">' +
                 others.map(o => '<option value="' + esc(o.id) + '">' + esc(o.name) + ' (' +
                     esc(D.CLASSES[o.cls].name) + ')</option>').join('') + '</select>' +
@@ -5435,7 +6231,7 @@ const ACTIONS = {
     chooseClass:   (s, pid, a) => E.chooseClass(s, pid, a.cls),
     startGame:     (s, pid)    => E.startGame(s, pid),
     rollForOrder:  (s, pid)    => E.rollForOrder(s, pid),
-    rollMove:      (s, pid)    => E.rollMove(s, pid),
+    rollMove:      (s, pid, a) => E.rollMove(s, pid, a.useBonus !== false),
     endTurn:       (s, pid)    => E.endTurn(s, pid),
     battleRoll:    (s, pid)    => E.battleRoll(s, pid),
     battleAttack:  (s, pid, a) => E.battleAttack(s, pid, a.moveId),
