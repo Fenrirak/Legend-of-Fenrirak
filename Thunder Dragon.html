@@ -1105,11 +1105,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .sq.gateway .token { width: 30px; height: 30px; }
 
-@media (prefers-reduced-motion: reduce) {
-    .sq.gateway .gate-bolt { animation: none; opacity: .6; }
-    .token.turn { animation: none; }
-}
-
 /* ---- the causeway to the arena ----------------------------------------
    The only way over the water. It runs out of the near bank, under the Gate
    standing at its near end, and on under the rim of the arena's disc -- the
@@ -1190,12 +1185,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     100% { opacity: 0;   transform: scale(1.15); }
 }
 
-/* Somebody who has asked for less movement gets a still fountain. */
-@media (prefers-reduced-motion: reduce) {
-    .decor .fx-jet,
-    .decor .fx-drop circle,
-    .decor .fx-ripple ellipse { animation: none; }
-}
 .decor svg {
     width: 100%;
     height: auto;
@@ -1623,67 +1612,110 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
    it. Keeping them apart is what lets the cube be stopped on a face
    without touching where the die is on the screen.
 
-   `--fx` / `--fy` are the corner it came from, measured back from where
-   it lands, and `--dx` is how far short of that place it first hits, so
-   the bounces carry it on the way it was already going.
+   It is a throw across the table, not a drop onto a spot. `--tx` is the
+   whole of that run, signed -- negative when it came in from the left --
+   measured back from where it ends up, so every keyframe is a share of
+   the same distance and the flight reads the same whichever side it came
+   from and however far it has to go. `--ty` is how high above that it
+   entered. Each bounce carries it on the way it was already going, which
+   is why the shares only ever count down.
    ---------------------------------------------------------------------- */
 
 .dice-die.flying {
-    animation: dice-fly 1.05s cubic-bezier(.36, .1, .3, 1) both;
+    /* Linear on purpose: the slowing down is in the numbers below, where
+       it can slow the way a thrown thing does rather than the way an
+       easing curve does. */
+    animation: dice-throw 1.2s linear both;
 }
-@keyframes dice-fly {
-    /* off the screen, small with distance, coming down fast */
-    0%   { transform: translate3d(var(--fx, -400px), var(--fy, -400px), 0) scale(.6); }
-    /* the first hit, short of where it will end up */
-    34%  { transform: translate3d(var(--dx, -38px), 0, 0) scale(1); }
+@keyframes dice-throw {
+    /* off the side of the screen, high, small with distance */
+    0%   { transform: translate3d(var(--tx, -700px), var(--ty, -260px), 0)
+                      scale3d(.6, .6, 1); }
+    10%  { transform: translate3d(calc(var(--tx, -700px) * .80),
+                                  calc(var(--ty, -260px) * .42), 0)
+                      scale3d(.82, .82, 1); }
+    18%  { transform: translate3d(calc(var(--tx, -700px) * .66),
+                                  calc(var(--ty, -260px) * .11), 0)
+                      scale3d(.95, .95, 1); }
+    /* first contact, still two thirds of the run from home */
+    22%  { transform: translate3d(calc(var(--tx, -700px) * .60), 0, 0)
+                      scale3d(1, 1, 1); }
     /* squashed flat under itself */
-    39%  { transform: translate3d(calc(var(--dx, -38px) * .86), 6px, 0)
-                      scaleX(1.24) scaleY(.74); }
+    25%  { transform: translate3d(calc(var(--tx, -700px) * .555), 5px, 0)
+                      scale3d(1.22, .76, 1); }
     /* up again, stretched, still going the way it was thrown */
-    54%  { transform: translate3d(calc(var(--dx, -38px) * .58), -78px, 0)
-                      scaleX(.92) scaleY(1.12); }
-    /* second hit, softer */
-    66%  { transform: translate3d(calc(var(--dx, -38px) * .34), 5px, 0)
-                      scaleX(1.16) scaleY(.86); }
-    /* a low third hop, and it starts rolling rather than bouncing */
-    78%  { transform: translate3d(calc(var(--dx, -38px) * .18), -28px, 0)
-                      scaleX(.97) scaleY(1.05); }
-    88%  { transform: translate3d(calc(var(--dx, -38px) * .07), 3px, 0)
-                      scaleX(1.08) scaleY(.93); }
-    95%  { transform: translate3d(0, -7px, 0) scale(1); }
-    100% { transform: translate3d(0, 0, 0)    scale(1); }
+    33%  { transform: translate3d(calc(var(--tx, -700px) * .47), -104px, 0)
+                      scale3d(.90, 1.14, 1); }
+    /* second contact */
+    42%  { transform: translate3d(calc(var(--tx, -700px) * .38), 0, 0)
+                      scale3d(1, 1, 1); }
+    45%  { transform: translate3d(calc(var(--tx, -700px) * .345), 4px, 0)
+                      scale3d(1.16, .84, 1); }
+    52%  { transform: translate3d(calc(var(--tx, -700px) * .285), -58px, 0)
+                      scale3d(.93, 1.09, 1); }
+    /* third, lower */
+    60%  { transform: translate3d(calc(var(--tx, -700px) * .22), 0, 0)
+                      scale3d(1, 1, 1); }
+    63%  { transform: translate3d(calc(var(--tx, -700px) * .195), 3px, 0)
+                      scale3d(1.11, .90, 1); }
+    69%  { transform: translate3d(calc(var(--tx, -700px) * .155), -26px, 0)
+                      scale3d(.96, 1.05, 1); }
+    /* a last low skip, and from here it is rolling rather than bouncing */
+    76%  { transform: translate3d(calc(var(--tx, -700px) * .105), 0, 0)
+                      scale3d(1, 1, 1); }
+    80%  { transform: translate3d(calc(var(--tx, -700px) * .090), 2px, 0)
+                      scale3d(1.06, .95, 1); }
+    85%  { transform: translate3d(calc(var(--tx, -700px) * .072), -9px, 0)
+                      scale3d(.99, 1.02, 1); }
+    91%  { transform: translate3d(calc(var(--tx, -700px) * .058), 0, 0)
+                      scale3d(1, 1, 1); }
+    /* Short of home on purpose: the last of the run belongs to the roll
+       below, so the die is still moving while the cube turns onto its
+       number instead of spinning on the spot. */
+    100% { transform: translate3d(calc(var(--tx, -700px) * .045), 0, 0)
+                      scale3d(1, 1, 1); }
+}
+
+/* The number is in and it rolls the last of the way to a stop. This picks
+   up exactly where the throw left off -- both ends are the same share of
+   `--tx` -- so handing over from one to the other does not move it. */
+.dice-die.rolling {
+    animation: dice-roll-out .6s cubic-bezier(.17, .72, .28, 1) both;
+}
+@keyframes dice-roll-out {
+    from { transform: translate3d(calc(var(--tx, -700px) * .045), 0, 0)
+                      scale3d(1, 1, 1); }
+    to   { transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
 }
 
 /* Over and over while it is in the air and for as long afterwards as the
    answer takes to come back. 700ms a turn, which ui.js reads off SPIN_MS
-   to work out where the cube has got to -- retime one and retime both. */
+   to work out where the cube has got to -- retime one and retime both.
+
+   `--sy` is the rolling turn and is signed by which way the die is
+   travelling: a cube tipping over its right edge turns about the upright
+   axis, so a die thrown from the left rolls to the right. Get the sign
+   wrong and it rolls backwards against its own flight, which is exactly
+   what it used to do coming in from the right. `--sx` is the tumble it
+   carries on top of that, at half the rate, so it reads as a die and not
+   as a wheel. */
 .dice-cube.spinning { animation: dice-spin .7s linear infinite; }
 @keyframes dice-spin {
-    from { transform: rotateX(0deg)   rotateY(0deg); }
-    to   { transform: rotateX(360deg) rotateY(720deg); }
+    from { transform: rotateX(0deg) rotateY(0deg); }
+    to   { transform: rotateX(var(--sx, 360deg)) rotateY(var(--sy, 720deg)); }
 }
 
-/* The number is in. It rolls on from exactly where the spin had got to,
-   through another turn or so, and stops with the rolled face towards
-   you. `--rx0`/`--ry0` is where it was; `--rx`/`--ry` is where it stops. */
+/* It rolls on from exactly where the spin had got to, through another turn
+   or so the same way round, and stops with the rolled face towards you.
+   `--rx0`/`--ry0` is where it was; `--rx`/`--ry` is where it stops. */
 .dice-cube.settled {
-    animation: dice-settle .55s cubic-bezier(.22, .9, .3, 1) both;
+    animation: dice-settle .6s cubic-bezier(.22, .9, .3, 1) both;
 }
 @keyframes dice-settle {
     from { transform: rotateX(var(--rx0, 0deg)) rotateY(var(--ry0, 0deg)); }
     to   { transform: rotateX(var(--rx, 0deg))  rotateY(var(--ry, 0deg)); }
 }
 
-/* Somebody who has asked not to be moved about gets the number and none of
-   the throwing: the die is not shown at all until it has landed, and then
-   it simply appears where it fell with the rolled face on it. */
-@media (prefers-reduced-motion: reduce) {
-    .dice-die.flying,
-    .dice-cube.spinning,
-    .dice-cube.settled { animation: none; }
-    .dice-die { transform: none; }
-    .dice-stage:not(.landed) { visibility: hidden; }
-}
 
 /* ---- energy in a battle -----------------------------------------------
    Energy is what pays for the big attack, so both sides show it as a row of
@@ -1939,12 +1971,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     34%     { opacity: 1; }
     82%     { opacity: 1; }
     100%    { opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .zap-back.on .zap-flash,
-    .zap-back.on .zap-bolt { animation: none; opacity: .5; }
-    .zap-back .zap-bolt path { filter: none; }
 }
 
 /* ---- the die you have already thrown ----------------------------------
@@ -6444,8 +6470,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         let armed = false;          // we asked for a throw and are waiting
         const idleQueue = [];
 
-        const THROW_MS  = 1050;     // corner of the screen to the table
-        const SETTLE_MS = 550;      // the last roll into the number it shows
+        let spinX = 360, spinY = 720;   // this throw's turn, signed by travel
+
+        const THROW_MS  = 1200;     // off the side of the screen to the table
+        const SETTLE_MS = 600;      // the last roll into the number it shows
         const HOLD_MS   = 3000;     // how long it is left lying there
         const FADE_MS   = 450;
         const SPIN_MS   = 700;      // must match the dice-spin keyframes
@@ -6474,32 +6502,50 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             cubeEl = stage.querySelector('.dice-cube');
         }
 
-        // Pitch it in. It comes from off one of the two top corners, lands
-        // somewhere at random on the screen -- on top of whatever happens to
-        // be under it, because it is thrown onto the game rather than into a
-        // window of its own -- bounces twice and rolls to a stop.
+        // Pitch it in. It comes in off one side of the screen, bounces its
+        // way across and rolls to a stop somewhere over on the other -- on
+        // top of whatever happens to be under it, because it is thrown onto
+        // the game rather than into a window of its own.
         function throwIt() {
             build();
             clearTimeout(settleT);
             clearTimeout(holdT);
             clearTimeout(fadeT);
 
-            const edge = 96;            // enough that it never hangs off
+            const edge = 110;           // enough that it never hangs off
             const w = Math.max(window.innerWidth  || 0, 320);
             const h = Math.max(window.innerHeight || 0, 320);
-            const x = edge + Math.random() * Math.max(1, w - edge * 2);
-            const y = edge + Math.random() * Math.max(1, h - edge * 2);
             const fromLeft = Math.random() < 0.5;
 
-            dieEl.style.left = Math.round(x) + 'px';
-            dieEl.style.top  = Math.round(y) + 'px';
-            // Where it is thrown from, as an offset back to that corner...
-            dieEl.style.setProperty('--fx',
-                Math.round((fromLeft ? -120 : w + 120) - x) + 'px');
-            dieEl.style.setProperty('--fy', Math.round(-180 - y) + 'px');
-            // ...and how far short of the resting place it first hits, so
-            // the bounces carry it on the way it was going.
-            dieEl.style.setProperty('--dx', (fromLeft ? -38 : 38) + 'px');
+            // It comes to rest on the far side from the one it came in on,
+            // so there is a run of screen to watch it cross. Anywhere in
+            // the far half and a bit, which on the narrowest screen still
+            // leaves it most of the width to travel.
+            const near = 0.44, far = 0.86;
+            const share = near + Math.random() * (far - near);
+            const x = Math.round(Math.min(w - edge, Math.max(edge,
+                          (fromLeft ? share : 1 - share) * w)));
+            const y = Math.round(edge + Math.random() * Math.max(1, h - edge * 2));
+
+            dieEl.style.left = x + 'px';
+            dieEl.style.top  = y + 'px';
+            // The whole run, measured back from where it stops, and signed:
+            // negative when it came in from the left and is heading right.
+            // Every keyframe is a share of this one number.
+            dieEl.style.setProperty('--tx',
+                Math.round((fromLeft ? -150 : w + 150) - x) + 'px');
+            dieEl.style.setProperty('--ty',
+                Math.round(-(170 + Math.random() * 180)) + 'px');
+
+            // A cube tips over its leading edge, which is a turn about the
+            // upright axis -- so which way it rolls has to follow which way
+            // it is going, or it rolls backwards against its own flight.
+            // The tumble on the other axis runs at half the rate and just
+            // keeps it looking like a die rather than a wheel.
+            spinY = fromLeft ? 720 : -720;
+            spinX = 360;
+            cubeEl.style.setProperty('--sx', spinX + 'deg');
+            cubeEl.style.setProperty('--sy', spinY + 'deg');
 
             stage.classList.add('on');
             stage.classList.remove('going', 'landed');
@@ -6507,7 +6553,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // throw is still lying on the screen -- assigning a class an
             // element already has does not restart a CSS animation, so the
             // classes come off, the layout is read, and they go back on.
-            dieEl.classList.remove('flying');
+            dieEl.classList.remove('flying', 'rolling');
             cubeEl.classList.remove('spinning', 'settled');
             cubeEl.style.transform = '';
             void dieEl.offsetWidth;
@@ -6528,7 +6574,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 if (a && typeof a.currentTime === 'number') t = a.currentTime;
             }
             const f = ((t % SPIN_MS) + SPIN_MS) % SPIN_MS / SPIN_MS;
-            return { rx: f * 360, ry: f * 720 };
+            return { rx: f * spinX, ry: f * spinY };
+        }
+
+        // The same face, but reached by carrying on the way the cube is
+        // already turning rather than winding back to the nearest reading
+        // of it. Adding whole turns to either axis leaves the face it shows
+        // alone, so this only ever changes how it gets there.
+        function keepGoing(target, from, dir, least) {
+            if (dir < 0) {
+                while (target > from - least) target -= 360;
+            } else {
+                while (target < from + least) target += 360;
+            }
+            return target;
         }
 
         function land(die) {
@@ -6537,20 +6596,26 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
             const from = spinNow();
             const to = FACE_ROT[die.roll] || FACE_ROT[1];
-            let rx = to[0], ry = to[1];
-            // Keep turning the way it was already turning rather than
-            // winding back to the nearest reading of the same face.
-            while (rx < from.rx + 120) rx += 360;
-            while (ry < from.ry + 240) ry += 360;
+            const rx = keepGoing(to[0], from.rx, spinX, 120);
+            const ry = keepGoing(to[1], from.ry, spinY, 240);
 
             cubeEl.style.setProperty('--rx0', from.rx.toFixed(1) + 'deg');
             cubeEl.style.setProperty('--ry0', from.ry.toFixed(1) + 'deg');
             cubeEl.style.setProperty('--rx', rx.toFixed(1) + 'deg');
             cubeEl.style.setProperty('--ry', ry.toFixed(1) + 'deg');
+            // The die is still moving while this happens: the throw hands
+            // over to the last of the roll, which picks up exactly where it
+            // left off. A cube turning onto its number while sitting quite
+            // still is a spinning top, not a die coming to rest.
+            dieEl.classList.remove('flying');
+            void dieEl.offsetWidth;
+            dieEl.classList.add('rolling');
+
             cubeEl.classList.remove('spinning');
-            // Somebody who has asked not to be moved about gets no roll and
-            // no throw, so the face is set on the cube directly as well --
-            // the animation covers it for everyone else.
+            // Written straight onto the cube as well as animated to. The
+            // settle covers it while it runs, so this only ever shows if the
+            // animation does not start at all -- in which case the die still
+            // ends up sitting on the right number instead of on face one.
             cubeEl.style.transform = 'rotateX(' + rx + 'deg) rotateY(' + ry + 'deg)';
             void cubeEl.offsetWidth;
             cubeEl.classList.add('settled');
