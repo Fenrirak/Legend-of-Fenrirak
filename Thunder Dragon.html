@@ -802,9 +802,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .sq.scenery-broken_bridge .tokens { position: relative; z-index: 5; }
 
-/* Tokens: the character's own picture, standing on the square. */
+/* Tokens: the character's own picture, standing on the square. They shoulder
+   in against each other rather than wrapping onto a second line -- every row
+   of the board is the same height, so a square must not grow just because
+   three people are standing on it. */
 .sq .tokens {
-    display: flex; flex-wrap: wrap; gap: 4px;
+    display: flex; flex-wrap: nowrap; gap: 0;
     margin-top: 4px;
     position: relative; z-index: 3;
 }
@@ -816,10 +819,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     box-shadow: 0 3px 6px rgba(0,0,0,.5);
     transition: transform .16s ease;
 }
+.sq .tokens .token + .token { margin-left: -13px; }
 .token.me { border-color: #b8791f; border-width: 3px; }
 /* Whose go it is. The piece is ringed in gold and breathes gently, so the
    turn can be found on the board without reading the banner. */
 .token.turn {
+    z-index: 2;
     border-color: var(--gold-bright, #e4c14a);
     border-width: 3px;
     box-shadow: 0 0 0 3px rgba(228, 193, 74, .32), 0 3px 6px rgba(0,0,0,.5);
@@ -853,9 +858,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Sat over on the right, which put the far rim under the Gate. It is
        pulled back towards the near bank now, so the Gate has clear water to
        stand on between the disc and the Fountain of Life. */
-    left: 31%; top: 50%;
+    left: 27%; top: 50%;
     transform: translate(-50%, -50%);
-    width: min(82%, 300px);
+    width: min(74%, 300px);
     aspect-ratio: 1;
     border-radius: 50%;
     background:
@@ -889,7 +894,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* On the disc rather than over its top rim: the disc is sized off the
        width and the arena's box is three rows tall, so a fraction of the
        box height put the writing above the card on a narrow board. */
-    left: 31%; top: 43%;
+    left: 27%; top: 43%;
     transform: translate(-50%, -50%);
     width: min(74%, 262px);
     text-align: center;
@@ -905,7 +910,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 /* Whoever is in the arena stands in the middle of the circle. */
 .arena .tokens {
     position: absolute;
-    left: 31%; top: 57%;
+    left: 27%; top: 57%;
     transform: translate(-50%, -50%);
     width: min(66%, 240px);
     display: flex; justify-content: center; flex-wrap: wrap;
@@ -930,7 +935,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     justify-self: end;
     align-self: center;
     z-index: 5;
-    width: 56%;
+    width: 54%;
+    /* Pushed out to the near end of the causeway, so the span of it shows
+       between the Gate and the arena. */
+    margin-right: -8%;
     aspect-ratio: 120 / 190;
     min-height: 0;
     padding: 0;
@@ -960,9 +968,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .sq.gateway .sq-name {
     position: absolute;
-    left: 50%; bottom: -15px;
+    left: 50%; bottom: -14px;
     transform: translateX(-50%);
-    font-size: 9.5px;
+    font-size: 9px;
     letter-spacing: .09em;
     text-transform: uppercase;
     white-space: nowrap;
@@ -983,6 +991,28 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     .sq.gateway .gate-bolt { animation: none; opacity: .6; }
     .token.turn { animation: none; }
 }
+
+/* ---- the causeway to the arena ----------------------------------------
+   The only way over the water. It runs out of the near bank, under the Gate
+   standing at its near end, and on under the rim of the arena's disc -- the
+   squares paint after it, which is what lands it on the arena.
+
+   Its width and its drop below the middle of the row are shares of the
+   column rather than numbers of pixels, so it keeps its place at any board
+   size.
+   ---------------------------------------------------------------------- */
+
+.board .river-bridge {
+    grid-row: 3;
+    grid-column: 4;
+    align-self: center;
+    margin: 0 -7% 0 -32%;
+    aspect-ratio: 240 / 84;
+    transform: translateY(60%);
+    z-index: 1;
+    pointer-events: none;
+}
+.board .river-bridge svg { width: 100%; height: 100%; display: block; }
 
 /* ---- the models standing on the grass ---------------------------------
    Drawn as inline SVG so nothing has to be uploaded. The big tree is
@@ -1350,7 +1380,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     .home-hero { padding: 26px 0 4px; }
     .home-hero h1 { font-size: 30px; }
     .class-picker { grid-template-columns: 1fr; }
-    .board { gap: 5px; padding: 8px; grid-template-rows: repeat(5, minmax(66px, auto)); }
+    /* Equal rows here too -- only a shorter floor. */
+    .board { gap: 5px; padding: 8px; grid-template-rows: repeat(5, minmax(66px, 1fr)); }
     .sq { min-height: 66px; padding: 5px; }
     .sq .sq-name { font-size: 10px; }
     .sq .sq-badge { display: none; }
@@ -2324,6 +2355,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         seraphina: {
             id: 'seraphina',
             name: 'Seraphina',
+            proper: true,          // a name, not a kind: never "the Seraphina"
             crest: { initials: 'S',  tint: '#7a8c4a' }, pic: 'seraphina',
             hp: 125,
             defence: 10,
@@ -2360,6 +2392,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         fenrirak: {
             id: 'fenrirak',
             name: 'Fenrirak',
+            proper: true,
             // The boss portrait. `Fenrirak Boss.png` is the painting of him
             // on his own, with no title across it, so it is used wherever he
             // appears. The drawing of him in ui.js is the fallback if the
@@ -2921,14 +2954,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         { kind: 'pot',       row: 2, col: 6, size: .46 },
         // Bushes dotted round the edges of the grass. Some of them are in
         // berry, which is what the little red dots on the board are.
-        { kind: 'bush',      row: 1, col: 5, size: .30 },
-        { kind: 'bush',      row: 3, col: 5, size: .27, berries: true, nudge: -26 },
-        { kind: 'bush',      row: 3, col: 5, size: .20, nudge: 52 },
-        { kind: 'bush',      row: 1, col: 4, size: .24, berries: true, nudge: 60 },
-        { kind: 'bush',      row: 3, col: 4, size: .26, nudge: -50 },
-        { kind: 'bush',      row: 3, col: 6, size: .25, berries: true },
-        { kind: 'bush',      row: 1, col: 1, size: .24, berries: true, nudge: -70 },
-        { kind: 'bush',      row: 3, col: 1, size: .22, nudge: 78 }
+        // Seven of them, one to a cell and well apart, so they read as
+        // bushes dotted about the grass rather than as clumps of two.
+        { kind: 'bush',      row: 1, col: 1, size: .26, berries: true, nudge: -60 },
+        { kind: 'bush',      row: 3, col: 1, size: .22, nudge: 80 },
+        { kind: 'bush',      row: 1, col: 4, size: .24, nudge: 66 },
+        { kind: 'bush',      row: 1, col: 5, size: .30, berries: true, nudge: -20 },
+        { kind: 'bush',      row: 3, col: 4, size: .26, berries: true, nudge: -56 },
+        { kind: 'bush',      row: 3, col: 5, size: .22, nudge: 40 },
+        { kind: 'bush',      row: 3, col: 6, size: .27, berries: true, nudge: -30 }
     ];
 
     const START_INDEX = 0;
@@ -2936,6 +2970,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     const KEY_FRAGMENTS_NEEDED = 3;
 
     /* ------------------------------------------------------------------ */
+
+    // What to call a monster in a sentence. Most of them are a kind of thing
+    // and take "the"; Seraphina and Fenrirak are names and do not, which is
+    // why they are marked `proper`.
+    function foeName(enemy, capital) {
+        if (!enemy) return '';
+        if (enemy.proper) return enemy.name;
+        return (capital ? 'The ' : 'the ') + enemy.name;
+    }
 
     const RULES = {
         minPlayers: 2,
@@ -2961,7 +3004,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         CLASSES, CLASS_ORDER, ENEMIES, ITEMS, TREASURE_POOL, CHEST_POOL,
         ITEM_DECK, POWERUPS, POWERUP_DECK,
         MERCHANT_POTIONS, MERCHANT_GEAR, SUBTYPE_OWNER,
-        BOARD, DECOR, START_INDEX, ARENA_INDEX, KEY_FRAGMENTS_NEEDED, RULES
+        BOARD, DECOR, START_INDEX, ARENA_INDEX, KEY_FRAGMENTS_NEEDED, RULES,
+        foeName
     };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -3446,11 +3490,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (state.battle) return fail('Finish the battle first.');
         if (state.pending) return fail('Resolve the square first.');
 
-        // Ending your turn means rolling for a raw steak, by hand.
+        // You go hunting on your way out of the turn, and throw for it by
+        // hand. What you are rolling for is whether anything comes past --
+        // the raw meat is what you carry home if it does.
         state.pending = {
             type: 'steak_roll',
             playerId: pid,
-            prompt: 'Roll for a raw steak. A ' + R.steakRolls.join(', ') + ' finds one.'
+            prompt: 'Go hunting before you make camp. A ' +
+                    R.steakRolls.join(', ') + ' and something comes past.'
         };
         return ok();
     }
@@ -3458,7 +3505,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function advanceTurn(state) {
         const p = currentPlayer(state);
         if (p) {
-            // The steak roll is not made here. Nothing in this game rolls a die
+            // The hunt is not thrown here. Nothing in this game rolls a die
             // on its own -- endTurn hands the player the die first and only
             // calls this once they have thrown it.
             // Defence buffs last one turn.
@@ -3853,7 +3900,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             phase: 'roll',
             lastRoll: null
         };
-        log(state, p.name + ' faces the ' + e.name + '!', 'battle');
+        log(state, p.name + ' faces ' + D.foeName(e) + '!', 'battle');
         return ok();
     }
 
@@ -4157,9 +4204,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         b.lastRoll = roll;
         if (roll % 2 === 0) {
             b.phase = 'enemy_act';
-            log(state, 'The ' + e.name + ' rolled a ' + roll + ' — it connects.', 'enemy');
+            log(state, D.foeName(e, true) + ' rolled a ' + roll + ' — it connects.', 'enemy');
         } else {
-            log(state, 'The ' + e.name + ' rolled a ' + roll + ' and misses.', 'muted');
+            log(state, D.foeName(e, true) + ' rolled a ' + roll + ' and misses.', 'muted');
             b.phase = 'roll';
             b.turn = 'a';
             state.turnStartedAt = Date.now();
@@ -4191,7 +4238,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // A monster pays for a heavy move the same way a player does.
         if (move.energy > R.startingEnergy) b.enemyEnergy = R.startingEnergy;
         else b.enemyEnergy += 1;
-        log(state, 'The ' + e.name + ' used ' + move.name + ' for ' + dealt + ' damage.', 'enemy');
+        log(state, D.foeName(e, true) + ' used ' + move.name + ' for ' + dealt + ' damage.', 'enemy');
         damageArmour(state, p);
 
         if (p.hp <= 0) { losePve(state, p); return ok(); }
@@ -4207,7 +4254,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const e = D.ENEMIES[b.enemyId];
         const sq = D.BOARD.find(s => s.enemy === b.enemyId) || {};
 
-        log(state, p.name + ' defeated the ' + e.name + '!', 'system');
+        log(state, p.name + ' defeated ' + D.foeName(e) + '!', 'system');
 
         if (e.boss) {
             state.battle = null;
@@ -4249,7 +4296,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     function losePve(state, p) {
         const b = state.battle;
         const e = D.ENEMIES[b.enemyId];
-        log(state, 'The ' + e.name + ' strikes ' + p.name + ' down. Back to the Start.', 'death');
+        log(state, D.foeName(e, true) + ' strikes ' + p.name + ' down. Back to the Start.', 'death');
         const wasIllusion = b.illusion;
         state.battle = null;
         sendToStart(state, p, true);
@@ -4456,7 +4503,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 return fail('That enemy cannot be conjured.');
             }
             target.pendingIllusion = enemyId;
-            log(state, p.name + ' conjures an illusion of the ' + D.ENEMIES[enemyId].name +
+            log(state, p.name + ' conjures an illusion of ' + D.foeName(D.ENEMIES[enemyId]) +
                        ' to ambush ' + target.name + '!', 'system');
         }
         return ok();
@@ -4535,12 +4582,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 return takeMoveBonus(state, p, pend, choice);
 
             case 'steak_roll': {
-                const roll = throwDie(state, p.name, 'steak');
+                const roll = throwDie(state, p.name, 'hunt');
                 if (R.steakRolls.indexOf(roll) >= 0) {
                     p.steaks.raw += 1;
-                    log(state, p.name + ' rolled a ' + roll + ' and found a raw steak.', 'item');
+                    log(state, p.name + ' rolled a ' + roll + ', hunted down an animal ' +
+                               'and butchered it into a raw steak.', 'item');
                 } else {
-                    log(state, p.name + ' rolled a ' + roll + ' — no steak this time.', 'muted');
+                    log(state, p.name + ' rolled a ' + roll +
+                               ' — nothing came past, and the hunt goes home empty.', 'muted');
                 }
                 state.pending = null;
                 return advanceTurn(state);
@@ -5600,7 +5649,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         //    once the number is known.
         if (!p.hasMoved && p.pos < D.ARENA_INDEX) return { action: 'rollMove', args: {} };
 
-        // 6. Nothing left but the steak roll that ends a turn.
+        // 6. Nothing left but the hunt that ends a turn.
         return { action: 'endTurn', args: {} };
     }
 
@@ -5899,6 +5948,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     const AT_A_HANDOVER = 1400;    // the turn has just passed to somebody else
     const BETWEEN_STEPS = 420;     // everything else
 
+    // A fight the computer is having with itself -- with a monster, or with
+    // the other computer player -- is a thing you are watching rather than
+    // taking part in, so the beats between the dice are set out by hand. A
+    // person in that fight gets the same pause before the monster answers
+    // them (ui.js, ENEMY_PAUSE_MS); this is the other side of it.
+    const BEFORE = {
+        enemyRoll:  1500,          // the monster picking the die up after a blow
+        battleRoll:  800           // stepping up to swing
+    };
+
     function schedule() {
         clearTimeout(timer);
         if (!state || (state.phase !== 'order' && state.phase !== 'playing')) return;
@@ -5907,15 +5966,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // two would carry on playing to an empty room after you walked away,
         // and the game you came back to would not be the one you left.
         if (!listeners.length) return;
-        if (!nextJob()) return;
+        const job = nextJob();
+        if (!job) return;
 
         // Never on top of a die that is still in the air, never straight
-        // after the turn has changed hands, and never so fast that the board
+        // after the turn has changed hands, never straight on top of the
+        // step before it in a fight, and never so fast that the board
         // changes without you seeing it.
         const now = Date.now();
         const wait = Math.max(BETWEEN_STEPS,
                               AFTER_A_DIE - (now - lastDieAt),
-                              AT_A_HANDOVER - (now - turnChangedAt));
+                              AT_A_HANDOVER - (now - turnChangedAt),
+                              BEFORE[job.action] || 0);
         timer = setTimeout(run, wait);
     }
 
@@ -6177,10 +6239,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const why = die.why || '';
             if (why === 'move') return die.who + ' moves ' + die.roll + '.';
             if (why === 'order') return die.who + ' rolled a ' + die.roll + ' for turn order.';
-            if (why === 'steak') {
+            if (why === 'hunt') {
                 return (D.RULES.steakRolls.indexOf(die.roll) >= 0)
-                    ? 'A ' + die.roll + ' — a raw steak.'
-                    : 'A ' + die.roll + ' — no steak this time.';
+                    ? 'A ' + die.roll + ' — an animal, and a raw steak off it.'
+                    : 'A ' + die.roll + ' — nothing came past.';
             }
             if (why === 'raw steak') {
                 return die.roll === D.RULES.foodPoisoningRoll
@@ -7014,17 +7076,17 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 const foe = D.ENEMIES[b.enemyId];
                 if (b.phase === 'enemy_roll') {
                     return { who: null, spin: true,
-                             text: 'the ' + foe.name + ' is rolling its die' };
+                             text: D.foeName(foe) + ' is rolling its die' };
                 }
                 if (b.phase === 'enemy_act') {
                     return { who: null, spin: true,
-                             text: 'the ' + foe.name + ' rolled ' + b.lastRoll +
+                             text: D.foeName(foe) + ' rolled ' + b.lastRoll +
                                    ' and is about to strike' };
                 }
                 return {
                     who: actorId, spin: !mine,
                     text: b.phase === 'roll'
-                        ? you('rolling to strike the ' + foe.name)
+                        ? you('rolling to strike ' + D.foeName(foe))
                         : you('choosing an attack')
                 };
             }
@@ -7047,7 +7109,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const mine = S.pending.playerId === NET.PID;
             const WORDS = {
                 move_bonus:     'deciding how far that roll should carry',
-                steak_roll:     'rolling for a raw steak',
+                steak_roll:     'out hunting',
                 optional_stop:  'deciding whether to stop here',
                 pot:            'at the pot, deciding what to cook',
                 chest:          'choosing what to take from the chest',
@@ -7222,6 +7284,33 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     // The Gate. Drawn rather than styled, so it can carry the three sockets
     // that the fragments turn in and the lightning that lives behind it.
+    /* ---- the stone bridge to the arena ----------------------------------
+       The Gate does not stand on the bank on its own: it stands at the near
+       end of the causeway that crosses the water to Fenrirak's arena, which
+       is the only way over. Drawn flat, seen from above, in the same stone
+       as the Gate itself. It is stretched to fit rather than scaled, so the
+       coursing stays upright at any width.
+       ------------------------------------------------------------------ */
+
+    const BRIDGE_ART =
+        '<svg viewBox="0 0 240 70" preserveAspectRatio="none" aria-hidden="true">' +
+        // what it throws on the water below it
+        '<rect x="0" y="56" width="240" height="14" fill="rgba(42,64,92,.38)"/>' +
+        // the roadway
+        '<rect x="0" y="10" width="240" height="50" fill="#b3aec0"/>' +
+        // the coursing, and the join down the middle of the road
+        '<g stroke="#948ea8" stroke-width="2.4" opacity=".75">' +
+            '<path d="M22 10v50M48 10v50M74 10v50M100 10v50M126 10v50' +
+                    'M152 10v50M178 10v50M204 10v50M230 10v50"/>' +
+            '<path d="M0 35h240"/>' +
+        '</g>' +
+        // the kerbs along both edges, the near one in shadow
+        '<rect x="0" y="3" width="240" height="11" fill="#c6c1d4" ' +
+            'stroke="#5f5972" stroke-width="2.4"/>' +
+        '<rect x="0" y="56" width="240" height="11" fill="#8f89a3" ' +
+            'stroke="#5f5972" stroke-width="2.4"/>' +
+        '</svg>';
+
     const GATE_ART =
         '<svg viewBox="0 0 120 190" aria-hidden="true" class="gate-svg">' +
         // the storm inside the archway, behind the stone
@@ -7499,8 +7588,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
             // the two back legs
             '<g fill="#dcb686" stroke="#b8905e" stroke-width="1.4">' +
-            '<rect x="58" y="34" width="9" height="92" rx="3"/>' +
-            '<rect x="130" y="40" width="9" height="90" rx="3"/>' +
+            '<rect x="50" y="26" width="9" height="100" rx="3"/>' +
+            '<rect x="134" y="31" width="9" height="99" rx="3"/>' +
             '</g>' +
 
             // a bolt of cloth hung across the back of the pitch
@@ -7575,32 +7664,35 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<rect x="152" y="50" width="10" height="102" rx="3"/>' +
             '</g>' +
 
-            // The flat cardboard roof, laid over the four legs. It is a
-            // proper trapezoid: wider across the front than the back,
-            // because the back legs stand closer together, and tilted a
-            // little to the right because the right-hand legs are set
-            // lower. It used to be drawn as a quad whose corners did not
-            // agree with each other, which came out looking buckled.
+            // The flat cardboard roof, laid over the four legs. Its four
+            // corners are a single consistent projection now -- the two
+            // side edges run parallel to the legs below them, and the back
+            // edge is only as much shorter than the front as the back legs
+            // are closer together. The old one tapered hard enough to read
+            // as a pitched roof, and the marker on it sat above the card
+            // rather than on it.
             //
-            //   back  (48,18) --------- (142,24)
-            //   front (24,42) --------------- (172,50)
+            //   back  (46,22) ----------- (152,29)
+            //   front (22,44) --------------- (174,52)
             '<g>' +
             // the thickness of the card along the near edge
-            '<path d="M24 42 L172 50 L172 57 L24 49 Z" fill="#7c4826"/>' +
+            '<path d="M22 44 L174 52 L174 59 L22 51 Z" fill="#7c4826"/>' +
             // the sheet itself
-            '<path d="M24 42 L48 18 L142 24 L172 50 Z" fill="#b5714a" '
+            '<path d="M22 44 L46 22 L152 29 L174 52 Z" fill="#b5714a" '
             + 'stroke="#8a5030" stroke-width="2" stroke-linejoin="round"/>' +
             // the corrugation, running front to back across the sheet
-            '<g stroke="#9c5f3c" stroke-width="1" opacity=".55">' +
-            '<path d="M46 43L62 19M68 44L76 20M91 46L90 21M113 47L104 22'
-            + 'M135 48L119 22M157 49L133 23"/>' +
+            '<g stroke="#9c5f3c" stroke-width="1" opacity=".5">' +
+            '<path d="M43 45L61 23M65 46L76 24M86 47L90 25'
+            + 'M107 49L105 26M128 50L120 27M150 51L135 28"/>' +
             '</g>' +
-            // written on it in marker, lying flat on the sloping card
-            '<g transform="matrix(1 .054 -.55 .95 96 34)">' +
-            '<text x="0" y="-9" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" '
-            + 'font-size="13" fill="#2f1d12" text-anchor="middle">Poor</text>' +
-            '<text x="0" y="8" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" '
-            + 'font-size="17" font-weight="bold" fill="#231409" text-anchor="middle">' +
+            // Written on it in marker. The matrix is the roof's own plane:
+            // across is the front edge, down is front-to-back, so the
+            // writing lies on the card instead of floating over it.
+            '<g transform="matrix(.999 .053 -.45 .85 98.5 36.7)">' +
+            '<text x="0" y="-4" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" '
+            + 'font-size="11" fill="#2f1d12" text-anchor="middle">Poor</text>' +
+            '<text x="0" y="10" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" '
+            + 'font-size="16" font-weight="bold" fill="#231409" text-anchor="middle">' +
             'Merchant</text>' +
             '</g>' +
             '</g>' +
@@ -7662,7 +7754,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // deck itself -- the two thin stick footbridges that used to lie
         // across the water above and below the arena are gone.
         $('#board').innerHTML =
-            '<div class="river"></div>' + decor + html +
+            '<div class="river"></div>' + decor +
+            // Before the squares, so the arena's disc paints over the far end
+            // of it: the causeway runs under the rim and onto the arena.
+            '<div class="river-bridge">' + BRIDGE_ART + '</div>' + html +
             '<div class="merchant-stall">' + merchantStallSvg() + '</div>';
     }
 
@@ -8243,7 +8338,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const foe = D.ENEMIES[b.enemyId];
         if (phase === 'enemy_roll') {
             setTimeout(() => {
-                DICE.expect('The ' + foe.name, 'It rolls for itself — even connects, odd misses.');
+                DICE.expect(D.foeName(foe, true), 'It rolls for itself — even connects, odd misses.');
                 act('enemyRoll', {});
             }, ENEMY_PAUSE_MS);
         } else {
@@ -8348,10 +8443,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         } else if (pend.type === 'steak_roll') {
             // Nothing is thrown until the button is pressed, so there is
             // deliberately no die shown here yet.
-            body = '<h2>End of your turn</h2>' +
+            body = '<h2>The hunt</h2>' +
                 '<div class="sub">' + esc(pend.prompt) + '</div>' +
                 '<div class="modal-actions" style="justify-content:center">' +
-                '<button class="btn primary" data-choice="roll">Roll the die</button></div>';
+                '<button class="btn primary" data-choice="roll">Go hunting</button></div>';
         } else if (pend.type === 'optional_stop') {
             body = '<h2>Optional stop</h2><div class="sub">' + esc(pend.prompt) + '</div>' +
                 '<div class="modal-actions">' +
@@ -8420,8 +8515,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 c = n === 0 ? false : n;
             }
             if (pend.type === 'steak_roll') {
-                return rollAct('Rolling for a raw steak', 'resolvePending', { choice: c },
-                               'A ' + D.RULES.steakRolls.join(', ') + ' finds one.');
+                return rollAct('Out hunting', 'resolvePending', { choice: c },
+                               'A ' + D.RULES.steakRolls.join(', ') +
+                               ' and something comes past.');
             }
             act('resolvePending', { choice: c });
         }));
