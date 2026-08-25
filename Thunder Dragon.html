@@ -207,6 +207,8 @@
 
     <style>
 /* ==== game/style.css ==== */
+@import url('https://fonts.googleapis.com/css2?family=Cutive+Mono:wght@400;700&display=swap');
+
 /* =========================================================================
    Legend of Fenrirak™, The Thunder Dragon — Online Version
    style.css
@@ -228,7 +230,7 @@
 * { box-sizing: border-box; }
 
 body {
-    font-family: Allegro, serif;
+    font-family: 'Cutive Mono', 'Courier New', monospace;
     color: #e6e6e6;
     margin: 0;
     padding: 0;
@@ -259,7 +261,7 @@ h3 { font-size: 17px; }
 .gold { color: var(--gold-bright); }
 
 .btn {
-    font-family: Allegro, serif;
+    font-family: 'Cutive Mono', 'Courier New', monospace;
     font-size: 16px;
     padding: 11px 20px;
     border-radius: 999px;
@@ -290,7 +292,7 @@ h3 { font-size: 17px; }
 .btn.small { font-size: 13.5px; padding: 7px 13px; }
 
 input[type=text], input[type=number], select {
-    font-family: Allegro, serif;
+    font-family: 'Cutive Mono', 'Courier New', monospace;
     font-size: 16px;
     padding: 11px 14px;
     border-radius: 9px;
@@ -619,9 +621,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     margin: -20px 0;
     z-index: 0;
     background:
-        repeating-linear-gradient(178deg,
-            rgba(255,255,255,.18) 0 3px, transparent 3px 24px),
-        linear-gradient(90deg, #8aaed2, #adc9e2 46%, #8aaed2);
+        /* the light off the water, banked towards the middle of the
+           channel. No ruled lines across it -- they read as scratches on
+           the card rather than as water. */
+        radial-gradient(ellipse 60% 30% at 50% 22%, rgba(255,255,255,.16), transparent 70%),
+        radial-gradient(ellipse 60% 30% at 50% 74%, rgba(255,255,255,.11), transparent 70%),
+        linear-gradient(90deg, #7ea5cc, #a9c6e0 44%, #b4cde5 52%, #7ea5cc);
     border-left: 1px solid #7593b4;
     border-right: 1px solid #7593b4;
     box-shadow: inset 0 0 22px rgba(60,90,120,.28);
@@ -704,30 +709,61 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .sq.scenery-bridge {
     position: relative;
     background:
-        /* posts standing along the far edge */
+        /* the rope lashing the rail down onto the posts, near and far */
         repeating-linear-gradient(90deg,
-            transparent 0 12px, #d9b183 12px 20px, transparent 20px 42px)
-            top left / 100% 13px no-repeat,
-        /* posts along the near edge */
+            transparent 0 15px, rgba(92,62,30,.5) 15px 17px, transparent 17px 21px)
+            top left / 100% 14px no-repeat,
         repeating-linear-gradient(90deg,
-            transparent 0 30px, #d9b183 30px 38px, transparent 38px 42px)
-            bottom left / 100% 13px no-repeat,
-        /* the planks, laid across the span */
+            transparent 0 15px, rgba(92,62,30,.5) 15px 17px, transparent 17px 21px)
+            bottom left / 100% 14px no-repeat,
+        /* the rails: a round pole along each edge, lit along the top of it */
+        linear-gradient(180deg, #e0b083, #c08a58 42%, #99653a)
+            top left / 100% 14px no-repeat,
+        linear-gradient(180deg, #a97347, #8a5730 55%, #6d4222)
+            bottom left / 100% 14px no-repeat,
+        /* the grain, dragged along the length of each plank */
+        repeating-linear-gradient(2deg,
+            rgba(255,226,190,.10) 0 2px, transparent 2px 7px),
+        /* the gaps between the planks: dark at the bottom of the cut, lit
+           along the top lip of the board next to it */
         repeating-linear-gradient(90deg,
-            rgba(80, 40, 18, .30) 0 1px, transparent 1px 17px),
-        /* the deck itself, lit from above */
-        linear-gradient(180deg, #cd8b5e, #bd7a4d 30%, #a9683f 72%, #8e5433),
+            rgba(58,28,10,.55) 0 2px,
+            rgba(255,222,180,.24) 2px 3px,
+            transparent 3px 19px),
+        /* the boards themselves, no two quite the same colour */
+        repeating-linear-gradient(90deg,
+            #c3854f 0 19px, #b97c48 19px 38px, #ca8c56 38px 57px, #bd8049 57px 76px),
         transparent;
-    border-color: #8a5030;
+    border-color: #7d4726;
     border-width: 1px 0;
     color: #2e1c11;
     /* the lit top lip, the sawn edge at the near side, and the drop below */
     box-shadow:
-        inset 0 2px 0 rgba(255, 224, 190, .55),
-        inset 0 -7px 0 rgba(74, 38, 18, .55),
+        inset 0 2px 0 rgba(255, 230, 196, .5),
+        inset 0 -7px 0 rgba(74, 38, 18, .5),
         inset 0 -9px 0 rgba(120, 68, 36, .9),
         0 11px 16px -7px rgba(20, 40, 60, .85);
 }
+/* The knots in the timber and the nail heads holding it down. */
+.sq.scenery-bridge::before {
+    content: '';
+    position: absolute;
+    inset: 14px 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 4px 3px at 22% 34%, rgba(84,48,20,.55), transparent 70%),
+        radial-gradient(ellipse 5px 3px at 61% 68%, rgba(84,48,20,.45), transparent 70%),
+        radial-gradient(ellipse 3px 3px at 84% 28%, rgba(84,48,20,.5), transparent 70%),
+        radial-gradient(circle 1.6px at 9% 16%, rgba(70,58,48,.85), transparent 70%),
+        radial-gradient(circle 1.6px at 9% 84%, rgba(70,58,48,.85), transparent 70%),
+        radial-gradient(circle 1.6px at 47% 16%, rgba(70,58,48,.85), transparent 70%),
+        radial-gradient(circle 1.6px at 47% 84%, rgba(70,58,48,.85), transparent 70%),
+        radial-gradient(circle 1.6px at 85% 16%, rgba(70,58,48,.85), transparent 70%),
+        radial-gradient(circle 1.6px at 85% 84%, rgba(70,58,48,.85), transparent 70%);
+}
+.sq.scenery-bridge .sq-name,
+.sq.scenery-bridge .sq-text,
+.sq.scenery-bridge .tokens { position: relative; z-index: 2; }
 .sq.scenery-bridge .sq-name {
     color: #2e1c11;
     border-bottom-color: rgba(60,30,15,.5);
@@ -845,6 +881,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 .arena {
     position: relative;
+    /* The name on the sand is sized off the width of the arena rather than
+       off the width of the window: the disc is a share of this box up to a
+       cap, so a viewport unit gets the two out of step -- on a narrow board
+       the writing was still window-sized and ran off the floor onto the
+       seating. */
+    container-type: inline-size;
     z-index: 1;
     border: none;
     background: none;
@@ -852,73 +894,143 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     pointer-events: none;
     display: block;
 }
-/* the disc */
+/* The arena. This is the one place on the board the whole game is walking
+   towards, so it is not a bare brown counter: it is a building.
+
+   It is built of the same pale stone as the Gate and the causeway, which
+   is what makes the three of them read as one structure -- you cross the
+   water on that stone, through that gate, into this. Inside the wall are
+   two courses of seating dropping down to the raked sand, and the dragon's
+   mark is scored into the middle of the floor.
+   ---------------------------------------------------------------------- */
+
 .arena .arena-disc {
     position: absolute;
-    /* Sat over on the right, which put the far rim under the Gate. It is
-       pulled back towards the near bank now, so the Gate has clear water to
-       stand on between the disc and the Fountain of Life. */
+    /* Pulled back towards the near bank, so the Gate and the causeway have
+       clear water to stand on between the disc and the Fountain of Life. */
     left: 27%; top: 50%;
     transform: translate(-50%, -50%);
-    width: min(74%, 300px);
+    width: min(82%, 340px);
     aspect-ratio: 1;
     border-radius: 50%;
     background:
-        /* scoring raked across the floor */
-        repeating-conic-gradient(from 0deg at 50% 50%,
-            rgba(255,255,255,.05) 0deg 6deg, transparent 6deg 12deg),
-        radial-gradient(circle at 50% 50%,
-            transparent 0 56%, rgba(90,48,26,.30) 56% 60%, transparent 60%),
-        radial-gradient(circle at 38% 30%, rgba(255,255,255,.26), transparent 58%),
-        #b5714a;
-    border: 3px solid #8a5030;
+        /* the lamp on the whole thing */
+        radial-gradient(circle at 34% 24%, rgba(255,255,255,.34), transparent 56%),
+        /* the columns standing round the wall, seen from above */
+        repeating-conic-gradient(from 3deg at 50% 50%,
+            rgba(72,66,90,.42) 0deg 1.5deg, transparent 1.5deg 7.2deg),
+        /* the stone of the wall itself */
+        radial-gradient(circle at 50% 50%, #c6c1d4 0 62%, #a49eb8 100%);
+    border: 3px solid #4f4a62;
     box-shadow:
-        0 14px 30px -14px rgba(0,0,0,.8),
-        inset 0 0 26px rgba(90,48,26,.4);
+        /* the shadow it throws on the water, then the gold band round the
+           top of the wall and the dark plinth it all stands on */
+        0 20px 42px -14px rgba(0,0,0,.9),
+        0 0 0 4px rgba(184,121,31,.65),
+        0 0 0 7px rgba(79,74,98,.9),
+        0 0 0 12px rgba(52,48,66,.45),
+        inset 0 0 34px rgba(64,58,84,.42);
 }
-/* the ring of pale stones pressed round the rim */
+/* The seating: two courses of stone stepping down to the floor. */
 .arena .arena-disc::before {
     content: '';
     position: absolute;
-    inset: 7%;
+    inset: 10%;
     border-radius: 50%;
     background:
         repeating-conic-gradient(from 8deg at 50% 50%,
-            rgba(232,214,186,.55) 0deg 3.2deg, transparent 3.2deg 15deg);
-    -webkit-mask: radial-gradient(circle, transparent 0 88%, #000 88% 100%);
-            mask: radial-gradient(circle, transparent 0 88%, #000 88% 100%);
+            rgba(255,255,255,.42) 0deg 2.4deg, transparent 2.4deg 8.4deg),
+        radial-gradient(circle at 50% 50%, #b3aec0 0 100%);
+    box-shadow:
+        inset 0 0 0 3px rgba(79,74,98,.75),
+        inset 0 0 0 12px rgba(198,193,212,.9),
+        inset 0 0 0 15px rgba(79,74,98,.55),
+        inset 0 0 0 26px rgba(168,162,186,.85),
+        inset 0 0 0 29px rgba(79,74,98,.5);
+    pointer-events: none;
+}
+/* The sand floor, raked in arcs, with the dragon's mark burnt into the
+   middle of it. Whoever is fighting stands on this. */
+.arena .arena-disc::after {
+    content: '';
+    position: absolute;
+    inset: 19%;
+    border-radius: 50%;
+    background:
+        /* the mark: a ring with four spurs off it */
+        conic-gradient(from 0deg at 50% 50%,
+            transparent 0deg 43deg, rgba(122,68,38,.26) 43deg 47deg,
+            transparent 47deg 133deg, rgba(122,68,38,.26) 133deg 137deg,
+            transparent 137deg 223deg, rgba(122,68,38,.26) 223deg 227deg,
+            transparent 227deg 313deg, rgba(122,68,38,.26) 313deg 317deg,
+            transparent 317deg),
+        radial-gradient(circle at 50% 50%,
+            transparent 0 32%, rgba(122,68,38,.28) 32% 35%, transparent 35%),
+        /* the rake, dragged round the floor */
+        repeating-conic-gradient(from 0deg at 50% 50%,
+            rgba(150,110,68,.13) 0deg 2.2deg, transparent 2.2deg 4.8deg),
+        radial-gradient(circle at 38% 30%, rgba(255,255,255,.20), transparent 60%),
+        radial-gradient(circle at 50% 50%, #ddc296 0 58%, #c7a678 100%);
+    box-shadow:
+        inset 0 0 0 3px rgba(79,74,98,.6),
+        inset 0 8px 24px rgba(108,80,48,.4);
     pointer-events: none;
 }
 .arena .arena-inner {
     position: absolute;
-    /* On the disc rather than over its top rim: the disc is sized off the
+    /* On the sand rather than over the wall: the disc is sized off the
        width and the arena's box is three rows tall, so a fraction of the
        box height put the writing above the card on a narrow board. */
-    left: 27%; top: 43%;
+    left: 27%; top: 42%;
     transform: translate(-50%, -50%);
-    width: min(74%, 262px);
+    width: min(56%, 232px);
     text-align: center;
     z-index: 2;
 }
+/* Sized to fit inside the sand floor, which is a good deal narrower than
+   the disc -- and Cutive Mono is a monospace, so it is much wider per
+   letter than the serif this used to be set in. */
 .arena .arena-title {
-    font-size: clamp(14px, 1.5vw, 21px);
-    color: #3a2213;
-    letter-spacing: 1px;
-    text-shadow: 0 1px 0 rgba(255,255,255,.22);
+    /* The floor is 58% of a disc that is 82% of this box, so the name has
+       roughly 0.48 of the box to lie in. Cutive Mono runs about 0.74em to
+       the letter and the name is sixteen letters long, which is where the
+       4cqw comes from; the cap is the disc's own cap doing the same sum. */
+    font-size: max(8.5px, min(5.1cqw, 16px));
+    line-height: 1.1;
+    color: #4a2a15;
+    letter-spacing: 0;
+    white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(255,248,232,.55);
 }
-.arena .arena-sub { font-size: 11.5px; color: #6a3e24; margin-top: 2px; }
-/* Whoever is in the arena stands in the middle of the circle. */
+.arena .arena-sub {
+    font-size: min(3cqw, 10px);
+    color: #7a4a28;
+    letter-spacing: 0;
+    white-space: nowrap;
+    margin-top: 3px;
+}
+/* Whoever is in the arena stands in the middle of the sand. */
 .arena .tokens {
     position: absolute;
-    left: 27%; top: 57%;
+    left: 27%; top: 60%;
     transform: translate(-50%, -50%);
-    width: min(66%, 240px);
+    width: min(46%, 190px);
     display: flex; justify-content: center; flex-wrap: wrap;
     gap: 5px;
     z-index: 3;
     pointer-events: auto;
 }
-.arena.lit .arena-disc { border-color: #a8402c; }
+/* Somebody is in there. The gold band round the wall goes the colour of
+   the storm. */
+.arena.lit .arena-disc {
+    border-color: #6d2a1e;
+    box-shadow:
+        0 20px 42px -14px rgba(0,0,0,.9),
+        0 0 0 4px rgba(168,64,44,.85),
+        0 0 0 7px rgba(79,74,98,.9),
+        0 0 0 12px rgba(52,48,66,.45),
+        inset 0 0 34px rgba(120,50,32,.4);
+}
 
 /* ---- the Gate ---------------------------------------------------------
    Not a square on the board: the rules put it in the gap between the
@@ -1008,7 +1120,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     align-self: center;
     margin: 0 -7% 0 -32%;
     aspect-ratio: 240 / 84;
-    transform: translateY(60%);
+    /* Level with the middle of the Fountain of Life, which is the square
+       the crossing runs out of. It used to be dropped below the line of
+       the row, which read as the bridge missing the bank. */
+    transform: translateY(0);
     z-index: 1;
     pointer-events: none;
 }
@@ -1225,7 +1340,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     text-align: left; padding: 12px 14px; border-radius: 10px;
     border: 1px solid var(--panel-edge);
     background: linear-gradient(180deg, #262019, #191512);
-    cursor: pointer; font-family: Allegro, serif; color: #e8e8e8;
+    cursor: pointer; font-family: 'Cutive Mono', 'Courier New', monospace; color: #e8e8e8;
 }
 .move:hover:not(:disabled) { border-color: var(--gold); }
 .move:disabled { opacity: .35; cursor: not-allowed; }
@@ -1368,10 +1483,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     .board { grid-template-rows: repeat(5, minmax(84px, 1fr)); }
     .sq { min-height: 84px; }
     .sq .sq-text { display: none; }
-    /* The disc is a fraction of the board's width, so the writing on it has
-       to be too -- a fixed size spilled off the card on a narrow screen. */
-    .arena .arena-title { font-size: min(21px, 3.2vw); }
-    .arena .arena-sub { font-size: min(11.5px, 1.9vw); }
+    /* The name on the disc is sized off the disc -- see .arena-title -- so
+       there is nothing to override here by window width any more. Doing so
+       was what put a 12px name on a 72px arena at phone size. */
 }
 
 @media (max-width: 720px) {
@@ -1386,7 +1500,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     .sq .sq-name { font-size: 10px; }
     .sq .sq-badge { display: none; }
     .token { width: 22px; height: 22px; }
+    /* There is no room for the second line on a phone, and the name goes
+       over two lines instead of running off both sides of the arena. */
     .arena .arena-sub { display: none; }
+    .arena .arena-inner { width: 84%; top: 46%; }
+    .arena .arena-title { white-space: normal; line-height: 1.05; }
+    .arena .tokens { top: 62%; }
     .code-box .code { font-size: 23px; letter-spacing: 4px; }
 }
 
@@ -1400,7 +1519,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: Allegro, serif;
+    font-family: 'Cutive Mono', 'Courier New', monospace;
     font-size: 30px;
     letter-spacing: 1px;
     color: #f1e8d8;
@@ -1441,7 +1560,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     box-shadow: 0 26px 60px -20px #000;
 }
 .dice-box .dice-title {
-    font-family: Allegro, serif;
+    font-family: 'Cutive Mono', 'Courier New', monospace;
     font-size: 21px;
     color: var(--gold-bright, #e4c14a);
     margin-bottom: 6px;
@@ -1478,20 +1597,78 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     background: radial-gradient(circle at 34% 30%, #4a423a, #16110c 70%);
     box-shadow: inset 0 1px 2px rgba(255,255,255,.28), 0 1px 1px rgba(255,255,255,.5);
 }
-.dice-face.tumbling { animation: dice-tumble .62s linear infinite; }
-@keyframes dice-tumble {
-    0%   { transform: rotate(0deg)   scale(1); }
-    25%  { transform: rotate(90deg)  scale(1.09); }
-    50%  { transform: rotate(180deg) scale(.92); }
-    75%  { transform: rotate(270deg) scale(1.09); }
-    100% { transform: rotate(360deg) scale(1); }
+/* ---- throwing it ------------------------------------------------------
+   The die used to spin on the spot, which read as a loading spinner rather
+   than as a throw. It is thrown now, in three parts:
+
+     .thrown    it comes in from off the top of the box, hits the table,
+                bounces twice and rolls out of the second bounce -- one
+                pass, about a second, with the pips flickering the whole
+                way through it
+     .tumbling  the roll it is left in, if the answer has not come back yet
+     .landed    it stops dead on the number, with the weight going through
+                it as it settles
+
+   The floor it lands on is the .dice-face box itself, so the drop is a
+   translate from above and the bounces are the same translate, smaller
+   each time. It squashes where it hits and stretches on the way back up,
+   which is what makes it read as a solid thing rather than a picture
+   sliding about.
+   ---------------------------------------------------------------------- */
+
+.dice-face { will-change: transform; }
+
+.dice-face.thrown {
+    animation: dice-throw 1.05s cubic-bezier(.36, .1, .3, 1) 1 both;
 }
-.dice-face.landed { animation: dice-land .34s ease-out; }
+@keyframes dice-throw {
+    /* clear of the box, corner-on, coming down fast */
+    0%   { transform: translate3d(-64px, -220px, 0) rotate(-160deg) scale(.72); }
+    26%  { transform: translate3d(-22px, 0, 0)      rotate(140deg)  scale(1.02); }
+    /* first hit: it squashes flat under itself */
+    31%  { transform: translate3d(-14px, 6px, 0)    rotate(178deg)  scaleX(1.22) scaleY(.76); }
+    /* up again, stretched, still turning */
+    46%  { transform: translate3d(10px, -74px, 0)   rotate(298deg)  scaleX(.92) scaleY(1.1); }
+    /* second hit, softer */
+    60%  { transform: translate3d(20px, 5px, 0)     rotate(392deg)  scaleX(1.14) scaleY(.86); }
+    /* a low third hop, and it starts rolling rather than bouncing */
+    72%  { transform: translate3d(14px, -26px, 0)   rotate(452deg)  scaleX(.97) scaleY(1.04); }
+    84%  { transform: translate3d(6px, 3px, 0)      rotate(506deg)  scaleX(1.07) scaleY(.94); }
+    93%  { transform: translate3d(2px, -6px, 0)     rotate(536deg)  scale(1); }
+    100% { transform: translate3d(0, 0, 0)          rotate(560deg)  scale(1); }
+}
+
+/* Still rolling, because the answer is not back yet. Slower and flatter
+   than the throw -- it is running out of momentum, not spinning up. */
+.dice-face.tumbling {
+    animation: dice-roll .9s cubic-bezier(.45, 0, .55, 1) infinite;
+}
+@keyframes dice-roll {
+    0%   { transform: translate3d(0, 0, 0)     rotate(0deg)   scale(1); }
+    24%  { transform: translate3d(5px, -13px, 0) rotate(96deg)  scaleX(.96) scaleY(1.05); }
+    48%  { transform: translate3d(0, 2px, 0)   rotate(180deg) scaleX(1.08) scaleY(.93); }
+    72%  { transform: translate3d(-5px, -13px, 0) rotate(272deg) scaleX(.96) scaleY(1.05); }
+    100% { transform: translate3d(0, 0, 0)     rotate(360deg) scale(1); }
+}
+
+/* The number is in. It drops the last of its height onto the table and the
+   weight goes through it. */
+.dice-face.landed { animation: dice-land .5s cubic-bezier(.3, 1.5, .5, 1) both; }
 @keyframes dice-land {
-    0%   { transform: scale(1.22); }
-    60%  { transform: scale(.95); }
-    100% { transform: scale(1); }
+    0%   { transform: translate3d(0, -16px, 0) rotate(-14deg) scale(1.14); }
+    45%  { transform: translate3d(0, 3px, 0)   rotate(2deg)   scaleX(1.12) scaleY(.9); }
+    72%  { transform: translate3d(0, -4px, 0)  rotate(0deg)   scaleX(.97) scaleY(1.03); }
+    100% { transform: translate3d(0, 0, 0)     rotate(0deg)   scale(1); }
 }
+
+/* Somebody who has asked not to be moved about gets the number, and none
+   of the throwing. */
+@media (prefers-reduced-motion: reduce) {
+    .dice-face.thrown,
+    .dice-face.tumbling,
+    .dice-face.landed { animation: none; transform: none; }
+}
+
 .dice-box .dice-verdict {
     min-height: 20px;
     font-size: 14.5px;
@@ -1573,7 +1750,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .me-card .me-id { flex: 1; min-width: 0; }
 .me-card .me-name {
-    font-family: Allegro, serif;
+    font-family: 'Cutive Mono', 'Courier New', monospace;
     font-size: 21px;
     color: var(--cream, #efe6d4);
     line-height: 1.1;
@@ -2868,8 +3045,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         { i: 6,  key: 'draw_item',        name: 'Draw 2 Item Cards',    row: 4, col: 0,
           action: 'draw_item', count: 2, text: 'Draw 2 item cards.' },
 
-        { i: 7,  key: 'spring',           name: 'Spring',               row: 3, col: 0,
-          action: 'spring', value: 2, text: 'Move forward two spaces.' },
+        { i: 7,  key: 'sky_draft',       name: 'Sky Draft',            row: 3, col: 0,
+          action: 'spring', value: 2, text: 'The updraught carries you two spaces forward.' },
 
         { i: 8,  key: 'castle_ruins',     name: 'Castle Ruins',         row: 2, col: 0,
           action: 'battle', enemy: 'swarm_of_bats', coins: 3, chestKey: 1,
@@ -2950,8 +3127,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // instead of covering what is written on it.
         { kind: 'village',   row: 0, col: 4, size: .80 },
         { kind: 'fountain',  row: 2, col: 4, size: .72 },
-        { kind: 'pot',       row: 0, col: 0, size: .46 },
-        { kind: 'pot',       row: 2, col: 6, size: .46 },
+        { kind: 'sky_draft', row: 3, col: 0, size: .68 },
+        { kind: 'pot',       row: 0, col: 0, size: .60 },
+        { kind: 'pot',       row: 2, col: 6, size: .60 },
         // Bushes dotted round the edges of the grass. Some of them are in
         // berry, which is what the little red dots on the board are.
         // Seven of them, one to a cell and well apart, so they read as
@@ -2962,7 +3140,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         { kind: 'bush',      row: 1, col: 5, size: .30, berries: true, nudge: -20 },
         { kind: 'bush',      row: 3, col: 4, size: .26, berries: true, nudge: -56 },
         { kind: 'bush',      row: 3, col: 5, size: .22, nudge: 40 },
-        { kind: 'bush',      row: 3, col: 6, size: .27, berries: true, nudge: -30 }
+        { kind: 'bush',      row: 3, col: 2, size: .27, berries: true, nudge: -34 }
     ];
 
     const START_INDEX = 0;
@@ -3777,7 +3955,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             }
 
             case 'spring': {
-                log(state, 'The spring launches ' + p.name + ' two spaces forward!', 'move');
+                log(state, 'A sky draft catches ' + p.name + ' and carries them two spaces forward!', 'move');
                 return walk(state, p, sq.value);
             }
 
@@ -5944,9 +6122,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
        narrator says what they did.
        ------------------------------------------------------------------ */
 
-    const AFTER_A_DIE = 1500;      // let the overlay tumble, land and be read
-    const AT_A_HANDOVER = 1400;    // the turn has just passed to somebody else
-    const BETWEEN_STEPS = 420;     // everything else
+    // A throw takes about a second in the air and another second and a
+    // half on the table, so nothing else may happen for two and a half --
+    // otherwise the board changes underneath a die that is still bouncing.
+    // These are the floors ui.js's THROW_MS and its settle add up to; if
+    // the throw is retimed, retime these with it.
+    const AFTER_A_DIE = 2600;      // the throw, the landing, and time to read it
+    const AT_A_HANDOVER = 1600;    // the turn has just passed to somebody else
+    const BETWEEN_STEPS = 500;     // everything else
 
     // A fight the computer is having with itself -- with a monster, or with
     // the other computer player -- is a thing you are watching rather than
@@ -5954,8 +6137,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // person in that fight gets the same pause before the monster answers
     // them (ui.js, ENEMY_PAUSE_MS); this is the other side of it.
     const BEFORE = {
-        enemyRoll:  1500,          // the monster picking the die up after a blow
-        battleRoll:  800           // stepping up to swing
+        enemyRoll:  1600,          // the monster picking the die up after a blow
+        battleRoll: 1000           // stepping up to swing
     };
 
     function schedule() {
@@ -6180,7 +6363,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     const DICE = (function () {
         let back = null, faceEl = null, titleEl = null, subEl = null, verdictEl = null;
-        let flickerT = null, settleT = null, giveUpT = null;
+        let flickerT = null, settleT = null, giveUpT = null, rollT = null;
+        let thrownAt = 0;          // when this throw left the hand
         let open = false;
         let primed = false;         // have we seen this room at all yet?
         let seen = 0;               // the last throw we have shown
@@ -6205,13 +6389,35 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             verdictEl = back.querySelector('.dice-verdict');
         }
 
+        // Put it in the air: off the top of the box, down onto the table,
+        // two bounces and a roll out of the second one. The pips flicker
+        // the whole way through, so no face is ever readable until it has
+        // stopped.
+        //
+        // THROW_MS is how long that pass takes; after it the die is left
+        // rolling on the spot until the answer comes back. Nothing may
+        // land before it is over.
+        const THROW_MS = 1050;
+
         function startFlicker() {
             clearInterval(flickerT);
-            faceEl.classList.remove('landed');
-            faceEl.classList.add('tumbling');
+            clearTimeout(rollT);
+            // Restart the animation from the top even if the die is already
+            // out on the table -- assigning the same class again does not,
+            // so the classes come off, the layout is read, and they go back
+            // on. This is what was missing when two computer players were
+            // trading blows: the second throw kept the first one's face.
+            faceEl.classList.remove('landed', 'tumbling', 'thrown');
+            void faceEl.offsetWidth;
+            faceEl.classList.add('thrown');
+            thrownAt = Date.now();
+            rollT = setTimeout(() => {
+                faceEl.classList.remove('thrown');
+                faceEl.classList.add('tumbling');
+            }, THROW_MS);
             flickerT = setInterval(() => {
                 faceEl.innerHTML = pipsHtml(1 + Math.floor(Math.random() * 6));
-            }, 65);
+            }, 80);
         }
 
         function show(title, sub) {
@@ -6228,6 +6434,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             clearInterval(flickerT);
             clearTimeout(settleT);
             clearTimeout(giveUpT);
+            clearTimeout(rollT);
             if (back) back.classList.remove('on');
             open = false;
             armed = false;
@@ -6271,12 +6478,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             build();
             clearInterval(flickerT);
             clearTimeout(giveUpT);
+            clearTimeout(rollT);
             titleEl.textContent = die.who || 'The die';
-            faceEl.classList.remove('tumbling');
+            faceEl.classList.remove('tumbling', 'thrown');
+            void faceEl.offsetWidth;
             faceEl.classList.add('landed');
             faceEl.innerHTML = pipsHtml(die.roll);
             verdictEl.textContent = verdictFor(die);
-            settleT = setTimeout(close, 1150);
+            settleT = setTimeout(close, 1500);
         }
 
         return {
@@ -6288,7 +6497,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 clearTimeout(giveUpT);
                 // If the action was refused there will be no throw. Do not
                 // leave the die hanging in the air.
-                giveUpT = setTimeout(close, 4500);
+                giveUpT = setTimeout(close, 5200);
             },
 
             // Fed every state update. Returns true if it took the throw.
@@ -6300,10 +6509,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 if (!primed) { primed = true; seen = n; return false; }
                 if (!die || n === seen) return false;
                 seen = n;
-                if (!open) { show(die.who, ''); }
-                // Let it tumble for a beat even when the answer is already here.
+                // Every throw goes in the air, including one that arrives
+                // while the last one is still on the table. If the overlay
+                // is already open this re-throws it rather than swapping
+                // the face over, which is what two computer players
+                // trading blows fast used to look like.
+                if (!open) show(die.who, '');
+                else { titleEl.textContent = die.who || 'The die'; startFlicker(); }
+                // It may not land until it has finished bouncing, however
+                // quickly the answer came back.
                 clearTimeout(settleT);
-                settleT = setTimeout(() => land(die), armed ? 260 : 520);
+                const inTheAir = Date.now() - thrownAt;
+                settleT = setTimeout(() => land(die),
+                                     Math.max(220, THROW_MS - inTheAir));
                 armed = false;
                 return true;
             },
@@ -6523,6 +6741,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (unsub) unsub();
         unsub = NET.subscribe(code, onState, err => {
             const gone = /closed|no longer exists/i.test(err.message || '');
+            // The room being deleted underneath a finished game is the
+            // finished game being tidied up, not somebody ending it. Stay
+            // on the victory screen.
+            if (gone && S && S.phase === 'over') {
+                if (unsub) { unsub(); unsub = null; }
+                clearInterval(enterRoom._hb);
+                return;
+            }
             if (gone) {
                 if (unsub) { unsub(); unsub = null; }
                 clearInterval(enterRoom._hb);
@@ -6547,6 +6773,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         clearInterval(enterRoom._hb);
         if (NET === SOLO) return;
 
+        reaped = false;
         enterRoom._hb = setInterval(() => {
             if (!S || S.phase !== 'playing') return;
             if (Date.now() - (S.turnStartedAt || 0) < D.RULES.turnTimeoutMs) return;
@@ -6560,12 +6787,56 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         }, 5000);
     }
 
+    /* A game that has been won is over, and an online room that is over is
+       rubbish sitting in the database costing reads and writes for the rest
+       of time. Ending the game by hand already deleted the room; winning it
+       did not.
+
+       Every client that sees the finish reaps it, rather than only the
+       host: the host may have closed the tab, and deleting a document that
+       is already gone costs nothing. The victory screen is drawn off the
+       snapshot in hand, so nothing is needed from the room after this --
+       we stop listening first, which is also what stops the deletion
+       coming back as "the room was closed" in everybody's face. */
+    /* Not on the same tick as the win. Firestore does not promise to hand
+       a listener every state a document passed through -- if the winning
+       write and the deletion land close enough together, somebody else at
+       the table can be given the deletion and never the win, and would be
+       told the room had closed instead of being shown who took the dragon.
+       So the room is left standing long enough for the finish to reach
+       everybody, and only then thrown away.
+
+       Every client counts the same delay from the moment it sees the
+       finish, so it does not matter which of them is still at the keyboard
+       when it runs out. */
+    const REAP_AFTER_MS = 15000;
+
+    let reaped = false;
+
+    function reapFinishedRoom() {
+        if (reaped || NET === SOLO || !ROOM) return;
+        reaped = true;
+        const code = ROOM;
+        setTimeout(() => {
+            try { if (unsub) { unsub(); unsub = null; } } catch (e) { }
+            try { clearInterval(enterRoom._hb); } catch (e) { }
+            Promise.resolve(NET.closeRoom(code)).catch(() => {
+                /* somebody else got there first, or the network went away --
+                   either way the room is not our problem any more */
+            });
+        }, REAP_AFTER_MS);
+    }
+
     function onState(state) {
         S = state;
         DICE.saw(state);
         ZAP.saw(state);
         if (state.phase === 'lobby') { showScreen('screen-lobby'); renderLobby(); }
-        else if (state.phase === 'over') { showScreen('screen-over'); renderOver(); }
+        else if (state.phase === 'over') {
+            showScreen('screen-over');
+            renderOver();
+            reapFinishedRoom();
+        }
         else { showScreen('screen-game'); renderGame(); }
     }
 
@@ -7170,15 +7441,21 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const key = path.join('-');
             if (walkedKey[p.id] === key) {
                 // No new walk, but the player may still have been moved --
-                // sent back to the Start, or dropped into the arena. If
-                // nothing is animating, put the token where it belongs.
-                if (!walkTimers[p.id] && shownPos[p.id] !== p.pos) shownPos[p.id] = p.pos;
+                // knocked out in a fight, thrown back by the Gate, or
+                // dropped into the arena. If nothing is animating, put the
+                // token where it belongs, now, rather than leaving it
+                // standing where it fell until their next go.
+                if (!walkTimers[p.id] && shownPos[p.id] !== p.pos) {
+                    shownPos[p.id] = p.pos;
+                    renderBoard();
+                }
                 return;
             }
 
             const first = !(p.id in walkedKey);
             walkedKey[p.id] = key;
             clearInterval(walkTimers[p.id]);
+            delete walkTimers[p.id];
 
             // Nothing to replay: a fresh join, a reload, or a one-square hop.
             if (first || path.length < 2) { shownPos[p.id] = p.pos; return; }
@@ -7189,6 +7466,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 step += 1;
                 if (step >= path.length) {
                     clearInterval(walkTimers[p.id]);
+                    // and out of the map: an id left behind here is a
+                    // truthy number, which reads as "still walking" for
+                    // the rest of the game.
+                    delete walkTimers[p.id];
                     shownPos[p.id] = p.pos;
                 } else {
                     shownPos[p.id] = path[step];
@@ -7420,14 +7701,80 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</svg>',
 
         // A cardboard pot with blue water folded into it.
+        // A Pot square is somewhere you stop and cook, so it is drawn as
+        // what that actually is: a fire laid on the ground with a black pot
+        // hung over it on three sticks. It used to be a brown ring with
+        // blue in it, which read as a puddle or a coin rather than a pot.
         pot:
             '<svg viewBox="0 0 120 120" aria-hidden="true">' +
-            '<ellipse cx="60" cy="72" rx="46" ry="36" fill="#8f5533"/>' +
-            '<ellipse cx="60" cy="64" rx="46" ry="36" fill="#a3623d"/>' +
-            '<ellipse cx="60" cy="64" rx="33" ry="25" fill="#7f96b8"/>' +
-            '<path d="M32 62c10-12 24-16 38-10 10 4 16 12 18 20-14 8-32 8-44 0-6-4-10-7-12-10z" ' +
-            'fill="#a9c2e0"/>' +
-            '<ellipse cx="60" cy="64" rx="33" ry="25" fill="none" stroke="#6f4227" stroke-width="3"/>' +
+            // the scorched ground it is laid on
+            '<ellipse cx="60" cy="99" rx="40" ry="11" fill="#8f9a72" opacity=".55"/>' +
+            '<ellipse cx="60" cy="98" rx="27" ry="7" fill="#6b5a44" opacity=".6"/>' +
+            // the three sticks it hangs from, tied at the top
+            '<g stroke="#7a5a34" stroke-width="4" stroke-linecap="round">' +
+            '<path d="M60 18 26 96M60 18 94 96M60 18 60 92"/>' +
+            '</g>' +
+            '<circle cx="60" cy="19" r="5" fill="#a98455" stroke="#6f4a26" stroke-width="2"/>' +
+            // the logs, and the fire in among them
+            '<g stroke="#5f4327" stroke-width="2" stroke-linejoin="round">' +
+            '<path d="M30 92h30l-4 7H26z" fill="#8a6238"/>' +
+            '<path d="M64 92h28l-3 7H60z" fill="#77532f"/>' +
+            '</g>' +
+            // the embers under it
+            '<ellipse cx="60" cy="90" rx="22" ry="6" fill="#e08a2a" opacity=".85"/>' +
+            // the flame, licking up round the belly of the pot
+            '<path d="M60 56c9 6 15 15 15 22 0 9-7 14-15 14s-15-5-15-14c0-7 6-16 15-22z" ' +
+            'fill="#e8641f"/>' +
+            '<path d="M60 63c6 5 10 11 10 16 0 6-4 10-10 10s-10-4-10-10c0-5 4-11 10-16z" ' +
+            'fill="#f2a02a"/>' +
+            '<path d="M60 71c3 3 5 6 5 9s-2 5-5 5-5-2-5-5 2-6 5-9z" fill="#ffdc72"/>' +
+            // the hook, and the pot on the end of it
+            '<path d="M60 24v9" stroke="#4a4a52" stroke-width="3" stroke-linecap="round"/>' +
+            '<path d="M40 38a20 9 0 0 1 40 0" fill="none" stroke="#3b3b44" ' +
+            'stroke-width="3.4" stroke-linecap="round"/>' +
+            '<path d="M34 44h52l-5 26a23 23 0 0 1-42 0z" fill="#3f3f49" ' +
+            'stroke="#26262e" stroke-width="3" stroke-linejoin="round"/>' +
+            '<ellipse cx="60" cy="44" rx="26" ry="8" fill="#4b4b57" ' +
+            'stroke="#26262e" stroke-width="3"/>' +
+            // what is in it, and the light off the near side of the iron
+            '<ellipse cx="60" cy="44" rx="20" ry="5.5" fill="#7c5a2e"/>' +
+            '<path d="M42 52c2 9 6 15 11 18" fill="none" stroke="#6d6d7c" ' +
+            'stroke-width="3" stroke-linecap="round" opacity=".8"/>' +
+            '</svg>',
+
+        // The Sky Draft: a column of air coming up out of the ground hard
+        // enough to carry you two squares on. Drawn as the draught itself --
+        // curls of wind rising off a vent, with leaves caught up in them.
+        sky_draft:
+            '<svg viewBox="0 0 120 120" aria-hidden="true">' +
+            // the vent in the ground, and the shadow round it
+            '<ellipse cx="60" cy="104" rx="34" ry="9" fill="#7f9463" opacity=".45"/>' +
+            '<ellipse cx="60" cy="102" rx="20" ry="6" fill="#8ea7c4"/>' +
+            '<ellipse cx="60" cy="101" rx="14" ry="4" fill="#cfe1f2"/>' +
+            // the draught: three curls of air, widening as they rise
+            '<g fill="none" stroke="#e8f2fb" stroke-width="6" stroke-linecap="round" ' +
+            'opacity=".9">' +
+            '<path d="M60 96c-16-10-16-26-2-32s16-20 2-28"/>' +
+            '<path d="M38 92c-11-11-8-24 3-30"/>' +
+            '<path d="M82 92c11-11 8-24-3-30"/>' +
+            '</g>' +
+            '<g fill="none" stroke="#a9c6e0" stroke-width="2.4" stroke-linecap="round" ' +
+            'opacity=".85">' +
+            '<path d="M60 96c-16-10-16-26-2-32s16-20 2-28"/>' +
+            '<path d="M38 92c-11-11-8-24 3-30"/>' +
+            '<path d="M82 92c11-11 8-24-3-30"/>' +
+            '</g>' +
+            // the top of the column, blown open
+            '<g fill="none" stroke="#e8f2fb" stroke-width="4.5" stroke-linecap="round" ' +
+            'opacity=".8">' +
+            '<path d="M44 22c-8-6-6-14 4-15M76 22c8-6 6-14-4-15"/>' +
+            '</g>' +
+            // leaves picked up and carried
+            '<g fill="#9db393" stroke="#7fa876" stroke-width="1.6">' +
+            '<path d="M31 54c6-5 13-4 15 2-5 5-12 4-15-2z" transform="rotate(-24 38 56)"/>' +
+            '<path d="M74 34c6-5 13-4 15 2-5 5-12 4-15-2z" transform="rotate(38 81 36)"/>' +
+            '<path d="M56 16c5-4 11-3 13 2-5 4-11 3-13-2z" transform="rotate(-12 62 18)"/>' +
+            '</g>' +
             '</svg>',
 
         // What is left of the Castle Ruins: broken brown walls.
@@ -7589,7 +7936,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // the two back legs
             '<g fill="#dcb686" stroke="#b8905e" stroke-width="1.4">' +
             '<rect x="50" y="26" width="9" height="100" rx="3"/>' +
-            '<rect x="134" y="31" width="9" height="99" rx="3"/>' +
+            '<rect x="134" y="26" width="9" height="100" rx="3"/>' +
             '</g>' +
 
             // a bolt of cloth hung across the back of the pitch
@@ -7661,35 +8008,36 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // the two front legs, standing in front of the counter
             '<g fill="#e6c396" stroke="#bd9463" stroke-width="1.4">' +
             '<rect x="36" y="44" width="10" height="106" rx="3"/>' +
-            '<rect x="152" y="50" width="10" height="102" rx="3"/>' +
+            '<rect x="152" y="44" width="10" height="106" rx="3"/>' +
             '</g>' +
 
-            // The flat cardboard roof, laid over the four legs. Its four
-            // corners are a single consistent projection now -- the two
-            // side edges run parallel to the legs below them, and the back
-            // edge is only as much shorter than the front as the back legs
-            // are closer together. The old one tapered hard enough to read
-            // as a pitched roof, and the marker on it sat above the card
-            // rather than on it.
+            // The flat cardboard roof, laid over the four legs.
             //
-            //   back  (46,22) ----------- (152,29)
-            //   front (22,44) --------------- (174,52)
+            // It has been level since the legs were: the right-hand pair
+            // used to stand six units lower than the left, which tipped
+            // the whole card and took the writing down with it. All four
+            // legs are the same length now, so the front edge is flat,
+            // the back edge is flat and the two side edges are the same
+            // slope as each other.
+            //
+            //   back  (46,24) --------- (150,24)
+            //   front (22,44) ------------- (174,44)
             '<g>' +
             // the thickness of the card along the near edge
-            '<path d="M22 44 L174 52 L174 59 L22 51 Z" fill="#7c4826"/>' +
+            '<path d="M22 44 L174 44 L174 51 L22 51 Z" fill="#7c4826"/>' +
             // the sheet itself
-            '<path d="M22 44 L46 22 L152 29 L174 52 Z" fill="#b5714a" '
+            '<path d="M22 44 L46 24 L150 24 L174 44 Z" fill="#b5714a" '
             + 'stroke="#8a5030" stroke-width="2" stroke-linejoin="round"/>' +
             // the corrugation, running front to back across the sheet
             '<g stroke="#9c5f3c" stroke-width="1" opacity=".5">' +
-            '<path d="M43 45L61 23M65 46L76 24M86 47L90 25'
-            + 'M107 49L105 26M128 50L120 27M150 51L135 28"/>' +
+            '<path d="M45 44L62 24M68 44L77 24M90 44L93 24'
+            + 'M113 44L108 24M136 44L124 24M159 44L140 24"/>' +
             '</g>' +
             // Written on it in marker. The matrix is the roof's own plane:
             // across is the front edge, down is front-to-back, so the
             // writing lies on the card instead of floating over it.
-            '<g transform="matrix(.999 .053 -.45 .85 98.5 36.7)">' +
-            '<text x="0" y="-4" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" '
+            '<g transform="matrix(1 0 -.55 .62 98 33)">' +
+            '<text x="0" y="-6" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" '
             + 'font-size="11" fill="#2f1d12" text-anchor="middle">Poor</text>' +
             '<text x="0" y="10" font-family="\'Segoe Print\',\'Bradley Hand\',cursive" '
             + 'font-size="16" font-weight="bold" fill="#231409" text-anchor="middle">' +
@@ -8320,7 +8668,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // How long the table sits quiet between your blow landing and the monster
     // reaching for its die. Two seconds: long enough to read what just
     // happened before the next thing happens.
-    const ENEMY_PAUSE_MS = 2000;
+    const ENEMY_PAUSE_MS = 2400;
 
     function driveEnemyTurn(b) {
         const mine = b && b.kind === 'pve' && b.aId === NET.PID;
