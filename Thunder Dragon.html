@@ -1571,6 +1571,34 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     transform-style: preserve-3d;
 }
 
+/* Whose die this is and what it decides, said in words above it. The die
+   itself can land anywhere on the screen, so this sits in one fixed,
+   readable spot rather than following it. */
+.dice-caption {
+    position: absolute;
+    left: 50%; top: 16px;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: min(84vw, 380px);
+    text-align: center;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(18, 16, 12, .84);
+    border: 1px solid var(--panel-edge);
+    box-shadow: 0 10px 22px -8px rgba(0, 0, 0, .6);
+}
+.dice-caption .t {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--gold-bright);
+}
+.dice-caption .s {
+    margin-top: 2px;
+    font-size: 12.5px;
+    color: #c3ccd4;
+}
+.dice-caption .t:empty, .dice-caption .s:empty { display: none; }
+
 /* Every face carries pips, not a printed numeral -- a real die has dots.
    The nine positions are a 3x3 grid and each face lights the ones it
    uses, so 1 is the middle, 6 is two columns of three, and so on. */
@@ -1625,7 +1653,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Linear on purpose: the slowing down is in the numbers below, where
        it can slow the way a thrown thing does rather than the way an
        easing curve does. */
-    animation: dice-throw 1.2s linear both;
+    animation: dice-throw 1.32s linear both;
 }
 @keyframes dice-throw {
     /* off the side of the screen, high, small with distance */
@@ -1680,7 +1708,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
    up exactly where the throw left off -- both ends are the same share of
    `--tx` -- so handing over from one to the other does not move it. */
 .dice-die.rolling {
-    animation: dice-roll-out .6s cubic-bezier(.17, .72, .28, 1) both;
+    animation: dice-roll-out .66s cubic-bezier(.17, .72, .28, 1) both;
 }
 @keyframes dice-roll-out {
     from { transform: translate3d(calc(var(--tx, -700px) * .045), 0, 0)
@@ -1689,7 +1717,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 
 /* Over and over while it is in the air and for as long afterwards as the
-   answer takes to come back. 700ms a turn, which ui.js reads off SPIN_MS
+   answer takes to come back. 770ms a turn, which ui.js reads off SPIN_MS
    to work out where the cube has got to -- retime one and retime both.
 
    `--sy` is the rolling turn and is signed by which way the die is
@@ -1699,7 +1727,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
    what it used to do coming in from the right. `--sx` is the tumble it
    carries on top of that, at half the rate, so it reads as a die and not
    as a wheel. */
-.dice-cube.spinning { animation: dice-spin .7s linear infinite; }
+.dice-cube.spinning { animation: dice-spin .77s linear infinite; }
 @keyframes dice-spin {
     from { transform: rotateX(0deg) rotateY(0deg); }
     to   { transform: rotateX(var(--sx, 360deg)) rotateY(var(--sy, 720deg)); }
@@ -1707,9 +1735,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 /* It rolls on from exactly where the spin had got to, through another turn
    or so the same way round, and stops with the rolled face towards you.
-   `--rx0`/`--ry0` is where it was; `--rx`/`--ry` is where it stops. */
+   `--rx0`/`--ry0` is where it was; `--rx`/`--ry` is where it stops. The
+   curve matters as much as the angle: it has to pick up at the same rate
+   the spin was already turning and only then bleed that off, or the
+   handover reads as the die suddenly put on a burst of speed to reach the
+   right face rather than just running out of energy on the one it was
+   already headed for. */
 .dice-cube.settled {
-    animation: dice-settle .6s cubic-bezier(.22, .9, .3, 1) both;
+    animation: dice-settle .66s cubic-bezier(.39, .575, .565, 1) both;
 }
 @keyframes dice-settle {
     from { transform: rotateX(var(--rx0, 0deg)) rotateY(var(--ry0, 0deg)); }
@@ -6216,7 +6249,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // does not block anything, so the game carries on around it for the
     // three seconds it stays on the screen. This is ui.js's THROW_MS plus
     // its settle; if the throw is retimed, retime this with it.
-    const AFTER_A_DIE = 1800;      // the throw and the landing
+    const AFTER_A_DIE = 1980;      // the throw and the landing
     const AT_A_HANDOVER = 1600;    // the turn has just passed to somebody else
     const BETWEEN_STEPS = 500;     // everything else
 
@@ -6461,7 +6494,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* ------------------------------------------------------------------ */
 
     const DICE = (function () {
-        let stage = null, dieEl = null, cubeEl = null;
+        let stage = null, dieEl = null, cubeEl = null, capTitle = null, capSub = null;
         let settleT = null, giveUpT = null, holdT = null, fadeT = null;
         let thrownAt = 0;           // when this throw left the hand
         let inFlight = false;       // still in the air: nothing else may happen
@@ -6472,11 +6505,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         let spinX = 360, spinY = 720;   // this throw's turn, signed by travel
 
-        const THROW_MS  = 1200;     // off the side of the screen to the table
-        const SETTLE_MS = 600;      // the last roll into the number it shows
+        const THROW_MS  = 1320;     // off the side of the screen to the table
+        const SETTLE_MS = 660;      // the last roll into the number it shows
         const HOLD_MS   = 3000;     // how long it is left lying there
         const FADE_MS   = 450;
-        const SPIN_MS   = 700;      // must match the dice-spin keyframes
+        const SPIN_MS   = 770;      // must match the dice-spin keyframes
 
         // Which face is nailed where on the cube, written as the turn that
         // brings that face to the front. Only one axis moves for each, so
@@ -6495,11 +6528,35 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             for (let n = 1; n <= 6; n++) {
                 faces += '<span class="dice-side s' + n + '">' + pipsHtml(n) + '</span>';
             }
-            stage.innerHTML = '<div class="dice-die"><div class="dice-cube">' +
-                              faces + '</div></div>';
+            stage.innerHTML =
+                '<div class="dice-caption"><div class="t"></div><div class="s"></div></div>' +
+                '<div class="dice-die"><div class="dice-cube">' + faces + '</div></div>';
             document.body.appendChild(stage);
-            dieEl  = stage.querySelector('.dice-die');
-            cubeEl = stage.querySelector('.dice-cube');
+            dieEl    = stage.querySelector('.dice-die');
+            cubeEl   = stage.querySelector('.dice-cube');
+            capTitle = stage.querySelector('.dice-caption .t');
+            capSub   = stage.querySelector('.dice-caption .s');
+        }
+
+        // Say whose die this is and what it is for, above wherever it lands.
+        // Called with a specific line whenever this client is the one that
+        // asked for the throw; given nothing else to go on -- a bot's turn, or
+        // somebody else's roll arriving over the network -- it falls back to
+        // reading the same who/why that get stamped on the state itself.
+        const WHY_SUB = {
+            move:   'Rolling to move.',
+            attack: 'Even connects, odd misses.',
+            order:  'Highest goes first.',
+            hunt:   'Something might come past.'
+        };
+        function caption(title, sub) {
+            if (capTitle) capTitle.textContent = title || '';
+            if (capSub)   capSub.textContent   = sub || '';
+        }
+        function captionFromDie(die) {
+            if (!die) return caption('', '');
+            caption(die.who || '', WHY_SUB[die.why] ||
+                (die.why ? 'Rolling for ' + die.why + '.' : ''));
         }
 
         // Pitch it in. It comes in off one side of the screen, bounces its
@@ -6651,10 +6708,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         return {
             // Called the moment a roll button is pressed, so the die is in the
-            // air before the answer comes back.
-            expect() {
+            // air before the answer comes back. title/sub say whose throw this
+            // is and what it decides -- "Rolling to strike" / "Even connects,
+            // odd misses." -- so the overlay reads the same as the button that
+            // asked for it, rather than a die that fell out of the sky.
+            expect(title, sub) {
                 armed = true;
                 throwIt();
+                caption(title, sub);
                 clearTimeout(giveUpT);
                 // If the action was refused there will be no throw. Do not
                 // leave the die hanging in the air.
@@ -6673,9 +6734,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 // Every throw is thrown, including one that arrives while the
                 // last one is still lying there. The one exception is the
                 // throw this client put up itself a moment ago on pressing
-                // the button -- that one is already in the air and carries on.
+                // the button -- that one is already in the air and carries on,
+                // captioned the way expect() already left it.
                 const age = Date.now() - thrownAt;
-                if (!inFlight || age > 260) throwIt();
+                if (!inFlight || age > 260) {
+                    throwIt();
+                    // Nobody here asked for this one -- a bot's go, or another
+                    // player's, arriving over the network. Caption it from the
+                    // die itself rather than leaving the last line showing.
+                    captionFromDie(die);
+                }
                 clearTimeout(settleT);
                 // It may not land until it has finished bouncing, however
                 // quickly the answer came back.
@@ -6691,6 +6759,33 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             whenIdle(fn) { if (!inFlight) fn(); else idleQueue.push(fn); }
         };
     })();
+
+    // A roll's number is not shown anywhere else -- pips, "you rolled a
+    // six", "even, a hit" -- until the physical die overlay has actually
+    // finished tumbling. Otherwise the answer is given away in text before
+    // the die that is supposed to be carrying the suspense has landed.
+    //
+    // `why`, when given, must match state.lastDie.why -- so eating a raw
+    // steak mid-battle (its own, unrelated throw) cannot re-hide a strike
+    // roll that already finished revealing itself. Leave it out for a
+    // roll that isn't picky about what else might be in the air.
+    //
+    // Returns whether it is safe to show the number right now. If it is
+    // not, it arranges for the screen to be redrawn the moment the die
+    // does settle, so the reveal follows on rather than waiting for some
+    // unrelated later update. One wake-up per busy spell, however many
+    // times a render asks in the meantime.
+    let awaitingDieReveal = false;
+    function dieRevealed(why) {
+        const inTheWay = DICE.busy() &&
+            (!why || (S.lastDie && S.lastDie.why === why));
+        if (!inTheWay) return true;
+        if (!awaitingDieReveal) {
+            awaitingDieReveal = true;
+            DICE.whenIdle(() => { awaitingDieReveal = false; renderGame(); });
+        }
+        return false;
+    }
 
     /* ------------------------------------------------------------------ */
     /* Turned away at the Gate                                             */
@@ -7511,9 +7606,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                              text: D.foeName(foe) + ' is rolling its die' };
                 }
                 if (b.phase === 'enemy_act') {
-                    return { who: null, spin: true,
-                             text: D.foeName(foe) + ' rolled ' + b.lastRoll +
-                                   ' and is about to strike' };
+                    // The die is still in the air, or still tumbling, until
+                    // dieRevealed() says otherwise -- don't print the number
+                    // ahead of it.
+                    return dieRevealed('attack')
+                        ? { who: null, spin: true,
+                            text: D.foeName(foe) + ' rolled ' + b.lastRoll +
+                                  ' and is about to strike' }
+                        : { who: null, spin: true,
+                            text: D.foeName(foe) + ' is rolling its die' };
                 }
                 return {
                     who: actorId, spin: !mine,
@@ -8690,7 +8791,17 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (S.battle || S.pending) openPanel = null;
 
         if (S.battle) return renderBattleModal();
-        if (S.pending && S.pending.playerId === NET.PID) return renderPendingModal();
+        if (S.pending && S.pending.playerId === NET.PID) {
+            // The move-bonus modal is the reveal: "You rolled a X" with the
+            // pips right there. Popping it up over a die that is still
+            // tumbling across the board would show the number twice, once
+            // in text and once for real a moment later. Let the 3D die
+            // finish first and open on top of the board once it has.
+            if (S.pending.type === 'move_bonus' && !dieRevealed('move')) {
+                return closeModal();
+            }
+            return renderPendingModal();
+        }
         if (incoming) return renderIncomingTrade(incoming);
 
         // The stall is redrawn every time, because buying no longer closes it
@@ -8765,7 +8876,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 moves: foe.moves, svg: enemyPic(foe, 58)
             }) + '</div>');
 
-        if (b.lastRoll != null) {
+        // The number stays off the table until the physical die has actually
+        // finished tumbling -- otherwise the hit/miss text gives the roll
+        // away while the 3D die is still in the air.
+        const rollShown = b.lastRoll != null && dieRevealed('attack');
+        if (rollShown) {
             body += '<div class="die">' + pipsHtml(b.lastRoll) + '</div>' +
                 '<div class="muted" style="text-align:center;font-size:13px">' +
                 (b.lastRoll % 2 === 0 ? 'Even — a hit.' : 'Odd — a miss.') + '</div>';
@@ -8778,9 +8893,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             body += '<div class="enemy-acting">' +
                 '<span class="spinner"></span>' +
                 esc(foe.name) +
-                (b.phase === 'enemy_roll'
-                    ? ' is rolling its own die…'
-                    : ' rolled ' + b.lastRoll + ' — it is about to strike…') +
+                (b.phase === 'enemy_act' && rollShown
+                    ? ' rolled ' + b.lastRoll + ' — it is about to strike…'
+                    : ' is rolling its own die…') +
                 '</div>';
         }
 
