@@ -1060,6 +1060,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     align-items: center;
     text-align: center;
     overflow: visible;
+    /* Lifted until the plinths are down on the roadway. The Gate and the
+       causeway are both centred on the row, and the Gate is nearly twice
+       as tall, so half of it used to hang below the crossing -- it read as
+       standing in the water beside the bridge rather than on it. The shift
+       is a share of the Gate's own height, so it holds at any board size. */
+    transform: translateY(-26%);
     filter: drop-shadow(0 8px 14px rgba(0,0,0,.75));
 }
 .sq.gateway .gate-svg {
@@ -1146,8 +1152,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .decor > span {
     flex: 0 0 auto;
     /* Some models lean off their own cell -- the big tree leans towards the
-       arena so its foliage meets the disc instead of stopping short of it. */
-    transform: translateX(var(--decor-nudge, 0));
+       arena so its foliage meets the disc instead of stopping short of it --
+       and some stand higher or lower on it than dead centre, which is what
+       stops the bushes reading as a hedge planted to a string. Both are
+       shares of the model's own size, so they hold at any board size. */
+    transform: translate(var(--decor-nudge, 0), var(--decor-drop, 0));
 }
 
 /* ---- the Fountain of Life is running ----------------------------------
@@ -1278,7 +1287,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
    yellow/pink/white still means what it means in the photographs. */
 .item .btn { margin-top: 9px; width: 100%; }
 .item.equipped { border-width: 2px; border-color: var(--gold); }
-.item.treasure .p-name::after { content: ' º6'; }
 
 .battle-statcard { max-width: 250px; margin: 16px auto 0; }
 
@@ -1532,147 +1540,149 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 
 /* ---- the die ----------------------------------------------------------
-   The same die as the one in Showdowns: a cream cube with a gold edge that
-   tumbles, flickers through faces, and settles on the number. Every roll in
-   the game goes through it, so nothing is ever decided out of sight.
+   It is thrown onto the game rather than shown in a window of its own. A
+   real cube -- six faces on it, not one picture of a face -- pitched in
+   from off one of the two top corners, bouncing twice and rolling to a
+   stop wherever it happens to land, on top of the board, the panel, an
+   open card, anything.
+
+   Nothing behind it is dimmed and nothing is blocked: the stage takes no
+   clicks at all. It lies where it fell for three seconds and fades.
    ---------------------------------------------------------------------- */
 
-.dice-back {
+.dice-stage {
     position: fixed;
     inset: 0;
-    z-index: 3000;
+    z-index: 4000;
     display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, .74);
-    padding: 20px;
+    /* thrown over the top of the game, never in the way of it */
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 1;
 }
-.dice-back.on { display: flex; }
+.dice-stage.on { display: block; }
+/* Only the fade carries a transition, so coming back for the next throw
+   is instant rather than a slow reappearance. */
+.dice-stage.going { opacity: 0; transition: opacity .45s ease; }
 
-.dice-box {
-    min-width: 300px;
-    max-width: 400px;
-    padding: 30px 36px 26px;
+.dice-die {
+    position: absolute;
+    /* left/top are set on it per throw and are its middle, which is why
+       it is pulled back by half of itself here: that leaves `transform`
+       free for the throw. */
+    left: 50%; top: 50%;
+    width: 78px; height: 78px;
+    margin: -39px 0 0 -39px;
+    perspective: 620px;
+    filter: drop-shadow(0 14px 16px rgba(0, 0, 0, .55));
+}
+.dice-cube {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+}
+
+/* Every face carries pips, not a printed numeral -- a real die has dots.
+   The nine positions are a 3x3 grid and each face lights the ones it
+   uses, so 1 is the middle, 6 is two columns of three, and so on. */
+.dice-side {
+    position: absolute;
+    inset: 0;
     border-radius: 12px;
-    text-align: center;
-    background: linear-gradient(180deg, #241f19, #1a1613);
-    border: 2px solid var(--gold, #b8791f);
-    box-shadow: 0 26px 60px -20px #000;
-}
-.dice-box .dice-title {
-    font-family: 'Cutive Mono', 'Courier New', monospace;
-    font-size: 21px;
-    color: var(--gold-bright, #e4c14a);
-    margin-bottom: 6px;
-}
-.dice-box .dice-sub {
-    font-size: 13px;
-    color: #9a9a9a;
-    margin-bottom: 18px;
-}
-.dice-box .dice-sub:empty { display: none; }
-
-/* The face carries pips, not a printed numeral -- a real die has dots. The
-   nine positions are a 3x3 grid and each face lights the ones it uses, so 1
-   is the middle, 6 is two columns of three, and so on. */
-.dice-face {
-    width: 80px; height: 80px;
-    margin: 0 auto 16px;
-    border-radius: 13px;
     background: linear-gradient(180deg, #f9f1da, #e0d3b6);
     border: 3px solid #8a6a20;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     place-items: center;
-    padding: 11px;
-    box-shadow: inset 0 3px 10px rgba(0,0,0,.28), 0 8px 22px rgba(0,0,0,.6);
+    padding: 10px;
+    box-shadow: inset 0 3px 10px rgba(0, 0, 0, .28);
+    backface-visibility: hidden;
 }
-.dice-face i {
-    width: 13px; height: 13px;
+.dice-side i {
+    width: 12px; height: 12px;
     border-radius: 50%;
     background: transparent;
 }
-.dice-face i.on {
+.dice-side i.on {
     background: radial-gradient(circle at 34% 30%, #4a423a, #16110c 70%);
     box-shadow: inset 0 1px 2px rgba(255,255,255,.28), 0 1px 1px rgba(255,255,255,.5);
 }
-/* ---- throwing it ------------------------------------------------------
-   The die used to spin on the spot, which read as a loading spinner rather
-   than as a throw. It is thrown now, in three parts:
 
-     .thrown    it comes in from off the top of the box, hits the table,
-                bounces twice and rolls out of the second bounce -- one
-                pass, about a second, with the pips flickering the whole
-                way through it
-     .tumbling  the roll it is left in, if the answer has not come back yet
-     .landed    it stops dead on the number, with the weight going through
-                it as it settles
+/* Where each face is nailed on: half the cube out from the middle, which
+   is 39px for a 78px die. Faces off, and it is a flat card again. */
+.dice-side.s1 { transform: translateZ(39px); }
+.dice-side.s6 { transform: rotateY(180deg) translateZ(39px); }
+.dice-side.s2 { transform: rotateY(90deg)  translateZ(39px); }
+.dice-side.s5 { transform: rotateY(-90deg) translateZ(39px); }
+.dice-side.s3 { transform: rotateX(90deg)  translateZ(39px); }
+.dice-side.s4 { transform: rotateX(-90deg) translateZ(39px); }
 
-   The floor it lands on is the .dice-face box itself, so the drop is a
-   translate from above and the bounces are the same translate, smaller
-   each time. It squashes where it hits and stretches on the way back up,
-   which is what makes it read as a solid thing rather than a picture
-   sliding about.
+/* ---- the throw --------------------------------------------------------
+   Two animations on two elements. The die travels; the cube turns inside
+   it. Keeping them apart is what lets the cube be stopped on a face
+   without touching where the die is on the screen.
+
+   `--fx` / `--fy` are the corner it came from, measured back from where
+   it lands, and `--dx` is how far short of that place it first hits, so
+   the bounces carry it on the way it was already going.
    ---------------------------------------------------------------------- */
 
-.dice-face { will-change: transform; }
-
-.dice-face.thrown {
-    animation: dice-throw 1.05s cubic-bezier(.36, .1, .3, 1) 1 both;
+.dice-die.flying {
+    animation: dice-fly 1.05s cubic-bezier(.36, .1, .3, 1) both;
 }
-@keyframes dice-throw {
-    /* clear of the box, corner-on, coming down fast */
-    0%   { transform: translate3d(-64px, -220px, 0) rotate(-160deg) scale(.72); }
-    26%  { transform: translate3d(-22px, 0, 0)      rotate(140deg)  scale(1.02); }
-    /* first hit: it squashes flat under itself */
-    31%  { transform: translate3d(-14px, 6px, 0)    rotate(178deg)  scaleX(1.22) scaleY(.76); }
-    /* up again, stretched, still turning */
-    46%  { transform: translate3d(10px, -74px, 0)   rotate(298deg)  scaleX(.92) scaleY(1.1); }
+@keyframes dice-fly {
+    /* off the screen, small with distance, coming down fast */
+    0%   { transform: translate3d(var(--fx, -400px), var(--fy, -400px), 0) scale(.6); }
+    /* the first hit, short of where it will end up */
+    34%  { transform: translate3d(var(--dx, -38px), 0, 0) scale(1); }
+    /* squashed flat under itself */
+    39%  { transform: translate3d(calc(var(--dx, -38px) * .86), 6px, 0)
+                      scaleX(1.24) scaleY(.74); }
+    /* up again, stretched, still going the way it was thrown */
+    54%  { transform: translate3d(calc(var(--dx, -38px) * .58), -78px, 0)
+                      scaleX(.92) scaleY(1.12); }
     /* second hit, softer */
-    60%  { transform: translate3d(20px, 5px, 0)     rotate(392deg)  scaleX(1.14) scaleY(.86); }
+    66%  { transform: translate3d(calc(var(--dx, -38px) * .34), 5px, 0)
+                      scaleX(1.16) scaleY(.86); }
     /* a low third hop, and it starts rolling rather than bouncing */
-    72%  { transform: translate3d(14px, -26px, 0)   rotate(452deg)  scaleX(.97) scaleY(1.04); }
-    84%  { transform: translate3d(6px, 3px, 0)      rotate(506deg)  scaleX(1.07) scaleY(.94); }
-    93%  { transform: translate3d(2px, -6px, 0)     rotate(536deg)  scale(1); }
-    100% { transform: translate3d(0, 0, 0)          rotate(560deg)  scale(1); }
+    78%  { transform: translate3d(calc(var(--dx, -38px) * .18), -28px, 0)
+                      scaleX(.97) scaleY(1.05); }
+    88%  { transform: translate3d(calc(var(--dx, -38px) * .07), 3px, 0)
+                      scaleX(1.08) scaleY(.93); }
+    95%  { transform: translate3d(0, -7px, 0) scale(1); }
+    100% { transform: translate3d(0, 0, 0)    scale(1); }
 }
 
-/* Still rolling, because the answer is not back yet. Slower and flatter
-   than the throw -- it is running out of momentum, not spinning up. */
-.dice-face.tumbling {
-    animation: dice-roll .9s cubic-bezier(.45, 0, .55, 1) infinite;
-}
-@keyframes dice-roll {
-    0%   { transform: translate3d(0, 0, 0)     rotate(0deg)   scale(1); }
-    24%  { transform: translate3d(5px, -13px, 0) rotate(96deg)  scaleX(.96) scaleY(1.05); }
-    48%  { transform: translate3d(0, 2px, 0)   rotate(180deg) scaleX(1.08) scaleY(.93); }
-    72%  { transform: translate3d(-5px, -13px, 0) rotate(272deg) scaleX(.96) scaleY(1.05); }
-    100% { transform: translate3d(0, 0, 0)     rotate(360deg) scale(1); }
+/* Over and over while it is in the air and for as long afterwards as the
+   answer takes to come back. 700ms a turn, which ui.js reads off SPIN_MS
+   to work out where the cube has got to -- retime one and retime both. */
+.dice-cube.spinning { animation: dice-spin .7s linear infinite; }
+@keyframes dice-spin {
+    from { transform: rotateX(0deg)   rotateY(0deg); }
+    to   { transform: rotateX(360deg) rotateY(720deg); }
 }
 
-/* The number is in. It drops the last of its height onto the table and the
-   weight goes through it. */
-.dice-face.landed { animation: dice-land .5s cubic-bezier(.3, 1.5, .5, 1) both; }
-@keyframes dice-land {
-    0%   { transform: translate3d(0, -16px, 0) rotate(-14deg) scale(1.14); }
-    45%  { transform: translate3d(0, 3px, 0)   rotate(2deg)   scaleX(1.12) scaleY(.9); }
-    72%  { transform: translate3d(0, -4px, 0)  rotate(0deg)   scaleX(.97) scaleY(1.03); }
-    100% { transform: translate3d(0, 0, 0)     rotate(0deg)   scale(1); }
+/* The number is in. It rolls on from exactly where the spin had got to,
+   through another turn or so, and stops with the rolled face towards
+   you. `--rx0`/`--ry0` is where it was; `--rx`/`--ry` is where it stops. */
+.dice-cube.settled {
+    animation: dice-settle .55s cubic-bezier(.22, .9, .3, 1) both;
+}
+@keyframes dice-settle {
+    from { transform: rotateX(var(--rx0, 0deg)) rotateY(var(--ry0, 0deg)); }
+    to   { transform: rotateX(var(--rx, 0deg))  rotateY(var(--ry, 0deg)); }
 }
 
-/* Somebody who has asked not to be moved about gets the number, and none
-   of the throwing. */
+/* Somebody who has asked not to be moved about gets the number and none of
+   the throwing: the die is not shown at all until it has landed, and then
+   it simply appears where it fell with the rolled face on it. */
 @media (prefers-reduced-motion: reduce) {
-    .dice-face.thrown,
-    .dice-face.tumbling,
-    .dice-face.landed { animation: none; transform: none; }
-}
-
-.dice-box .dice-verdict {
-    min-height: 20px;
-    font-size: 14.5px;
-    color: var(--cream, #efe6d4);
+    .dice-die.flying,
+    .dice-cube.spinning,
+    .dice-cube.settled { animation: none; }
+    .dice-die { transform: none; }
+    .dice-stage:not(.landed) { visibility: hidden; }
 }
 
 /* ---- energy in a battle -----------------------------------------------
@@ -2289,7 +2299,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             ability: {
                 id: 'agile',
                 name: 'Agile',
-                text: 'Roll a die. On an even number, add 2 to your movement roll.'
+                text: 'Roll a die. On an even number, add up to 2 to your movement roll.'
             },
             colour: '#d8a43f'
         },
@@ -2311,8 +2321,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 name: 'Illusion',
                 text: 'Roll a die. On an even number, conjure a Swarm of Bats and choose ' +
                       'another player to fight it. The conjured swarm hits for 15 more ' +
-                      'and has 20 less health than a real one. They lose their turn and ' +
-                      'receive only the coins.'
+                      'and has 20 less health than a real one — 55. They lose their turn ' +
+                      'and receive only the coins.'
             },
             colour: '#5c8fc4'
         }
@@ -2363,6 +2373,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</g>' +
             '<path d="M32 58h36v9H32z" fill="#4a4e55"/>' +
             '<path d="M44 42h12v18H44z" fill="#9aa1aa" stroke="#20180f" stroke-width="1.8"/>' +
+            // the near arm: out from under the pauldron, turning in a little
+            // as it comes down, to the fist on the grip of the sword
+            '<g ' + K + ' fill="#b9bec7">' +
+            '<path d="M20 46h14v18l-3 14H17l3-14z"/>' +
+            '</g>' +
             // the near pauldron
             '<g ' + K + ' fill="#cfd5dc">' +
             '<path d="M18 44c0-9 7-15 15-15s10 6 10 12-5 11-12 11-13-2-13-8z"/>' +
@@ -2388,6 +2403,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M30 74 84 66l6 4-6 4-54 8z"/>' +
             '</g>' +
             '<path d="M28 70h6v14h-6z" fill="#6d737b" stroke="#20180f" stroke-width="2"/>' +
+            // the grip and the pommel behind his hand, and the gauntlet
+            // closed round them
+            '<path d="M12 73h17v8H12z" fill="#6d4a2a" stroke="#20180f" stroke-width="2"/>' +
+            '<circle cx="10" cy="77" r="4.5" fill="#8f959e" stroke="#20180f" ' +
+            'stroke-width="2"/>' +
+            '<rect x="14" y="68" width="15" height="15" rx="5" fill="#cfd5dc" ' +
+            'stroke="#20180f" stroke-width="2.2"/>' +
+            '<g stroke="#8f959e" stroke-width="1.5" stroke-linecap="round">' +
+            '<path d="M18 72.5v6M22 72v6.5M26 72.5v6"/></g>' +
             '</svg>',
 
         // The Archer: the gold helmet with its dark red crest, the studded
@@ -2400,7 +2424,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             'stroke-width="9" stroke-linecap="round"/>' +
             '<path d="M74 12c14 12 14 64 0 76" fill="none" stroke="#b8342c" ' +
             'stroke-width="5.5" stroke-linecap="round"/>' +
-            '<path d="M74 12 60 50l14 38" fill="none" stroke="#20180f" stroke-width="1.6"/>' +
+            // at full draw: back to the nock of the arrow, where the drawing
+            // hand closes on it
+            '<path d="M74 12 20 48l54 40" fill="none" stroke="#20180f" stroke-width="2.2"/>' +
             // legs and boots
             '<g ' + K + ' fill="#e8b98a">' +
             '<path d="M32 74h11v14H32zM56 74h11v14H56z"/></g>' +
@@ -2470,6 +2496,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             'stroke="#20180f" stroke-width="2"/>' +
             '<g stroke="#c9a878" stroke-width="1.4" stroke-linecap="round">' +
             '<path d="M73.5 59h8M73.5 63h8"/></g>' +
+            // the near arm, drawn before the beard so it comes out from
+            // behind it rather than lying across it
+            '<g ' + K + ' fill="#5c8fc4"><path d="M26 54h18v12H26z"/></g>' +
             // the beard, the widest shape in the piece
             '<g ' + K + ' fill="#f4f2e8">' +
             '<path d="M32 40h36c0 20-8 32-18 32s-18-12-18-32z"/></g>' +
@@ -2489,10 +2518,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M56 8l2.4 5 5.6.6-4.2 3.8 1.2 5.4L56 20l-5 2.8 1.2-5.4L48 13.6l5.6-.6z"/>' +
             '<path d="M42 20l1.8 3.8 4.2.4-3.2 2.8.9 4.1L42 29l-3.7 2.1.9-4.1-3.2-2.8 4.2-.4z"/>' +
             '</g>' +
-            // the near arm, out in front of everything: the sleeve, then the
-            // hand hanging open at his side. He carries the staff and nothing
-            // else -- the orb he used to be holding has gone.
-            '<g ' + K + ' fill="#5c8fc4"><path d="M28 54h14v12H28z"/></g>' +
+            // the hand on the end of it, hanging open at his side, clear of
+            // the beard. He carries the staff and nothing else -- the orb he
+            // used to be holding has gone.
             '<rect x="18" y="54.5" width="12.5" height="13" rx="5.5" ' +
             'fill="#f0d9a8" stroke="#20180f" stroke-width="2"/>' +
             '<g stroke="#c9a878" stroke-width="1.3" stroke-linecap="round">' +
@@ -2521,7 +2549,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             id: 'swarm_of_bats',
             name: 'Swarm of Bats',
             crest: { initials: 'SB', tint: '#6d5f8c' }, pic: 'bats',
-            hp: 60,
+            hp: 75,
             defence: 0,
             placeholder: true,           // PLACEHOLDER — no profile card exists for this fight
             moves: [
@@ -2596,7 +2624,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /*          knight | archer | mage | any (armour)                      */
     /* attack:  added to every attack that deals damage                    */
     /* defence: subtracted from every hit taken                            */
-    /* dice:    added to dice rolls                                        */
+    /* dice:    offered on top of a dice roll -- every one of these is    */
+    /*          "up to", so the player picks how much of it to take         */
     /* uses:    durability; omitted = unbreakable                          */
     /* ------------------------------------------------------------------ */
 
@@ -2651,15 +2680,23 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             attack: 20, text: 'Do 20 more damage.'
         },
 
-        /* --- Knight: armour -------------------------------------------- */
+        /* --- Knight: armour --------------------------------------------
+           Four cards, 10 / 15 / 20 / 25, so there is somewhere to go from
+           whatever he is standing in. The Heavy Armour buys its extra five
+           with a slower die.
+           ---------------------------------------------------------------- */
+        chain_mail: {
+            id: 'chain_mail', name: 'Chain Mail', kind: 'armour', subtype: 'knight',
+            defence: 10, text: 'Take 10 less damage.'
+        },
         full_body_armour: {
             id: 'full_body_armour', name: 'Full Body Armour', kind: 'armour', subtype: 'knight',
-            defence: 5, text: 'Take 5 less damage.'
+            defence: 15, text: 'Take 15 less damage.'
         },
         heavy_armour: {
             id: 'heavy_armour', name: 'Heavy Armour', kind: 'armour', subtype: 'knight',
-            defence: 15, dice: -1,
-            text: 'Take 15 less damage, but every dice roll is reduced by 1.'
+            defence: 20, dice: -1,
+            text: 'Take 20 less damage, but every dice roll is reduced by 1.'
         },
         royal_guards_uniform: {
             id: 'royal_guards_uniform', name: "Royal Guard's Uniform", kind: 'armour', subtype: 'knight',
@@ -2689,17 +2726,17 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         light_armour: {
             id: 'light_armour', name: 'Light Armour', kind: 'armour', subtype: 'archer',
             defence: 0, dice: 1,
-            text: 'Add 1 to your dice roll.'
+            text: 'Add up to 1 to your dice roll.'
         },
         plated_light_armour: {
             id: 'plated_light_armour', name: 'Plated Light Armour', kind: 'armour', subtype: 'archer',
             defence: 5, dice: 1,
-            text: 'Take 5 less damage and add 1 to your dice roll.'
+            text: 'Take 5 less damage and add up to 1 to your dice roll.'
         },
         royal_archers_suit: {
             id: 'royal_archers_suit', name: "Royal Archer's Suit", kind: 'armour', subtype: 'archer',
             defence: 20, dice: 1,
-            text: 'Take 20 less damage and add 1 to your dice roll.'
+            text: 'Take 20 less damage and add up to 1 to your dice roll.'
         },
 
         /* --- Mage: magic ----------------------------------------------- */
@@ -2728,7 +2765,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         light_cloak_swift: {
             id: 'light_cloak_swift', name: 'Light Cloak', kind: 'armour', subtype: 'mage',
             defence: 5, dice: 1,
-            text: 'Take 5 less damage. Add one to your dice roll.'
+            text: 'Take 5 less damage. Add up to one to your dice roll.'
         },
         royal_mages_robe: {
             id: 'royal_mages_robe', name: "Royal Mage's Robe", kind: 'armour', subtype: 'mage',
@@ -2782,7 +2819,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             id: 'reinforced_light_armour', name: 'Reinforced Light Armour',
             kind: 'armour', subtype: 'any',
             defence: 10, dice: 1, price: 12,
-            text: 'Take 10 less damage and add 1 to your dice roll.'
+            text: 'Take 10 less damage and add up to 1 to your dice roll.'
         },
         iron_armour: {
             id: 'iron_armour', name: 'Iron Armour', kind: 'armour', subtype: 'any',
@@ -2934,7 +2971,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // swords
         'dagger', 'dagger', 'broadsword', 'strong_broadsword', 'claymore',
         // knight armour
-        'full_body_armour', 'full_body_armour', 'full_body_armour',
+        'chain_mail', 'chain_mail', 'full_body_armour',
         'heavy_armour', 'heavy_armour', 'royal_guards_uniform',
         // bows
         'cool_bow', 'light_bow', 'normal_bow', 'normal_bow', 'explosive_bow',
@@ -2962,8 +2999,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         low_health_up:      { id: 'low_health_up',      name: 'Low Health Up',      effect: 'health',  value: 15, text: 'Add 15 health to your character.' },
         health_up:          { id: 'health_up',          name: 'Health Up',          effect: 'health',  value: 25, text: 'Add 25 health to your character.' },
         super_health_up:    { id: 'super_health_up',    name: 'Super Health Up',    effect: 'health',  value: 50, text: 'Add 50 health to your character.' },
-        low_speed_up:       { id: 'low_speed_up',       name: 'Low Speed Up',       effect: 'dice',    value: 1,  text: 'Add 1 to your dice roll.' },
-        speed_up:           { id: 'speed_up',           name: 'Speed Up',           effect: 'dice',    value: 3,  text: 'Add 3 to your dice roll.' },
+        low_speed_up:       { id: 'low_speed_up',       name: 'Low Speed Up',       effect: 'dice',    value: 1,  text: 'Add up to 1 to your dice roll.' },
+        speed_up:           { id: 'speed_up',           name: 'Speed Up',           effect: 'dice',    value: 3,  text: 'Add up to 3 to your dice roll.' },
         low_defence_up:     { id: 'low_defence_up',     name: 'Low Defence Up',     effect: 'defence', value: 5,  text: 'Take 5 less damage.' },
         defence_up:         { id: 'defence_up',         name: 'Defence Up',         effect: 'defence', value: 10, text: 'Take 10 less damage.' }
     };
@@ -3049,8 +3086,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
           action: 'spring', value: 2, text: 'The updraught carries you two spaces forward.' },
 
         { i: 8,  key: 'castle_ruins',     name: 'Castle Ruins',         row: 2, col: 0,
-          action: 'battle', enemy: 'swarm_of_bats', coins: 3, chestKey: 1,
-          text: 'You have to fight a swarm of bats. Finds 3 coins and a chest key.' },
+          action: 'battle', enemy: 'swarm_of_bats', coins: 10, chestKey: 1,
+          text: 'You have to fight a swarm of bats. Finds 10 coins and a chest key.' },
 
         { i: 9,  key: 'sack_of_gold',     name: 'Sack of Gold',         row: 1, col: 0,
           action: 'coins', coins: 10, text: 'Congrats! You found a sack of gold! +10 coins.' },
@@ -3120,27 +3157,33 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // little away from it so its foliage stops short of the disc rather
         // than running over it.
         { kind: 'tree',      row: 2, col: 1, size: .85, nudge: -15 },
-        { kind: 'ruins',     row: 2, col: 0, size: .62 },
+        // `drop` is the same idea as `nudge`, down the cell instead of
+        // across it: a model that wants to stand a little lower on its
+        // square than dead centre says so here rather than being redrawn.
+        { kind: 'ruins',     row: 2, col: 0, size: .62, drop: 12 },
         // The village stands on its own square rather than in the empty cell
         // above it, and the two pots stand on the two Pot squares. Scenery is
         // painted under the squares, so it shows through the ruled rectangle
         // instead of covering what is written on it.
         { kind: 'village',   row: 0, col: 4, size: .80 },
         { kind: 'fountain',  row: 2, col: 4, size: .72 },
-        { kind: 'sky_draft', row: 3, col: 0, size: .68 },
-        { kind: 'pot',       row: 0, col: 0, size: .60 },
-        { kind: 'pot',       row: 2, col: 6, size: .60 },
+        { kind: 'sky_draft', row: 3, col: 0, size: .68, drop: 12 },
+        { kind: 'pot',       row: 0, col: 0, size: .60, drop: 14 },
+        { kind: 'pot',       row: 2, col: 6, size: .60, drop: 14 },
         // Bushes dotted round the edges of the grass. Some of them are in
         // berry, which is what the little red dots on the board are.
         // Seven of them, one to a cell and well apart, so they read as
         // bushes dotted about the grass rather than as clumps of two.
-        { kind: 'bush',      row: 1, col: 1, size: .26, berries: true, nudge: -60 },
-        { kind: 'bush',      row: 3, col: 1, size: .22, nudge: 80 },
-        { kind: 'bush',      row: 1, col: 4, size: .24, nudge: 66 },
-        { kind: 'bush',      row: 1, col: 5, size: .30, berries: true, nudge: -20 },
-        { kind: 'bush',      row: 3, col: 4, size: .26, berries: true, nudge: -56 },
-        { kind: 'bush',      row: 3, col: 5, size: .22, nudge: 40 },
-        { kind: 'bush',      row: 3, col: 2, size: .27, berries: true, nudge: -34 }
+        // They were all standing on one line across the top and one across
+        // the bottom, which read as a hedge planted to a string. Each one
+        // has its own `drop` now, so the row of them wanders.
+        { kind: 'bush',      row: 1, col: 1, size: .26, berries: true, nudge: -60, drop: -58 },
+        { kind: 'bush',      row: 3, col: 1, size: .22, nudge: 80, drop: 46 },
+        { kind: 'bush',      row: 1, col: 4, size: .24, nudge: 66, drop: 64 },
+        { kind: 'bush',      row: 1, col: 5, size: .30, berries: true, nudge: -20, drop: -22 },
+        { kind: 'bush',      row: 3, col: 4, size: .26, berries: true, nudge: -56, drop: -50 },
+        { kind: 'bush',      row: 3, col: 5, size: .22, nudge: 40, drop: 30 },
+        { kind: 'bush',      row: 3, col: 2, size: .27, berries: true, nudge: -34, drop: 40 }
     ];
 
     const START_INDEX = 0;
@@ -3169,6 +3212,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         abilityCooldownTurns: 2,       // one ability every 2 turns
         // A Mage's conjured swarm is not the real animal.
         illusionDamageBoost: 15,
+        // The conjured swarm is worked out from the real one, so raising
+        // the swarm's health raises the illusion's with it -- 75 - 20 = 55.
         illusionHpDrop: 20,
         startingEnergy: 1,
         rawSteakHeal: 5,
@@ -3320,8 +3365,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     // Modifier applied to every dice roll this player makes. This is the
-    // most it can be; the Charged Speed Set says "up to 3", so the player is
-    // asked how much of it they actually want before the die goes up.
+    // most it can be: every bonus in the game is an "up to", so the player
+    // is asked how much of it they actually want once the die is down.
     function diceModifier(p) {
         const armour = defOf(equippedArmour(p));
         const fixed = (armour && armour.dice ? armour.dice : 0);
@@ -3329,10 +3374,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return fixed + upTo + buffTotal(p, 'dice');
     }
 
-    // How much of the bonus the player may dial down rather than take whole.
+    // How much of the offer the player may dial down rather than take
+    // whole. Every bonus is "up to that number" -- the armour, the power-up
+    // and Agile alike -- so this is the whole of the helpful part of it.
+    //
+    // Only the helpful part: the Heavy Armour's -1 is a price you pay for
+    // wearing it, not something you may decline, so it stays out of here
+    // and becomes the floor the choice cannot go below.
     function diceChoosable(p) {
         const armour = defOf(equippedArmour(p));
-        return armour && armour.diceUpTo ? armour.diceUpTo : 0;
+        const up = n => (n > 0 ? n : 0);
+        return up(armour && armour.dice ? armour.dice : 0) +
+               up(armour && armour.diceUpTo ? armour.diceUpTo : 0) +
+               up(buffTotal(p, 'dice')) +
+               up(p.agileBonus || 0);
     }
 
     function consumeBuffs(p, kind) {
@@ -3806,6 +3861,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             playerId: p.id,
             raw: raw,
             offered: offered,
+            // How far down from `offered` the player may go. With every
+            // bonus an "up to", this reaches 0 whenever anything positive
+            // is on the table, so the buttons run the whole way down.
             choosable: diceChoosable(p),
             sources: bonusSources(p),
             prompt: 'You rolled a ' + raw + '.'
@@ -4996,7 +5054,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         chooseClass:   (s, pid, a) => chooseClass(s, pid, a.cls),
         startGame:     (s, pid)    => startGame(s, pid),
         rollForOrder:  (s, pid)    => rollForOrder(s, pid),
-        // useBonus is false to decline the bonus, a number to take part of it
+        // useBonus is false to decline the bonus, a number to take that much
+        // of it -- anything from the whole offer down to none of it
         // (the Charged Speed Set's "up to 3"), and missing to take it whole.
         // Firestore turns a missing field into null on the way back out, so
         // null has to mean the same thing as missing.
@@ -5770,10 +5829,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // nothing left to average over: the number is on the table and the only
     // question is how far it should carry you.
     function bonusStep(state, p, pend) {
+        // Every whole number the engine will actually accept, which with
+        // every bonus an "up to" is the whole offer down to none of it.
+        // Nothing below the floor: a penalty is not something to decline.
         const floor = pend.offered - (pend.choosable || 0);
         const amounts = [];
         for (let n = pend.offered; n >= floor; n--) amounts.push(n);
-        if (amounts.indexOf(0) < 0) amounts.push(0);       // refusing it whole
 
         let pick = pend.offered, best = -Infinity;
         amounts.forEach(n => {
@@ -6122,12 +6183,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
        narrator says what they did.
        ------------------------------------------------------------------ */
 
-    // A throw takes about a second in the air and another second and a
-    // half on the table, so nothing else may happen for two and a half --
+    // A throw is about a second in the air and half a second rolling into
+    // the number, so nothing else may happen for a second and a half --
     // otherwise the board changes underneath a die that is still bouncing.
-    // These are the floors ui.js's THROW_MS and its settle add up to; if
-    // the throw is retimed, retime these with it.
-    const AFTER_A_DIE = 2600;      // the throw, the landing, and time to read it
+    // After that it is only lying there: it does not cover anything and it
+    // does not block anything, so the game carries on around it for the
+    // three seconds it stays on the screen. This is ui.js's THROW_MS plus
+    // its settle; if the throw is retimed, retime this with it.
+    const AFTER_A_DIE = 1800;      // the throw and the landing
     const AT_A_HANDOVER = 1600;    // the turn has just passed to somebody else
     const BETWEEN_STEPS = 500;     // everything else
 
@@ -6136,9 +6199,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // taking part in, so the beats between the dice are set out by hand. A
     // person in that fight gets the same pause before the monster answers
     // them (ui.js, ENEMY_PAUSE_MS); this is the other side of it.
+    //
+    // Two seconds apiece, so each blow is plainly somebody's: you see whose
+    // turn it is, the die comes down, and only then does the next one start.
     const BEFORE = {
-        enemyRoll:  1600,          // the monster picking the die up after a blow
-        battleRoll: 1000           // stepping up to swing
+        enemyRoll:  2000,          // the monster picking the die up after a blow
+        battleRoll: 2000           // stepping up to swing
     };
 
     function schedule() {
@@ -6356,148 +6422,178 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /*                                                                     */
     /* Nothing in this game is decided out of sight. Every throw the engine */
     /* makes is stamped with a number, and this watches for a number it has */
-    /* not seen: the die comes up tumbling, flickers through faces, and     */
-    /* settles on what was actually rolled. Everyone at the table sees it,  */
-    /* not just the player who pressed the button.                         */
+    /* not seen. Everyone at the table sees the same throw, not just the    */
+    /* player who pressed the button.                                       */
+    /*                                                                     */
+    /* It is a real cube pitched onto the screen from one of the top        */
+    /* corners, and it lands wherever it lands -- on top of the board, the  */
+    /* panel, an open card, anything. Nothing is dimmed, nothing is         */
+    /* blocked and nothing has to be dismissed: the game carries on the     */
+    /* moment the die stops, and it lies where it fell for three seconds    */
+    /* and fades. What the number meant is said in the log, which is where  */
+    /* it was being said all along.                                        */
     /* ------------------------------------------------------------------ */
 
     const DICE = (function () {
-        let back = null, faceEl = null, titleEl = null, subEl = null, verdictEl = null;
-        let flickerT = null, settleT = null, giveUpT = null, rollT = null;
-        let thrownAt = 0;          // when this throw left the hand
-        let open = false;
+        let stage = null, dieEl = null, cubeEl = null;
+        let settleT = null, giveUpT = null, holdT = null, fadeT = null;
+        let thrownAt = 0;           // when this throw left the hand
+        let inFlight = false;       // still in the air: nothing else may happen
         let primed = false;         // have we seen this room at all yet?
         let seen = 0;               // the last throw we have shown
         let armed = false;          // we asked for a throw and are waiting
         const idleQueue = [];
 
+        const THROW_MS  = 1050;     // corner of the screen to the table
+        const SETTLE_MS = 550;      // the last roll into the number it shows
+        const HOLD_MS   = 3000;     // how long it is left lying there
+        const FADE_MS   = 450;
+        const SPIN_MS   = 700;      // must match the dice-spin keyframes
+
+        // Which face is nailed where on the cube, written as the turn that
+        // brings that face to the front. Only one axis moves for each, so
+        // the order the two are written in does not matter.
+        const FACE_ROT = {
+            1: [0, 0], 2: [0, -90], 3: [-90, 0],
+            4: [90, 0], 5: [0, 90], 6: [0, 180]
+        };
+
         function build() {
-            if (back) return;
-            back = document.createElement('div');
-            back.className = 'dice-back';
-            back.innerHTML =
-                '<div class="dice-box">' +
-                    '<div class="dice-title"></div>' +
-                    '<div class="dice-sub"></div>' +
-                    '<div class="dice-face">' + pipsHtml(1) + '</div>' +
-                    '<div class="dice-verdict"></div>' +
-                '</div>';
-            document.body.appendChild(back);
-            titleEl   = back.querySelector('.dice-title');
-            subEl     = back.querySelector('.dice-sub');
-            faceEl    = back.querySelector('.dice-face');
-            verdictEl = back.querySelector('.dice-verdict');
+            if (stage) return;
+            stage = document.createElement('div');
+            stage.className = 'dice-stage';
+            stage.setAttribute('aria-hidden', 'true');
+            let faces = '';
+            for (let n = 1; n <= 6; n++) {
+                faces += '<span class="dice-side s' + n + '">' + pipsHtml(n) + '</span>';
+            }
+            stage.innerHTML = '<div class="dice-die"><div class="dice-cube">' +
+                              faces + '</div></div>';
+            document.body.appendChild(stage);
+            dieEl  = stage.querySelector('.dice-die');
+            cubeEl = stage.querySelector('.dice-cube');
         }
 
-        // Put it in the air: off the top of the box, down onto the table,
-        // two bounces and a roll out of the second one. The pips flicker
-        // the whole way through, so no face is ever readable until it has
-        // stopped.
-        //
-        // THROW_MS is how long that pass takes; after it the die is left
-        // rolling on the spot until the answer comes back. Nothing may
-        // land before it is over.
-        const THROW_MS = 1050;
-
-        function startFlicker() {
-            clearInterval(flickerT);
-            clearTimeout(rollT);
-            // Restart the animation from the top even if the die is already
-            // out on the table -- assigning the same class again does not,
-            // so the classes come off, the layout is read, and they go back
-            // on. This is what was missing when two computer players were
-            // trading blows: the second throw kept the first one's face.
-            faceEl.classList.remove('landed', 'tumbling', 'thrown');
-            void faceEl.offsetWidth;
-            faceEl.classList.add('thrown');
-            thrownAt = Date.now();
-            rollT = setTimeout(() => {
-                faceEl.classList.remove('thrown');
-                faceEl.classList.add('tumbling');
-            }, THROW_MS);
-            flickerT = setInterval(() => {
-                faceEl.innerHTML = pipsHtml(1 + Math.floor(Math.random() * 6));
-            }, 80);
-        }
-
-        function show(title, sub) {
+        // Pitch it in. It comes from off one of the two top corners, lands
+        // somewhere at random on the screen -- on top of whatever happens to
+        // be under it, because it is thrown onto the game rather than into a
+        // window of its own -- bounces twice and rolls to a stop.
+        function throwIt() {
             build();
-            titleEl.textContent = title || 'Rolling';
-            subEl.textContent = sub || '';
-            verdictEl.textContent = 'Rolling…';
-            back.classList.add('on');
-            open = true;
-            startFlicker();
-        }
-
-        function close() {
-            clearInterval(flickerT);
             clearTimeout(settleT);
-            clearTimeout(giveUpT);
-            clearTimeout(rollT);
-            if (back) back.classList.remove('on');
-            open = false;
-            armed = false;
-            while (idleQueue.length) idleQueue.shift()();
+            clearTimeout(holdT);
+            clearTimeout(fadeT);
+
+            const edge = 96;            // enough that it never hangs off
+            const w = Math.max(window.innerWidth  || 0, 320);
+            const h = Math.max(window.innerHeight || 0, 320);
+            const x = edge + Math.random() * Math.max(1, w - edge * 2);
+            const y = edge + Math.random() * Math.max(1, h - edge * 2);
+            const fromLeft = Math.random() < 0.5;
+
+            dieEl.style.left = Math.round(x) + 'px';
+            dieEl.style.top  = Math.round(y) + 'px';
+            // Where it is thrown from, as an offset back to that corner...
+            dieEl.style.setProperty('--fx',
+                Math.round((fromLeft ? -120 : w + 120) - x) + 'px');
+            dieEl.style.setProperty('--fy', Math.round(-180 - y) + 'px');
+            // ...and how far short of the resting place it first hits, so
+            // the bounces carry it on the way it was going.
+            dieEl.style.setProperty('--dx', (fromLeft ? -38 : 38) + 'px');
+
+            stage.classList.add('on');
+            stage.classList.remove('going', 'landed');
+            // Both animations start again from the top even if the last
+            // throw is still lying on the screen -- assigning a class an
+            // element already has does not restart a CSS animation, so the
+            // classes come off, the layout is read, and they go back on.
+            dieEl.classList.remove('flying');
+            cubeEl.classList.remove('spinning', 'settled');
+            cubeEl.style.transform = '';
+            void dieEl.offsetWidth;
+            dieEl.classList.add('flying');
+            cubeEl.classList.add('spinning');
+
+            thrownAt = Date.now();
+            inFlight = true;
         }
 
-        // What the number means, spelled out in the same words the log uses.
-        function verdictFor(die) {
-            const why = die.why || '';
-            if (why === 'move') return die.who + ' moves ' + die.roll + '.';
-            if (why === 'order') return die.who + ' rolled a ' + die.roll + ' for turn order.';
-            if (why === 'hunt') {
-                return (D.RULES.steakRolls.indexOf(die.roll) >= 0)
-                    ? 'A ' + die.roll + ' — an animal, and a raw steak off it.'
-                    : 'A ' + die.roll + ' — nothing came past.';
+        // Exactly where the cube has got to in its spin, so the roll into
+        // the number picks up from there instead of snapping to it.
+        function spinNow() {
+            let t = Date.now() - thrownAt;
+            if (cubeEl && cubeEl.getAnimations) {
+                const a = cubeEl.getAnimations()
+                    .find(x => x.animationName === 'dice-spin');
+                if (a && typeof a.currentTime === 'number') t = a.currentTime;
             }
-            if (why === 'raw steak') {
-                return die.roll === D.RULES.foodPoisoningRoll
-                    ? 'A 3 — food poisoning!'
-                    : 'A ' + die.roll + ' — it goes down fine.';
-            }
-            if (why === 'attack') {
-                return die.roll % 2 === 0
-                    ? 'Even — ' + die.who + ' connects.'
-                    : 'Odd — ' + die.who + ' misses.';
-            }
-            // The Dark Spirits Set adds on either number — the die only says
-            // how much.
-            if (why === 'dark spirits') {
-                return die.roll % 2 === 0
-                    ? 'Even — the Dark Spirits Set adds 15 damage.'
-                    : 'Odd — the Dark Spirits Set adds 5 damage.';
-            }
-            // Class abilities: even works, odd fizzles.
-            return die.roll % 2 === 0
-                ? 'Even — ' + die.who + '’s ' + why + ' works.'
-                : 'Odd — ' + die.who + '’s ' + why + ' fizzles.';
+            const f = ((t % SPIN_MS) + SPIN_MS) % SPIN_MS / SPIN_MS;
+            return { rx: f * 360, ry: f * 720 };
         }
 
         function land(die) {
             build();
-            clearInterval(flickerT);
             clearTimeout(giveUpT);
-            clearTimeout(rollT);
-            titleEl.textContent = die.who || 'The die';
-            faceEl.classList.remove('tumbling', 'thrown');
-            void faceEl.offsetWidth;
-            faceEl.classList.add('landed');
-            faceEl.innerHTML = pipsHtml(die.roll);
-            verdictEl.textContent = verdictFor(die);
-            settleT = setTimeout(close, 1500);
+
+            const from = spinNow();
+            const to = FACE_ROT[die.roll] || FACE_ROT[1];
+            let rx = to[0], ry = to[1];
+            // Keep turning the way it was already turning rather than
+            // winding back to the nearest reading of the same face.
+            while (rx < from.rx + 120) rx += 360;
+            while (ry < from.ry + 240) ry += 360;
+
+            cubeEl.style.setProperty('--rx0', from.rx.toFixed(1) + 'deg');
+            cubeEl.style.setProperty('--ry0', from.ry.toFixed(1) + 'deg');
+            cubeEl.style.setProperty('--rx', rx.toFixed(1) + 'deg');
+            cubeEl.style.setProperty('--ry', ry.toFixed(1) + 'deg');
+            cubeEl.classList.remove('spinning');
+            // Somebody who has asked not to be moved about gets no roll and
+            // no throw, so the face is set on the cube directly as well --
+            // the animation covers it for everyone else.
+            cubeEl.style.transform = 'rotateX(' + rx + 'deg) rotateY(' + ry + 'deg)';
+            void cubeEl.offsetWidth;
+            cubeEl.classList.add('settled');
+            stage.classList.add('landed');
+
+            // It has stopped. The game may carry on around it from here --
+            // it is lying on top of the board, not in the way of it -- and
+            // it stays where it fell for three seconds before fading.
+            settleT = setTimeout(() => {
+                inFlight = false;
+                while (idleQueue.length) idleQueue.shift()();
+            }, SETTLE_MS);
+            holdT = setTimeout(fade, SETTLE_MS + HOLD_MS);
+        }
+
+        function fade() {
+            if (!stage) return;
+            stage.classList.add('going');
+            fadeT = setTimeout(clear, FADE_MS);
+        }
+
+        // Off the screen altogether, and anything waiting on the die goes.
+        function clear() {
+            clearTimeout(settleT);
+            clearTimeout(giveUpT);
+            clearTimeout(holdT);
+            clearTimeout(fadeT);
+            if (stage) stage.classList.remove('on', 'going', 'landed');
+            inFlight = false;
+            armed = false;
+            while (idleQueue.length) idleQueue.shift()();
         }
 
         return {
             // Called the moment a roll button is pressed, so the die is in the
             // air before the answer comes back.
-            expect(title, sub) {
+            expect() {
                 armed = true;
-                show(title, sub);
+                throwIt();
                 clearTimeout(giveUpT);
                 // If the action was refused there will be no throw. Do not
                 // leave the die hanging in the air.
-                giveUpT = setTimeout(close, 5200);
+                giveUpT = setTimeout(clear, 5200);
             },
 
             // Fed every state update. Returns true if it took the throw.
@@ -6509,25 +6605,25 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 if (!primed) { primed = true; seen = n; return false; }
                 if (!die || n === seen) return false;
                 seen = n;
-                // Every throw goes in the air, including one that arrives
-                // while the last one is still on the table. If the overlay
-                // is already open this re-throws it rather than swapping
-                // the face over, which is what two computer players
-                // trading blows fast used to look like.
-                if (!open) show(die.who, '');
-                else { titleEl.textContent = die.who || 'The die'; startFlicker(); }
+                // Every throw is thrown, including one that arrives while the
+                // last one is still lying there. The one exception is the
+                // throw this client put up itself a moment ago on pressing
+                // the button -- that one is already in the air and carries on.
+                const age = Date.now() - thrownAt;
+                if (!inFlight || age > 260) throwIt();
+                clearTimeout(settleT);
                 // It may not land until it has finished bouncing, however
                 // quickly the answer came back.
-                clearTimeout(settleT);
-                const inTheAir = Date.now() - thrownAt;
                 settleT = setTimeout(() => land(die),
-                                     Math.max(220, THROW_MS - inTheAir));
+                    Math.max(220, THROW_MS - (Date.now() - thrownAt)));
                 armed = false;
                 return true;
             },
 
-            busy() { return open; },
-            whenIdle(fn) { if (!open) fn(); else idleQueue.push(fn); }
+            // Busy means in the air, not on the screen: once it has come to
+            // rest the game goes on around it while it lies there.
+            busy() { return inFlight; },
+            whenIdle(fn) { if (!inFlight) fn(); else idleQueue.push(fn); }
         };
     })();
 
@@ -7777,16 +7873,45 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</g>' +
             '</svg>',
 
-        // What is left of the Castle Ruins: broken brown walls.
+        // What is left of the Castle Ruins. It was drawn in the village's
+        // brown, which read as another wooden hut with the roof off; a
+        // castle is stone, so it is cut from the same grey the Gate and the
+        // causeway are, with the courses showing through the broken tops.
         ruins:
-            '<svg viewBox="0 0 140 120" aria-hidden="true">' +
-            '<g fill="#a3623d" stroke="#7a4526" stroke-width="2">' +
-            '<path d="M10 100V52h16v-14h14v20h14v42z"/>' +
-            '<path d="M62 100V62h18v-12h16v14h12v36z"/>' +
-            '<path d="M104 100V74h26v26z"/>' +
+            '<svg viewBox="0 0 140 124" aria-hidden="true">' +
+            // the ground, and the rubble fallen off the walls
+            '<ellipse cx="70" cy="106" rx="62" ry="12" fill="#8a9a6d" opacity=".45"/>' +
+            '<g fill="#9a94ae" stroke="#5f5972" stroke-width="1.6">' +
+            '<path d="M4 104l7-6 8 6z"/><path d="M52 105l6-5 7 5z"/>' +
+            '<path d="M96 106l5-4 6 4z"/><path d="M128 104l6-5 6 5z"/>' +
             '</g>' +
-            '<g stroke="#7a4526" stroke-width="1.6" opacity=".7">' +
-            '<path d="M10 74h44M62 82h46M18 88v12M40 74v26M80 62v38"/></g>' +
+            // the three standing pieces: a broken tower, the curtain wall
+            // with its gateway, and a low stump of the far corner
+            '<g fill="#b3aec0" stroke="#5f5972" stroke-width="2" ' +
+            'stroke-linejoin="round">' +
+            '<path d="M10 102V50h15V36h15v22h14v44z"/>' +
+            '<path d="M62 102V62h18V48h16v16h12v38z"/>' +
+            '<path d="M104 102V76h26v26z"/>' +
+            '</g>' +
+            // the shaded side of each piece, so they read as blocks
+            '<g fill="#9a94ae">' +
+            '<path d="M44 58h10v44H44z"/><path d="M100 64h8v38h-8z"/>' +
+            '<path d="M122 76h8v26h-8z"/>' +
+            '</g>' +
+            // the courses -- every other one stepped, so the tops read as
+            // broken stone rather than as a cut edge
+            '<g stroke="#8d87a1" stroke-width="1.5" fill="none" opacity=".85">' +
+            '<path d="M10 62h34M25 74h29M10 86h44M62 74h46M62 88h46M104 88h26"/>' +
+            '<path d="M22 50v12M36 62v12M22 74v12M36 86v16' +
+            'M74 62v12M88 74v14M74 88v14M116 76v26"/>' +
+            '</g>' +
+            // the doorway through the wall, and one arrow slit up the tower
+            '<path d="M70 102V82a8 8 0 0 1 16 0v20z" fill="#4a4560"/>' +
+            '<path d="M22 40h6v14h-6z" fill="#4a4560"/>' +
+            // the light on the sunward faces
+            '<g fill="#c6c1d4" opacity=".55">' +
+            '<path d="M10 50h15v10H10z"/><path d="M62 62h14v10H62z"/>' +
+            '</g>' +
             '</svg>',
 
         // Cloverdale Village. It is a village, so it is a huddle of little
@@ -8094,7 +8219,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             return '<div class="decor" style="grid-row:' + (d.row + 1) +
                 ';grid-column:' + (d.col + 1) +
                 ';--decor-size:' + size + '%' +
-                ';--decor-nudge:' + (d.nudge || 0) + '%"><span style="width:' + size +
+                ';--decor-nudge:' + (d.nudge || 0) + '%' +
+                ';--decor-drop:' + (d.drop || 0) + '%"><span style="width:' + size +
                 '%;display:block">' + art + '</span></div>';
         }).join('');
 
@@ -8765,8 +8891,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
             let buttons = '';
             const shown = [];
+            // Every whole number from the whole offer down to the floor.
+            // With every bonus an "up to", the floor is 0 unless something
+            // is being taken off the roll as well -- the Heavy Armour's -1
+            // is the price of wearing it and cannot be declined, so it is
+            // as low as the buttons go.
             for (let n = pend.offered; n >= floor; n--) shown.push(n);
-            if (shown.indexOf(0) < 0) shown.push(0);
             shown.forEach(n => {
                 const total = Math.max(1, pend.raw + n);
                 buttons += '<button class="btn' + (n === pend.offered ? ' primary' : '') +
@@ -8783,9 +8913,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                         (from.length > 1 ? 'give' : 'gives') + ' you ' +
                         (choosable > 0 ? 'up to ' + sign + pend.offered : sign + pend.offered) +
                         ' on top' + (from.length > 1 ? ', and they stack' : '') + '. ' : '') +
-                    'You do not have to use it — a smaller number is sometimes the ' +
-                    'one you want, to stop short of a fight or to land exactly ' +
-                    'where you mean to.' +
+                    'Take as much or as little of it as you like — ' +
+                    'a smaller number is sometimes the one you want, to stop ' +
+                    'short of a fight or to land exactly where you mean to.' +
                 '</div>' +
                 '<div class="modal-actions bonus-row">' + buttons + '</div>';
         } else if (pend.type === 'steak_roll') {
