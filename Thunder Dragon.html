@@ -1740,7 +1740,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
    the spin was already turning and only then bleed that off, or the
    handover reads as the die suddenly put on a burst of speed to reach the
    right face rather than just running out of energy on the one it was
-   already headed for. */
+   already headed for.
+
+   Started the instant ui.js knows the answer -- not held back until the
+   throw is over -- and run for however much of the throw is still left,
+   so the number is arrived at, not snapped to. The .66s below is only
+   what shows if that duration is never set: ui.js always overrides it
+   with the real figure, which is long on a quick reply and short on a
+   slow one. */
 .dice-cube.settled {
     animation: dice-settle .66s cubic-bezier(.39, .575, .565, 1) both;
 }
@@ -6495,7 +6502,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     const DICE = (function () {
         let stage = null, dieEl = null, cubeEl = null, capTitle = null, capSub = null;
-        let settleT = null, giveUpT = null, holdT = null, fadeT = null;
+        let settleT = null, giveUpT = null, holdT = null, fadeT = null, rollT = null;
         let thrownAt = 0;           // when this throw left the hand
         let inFlight = false;       // still in the air: nothing else may happen
         let primed = false;         // have we seen this room at all yet?
@@ -6506,7 +6513,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         let spinX = 360, spinY = 720;   // this throw's turn, signed by travel
 
         const THROW_MS  = 1320;     // off the side of the screen to the table
-        const SETTLE_MS = 660;      // the last roll into the number it shows
+        const SETTLE_MIN_MS = 220;  // the least the roll into the number may take
         const HOLD_MS   = 3000;     // how long it is left lying there
         const FADE_MS   = 450;
         const SPIN_MS   = 770;      // must match the dice-spin keyframes
@@ -6568,6 +6575,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             clearTimeout(settleT);
             clearTimeout(holdT);
             clearTimeout(fadeT);
+            clearTimeout(rollT);
 
             const edge = 110;           // enough that it never hangs off
             const w = Math.max(window.innerWidth  || 0, 320);
@@ -6613,12 +6621,30 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             dieEl.classList.remove('flying', 'rolling');
             cubeEl.classList.remove('spinning', 'settled');
             cubeEl.style.transform = '';
+            // Any duration land() left on the cube from the last throw is
+            // cleared too, or the spin would inherit a settle's timing
+            // instead of running at its own steady rate.
+            cubeEl.style.animationDuration = '';
             void dieEl.offsetWidth;
             dieEl.classList.add('flying');
             cubeEl.classList.add('spinning');
 
             thrownAt = Date.now();
             inFlight = true;
+
+            // The die's own bounce keeps to this clock alone, not to
+            // however long the answer takes -- so a quick reply still gets
+            // the whole throw to ease into its number instead of cutting
+            // the bounce short. land() eases the cube's turn down against
+            // this same clock, early or late as the answer allows, so the
+            // two hand over together on a fast reply and only drift apart
+            // on a slow one.
+            rollT = setTimeout(() => {
+                dieEl.classList.remove('flying');
+                void dieEl.offsetWidth;
+                dieEl.classList.add('rolling');
+                stage.classList.add('landed');
+            }, THROW_MS);
         }
 
         // Exactly where the cube has got to in its spin, so the roll into
@@ -6650,23 +6676,40 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         function land(die) {
             build();
             clearTimeout(giveUpT);
+            clearTimeout(settleT);
+
+            // Told the moment the answer is known, not once the bounce is
+            // over -- so the turn can start easing down while the die is
+            // still visibly tumbling, rather than being held at full spin
+            // right up to the last instant and then hauled onto the number.
+            // Whatever the throw has left to run is what the ease-down gets:
+            // a quick reply is given nearly the whole throw to wind down in;
+            // a slow one gets a short, proportionally small finish instead
+            // of a snap straight to the number.
+            const age = Date.now() - thrownAt;
+            const settleMs = Math.max(SETTLE_MIN_MS, THROW_MS - age);
 
             const from = spinNow();
+            // How much further the cube turns, at the rate it is already
+            // going, while it eases down to a stop over settleMs -- roughly
+            // half the current rate held for the whole time, which is what
+            // a steady slow-down averages out to, nudged at random so no
+            // two throws wind down by quite the same amount. That is how
+            // far past `from` the roll runs before it is allowed to stop on
+            // the number, so the finish reads as running out of turn rather
+            // than reaching for it.
+            const decel = 0.4 + Math.random() * 0.3;
+            const travelX = Math.abs(spinX / SPIN_MS) * settleMs * decel;
+            const travelY = Math.abs(spinY / SPIN_MS) * settleMs * decel;
+
             const to = FACE_ROT[die.roll] || FACE_ROT[1];
-            const rx = keepGoing(to[0], from.rx, spinX, 120);
-            const ry = keepGoing(to[1], from.ry, spinY, 240);
+            const rx = keepGoing(to[0], from.rx, spinX, travelX);
+            const ry = keepGoing(to[1], from.ry, spinY, travelY);
 
             cubeEl.style.setProperty('--rx0', from.rx.toFixed(1) + 'deg');
             cubeEl.style.setProperty('--ry0', from.ry.toFixed(1) + 'deg');
             cubeEl.style.setProperty('--rx', rx.toFixed(1) + 'deg');
             cubeEl.style.setProperty('--ry', ry.toFixed(1) + 'deg');
-            // The die is still moving while this happens: the throw hands
-            // over to the last of the roll, which picks up exactly where it
-            // left off. A cube turning onto its number while sitting quite
-            // still is a spinning top, not a die coming to rest.
-            dieEl.classList.remove('flying');
-            void dieEl.offsetWidth;
-            dieEl.classList.add('rolling');
 
             cubeEl.classList.remove('spinning');
             // Written straight onto the cube as well as animated to. The
@@ -6674,18 +6717,23 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // animation does not start at all -- in which case the die still
             // ends up sitting on the right number instead of on face one.
             cubeEl.style.transform = 'rotateX(' + rx + 'deg) rotateY(' + ry + 'deg)';
+            // This throw's own timing, worked out above -- not the fixed
+            // figure in the stylesheet -- so the wind-down is long when the
+            // answer comes back quickly and short when it doesn't. The
+            // die's own bounce is untouched by this: it keeps to THROW_MS
+            // on the clock throwIt() already set running.
+            cubeEl.style.animationDuration = settleMs + 'ms';
             void cubeEl.offsetWidth;
             cubeEl.classList.add('settled');
-            stage.classList.add('landed');
 
-            // It has stopped. The game may carry on around it from here --
-            // it is lying on top of the board, not in the way of it -- and
-            // it stays where it fell for three seconds before fading.
+            // It has stopped turning. The game may carry on around it from
+            // here -- it is lying on top of the board, not in the way of it
+            // -- and it stays where it fell for three seconds before fading.
             settleT = setTimeout(() => {
                 inFlight = false;
                 while (idleQueue.length) idleQueue.shift()();
-            }, SETTLE_MS);
-            holdT = setTimeout(fade, SETTLE_MS + HOLD_MS);
+            }, settleMs);
+            holdT = setTimeout(fade, settleMs + HOLD_MS);
         }
 
         function fade() {
@@ -6700,6 +6748,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             clearTimeout(giveUpT);
             clearTimeout(holdT);
             clearTimeout(fadeT);
+            clearTimeout(rollT);
             if (stage) stage.classList.remove('on', 'going', 'landed');
             inFlight = false;
             armed = false;
@@ -6744,11 +6793,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     // die itself rather than leaving the last line showing.
                     captionFromDie(die);
                 }
-                clearTimeout(settleT);
-                // It may not land until it has finished bouncing, however
-                // quickly the answer came back.
-                settleT = setTimeout(() => land(die),
-                    Math.max(220, THROW_MS - (Date.now() - thrownAt)));
+                // land() itself works out how much of the throw is still
+                // to run and eases the cube's turn down over whatever that
+                // is -- called now, the moment the answer is known, rather
+                // than held back until the bounce is over.
+                land(die);
                 armed = false;
                 return true;
             },
