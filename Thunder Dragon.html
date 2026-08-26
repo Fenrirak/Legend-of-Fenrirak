@@ -3508,8 +3508,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         { kind: 'chest',     row: 1, col: 6, size: .52, drop: 20 },
         { kind: 'desert',    row: 0, col: 1, size: .74, drop: 16 },
         { kind: 'forest',    row: 0, col: 5, size: .72, drop: 14 },
-        { kind: 'keep',      row: 0, col: 6, size: .62, drop: 14 },
-        { kind: 'hideout',   row: 2, col: 5, size: .64, drop: 16 },
+        { kind: 'keep',      row: 0, col: 6, size: .62, drop: 22 },
+        { kind: 'hideout',   row: 2, col: 5, size: .64, drop: 26 },
         { kind: 'pot',       row: 0, col: 0, size: .60, drop: 24 },
         { kind: 'pot',       row: 2, col: 6, size: .60, drop: 24 },
         // Bushes dotted round the edges of the grass. Some of them are in
@@ -8420,50 +8420,58 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             'stroke-width="3" stroke-linecap="round" opacity=".8"/>' +
             '</svg>',
 
-        // The Chest, standing on the two Chest squares: a wooden box with
-        // iron strapping over it and a gold lock plate on the front. The
-        // lid is domed and banded, which is what makes it read as a chest
-        // rather than as a crate.
+        // The Chest, standing on the two Chest squares: a rectangular box
+        // with a lid that is a cylinder split lengthwise and laid across
+        // the top of it, flat face down along the seam and the curve
+        // standing up in a true dome -- half a cylinder, not just a raised
+        // slab, which is what makes it read as a chest rather than as a
+        // crate. Iron strapping over the wood and a gold lock plate on the
+        // front finish it off as something worth keeping shut.
         chest:
             '<svg viewBox="0 0 120 110" aria-hidden="true">' +
             // the ground it stands on
             '<ellipse cx="60" cy="98" rx="40" ry="8" fill="#8a9a6d" opacity=".45"/>' +
-            // The body. A squat box rather than the tall barrel this was on
-            // the first pass -- a chest is a square thing with a lid on it,
-            // and the deep dome made it read as a cask.
-            '<path d="M26 56h68v40H26z" fill="#8a5f36" stroke="#4a2f18" ' +
+            // The body: a plain rectangular prism, square-cornered, for the
+            // domed lid to sit on top of.
+            '<path d="M26 58h68v38H26z" fill="#8a5f36" stroke="#4a2f18" ' +
             'stroke-width="2.6" stroke-linejoin="round"/>' +
             '<g stroke="#6d4826" stroke-width="1.5" opacity=".8">' +
-            '<path d="M26 68h68M26 80h68"/></g>' +
-            // the lid: a shallow flat-topped slab, only just arched
-            '<path d="M22 56V44a6 6 0 0 1 6-6h64a6 6 0 0 1 6 6v12z" ' +
-            'fill="#9c6c3e" stroke="#4a2f18" stroke-width="2.6" ' +
-            'stroke-linejoin="round"/>' +
-            '<path d="M60 38h32a6 6 0 0 1 6 6v12H60z" fill="#8a5f36"/>' +
-            // the seam the lid shuts on
-            '<path d="M22 56h76" stroke="#4a2f18" stroke-width="2" ' +
-            'stroke-linecap="round"/>' +
-            // the iron straps, over the lid and down the face of the box
+            '<path d="M26 70h68M26 84h68"/></g>' +
+            // The lid: a true semicircle, its two feet as far apart as the
+            // box is wide -- the cross-section you would get by slicing a
+            // cylinder lengthwise and standing one half on its cut face.
+            '<path d="M26 58a34 34 0 0 1 68 0z" fill="#9c6c3e" ' +
+            'stroke="#4a2f18" stroke-width="2.6" stroke-linejoin="round"/>' +
+            // a stave line, concentric with the dome, echoing the planking
+            // on the box below it
+            '<path d="M34 58a26 26 0 0 1 52 0" fill="none" ' +
+            'stroke="#6d4826" stroke-width="1.5" opacity=".8"/>' +
+            // the light catching the curve of it
+            '<path d="M34 53a29 29 0 0 1 15-19" fill="none" ' +
+            'stroke="#c49a68" stroke-width="3" stroke-linecap="round" ' +
+            'opacity=".5"/>' +
+            // the iron straps, up the face of the box to the seam
             '<g fill="#5c6068" stroke="#33363c" stroke-width="1.6">' +
-            '<path d="M36 96V38h7v58z"/><path d="M77 96V38h7v58z"/>' +
+            '<path d="M36 96V58h7v38z"/><path d="M77 96V58h7v38z"/>' +
             '</g>' +
-            // the iron bands, round the foot and along the top of the lid
+            // the iron bands, round the foot and along the seam
             '<path d="M22 90h76v6H22z" fill="#5c6068" stroke="#33363c" ' +
             'stroke-width="1.6"/>' +
-            '<path d="M22 42h76v6H22z" fill="#5c6068" stroke="#33363c" ' +
+            '<path d="M22 55h76v6H22z" fill="#5c6068" stroke="#33363c" ' +
             'stroke-width="1.6" opacity=".9"/>' +
             // the gold lock plate on the front, with hasp and keyhole
-            '<path d="M52 52h16v20H52z" fill="#e0b23c" stroke="#8a6a20" ' +
+            '<path d="M52 64h16v20H52z" fill="#e0b23c" stroke="#8a6a20" ' +
             'stroke-width="1.8"/>' +
-            '<path d="M56 52v-8a4 4 0 0 1 8 0v8" fill="none" stroke="#8a6a20" ' +
+            '<path d="M56 64v-8a4 4 0 0 1 8 0v8" fill="none" stroke="#8a6a20" ' +
             'stroke-width="2.4"/>' +
-            '<circle cx="60" cy="60" r="2.6" fill="#4a3a12"/>' +
-            '<path d="M60 62v5" stroke="#4a3a12" stroke-width="2.2" ' +
+            '<circle cx="60" cy="72" r="2.6" fill="#4a3a12"/>' +
+            '<path d="M60 74v5" stroke="#4a3a12" stroke-width="2.2" ' +
             'stroke-linecap="round"/>' +
-            // gold corner brackets, which is what squares it off
+            // gold corner brackets, which is what squares off the foot of
+            // the box
             '<g fill="none" stroke="#e0b23c" stroke-width="2.6" ' +
             'stroke-linecap="round">' +
-            '<path d="M26 62v-6h7M94 62v-6h-7M26 84v6h7M94 84v6h-7"/></g>' +
+            '<path d="M26 68v-6h7M94 68v-6h-7M26 84v6h7M94 84v6h-7"/></g>' +
             '</svg>',
 
         // The Midnight Desert: a few cactuses on the dunes under a night
