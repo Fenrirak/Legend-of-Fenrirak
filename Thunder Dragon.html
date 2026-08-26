@@ -634,6 +634,62 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     border-left: 1px solid #7593b4;
     border-right: 1px solid #7593b4;
     box-shadow: inset 0 0 22px rgba(60,90,120,.28);
+    /* the water is drawn inside it and must not run out of the channel */
+    position: relative;
+    overflow: hidden;
+}
+
+/* ---- the water going down it ------------------------------------------
+   The current is one tall strip of soft light and shade, twice the height
+   of the channel and repeating on itself, slid downstream for ever. At the
+   halfway point it is exactly where it started, so the loop has no seam.
+
+   It is moved with `transform` rather than `background-position` on
+   purpose: a transform is handed to the compositor and costs the page
+   nothing per frame, where a moving background position repaints the whole
+   channel sixty times a second. `will-change` is what makes sure it gets
+   its own layer, and the whole thing is one element rather than a dozen
+   ripples, because the river runs the length of the board and anything
+   drawn per-ripple would be paid for down all of it.
+   ---------------------------------------------------------------------- */
+
+.board .river > i {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 200%;
+    display: block;
+    pointer-events: none;
+    background:
+        /* the lit crests, off-centre so the flow is not a ladder */
+        repeating-linear-gradient(180deg,
+            transparent            0,
+            transparent           38px,
+            rgba(255,255,255,.13) 46px,
+            rgba(255,255,255,.13) 52px,
+            transparent           60px,
+            transparent           96px),
+        /* a slower, wider swell under them, on twice the crests' spacing */
+        repeating-linear-gradient(180deg,
+            transparent            0,
+            transparent           72px,
+            rgba(40,80,120,.10)   96px,
+            transparent          132px,
+            transparent          192px);
+    animation: river-flow 9s linear infinite;
+    will-change: transform;
+}
+/* Down 192px and no other distance.
+
+   Both patterns above repeat on a whole number of 192px -- the crests four
+   times over it, the swell once -- so after 192px the water lies exactly
+   where it started and the loop has nothing to see. A share of the
+   element's own height would not do: the river is as tall as the board, the
+   board is sized to the window, and 50% of it lands mid-pattern at almost
+   every window size, which puts a visible jolt in the current once every
+   time round. */
+@keyframes river-flow {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(0, -192px, 0); }
 }
 
 /* A square: a rectangle ruled in pencil on the grass, nothing more. */
@@ -2208,6 +2264,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
        would paint over them -- they are given a 2 below instead, which
        leaves the whirlpool free to sit at 0 on top of the sea. */
     z-index: 0;
+    /* Its own layer, so a whirlpool turning for ever does not drag the
+       square's text and border into a repaint with it. */
+    will-change: transform;
     pointer-events: none;
 }
 .sq.scenery-broken_bridge .whirl svg { width: 100%; height: 100%; display: block; }
@@ -2388,6 +2447,44 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     92%      { opacity: 0; transform: scale(1.3) translateY(-3px); }
     100%     { opacity: 0; transform: scale(.2)  translateY(2px); }
 }
+
+/* ---- keeping the board cheap to draw ----------------------------------
+   Nearly everything on the map moves -- the water, the fires, the fountain,
+   the draught, the whirlpool, the eyes. That is the point of it, but it
+   does mean a lot of the screen is being repainted all the time, and the
+   work has to be kept from spreading further than the thing that moved.
+
+   `contain` is the whole of it. A piece of scenery is told that nothing
+   inside it affects the size or position of anything outside it, so when a
+   fire flickers the browser repaints that fire rather than working out
+   whether the board around it needs redrawing too. Nothing looks any
+   different; there is simply less of the page involved each frame.
+
+   No feature is turned down here and no animation is dropped. The saving is
+   in the plumbing.
+   ---------------------------------------------------------------------- */
+
+.decor {
+    /* Scenery is decoration: it never moves anything else and never spills
+       out of its cell, so the browser can stop checking whether it has. */
+    contain: layout paint style;
+}
+
+/* The two squares with something moving inside them, kept to themselves for
+   the same reason. Only paint is contained here -- these do hold live text
+   and tokens, so their layout is left alone. */
+.sq.gateway,
+.sq.scenery-broken_bridge { contain: paint; }
+
+/* A fire is not smooth, and drawing it as though it were costs sixty frames
+   a second to say so. Stepping it gives the flame its jump back and asks
+   for a fraction of the repaints -- the two pots together were the busiest
+   thing on the board. The fountain, the draught, the whirlpool and the
+   river are all genuinely smooth movements and are left alone. */
+.decor .fx-fire  { animation-timing-function: steps(14, end); }
+.decor .fx-ember { animation-timing-function: steps(10, end); }
+.decor .fx-spark circle { animation-timing-function: steps(12, end); }
+.decor .fx-bubble circle { animation-timing-function: steps(10, end); }
 
     </style>
 
@@ -3504,11 +3601,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // The squares that used to have nothing standing on them. Scenery is
         // painted under the squares, so each of these shows through the
         // ruled rectangle rather than covering what is written on it.
-        { kind: 'chest',     row: 0, col: 2, size: .52, drop: 20 },
-        { kind: 'chest',     row: 1, col: 6, size: .52, drop: 20 },
         { kind: 'desert',    row: 0, col: 1, size: .74, drop: 16 },
         { kind: 'forest',    row: 0, col: 5, size: .72, drop: 14 },
-        { kind: 'keep',      row: 0, col: 6, size: .62, drop: 22 },
+        { kind: 'keep',      row: 0, col: 6, size: .62, drop: 34 },
         { kind: 'hideout',   row: 2, col: 5, size: .64, drop: 26 },
         { kind: 'pot',       row: 0, col: 0, size: .60, drop: 24 },
         { kind: 'pot',       row: 2, col: 6, size: .60, drop: 24 },
@@ -4569,6 +4664,25 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return run.used >= extra.turns || run.broken;
     }
 
+    /* A roll of 3 or more is a hit and a 1 or 2 is a miss -- everywhere
+       except Fenrirak's arena, where every number connects but a 1.
+
+       He has far more health than anything else on the board and the fight
+       is the end of the game, so a run of misses there is a much longer dead
+       patch than the same run anywhere else. Both sides get it: the dragon
+       is not being handicapped, the whole fight is simply less about the die.
+
+       This is the one place the rule changes. Player-against-player fights
+       are not in the arena and keep the ordinary rule. */
+    const MISSES_UP_TO = 2;         // a 1 or a 2 misses, normally
+    const MISSES_UP_TO_ARENA = 1;   // against Fenrirak, only a 1 does
+
+    function missesUpTo(state) {
+        const b = state.battle;
+        return (b && b.kind === 'pve' && b.enemyId === 'fenrirak')
+            ? MISSES_UP_TO_ARENA : MISSES_UP_TO;
+    }
+
     function battleRoll(state, pid) {
         const b = state.battle;
         if (!b) return fail('There is no battle.');
@@ -4577,11 +4691,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         const p = player(state, pid);
         const raw = throwDie(state, p.name, 'attack');
+        const floor = missesUpTo(state);
         b.lastRoll = raw;
-        log(state, p.name + ' rolled a ' + raw + ' — ' + (raw > 2 ? 'hit!' : 'miss.'),
-            raw > 2 ? 'roll' : 'muted');
+        log(state, p.name + ' rolled a ' + raw + ' — ' + (raw > floor ? 'hit!' : 'miss.'),
+            raw > floor ? 'roll' : 'muted');
 
-        if (raw > 2) {
+        if (raw > floor) {
             b.phase = 'act';
         } else {
             passBattleTurn(state);
@@ -4770,7 +4885,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     // Throw the monster's die. A 3 or higher and it will connect; a 1 or 2
-    // and the turn comes straight back to the player.
+    // and the turn comes straight back to the player -- except in the arena,
+    // where only a 1 comes back. See missesUpTo().
     function enemyRoll(state, pid) {
         const b = state.battle;
         if (!b || b.kind !== 'pve') return fail('There is no monster to roll for.');
@@ -4780,7 +4896,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const e = D.ENEMIES[b.enemyId];
         const roll = throwDie(state, e.name, 'attack');
         b.lastRoll = roll;
-        if (roll > 2) {
+        if (roll > missesUpTo(state)) {
             b.phase = 'enemy_act';
             log(state, D.foeName(e, true) + ' rolled a ' + roll + ' — it connects.', 'enemy');
         } else {
@@ -7429,7 +7545,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             renderOver();
             reapFinishedRoom();
         }
-        else { showScreen('screen-game'); renderGame(); }
+        else {
+            // A different game means a different board: the kept one on the
+            // screen is not it, so the next render has to be a full one.
+            if (enterRoom._board !== ROOM) { enterRoom._board = ROOM; forgetBoard(); }
+            showScreen('screen-game'); renderGame();
+        }
     }
 
     /* ------------------------------------------------------------------ */
@@ -8420,60 +8541,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             'stroke-width="3" stroke-linecap="round" opacity=".8"/>' +
             '</svg>',
 
-        // The Chest, standing on the two Chest squares: a rectangular box
-        // with a lid that is a cylinder split lengthwise and laid across
-        // the top of it, flat face down along the seam and the curve
-        // standing up in a true dome -- half a cylinder, not just a raised
-        // slab, which is what makes it read as a chest rather than as a
-        // crate. Iron strapping over the wood and a gold lock plate on the
-        // front finish it off as something worth keeping shut.
-        chest:
-            '<svg viewBox="0 0 120 110" aria-hidden="true">' +
-            // the ground it stands on
-            '<ellipse cx="60" cy="98" rx="40" ry="8" fill="#8a9a6d" opacity=".45"/>' +
-            // The body: a plain rectangular prism, square-cornered, for the
-            // domed lid to sit on top of.
-            '<path d="M26 58h68v38H26z" fill="#8a5f36" stroke="#4a2f18" ' +
-            'stroke-width="2.6" stroke-linejoin="round"/>' +
-            '<g stroke="#6d4826" stroke-width="1.5" opacity=".8">' +
-            '<path d="M26 70h68M26 84h68"/></g>' +
-            // The lid: a true semicircle, its two feet as far apart as the
-            // box is wide -- the cross-section you would get by slicing a
-            // cylinder lengthwise and standing one half on its cut face.
-            '<path d="M26 58a34 34 0 0 1 68 0z" fill="#9c6c3e" ' +
-            'stroke="#4a2f18" stroke-width="2.6" stroke-linejoin="round"/>' +
-            // a stave line, concentric with the dome, echoing the planking
-            // on the box below it
-            '<path d="M34 58a26 26 0 0 1 52 0" fill="none" ' +
-            'stroke="#6d4826" stroke-width="1.5" opacity=".8"/>' +
-            // the light catching the curve of it
-            '<path d="M34 53a29 29 0 0 1 15-19" fill="none" ' +
-            'stroke="#c49a68" stroke-width="3" stroke-linecap="round" ' +
-            'opacity=".5"/>' +
-            // the iron straps, up the face of the box to the seam
-            '<g fill="#5c6068" stroke="#33363c" stroke-width="1.6">' +
-            '<path d="M36 96V58h7v38z"/><path d="M77 96V58h7v38z"/>' +
-            '</g>' +
-            // the iron bands, round the foot and along the seam
-            '<path d="M22 90h76v6H22z" fill="#5c6068" stroke="#33363c" ' +
-            'stroke-width="1.6"/>' +
-            '<path d="M22 55h76v6H22z" fill="#5c6068" stroke="#33363c" ' +
-            'stroke-width="1.6" opacity=".9"/>' +
-            // the gold lock plate on the front, with hasp and keyhole
-            '<path d="M52 64h16v20H52z" fill="#e0b23c" stroke="#8a6a20" ' +
-            'stroke-width="1.8"/>' +
-            '<path d="M56 64v-8a4 4 0 0 1 8 0v8" fill="none" stroke="#8a6a20" ' +
-            'stroke-width="2.4"/>' +
-            '<circle cx="60" cy="72" r="2.6" fill="#4a3a12"/>' +
-            '<path d="M60 74v5" stroke="#4a3a12" stroke-width="2.2" ' +
-            'stroke-linecap="round"/>' +
-            // gold corner brackets, which is what squares off the foot of
-            // the box
-            '<g fill="none" stroke="#e0b23c" stroke-width="2.6" ' +
-            'stroke-linecap="round">' +
-            '<path d="M26 68v-6h7M94 68v-6h-7M26 84v6h7M94 84v6h-7"/></g>' +
-            '</svg>',
-
         // The Midnight Desert: a few cactuses on the dunes under a night
         // sky. It is the only square on the board that is meant to read as
         // dark, so the sand is drawn cold and the stars are what light it.
@@ -9046,8 +9113,39 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</svg>';
     }
 
+    /* The board is drawn once and then left alone.
+
+       It used to be rebuilt in full on every state update and again on every
+       step of every walk -- once every 210ms while anybody is moving. That
+       meant reparsing twenty-odd pieces of scenery, several of them hundreds
+       of nodes deep, forty or fifty times a turn, and it threw away and
+       restarted every animation on the board each time: the fountain and the
+       fires never got far enough through a cycle to be seen doing anything.
+
+       Nothing in the scenery ever changes. The only things that move are the
+       tokens and whether the arena is lit, so those are the only things
+       touched after the first build. */
+    let boardBuilt = false;
+
     function renderBoard() {
         const anyoneInArena = S.players.some(p => p.pos === D.ARENA_INDEX);
+        const board = $('#board');
+
+        // The cheap path: put the pieces where they belong and leave the
+        // scenery, and its animations, exactly as they are.
+        if (boardBuilt && board.firstChild) {
+            const arena = board.querySelector('.arena');
+            if (arena) arena.classList.toggle('lit', anyoneInArena);
+            const slots = board.querySelectorAll('.tokens[data-i]');
+            for (let n = 0; n < slots.length; n++) {
+                const el = slots[n];
+                const next = tokensOn(+el.getAttribute('data-i'));
+                // Only write when it actually differs: an unchanged square
+                // should not have its contents replaced at all.
+                if (el.innerHTML !== next) el.innerHTML = next;
+            }
+            return;
+        }
 
         const html = D.BOARD.map(sq => {
             const place = 'grid-row:' + (sq.row + 1) +
@@ -9066,7 +9164,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                         '<div class="arena-sub">The Thunder Dragon</div>' +
                     '</div>' +
                     // Whoever is in the arena stands dead centre of the circle.
-                    '<div class="tokens">' + tokensOn(sq.i) + '</div>' +
+                    '<div class="tokens" data-i="' + sq.i + '">' + tokensOn(sq.i) + '</div>' +
                 '</div>';
             }
 
@@ -9080,7 +9178,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 (sq.scenery === 'broken_bridge' ? WHIRL_ART : '') +
                 '<div class="sq-name">' + esc(sq.name) + '</div>' +
                 '<div class="sq-text">' + esc(sq.text) + '</div>' +
-                '<div class="tokens">' + tokensOn(sq.i) + '</div>' +
+                '<div class="tokens" data-i="' + sq.i + '">' + tokensOn(sq.i) + '</div>' +
                 (badge ? '<div class="sq-badge' + (sq.stop ? ' hard' : '') + '">' +
                     badge + '</div>' : '') +
             '</div>';
@@ -9102,13 +9200,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // The river runs clear. The only crossing is the Draw 1 Item Card
         // deck itself -- the two thin stick footbridges that used to lie
         // across the water above and below the arena are gone.
-        $('#board').innerHTML =
-            '<div class="river"></div>' + decor +
+        boardBuilt = true;
+        board.innerHTML =
+            '<div class="river"><i></i></div>' + decor +
             // Before the squares, so the arena's disc paints over the far end
             // of it: the causeway runs under the rim and onto the arena.
             '<div class="river-bridge">' + BRIDGE_ART + '</div>' + html +
             '<div class="merchant-stall">' + merchantStallSvg() + '</div>';
     }
+
+    // Starting or joining a game draws a board that is not the one on the
+    // screen, so the next render has to be a full one.
+    function forgetBoard() { boardBuilt = false; }
 
     /* ------------------------------------------------------------------ */
     /* The stat block                                                      */
@@ -9524,6 +9627,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     /* ---- battle ---- */
 
+    /* What misses, in the fight that is on. Everywhere but Fenrirak's
+       arena a 1 or a 2 misses; in the arena only a 1 does. The engine holds
+       the rule -- these two only put it into words for the panel, and they
+       read the same battle off the same state, so they cannot drift from it
+       without the engine changing too. */
+    function missesUpTo() {
+        const b = S && S.battle;
+        return (b && b.kind === 'pve' && b.enemyId === 'fenrirak') ? 1 : 2;
+    }
+    function missRule() {
+        return missesUpTo() === 1 ? 'Only a 1 misses.' : 'Only a 1 or 2 misses.';
+    }
+
     function renderBattleModal() {
         const b = S.battle;
         const p = me();
@@ -9578,7 +9694,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (b.lastRoll != null) {
             body += '<div class="die">' + pipsHtml(b.lastRoll) + '</div>' +
                 '<div class="muted" style="text-align:center;font-size:13px">' +
-                (b.lastRoll > 2 ? 'A hit!' : 'A miss.') + '</div>';
+                (b.lastRoll > missesUpTo() ? 'A hit!' : 'A miss.') + '</div>';
         }
 
         // The monster takes its own turn. Nobody presses a button for it any
@@ -9637,7 +9753,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         showModal(body, false, 'battle');
 
         bind('b-roll', () => rollAct('Rolling to strike', 'battleRoll', {},
-                                     'Only a 1 or 2 misses.'));
+                                     missRule()));
         $$('#modal [data-move]').forEach(el =>
             el.addEventListener('click', () => act('battleAttack', { moveId: el.dataset.move })));
         bind('b-cooked', () => act('eatSteak', { type: 'cooked' }));
@@ -9687,7 +9803,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const foe = D.ENEMIES[b.enemyId];
         if (phase === 'enemy_roll') {
             setTimeout(() => {
-                DICE.expect(D.foeName(foe, true), 'It rolls for itself — only a 1 or 2 misses.');
+                DICE.expect(D.foeName(foe, true),
+                    'It rolls for itself — ' + missRule().toLowerCase());
                 act('enemyRoll', {});
             }, ENEMY_PAUSE_MS);
         } else {
