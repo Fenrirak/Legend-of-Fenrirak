@@ -2486,6 +2486,49 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .decor .fx-spark circle { animation-timing-function: steps(12, end); }
 .decor .fx-bubble circle { animation-timing-function: steps(10, end); }
 
+/* ---- the steak the hunt brings home -----------------------------------
+   Sits in the middle of the screen, over everything, and is flown across to
+   the Steaks line in the profile box by ui.js -- which works out where that
+   line actually is and animates the whole trip as one transform, so the
+   flight is handed to the compositor rather than being laid out frame by
+   frame.
+
+   Nothing here positions it along the way; left/top only put it in the
+   middle to start with. It takes no clicks at any point.
+   ---------------------------------------------------------------------- */
+
+.steak-fly {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: min(38vw, 300px);
+    height: auto;
+    z-index: 4200;              /* over the board, under nothing that matters */
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(.2);
+    opacity: 0;
+    filter: drop-shadow(0 18px 26px rgba(0, 0, 0, .55));
+    will-change: transform, opacity;
+}
+
+/* The line it lands on takes the hit: a short gold flare, so the number
+   going up is something you see happen rather than something you notice
+   later. */
+.me-stats .wide.steak-landed {
+    animation: steak-landed .68s ease-out;
+    border-radius: 6px;
+}
+@keyframes steak-landed {
+    0%   { background: rgba(217, 163, 92, .55); }
+    30%  { background: rgba(217, 163, 92, .38); }
+    100% { background: transparent; }
+}
+.me-stats .wide.steak-landed b { animation: steak-landed-num .68s ease-out; }
+@keyframes steak-landed-num {
+    0%   { transform: scale(1.28); color: var(--gold-bright, #e4c14a); }
+    100% { transform: scale(1);    color: inherit; }
+}
+
     </style>
 
 </head>
@@ -2802,7 +2845,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M32 40c0-7 8-12 18-12s18 5 18 12v30H32z"/>' +
             '</g>' +
             '<path d="M32 58h36v9H32z" fill="#4a4e55"/>' +
-            '<path d="M44 42h12v18H44z" fill="#9aa1aa" stroke="#20180f" stroke-width="1.8"/>' +
             // the near arm: out from under the pauldron, turning in a little
             // as it comes down, to the fist on the grip of the sword
             '<g ' + K + ' fill="#b9bec7">' +
@@ -2828,16 +2870,28 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M44 6c0-7 3-11 6-11s6 4 6 11l-2 3h-8z"/>' +
             '<path d="M50 -3 62 -8 56 4z"/>' +
             '</g>' +
-            // the sword, held across the front
-            '<g ' + K + ' fill="#e4e8ee">' +
-            '<path d="M30 74 84 66l6 4-6 4-54 8z"/>' +
-            '</g>' +
-            '<path d="M28 70h6v14h-6z" fill="#6d737b" stroke="#20180f" stroke-width="2"/>' +
-            // the grip and the pommel behind his hand, and the gauntlet
-            // closed round them
-            '<path d="M12 73h17v8H12z" fill="#6d4a2a" stroke="#20180f" stroke-width="2"/>' +
+            /* The sword, held across the front, built from the pommel
+               outwards so every piece is covered by the one in front of it.
+
+               The blade used to start at the same x as the crossguard and
+               sat higher than it, so the guard cut across the blade instead
+               of sitting at the foot of it and the two read as separate
+               things with a gap between. The blade now runs back behind the
+               guard and is centred on it: same line, no join to see. */
+            // the grip, and the pommel on the end of it
+            '<path d="M12 73h18v8H12z" fill="#6d4a2a" stroke="#20180f" ' +
+            'stroke-width="2"/>' +
             '<circle cx="10" cy="77" r="4.5" fill="#8f959e" stroke="#20180f" ' +
             'stroke-width="2"/>' +
+            // the blade: its butt end is at x=28, behind the crossguard, and
+            // its centre line at that end is y=77 -- the guard's own middle
+            '<g ' + K + ' fill="#e4e8ee">' +
+            '<path d="M28 72.6 84 64.3l6 4.4-6 4.4-56 8.3z"/>' +
+            '</g>' +
+            // the crossguard, over the foot of the blade
+            '<path d="M29 67h7v20h-7z" fill="#6d737b" stroke="#20180f" ' +
+            'stroke-width="2" stroke-linejoin="round"/>' +
+            // the gauntlet, closed round the grip in front of the lot
             '<rect x="14" y="68" width="15" height="15" rx="5" fill="#cfd5dc" ' +
             'stroke="#20180f" stroke-width="2.2"/>' +
             '<g stroke="#8f959e" stroke-width="1.5" stroke-linecap="round">' +
@@ -2854,9 +2908,6 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             'stroke-width="9" stroke-linecap="round"/>' +
             '<path d="M74 12c14 12 14 64 0 76" fill="none" stroke="#b8342c" ' +
             'stroke-width="5.5" stroke-linecap="round"/>' +
-            // at full draw: back to the nock of the arrow, where the drawing
-            // hand closes on it
-            '<path d="M74 12 20 48l54 40" fill="none" stroke="#20180f" stroke-width="2.2"/>' +
             // legs and boots
             '<g ' + K + ' fill="#e8b98a">' +
             '<path d="M32 74h11v14H32zM56 74h11v14H56z"/></g>' +
@@ -2889,6 +2940,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M44 8c0-6 3-10 6-10s6 4 6 10l-3 4h-6z"/>' +
             '<path d="M50 2 40 0l4 8z"/>' +
             '</g>' +
+            /* The string, at full draw: from the top limb back to the nock
+               and out again to the bottom one. Drawn here rather than with
+               the bow, so it passes in front of him -- a string pulled back
+               to the ear stands between you and the archer, and behind the
+               tunic it could not be seen at all. The arrow goes on over it,
+               because the arrow rests on the string rather than under it. */
+            '<path d="M74 12 20 48l54 40" fill="none" stroke="#20180f" ' +
+            'stroke-width="2.2"/>' +
             // the arrow, nocked and pointing out
             '<path d="M20 48h62" fill="none" stroke="#c9c2b4" stroke-width="3" ' +
             'stroke-linecap="round"/>' +
@@ -2951,10 +3010,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // the hand on the end of it, hanging open at his side, clear of
             // the beard. He carries the staff and nothing else -- the orb he
             // used to be holding has gone.
+            // Turned a quarter turn clockwise on its own middle, so the
+            // palm faces down the way the arm hangs. The arm is untouched:
+            // only the hand on the end of it moves.
+            '<g transform="rotate(90 24.25 61)">' +
             '<rect x="18" y="54.5" width="12.5" height="13" rx="5.5" ' +
             'fill="#f0d9a8" stroke="#20180f" stroke-width="2"/>' +
             '<g stroke="#c9a878" stroke-width="1.3" stroke-linecap="round">' +
             '<path d="M21.5 60v4.5M24.5 60.5v4.5M27.5 60v4.5"/></g>' +
+            '</g>' +
             '</svg>'
     };
 
@@ -5279,6 +5343,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 const roll = throwDie(state, p.name, 'hunt');
                 if (R.steakRolls.indexOf(roll) >= 0) {
                     p.steaks.raw += 1;
+                    // Stamped with a running number the way a throw of the
+                    // die and the Gate's lightning are, so the client that
+                    // owns this player plays the steak across the screen
+                    // once and nobody sees it twice.
+                    state.steakSeq = (state.steakSeq | 0) + 1;
+                    state.lastSteak = { playerId: p.id, n: state.steakSeq };
                     log(state, p.name + ' rolled a ' + roll + ', hunted down an animal ' +
                                'and butchered it into a raw steak.', 'item');
                 } else {
@@ -6902,6 +6972,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     const DICE = (function () {
         let stage = null, dieEl = null, cubeEl = null;
         let settleT = null, giveUpT = null, holdT = null, fadeT = null, rollT = null;
+        let showing = false;        // there is a die on the screen at all
+        const goneQueue = [];
         let thrownAt = 0;           // when this throw left the hand
         let inFlight = false;       // still in the air: nothing else may happen
         let primed = false;         // have we seen this room at all yet?
@@ -7006,6 +7078,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
             thrownAt = Date.now();
             inFlight = true;
+            showing = true;
 
             // The die's own bounce keeps to this clock alone, not to
             // however long the answer takes -- so a quick reply still gets
@@ -7127,7 +7200,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             if (stage) stage.classList.remove('on', 'going', 'landed');
             inFlight = false;
             armed = false;
+            showing = false;
             while (idleQueue.length) idleQueue.shift()();
+            // Anything that was waiting for the screen to be clear of dice
+            // rather than merely for them to have stopped moving.
+            while (goneQueue.length) goneQueue.shift()();
         }
 
         return {
@@ -7169,7 +7246,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // Busy means in the air, not on the screen: once it has come to
             // rest the game goes on around it while it lies there.
             busy() { return inFlight; },
-            whenIdle(fn) { if (!inFlight) fn(); else idleQueue.push(fn); }
+            whenIdle(fn) { if (!inFlight) fn(); else idleQueue.push(fn); },
+
+            // On the screen at all -- still bouncing, or lying where it fell
+            // waiting to fade. `whenGone` is for anything that must not be
+            // put up over the top of a die the player is still reading.
+            onScreen() { return showing; },
+            whenGone(fn) { if (!showing) fn(); else goneQueue.push(fn); }
         };
     })();
 
@@ -7241,6 +7324,104 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* player's turn does.                                                */
     /* ------------------------------------------------------------------ */
 
+    /* ------------------------------------------------------------------ */
+    /* The steak the hunt brings home                                      */
+    /*                                                                     */
+    /* Winning one used to be a line in the log and a number going up in a */
+    /* box on the right, which is easy to miss entirely. Now the steak is  */
+    /* shown: it swells in the middle of the screen, holds long enough to  */
+    /* be seen for what it is, then flies across to the Steaks line in the */
+    /* profile box, shrinking as it goes, and the line takes the hit.      */
+    /*                                                                     */
+    /* Driven off state.lastSteak, stamped by the engine with a running    */
+    /* number, the same way the die and the Gate's lightning are -- so it  */
+    /* plays once. Only for the player it belongs to: it ends up in your   */
+    /* own profile box, so somebody else's steak flying into it would be   */
+    /* a lie.                                                              */
+    /* ------------------------------------------------------------------ */
+
+    const STEAK = (function () {
+        let primed = false, seen = 0;
+
+        function play() {
+            const target = $('#me-steaks');
+            const img = document.createElement('img');
+            img.className = 'steak-fly';
+            img.src = 'RawSteak.png';
+            img.alt = '';
+            img.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(img);
+
+            // Removed when the flight ends -- and removed anyway if that
+            // never happens. A browser stops advancing animations in a tab
+            // that is not being looked at, so a steak thrown just before the
+            // player switches away would otherwise still be lying across the
+            // middle of the screen when they came back.
+            let gone = false;
+            const done = () => { if (gone) return; gone = true; img.remove(); };
+            const failsafe = setTimeout(done, 6000);
+
+            // Where it is going: the middle of the Steaks line, or failing
+            // that the top right corner, so a missing profile box cannot
+            // leave the thing stuck in the middle of the screen.
+            const r = target ? target.getBoundingClientRect() : null;
+            const toX = r ? r.left + r.width / 2 : window.innerWidth - 60;
+            const toY = r ? r.top + r.height / 2 : 60;
+            const midX = window.innerWidth / 2;
+            const midY = window.innerHeight / 2;
+
+            // The travel is done as a transform off the middle of the screen
+            // rather than by moving left/top, so the whole flight is handed
+            // to the compositor and costs nothing to run.
+            const dx = toX - midX, dy = toY - midY;
+
+            if (!img.animate) {                       // very old browser
+                clearTimeout(failsafe);
+                setTimeout(done, 40);
+                return;
+            }
+            const anim = img.animate([
+                { offset: 0,    transform: 'translate(-50%, -50%) scale(.2)  rotate(-14deg)', opacity: 0 },
+                { offset: .14,  transform: 'translate(-50%, -50%) scale(1.12) rotate(3deg)',  opacity: 1 },
+                { offset: .22,  transform: 'translate(-50%, -50%) scale(1)    rotate(0deg)',  opacity: 1 },
+                // held in the middle, big, so it is plainly a steak
+                { offset: .52,  transform: 'translate(-50%, -50%) scale(1)    rotate(0deg)',  opacity: 1 },
+                // and away, shrinking into the line it belongs on
+                { offset: .70,  transform: 'translate(calc(-50% + ' + (dx * .32) + 'px), calc(-50% + ' +
+                                            (dy * .32 - 26) + 'px)) scale(.74) rotate(9deg)', opacity: 1 },
+                { offset: 1,    transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' +
+                                            dy + 'px)) scale(.1) rotate(20deg)', opacity: .25 }
+            ], { duration: 1900, easing: 'cubic-bezier(.34,.02,.24,1)', fill: 'forwards' });
+
+            anim.onfinish = () => { clearTimeout(failsafe); done(); };
+            anim.oncancel = () => { clearTimeout(failsafe); done(); };
+
+            // the line it lands on takes the hit, just as it gets there
+            if (target) setTimeout(() => {
+                target.classList.remove('steak-landed');
+                void target.offsetWidth;
+                target.classList.add('steak-landed');
+                setTimeout(() => target.classList.remove('steak-landed'), 700);
+            }, 1830);
+        }
+
+        return {
+            saw(state) {
+                const s = state && state.lastSteak;
+                const n = (s && typeof s.n === 'number') ? s.n : 0;
+                // The first snapshot of a room is history, not a steak that
+                // was just won.
+                if (!primed) { primed = true; seen = n; return; }
+                if (!s || n === seen) return;
+                seen = n;
+                if (s.playerId !== NET.PID) return;   // not yours to catch
+                // The steak is won by a throw of the die. Let the die be
+                // read first, then send the steak across.
+                DICE.whenIdle(() => setTimeout(play, 260));
+            }
+        };
+    })();
+
     const TURN_ANNOUNCE = (function () {
         let back = null, cardEl = null, portraitEl = null, nameEl = null, subEl = null;
         let hideT = null;
@@ -7290,7 +7471,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 if (!primed) { primed = true; seenKey = key; return; }
                 if (!cur || key === seenKey) return;
                 seenKey = key;
-                play(cur, cur.id === NET.PID);
+                // Not over the top of a die that is still on the screen. The
+                // throw that ended the last turn is often still lying there
+                // when the turn changes hands, and dimming the board over it
+                // takes the number away before it has been read. The key is
+                // checked again on the way in: if the game has moved on
+                // another turn while this was waiting, the announcement it
+                // was going to make is out of date and is dropped.
+                DICE.whenGone(() => {
+                    const now = E.currentPlayer(S);
+                    if (!now || (S.turnNo | 0) + '/' + now.id !== key) return;
+                    play(now, now.id === NET.PID);
+                });
             }
         };
     })();
@@ -7538,6 +7730,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         S = state;
         DICE.saw(state);
         ZAP.saw(state);
+        STEAK.saw(state);
         TURN_ANNOUNCE.saw(state);
         if (state.phase === 'lobby') { showScreen('screen-lobby'); renderLobby(); }
         else if (state.phase === 'over') {
@@ -9301,8 +9494,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 '<div><span>Chest keys</span><b>' + x.chestKeys + '</b></div>' +
                 '<div class="wide"><span>Key fragments</span>' +
                     fragmentsHtml(x) + '</div>' +
-                '<div class="wide"><span>Steaks</span><b>' + x.steaks.raw +
-                    ' raw &middot; ' + x.steaks.cooked + ' seared</b></div>' +
+                '<div class="wide" id="me-steaks"><span>Steaks</span><b>' +
+                    x.steaks.raw + ' raw &middot; ' + x.steaks.cooked +
+                    ' seared</b></div>' +
                 '<div class="wide"><span>Weapon</span><b>' +
                     esc(wDef ? wDef.name : 'none') +
                     (weapon && weapon.uses != null ? ' (' + weapon.uses + ')' : '') +
@@ -9691,10 +9885,28 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 moves: foe.moves, svg: enemyPic(foe, 58)
             }) + '</div>');
 
+        /* The flat die in the panel, and what it came to.
+
+           It used to be written the moment the answer reached the client,
+           which in a fight between two players is while the thrown cube is
+           still tumbling -- so the panel gave the number away before the die
+           had finished deciding it. It waits now: nothing is shown here
+           while a die is in the air, and the panel redraws itself the
+           instant one lands. */
         if (b.lastRoll != null) {
-            body += '<div class="die">' + pipsHtml(b.lastRoll) + '</div>' +
-                '<div class="muted" style="text-align:center;font-size:13px">' +
-                (b.lastRoll > missesUpTo() ? 'A hit!' : 'A miss.') + '</div>';
+            if (DICE.busy()) {
+                if (!renderBattleModal._waiting) {
+                    renderBattleModal._waiting = true;
+                    DICE.whenIdle(() => {
+                        renderBattleModal._waiting = false;
+                        renderModal();
+                    });
+                }
+            } else {
+                body += '<div class="die">' + pipsHtml(b.lastRoll) + '</div>' +
+                    '<div class="muted" style="text-align:center;font-size:13px">' +
+                    (b.lastRoll > missesUpTo() ? 'A hit!' : 'A miss.') + '</div>';
+            }
         }
 
         // The monster takes its own turn. Nobody presses a button for it any
