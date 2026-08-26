@@ -529,34 +529,38 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     align-items: start;
 }
 
+/* Sits right under the sticky site nav. .topbar already carries its own
+   margin-bottom, but the banner gets a clear margin-top of its own on top
+   of that -- so it reads as clearly starting below the bar rather than
+   sitting flush against it, no matter how that margin is tuned. */
 .turn-banner {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    padding: 12px 16px; margin-bottom: 14px;
-    border-radius: 12px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 20px 24px; margin: 26px 0 22px;
+    border-radius: 16px;
     background: var(--panel);
     border: 1px solid var(--panel-edge);
 }
-.turn-banner.mine { border-color: var(--gold); box-shadow: 0 0 22px -8px rgba(217,163,92,.7); }
+.turn-banner.mine { border-color: var(--gold); box-shadow: 0 0 26px -8px rgba(217,163,92,.7); }
 /* The piece belonging to whoever is up, at the head of the banner. */
 .turn-banner .whose {
-    width: 34px; height: 34px;
+    width: 50px; height: 50px;
     flex: 0 0 auto;
     border-radius: 50%;
-    border: 2px solid var(--panel-edge);
+    border: 3px solid var(--panel-edge);
     background: #f6f3e6 center/86% no-repeat;
 }
 .turn-banner.mine .whose { border-color: var(--gold); }
-.turn-banner .who { font-size: 18px; color: var(--cream); }
-.turn-banner .timer { margin-left: auto; font-size: 14px; color: #9a9a9a; }
+.turn-banner .who { font-size: 25px; color: var(--cream); }
+.turn-banner .timer { margin-left: auto; font-size: 16px; color: #9a9a9a; }
 
 /* What the game is waiting on, in words. There is no pace control, so a gap
    between two things has to explain itself: this line is never empty, and it
    names whoever the game is waiting on and what they are doing about it. */
 .turn-banner .doing {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 14px;
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 15.5px;
     color: #9fb4c8;
-    padding: 3px 11px;
+    padding: 6px 15px;
     border-radius: 999px;
     background: rgba(127, 182, 255, .09);
     border: 1px solid rgba(127, 182, 255, .2);
@@ -567,7 +571,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     border-color: rgba(217, 163, 92, .34);
 }
 .turn-banner .doing .spinner {
-    width: 12px; height: 12px;
+    width: 15px; height: 15px;
     flex: 0 0 auto;
     border-radius: 50%;
     border: 2px solid rgba(159, 180, 200, .3);
@@ -1720,7 +1724,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
 /* It rolls on from exactly where the spin had got to, through another turn
    or so the same way round, and stops with the rolled face towards you.
-   `--rx0`/`--ry0` is where it was; `--rx`/`--ry` is where it stops. */
+   `--rx0`/`--ry0` is where it was; `--rx`/`--ry` is where it stops.
+
+   Started the instant ui.js knows the answer -- not held back until the
+   throw is over -- and run for however much of the throw is still left,
+   so the number is arrived at, not snapped to. The .6s below is only what
+   shows if that duration is never set: ui.js always overrides it with the
+   real figure, long on a quick reply and short on a slow one. */
 .dice-cube.settled {
     animation: dice-settle .6s cubic-bezier(.22, .9, .3, 1) both;
 }
@@ -1984,6 +1994,90 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     34%     { opacity: 1; }
     82%     { opacity: 1; }
     100%    { opacity: 0; }
+}
+
+/* ---- whose turn it is, said over the whole table -----------------------
+   A computer player's go used to start with no more ceremony than a die
+   appearing, which read as the board twitching rather than as a turn
+   beginning. Now the screen dims all the way to the edges and the name is
+   said out loud, the same way the Gate says whose it caught -- so a turn
+   changing hands is a thing that visibly happens, not something you have
+   to notice from the die alone.
+
+   Driven off state.turnNo and whoever currentPlayer() says is up, watched
+   for a change exactly the way ZAP watches state.lastZap -- see onState().
+   -------------------------------------------------------------------- */
+
+.turn-announce {
+    position: fixed;
+    inset: 0;
+    z-index: 3500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    background: rgba(9, 8, 7, .76);
+    backdrop-filter: blur(2px);
+}
+.turn-announce.on {
+    visibility: visible;
+    animation: turn-announce-fade 2.6s ease-out forwards;
+}
+@keyframes turn-announce-fade {
+    0%   { opacity: 0; }
+    9%   { opacity: 1; }
+    78%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.turn-announce-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    transform: scale(.9);
+}
+.turn-announce.on .turn-announce-card {
+    animation: turn-announce-pop 2.6s cubic-bezier(.2, .8, .2, 1) forwards;
+}
+@keyframes turn-announce-pop {
+    0%   { transform: scale(.88); }
+    14%  { transform: scale(1); }
+    100% { transform: scale(1); }
+}
+
+.turn-announce-portrait {
+    width: 92px; height: 92px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    border: 3px solid var(--panel-edge);
+    background: #f6f3e6 center/86% no-repeat;
+    box-shadow: 0 16px 36px -10px rgba(0, 0, 0, .8);
+}
+.turn-announce.mine .turn-announce-portrait {
+    border-color: var(--gold);
+    box-shadow: 0 0 36px -4px rgba(217, 163, 92, .85),
+                0 16px 36px -10px rgba(0, 0, 0, .8);
+}
+
+.turn-announce-name {
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-weight: bold;
+    font-size: clamp(26px, 5.6vw, 46px);
+    color: var(--cream);
+    text-align: center;
+    letter-spacing: .01em;
+    text-shadow: 0 6px 26px rgba(0, 0, 0, .7);
+}
+.turn-announce.mine .turn-announce-name { color: var(--gold-bright); }
+
+.turn-announce-sub {
+    font-size: 13px;
+    color: #b9b3a6;
+    letter-spacing: .08em;
+    text-transform: uppercase;
 }
 
 /* ---- the die you have already thrown ----------------------------------
@@ -2392,8 +2486,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 <p class="muted" style="font-size:14.5px;line-height:1.7;margin:0">
                     Roll one die to move. Land on a square and do what it says. Monsters are
                     run by the computer — they roll to hit just like you do, and always use the
-                    hardest attack they have the energy for. In battle, an even roll is a hit
-                    and an odd roll is a miss; damage is your attack minus the target's defence.
+                    hardest attack they have the energy for. In battle, a roll of 3 or higher
+                    is a hit and a 1 or 2 is a miss; damage is your attack minus the target's defence.
                     Beat Seraphina, the Goblin Scout Group and the Goblin Hideout to collect all
                     three key fragments, open the Gate past the Fountain of Life, and enter the
                     arena. Land on the same square as another player and you fight them — that
@@ -3404,7 +3498,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // above it, and the two pots stand on the two Pot squares. Scenery is
         // painted under the squares, so it shows through the ruled rectangle
         // instead of covering what is written on it.
-        { kind: 'village',   row: 0, col: 4, size: .80 },
+        { kind: 'village',   row: 0, col: 4, size: .80, drop: 8 },
         { kind: 'fountain',  row: 2, col: 4, size: .72 },
         { kind: 'sky_draft', row: 3, col: 0, size: .68, drop: 12 },
         // The squares that used to have nothing standing on them. Scenery is
@@ -3414,7 +3508,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         { kind: 'chest',     row: 1, col: 6, size: .52, drop: 20 },
         { kind: 'desert',    row: 0, col: 1, size: .74, drop: 16 },
         { kind: 'forest',    row: 0, col: 5, size: .72, drop: 14 },
-        { kind: 'keep',      row: 0, col: 6, size: .70, drop: 14 },
+        { kind: 'keep',      row: 0, col: 6, size: .62, drop: 14 },
         { kind: 'hideout',   row: 2, col: 5, size: .64, drop: 16 },
         { kind: 'pot',       row: 0, col: 0, size: .60, drop: 24 },
         { kind: 'pot',       row: 2, col: 6, size: .60, drop: 24 },
@@ -4484,10 +4578,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const p = player(state, pid);
         const raw = throwDie(state, p.name, 'attack');
         b.lastRoll = raw;
-        log(state, p.name + ' rolled a ' + raw + ' — ' + (raw % 2 === 0 ? 'hit!' : 'miss.'),
-            raw % 2 === 0 ? 'roll' : 'muted');
+        log(state, p.name + ' rolled a ' + raw + ' — ' + (raw > 2 ? 'hit!' : 'miss.'),
+            raw > 2 ? 'roll' : 'muted');
 
-        if (raw % 2 === 0) {
+        if (raw > 2) {
             b.phase = 'act';
         } else {
             passBattleTurn(state);
@@ -4675,8 +4769,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         b.phase = (b.kind === 'pve' && b.turn === 'b') ? 'enemy_roll' : 'roll';
     }
 
-    // Throw the monster's die. Even and it will connect; odd and the turn
-    // comes straight back to the player.
+    // Throw the monster's die. A 3 or higher and it will connect; a 1 or 2
+    // and the turn comes straight back to the player.
     function enemyRoll(state, pid) {
         const b = state.battle;
         if (!b || b.kind !== 'pve') return fail('There is no monster to roll for.');
@@ -4686,7 +4780,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const e = D.ENEMIES[b.enemyId];
         const roll = throwDie(state, e.name, 'attack');
         b.lastRoll = roll;
-        if (roll % 2 === 0) {
+        if (roll > 2) {
             b.phase = 'enemy_act';
             log(state, D.foeName(e, true) + ' rolled a ' + roll + ' — it connects.', 'enemy');
         } else {
@@ -5530,25 +5624,26 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     // Walk a fight forward blow by blow and see who runs out of health first.
-    // Half of every roll is a miss, so a swing counts for half its damage;
-    // energy climbs by one each time somebody swings, which is what unlocks
-    // the heavy moves part way through. Nothing anybody might drink is
-    // counted -- you do not know in advance what you will need.
+    // Only a 1 or 2 on the die is a miss now, so two swings in three land and
+    // a swing counts for two-thirds of its damage; energy climbs by one each
+    // time somebody swings, which is what unlocks the heavy moves part way
+    // through. Nothing anybody might drink is counted -- you do not know in
+    // advance what you will need.
     function fightOut(a, b) {
         let aHp = a.hp, bHp = b.hp;
         let aEnergy = D.RULES.startingEnergy, bEnergy = D.RULES.startingEnergy;
 
         for (let round = 0; round < 80; round++) {
             const aSwing = reachable(a.moves, aEnergy, a.bonus, b.defence);
-            bHp -= aSwing.dealt / 2;
+            bHp -= aSwing.dealt * (2 / 3);
             aEnergy = spend(aEnergy, aSwing.cost);
-            if (a.heal) aHp = Math.min(a.hp, aHp + a.heal / 2);
+            if (a.heal) aHp = Math.min(a.hp, aHp + a.heal * (2 / 3));
             if (bHp <= 0) return { win: true, margin: Math.max(0, aHp) / a.hp };
 
             const bSwing = reachable(b.moves, bEnergy, b.bonus, a.defence);
-            aHp -= bSwing.dealt / 2;
+            aHp -= bSwing.dealt * (2 / 3);
             bEnergy = spend(bEnergy, bSwing.cost);
-            if (b.heal) bHp = Math.min(b.hp, bHp + b.heal / 2);
+            if (b.heal) bHp = Math.min(b.hp, bHp + b.heal * (2 / 3));
             if (aHp <= 0) return { win: false, margin: Math.max(0, bHp) / b.hp };
         }
         // Neither could finish the other. Whoever is further ahead on health.
@@ -5932,7 +6027,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         if (b.phase === 'roll') return { action: 'battleRoll', args: {} };
 
-        // The die has already come up even, so this is the blow itself.
+        // The die has already come up a hit, so this is the blow itself.
         const move = battleMove(state, p, b);
         if (!move) {
             // Nothing is affordable yet. Energy cards exist for exactly this.
@@ -6424,11 +6519,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* ---- how fast the other two play --------------------------------
        One pace, chosen so a person can follow it: a die is left on the table
        long enough to be read before anything else happens, the board stops
-       for a beat every time the turn changes hands, and the quiet steps in
-       between go by quickly. There is no setting for this. If you want to
-       know what is going on, the banner says whose go it is and what they
-       are doing, their piece and their bar are ringed in gold, and the
-       narrator says what they did.
+       for a longer beat every time the turn changes hands -- long enough for
+       the turn-announce overlay in ui.js to run its course -- and the quiet
+       steps in between go by unhurried rather than quickly. There is no
+       setting for this. If you want to know what is going on, the banner
+       says whose go it is and what they are doing, their piece and their bar
+       are ringed in gold, and the narrator says what they did.
        ------------------------------------------------------------------ */
 
     // A throw is about a second in the air and half a second rolling into
@@ -6437,10 +6533,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // After that it is only lying there: it does not cover anything and it
     // does not block anything, so the game carries on around it for the
     // three seconds it stays on the screen. This is ui.js's THROW_MS plus
-    // its settle; if the throw is retimed, retime this with it.
-    const AFTER_A_DIE = 1800;      // the throw and the landing
-    const AT_A_HANDOVER = 1600;    // the turn has just passed to somebody else
-    const BETWEEN_STEPS = 500;     // everything else
+    // its settle, with extra room added on top so a die that has landed is
+    // actually read rather than glanced at; if the throw is retimed, retime
+    // this with it.
+    const AFTER_A_DIE = 2600;      // the throw, the landing, and a proper look
+    // The turn-announce overlay (ui.js, TURN_ANNOUNCE) runs about 2.6s from
+    // the moment the turn changes hands, so this waits it out with a little
+    // to spare rather than starting the next die underneath it.
+    const AT_A_HANDOVER = 2900;    // the turn has just passed to somebody else
+    const BETWEEN_STEPS = 1200;    // everything else
 
     // A fight the computer is having with itself -- with a monster, or with
     // the other computer player -- is a thing you are watching rather than
@@ -6448,11 +6549,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // person in that fight gets the same pause before the monster answers
     // them (ui.js, ENEMY_PAUSE_MS); this is the other side of it.
     //
-    // Two seconds apiece, so each blow is plainly somebody's: you see whose
+    // Three seconds apiece, so each blow is plainly somebody's: you see whose
     // turn it is, the die comes down, and only then does the next one start.
     const BEFORE = {
-        enemyRoll:  2000,          // the monster picking the die up after a blow
-        battleRoll: 2000           // stepping up to swing
+        enemyRoll:  3000,          // the monster picking the die up after a blow
+        battleRoll: 3000           // stepping up to swing
     };
 
     function schedule() {
@@ -6684,7 +6785,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     const DICE = (function () {
         let stage = null, dieEl = null, cubeEl = null;
-        let settleT = null, giveUpT = null, holdT = null, fadeT = null;
+        let settleT = null, giveUpT = null, holdT = null, fadeT = null, rollT = null;
         let thrownAt = 0;           // when this throw left the hand
         let inFlight = false;       // still in the air: nothing else may happen
         let primed = false;         // have we seen this room at all yet?
@@ -6695,7 +6796,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         let spinX = 360, spinY = 720;   // this throw's turn, signed by travel
 
         const THROW_MS  = 1200;     // off the side of the screen to the table
-        const SETTLE_MS = 600;      // the last roll into the number it shows
+        const SETTLE_MIN_MS = 220;  // the least the roll into the number may take
         const HOLD_MS   = 3000;     // how long it is left lying there
         const FADE_MS   = 450;
         const SPIN_MS   = 700;      // must match the dice-spin keyframes
@@ -6733,6 +6834,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             clearTimeout(settleT);
             clearTimeout(holdT);
             clearTimeout(fadeT);
+            clearTimeout(rollT);
 
             const edge = 110;           // enough that it never hangs off
             const w = Math.max(window.innerWidth  || 0, 320);
@@ -6778,12 +6880,30 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             dieEl.classList.remove('flying', 'rolling');
             cubeEl.classList.remove('spinning', 'settled');
             cubeEl.style.transform = '';
+            // Any duration land() left on the cube from the last throw is
+            // cleared too, or the spin would inherit a settle's timing
+            // instead of running at its own steady rate.
+            cubeEl.style.animationDuration = '';
             void dieEl.offsetWidth;
             dieEl.classList.add('flying');
             cubeEl.classList.add('spinning');
 
             thrownAt = Date.now();
             inFlight = true;
+
+            // The die's own bounce keeps to this clock alone, not to
+            // however long the answer takes -- so a quick reply still gets
+            // the whole throw to ease into its number instead of cutting
+            // the bounce short. land() eases the cube's turn down against
+            // this same clock, early or late as the answer allows, so the
+            // two hand over together on a fast reply and only drift apart
+            // on a slow one.
+            rollT = setTimeout(() => {
+                dieEl.classList.remove('flying');
+                void dieEl.offsetWidth;
+                dieEl.classList.add('rolling');
+                stage.classList.add('landed');
+            }, THROW_MS);
         }
 
         // Exactly where the cube has got to in its spin, so the roll into
@@ -6815,23 +6935,40 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         function land(die) {
             build();
             clearTimeout(giveUpT);
+            clearTimeout(settleT);
+
+            // Told the moment the answer is known, not once the bounce is
+            // over -- so the turn can start easing down while the die is
+            // still visibly tumbling, rather than being held at full spin
+            // right up to the last instant and then hauled onto the number.
+            // Whatever the throw has left to run is what the ease-down gets:
+            // a quick reply is given nearly the whole throw to wind down in;
+            // a slow one gets a short, proportionally small finish instead
+            // of a snap straight to the number.
+            const age = Date.now() - thrownAt;
+            const settleMs = Math.max(SETTLE_MIN_MS, THROW_MS - age);
 
             const from = spinNow();
+            // How much further the cube turns, at the rate it is already
+            // going, while it eases down to a stop over settleMs -- roughly
+            // half the current rate held for the whole time, which is what
+            // a steady slow-down averages out to, nudged at random so no
+            // two throws wind down by quite the same amount. That is how
+            // far past `from` the roll runs before it is allowed to stop on
+            // the number, so the finish reads as running out of turn rather
+            // than reaching for it.
+            const decel = 0.4 + Math.random() * 0.3;
+            const travelX = Math.abs(spinX / SPIN_MS) * settleMs * decel;
+            const travelY = Math.abs(spinY / SPIN_MS) * settleMs * decel;
+
             const to = FACE_ROT[die.roll] || FACE_ROT[1];
-            const rx = keepGoing(to[0], from.rx, spinX, 120);
-            const ry = keepGoing(to[1], from.ry, spinY, 240);
+            const rx = keepGoing(to[0], from.rx, spinX, travelX);
+            const ry = keepGoing(to[1], from.ry, spinY, travelY);
 
             cubeEl.style.setProperty('--rx0', from.rx.toFixed(1) + 'deg');
             cubeEl.style.setProperty('--ry0', from.ry.toFixed(1) + 'deg');
             cubeEl.style.setProperty('--rx', rx.toFixed(1) + 'deg');
             cubeEl.style.setProperty('--ry', ry.toFixed(1) + 'deg');
-            // The die is still moving while this happens: the throw hands
-            // over to the last of the roll, which picks up exactly where it
-            // left off. A cube turning onto its number while sitting quite
-            // still is a spinning top, not a die coming to rest.
-            dieEl.classList.remove('flying');
-            void dieEl.offsetWidth;
-            dieEl.classList.add('rolling');
 
             cubeEl.classList.remove('spinning');
             // Written straight onto the cube as well as animated to. The
@@ -6839,18 +6976,23 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // animation does not start at all -- in which case the die still
             // ends up sitting on the right number instead of on face one.
             cubeEl.style.transform = 'rotateX(' + rx + 'deg) rotateY(' + ry + 'deg)';
+            // This throw's own timing, worked out above -- not the fixed
+            // figure in the stylesheet -- so the wind-down is long when the
+            // answer comes back quickly and short when it doesn't. The
+            // die's own bounce is untouched by this: it keeps to THROW_MS
+            // on the clock throwIt() already set running.
+            cubeEl.style.animationDuration = settleMs + 'ms';
             void cubeEl.offsetWidth;
             cubeEl.classList.add('settled');
-            stage.classList.add('landed');
 
-            // It has stopped. The game may carry on around it from here --
-            // it is lying on top of the board, not in the way of it -- and
-            // it stays where it fell for three seconds before fading.
+            // It has stopped turning. The game may carry on around it from
+            // here -- it is lying on top of the board, not in the way of it
+            // -- and it stays where it fell for three seconds before fading.
             settleT = setTimeout(() => {
                 inFlight = false;
                 while (idleQueue.length) idleQueue.shift()();
-            }, SETTLE_MS);
-            holdT = setTimeout(fade, SETTLE_MS + HOLD_MS);
+            }, settleMs);
+            holdT = setTimeout(fade, settleMs + HOLD_MS);
         }
 
         function fade() {
@@ -6865,6 +7007,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             clearTimeout(giveUpT);
             clearTimeout(holdT);
             clearTimeout(fadeT);
+            clearTimeout(rollT);
             if (stage) stage.classList.remove('on', 'going', 'landed');
             inFlight = false;
             armed = false;
@@ -6898,11 +7041,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 // the button -- that one is already in the air and carries on.
                 const age = Date.now() - thrownAt;
                 if (!inFlight || age > 260) throwIt();
-                clearTimeout(settleT);
-                // It may not land until it has finished bouncing, however
-                // quickly the answer came back.
-                settleT = setTimeout(() => land(die),
-                    Math.max(220, THROW_MS - (Date.now() - thrownAt)));
+                // land() itself works out how much of the throw is still
+                // to run and eases the cube's turn down over whatever that
+                // is -- called now, the moment the answer is known, rather
+                // than held back until the bounce is over.
+                land(die);
                 armed = false;
                 return true;
             },
@@ -6967,6 +7110,71 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 if (!z || n === seen) return;
                 seen = n;
                 play(z.who || 'Somebody');
+            }
+        };
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* Whose turn it is, said over the whole table                         */
+    /*                                                                     */
+    /* Watches state.turnNo and currentPlayer() the same way solo.js's own */
+    /* turnKey() does for the bots' pacing, and plays once whenever that   */
+    /* key changes -- one announcement per full turn, not per die. A       */
+    /* battle does not touch turnNo or turnIndex, so the fight goes by     */
+    /* underneath without retriggering it; only the handover to the next  */
+    /* player's turn does.                                                */
+    /* ------------------------------------------------------------------ */
+
+    const TURN_ANNOUNCE = (function () {
+        let back = null, cardEl = null, portraitEl = null, nameEl = null, subEl = null;
+        let hideT = null;
+        let primed = false, seenKey = '';
+
+        function build() {
+            if (back) return;
+            back = document.createElement('div');
+            back.className = 'turn-announce';
+            back.setAttribute('aria-hidden', 'true');
+            back.innerHTML =
+                '<div class="turn-announce-card">' +
+                    '<div class="turn-announce-portrait"></div>' +
+                    '<div class="turn-announce-name"></div>' +
+                    '<div class="turn-announce-sub"></div>' +
+                '</div>';
+            document.body.appendChild(back);
+            cardEl     = back.querySelector('.turn-announce-card');
+            portraitEl = back.querySelector('.turn-announce-portrait');
+            nameEl     = back.querySelector('.turn-announce-name');
+            subEl      = back.querySelector('.turn-announce-sub');
+        }
+
+        function play(p, mine) {
+            build();
+            const cls = p && p.cls ? D.CLASSES[p.cls] : null;
+            nameEl.textContent = (mine ? 'Your' : (p ? p.name : 'Somebody') + '\u2019s') + ' Turn';
+            subEl.textContent = cls ? cls.name : '';
+            portraitEl.style.backgroundImage = cls ? 'url(\'' + cls.art + '\')' : 'none';
+            back.classList.toggle('mine', !!mine);
+            back.classList.remove('on');
+            void back.offsetWidth;              // restart the animation
+            void cardEl.offsetWidth;
+            back.classList.add('on');
+            clearTimeout(hideT);
+            hideT = setTimeout(() => back.classList.remove('on'), 2600);
+        }
+
+        return {
+            saw(state) {
+                if (!state || state.phase !== 'playing') return;
+                const cur = E.currentPlayer(state);
+                const key = (state.turnNo | 0) + '/' + (cur ? cur.id : '-');
+                // The first snapshot of a room is history, not a turn that
+                // just started -- joining or reloading mid-game should not
+                // announce whichever turn happened to already be under way.
+                if (!primed) { primed = true; seenKey = key; return; }
+                if (!cur || key === seenKey) return;
+                seenKey = key;
+                play(cur, cur.id === NET.PID);
             }
         };
     })();
@@ -7214,6 +7422,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         S = state;
         DICE.saw(state);
         ZAP.saw(state);
+        TURN_ANNOUNCE.saw(state);
         if (state.phase === 'lobby') { showScreen('screen-lobby'); renderLobby(); }
         else if (state.phase === 'over') {
             showScreen('screen-over');
@@ -7355,55 +7564,67 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '<path d="M41 70l-1 6-3-6z" fill="#f4e7b8" stroke="#20180f" stroke-width="1.4"/>' +
             '<path d="M50 70l1 6 3-6z" fill="#f4e7b8" stroke="#20180f" stroke-width="1.4"/>',
 
-        // The hideout: the foot of a big dead tree with the den dug into
-        // the root of it, drawn to match the piece standing on the square
-        // out on the board -- it used to be a cave in a hillside here and a
-        // hillside is not what you walked past. The stakes stop half way up
-        // on purpose: the point of the picture is the eyes watching you out
-        // of the dark over the top of them.
+        // The hideout: the goblins have built a platform up in a big tree
+        // and that is where they are, looking down at you over a railing of
+        // sticks. Drawn to match the piece standing on the square out on the
+        // board -- it was a den in the roots on the last pass, and what you
+        // walk past should be what you end up fighting.
         hideout:
-            // the ground, and the roots going over it
-            '<ellipse cx="50" cy="95" rx="46" ry="7" fill="#4a3d24" opacity=".55"/>' +
-            '<g fill="#6b5133" ' + OUT + '>' +
-            '<path d="M22 96C10 96 4 93 1 89c8-4 15-4 21 0z"/>' +
-            '<path d="M78 96c12 0 18-3 21-7-8-4-15-4-21 0z"/>' +
+            // the canopy over the top
+            '<g fill="#2f7a44" stroke="#1e5230" stroke-width="2.2">' +
+            '<ellipse cx="28" cy="17" rx="19" ry="13"/>' +
+            '<ellipse cx="72" cy="15" rx="18" ry="12"/>' +
+            '<ellipse cx="50" cy="10" rx="19" ry="11"/>' +
             '</g>' +
-            // the trunk, wide at the foot and running up out of the frame
-            '<path d="M20 96c0-26 3-46 5-62C27 20 31 8 50 8s23 12 25 26' +
-            'c2 16 5 36 5 62z" fill="#7a5c39" ' + OUT + '/>' +
-            '<path d="M50 8c19 0 23 12 25 26 2 16 5 36 5 62H50z" fill="#674c2f"/>' +
-            '<g stroke="#54402a" stroke-width="1.7" fill="none" opacity=".75">' +
-            '<path d="M31 90c-1-20 0-36 2-50M40 93c-1-22 0-40 1-54' +
-            'M60 93c1-22 0-40-1-54M69 90c1-20 0-36-2-50"/></g>' +
-            // a couple of dead branches
+            // the trunk behind the platform
+            '<path d="M43 98c-1-24 0-44 1-58 1-8 2-13 6-13s5 5 6 13' +
+            'c1 14 2 34 1 58z" fill="#7a5c39" ' + OUT + '/>' +
+            '<path d="M50 27c4 0 5 5 6 13 1 14 2 34 1 58h-7z" fill="#674c2f"/>' +
+            // the branches it is built onto, and the braces underneath
             '<g stroke="#5c4429" stroke-width="4" fill="none" ' +
             'stroke-linecap="round">' +
-            '<path d="M26 26 8 13M26 26l-12-1M76 22l17-11M76 22l12-1"/></g>' +
-            // the hollow, black inside
-            '<path d="M28 96c0-20 8-32 22-32s22 12 22 32z" fill="#160f08" ' +
-            'stroke="#20180f" stroke-width="2.4"/>' +
-            // the eyes in the dark
+            '<path d="M45 40 22 32M56 38l22-8"/></g>' +
+            '<g stroke="#7a5c39" stroke-width="3.4" fill="none" ' +
+            'stroke-linecap="round">' +
+            '<path d="M26 66 44 54M74 66 56 54"/></g>' +
+            // the deck
+            '<path d="M14 54h72v9H14z" fill="#9c6c3e" ' + OUT + '/>' +
+            '<g stroke="#6d4826" stroke-width="1.3" opacity=".85">' +
+            '<path d="M26 54v9M38 54v9M50 54v9M62 54v9M74 54v9"/></g>' +
+            // the goblins on it
+            '<g stroke="#25401f" stroke-width="1.7" stroke-linejoin="round">' +
+            '<path d="M20 54V43a4.5 4.5 0 0 1 9 0v11z" fill="#4a7a3a"/>' +
+            '<circle cx="24.5" cy="37" r="5.4" fill="#6aa153"/>' +
+            '<path d="M19 36l-5.5-3.5 5.5-1zM30 36l5.5-3.5-5.5-1z" fill="#6aa153"/>' +
+            '<path d="M33 54V22" stroke="#6b4a24" stroke-width="2.2" fill="none"/>' +
+            '<path d="M33 22l-2.6 5.4h5.2z" fill="#c9ccd2"/>' +
+            '<path d="M43 54V39a6.5 6.5 0 0 1 13 0v15z" fill="#41702f"/>' +
+            '<circle cx="49.5" cy="32" r="7" fill="#6aa153"/>' +
+            '<path d="M43 31l-6.5-4.5 6.5-1zM56 31l6.5-4.5-6.5-1z" fill="#6aa153"/>' +
+            '<path d="M69 54V44a4.5 4.5 0 0 1 9 0v10z" fill="#4a7a3a"/>' +
+            '<circle cx="73.5" cy="38" r="5.4" fill="#6aa153"/>' +
+            '<path d="M68 37l-5.5-3.5 5.5-1zM79 37l5.5-3.5-5.5-1z" fill="#6aa153"/>' +
+            '</g>' +
+            // their eyes
             '<g fill="#e4c14a">' +
-            '<circle cx="41" cy="76" r="3.6"/><circle cx="59" cy="76" r="3.6"/>' +
-            '<circle cx="33" cy="85" r="2.4" opacity=".8"/>' +
-            '<circle cx="67" cy="85" r="2.4" opacity=".8"/>' +
-            '<circle cx="50" cy="87" r="2.4" opacity=".65"/>' +
+            '<circle cx="22.4" cy="36.6" r="1.4"/><circle cx="26.6" cy="36.6" r="1.4"/>' +
+            '<circle cx="46.8" cy="31.4" r="1.8"/><circle cx="52.2" cy="31.4" r="1.8"/>' +
+            '<circle cx="71.4" cy="37.6" r="1.4"/><circle cx="75.6" cy="37.6" r="1.4"/>' +
             '</g>' +
-            '<g stroke="#20180f" stroke-width="1.8" stroke-linecap="round">' +
-            '<path d="M41 73v6M59 73v6"/></g>' +
-            // the stockade across the mouth of it
-            '<g ' + OUT + ' fill="#8a5a3a">' +
-            '<path d="M26 98V88l5-7 5 7v10z"/>' +
-            '<path d="M38 98V84l5-7 5 7v14z"/>' +
-            '<path d="M50 98V86l5-7 5 7v12z"/>' +
-            '<path d="M62 98V83l5-7 5 7v15z"/>' +
-            '</g>' +
-            '<path d="M24 92h52" fill="none" stroke="#5f3b23" stroke-width="3.2" ' +
+            // the railing along the front
+            '<g stroke="#6b4a24" stroke-width="2.6" stroke-linecap="round" ' +
+            'fill="none">' +
+            '<path d="M16 54v-9M34 54v-7M50 54v-9M66 54v-7M84 54v-9"/>' +
+            '<path d="M15 47h70"/></g>' +
+            // the ladder down to the ground
+            '<g stroke="#6b4a24" stroke-width="2.4" stroke-linecap="round" ' +
+            'fill="none">' +
+            '<path d="M19 98 23 63M30 98 32 63"/>' +
+            '<path d="M20 90h10M21 80h10M22 71h10"/></g>' +
+            // their banner off the end of the deck
+            '<path d="M88 58V28" fill="none" stroke="#20180f" stroke-width="2.8" ' +
             'stroke-linecap="round"/>' +
-            // their banner on a pole beside it
-            '<path d="M94 94V16" fill="none" stroke="#20180f" stroke-width="3.2" ' +
-            'stroke-linecap="round"/>' +
-            '<path d="M94 19H74l5 8-5 8h20z" fill="#8c4a3a" ' + OUT + '/>',
+            '<path d="M88 30H72l4.5 6-4.5 6h16z" fill="#8c4a3a" ' + OUT + '/>',
 
         /* ---- Fenrirak ---------------------------------------------------
            Cut from the painting on the hero banner: the blue dragon reared
@@ -8206,35 +8427,43 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         chest:
             '<svg viewBox="0 0 120 110" aria-hidden="true">' +
             // the ground it stands on
-            '<ellipse cx="60" cy="96" rx="44" ry="9" fill="#8a9a6d" opacity=".45"/>' +
-            // the body of the box, in planks
-            '<path d="M18 58h84v34H18z" fill="#8a5f36" stroke="#4a2f18" ' +
+            '<ellipse cx="60" cy="98" rx="40" ry="8" fill="#8a9a6d" opacity=".45"/>' +
+            // The body. A squat box rather than the tall barrel this was on
+            // the first pass -- a chest is a square thing with a lid on it,
+            // and the deep dome made it read as a cask.
+            '<path d="M26 56h68v40H26z" fill="#8a5f36" stroke="#4a2f18" ' +
             'stroke-width="2.6" stroke-linejoin="round"/>' +
             '<g stroke="#6d4826" stroke-width="1.5" opacity=".8">' +
-            '<path d="M18 70h84M18 82h84"/></g>' +
-            // the domed lid
-            '<path d="M18 58a42 26 0 0 1 84 0z" fill="#9c6c3e" stroke="#4a2f18" ' +
-            'stroke-width="2.6" stroke-linejoin="round"/>' +
-            '<path d="M60 32a42 26 0 0 1 42 26H60z" fill="#8a5f36"/>' +
-            // the iron straps: two over the lid and down the body
-            '<g fill="#5c6068" stroke="#33363c" stroke-width="1.6">' +
-            '<path d="M32 92V57a30 22 0 0 1 6-16l6 3a26 20 0 0 0-5 14v34z"/>' +
-            '<path d="M82 92V58a26 20 0 0 0-5-14l6-3a30 22 0 0 1 6 16v35z"/>' +
-            '</g>' +
-            // the iron band round the foot of it
-            '<path d="M16 88h88v6H16z" fill="#5c6068" stroke="#33363c" ' +
-            'stroke-width="1.6"/>' +
-            // the gold lock plate, the hasp and the keyhole
-            '<path d="M52 56h16v18H52z" fill="#e0b23c" stroke="#8a6a20" ' +
-            'stroke-width="1.8"/>' +
-            '<path d="M56 56v-6a4 4 0 0 1 8 0v6" fill="none" stroke="#8a6a20" ' +
-            'stroke-width="2.4"/>' +
-            '<circle cx="60" cy="64" r="2.6" fill="#4a3a12"/>' +
-            '<path d="M60 66v5" stroke="#4a3a12" stroke-width="2.2" ' +
+            '<path d="M26 68h68M26 80h68"/></g>' +
+            // the lid: a shallow flat-topped slab, only just arched
+            '<path d="M22 56V44a6 6 0 0 1 6-6h64a6 6 0 0 1 6 6v12z" ' +
+            'fill="#9c6c3e" stroke="#4a2f18" stroke-width="2.6" ' +
+            'stroke-linejoin="round"/>' +
+            '<path d="M60 38h32a6 6 0 0 1 6 6v12H60z" fill="#8a5f36"/>' +
+            // the seam the lid shuts on
+            '<path d="M22 56h76" stroke="#4a2f18" stroke-width="2" ' +
             'stroke-linecap="round"/>' +
-            // the light along the top of the lid
-            '<path d="M30 44a38 22 0 0 1 30-12" fill="none" stroke="#c08b52" ' +
-            'stroke-width="3" stroke-linecap="round" opacity=".7"/>' +
+            // the iron straps, over the lid and down the face of the box
+            '<g fill="#5c6068" stroke="#33363c" stroke-width="1.6">' +
+            '<path d="M36 96V38h7v58z"/><path d="M77 96V38h7v58z"/>' +
+            '</g>' +
+            // the iron bands, round the foot and along the top of the lid
+            '<path d="M22 90h76v6H22z" fill="#5c6068" stroke="#33363c" ' +
+            'stroke-width="1.6"/>' +
+            '<path d="M22 42h76v6H22z" fill="#5c6068" stroke="#33363c" ' +
+            'stroke-width="1.6" opacity=".9"/>' +
+            // the gold lock plate on the front, with hasp and keyhole
+            '<path d="M52 52h16v20H52z" fill="#e0b23c" stroke="#8a6a20" ' +
+            'stroke-width="1.8"/>' +
+            '<path d="M56 52v-8a4 4 0 0 1 8 0v8" fill="none" stroke="#8a6a20" ' +
+            'stroke-width="2.4"/>' +
+            '<circle cx="60" cy="60" r="2.6" fill="#4a3a12"/>' +
+            '<path d="M60 62v5" stroke="#4a3a12" stroke-width="2.2" ' +
+            'stroke-linecap="round"/>' +
+            // gold corner brackets, which is what squares it off
+            '<g fill="none" stroke="#e0b23c" stroke-width="2.6" ' +
+            'stroke-linecap="round">' +
+            '<path d="M26 62v-6h7M94 62v-6h-7M26 84v6h7M94 84v6h-7"/></g>' +
             '</svg>',
 
         // The Midnight Desert: a few cactuses on the dunes under a night
@@ -8381,50 +8610,79 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // sharpened stakes is driven in across it, and the eyes are what
         // you actually see -- watching you out of the dark over the top.
         hideout:
-            '<svg viewBox="0 0 130 126" aria-hidden="true">' +
-            // the ground and the roots spreading over it
-            '<ellipse cx="65" cy="110" rx="58" ry="12" fill="#7d8b60" opacity=".5"/>' +
+            '<svg viewBox="0 0 130 130" aria-hidden="true">' +
+            // the ground, and the roots going over it
+            '<ellipse cx="65" cy="120" rx="46" ry="9" fill="#7d8b60" opacity=".5"/>' +
             '<g fill="#6b5133" stroke="#3f2e1b" stroke-width="2" ' +
             'stroke-linejoin="round">' +
-            '<path d="M30 108c-12 0-20-3-24-8 10-4 18-4 26 0z"/>' +
-            '<path d="M100 108c12 0 20-3 24-8-10-4-18-4-26 0z"/>' +
+            '<path d="M50 119c-9 0-15-2-18-6 7-3 13-3 19 0z"/>' +
+            '<path d="M80 119c9 0 15-2 18-6-7-3-13-3-19 0z"/>' +
             '</g>' +
-            // the trunk, wide at the foot and going up out of the picture
-            '<path d="M34 108c0-30 4-52 6-70 2-16 6-26 25-26s23 10 25 26' +
-            'c2 18 6 40 6 70z" fill="#7a5c39" stroke="#3f2e1b" ' +
-            'stroke-width="2.6" stroke-linejoin="round"/>' +
-            // the bark, and the shaded side of the trunk
-            '<path d="M65 12c19 0 23 10 25 26 2 18 6 40 6 70H65z" fill="#674c2f"/>' +
-            '<g stroke="#54402a" stroke-width="1.8" fill="none" opacity=".75">' +
-            '<path d="M46 100c-1-22 0-40 2-56M56 104c-1-24 0-44 1-60' +
-            'M78 104c1-24 0-44-1-60M88 100c1-22 0-40-2-56"/></g>' +
-            // two dead branches off it
+            // the canopy over the whole thing
+            '<g fill="#2f7a44" stroke="#1e5230" stroke-width="2.2">' +
+            '<ellipse cx="44" cy="22" rx="24" ry="17"/>' +
+            '<ellipse cx="88" cy="20" rx="22" ry="16"/>' +
+            '<ellipse cx="65" cy="13" rx="24" ry="15"/>' +
+            '</g>' +
+            // the trunk running up behind the platform
+            '<path d="M56 120c-1-30 0-56 1-74 1-10 3-16 8-16s7 6 8 16' +
+            'c1 18 2 44 1 74z" fill="#7a5c39" stroke="#3f2e1b" ' +
+            'stroke-width="2.4" stroke-linejoin="round"/>' +
+            '<path d="M65 30c5 0 7 6 8 16 1 18 2 44 1 74h-9z" fill="#674c2f"/>' +
+            '<g stroke="#54402a" stroke-width="1.5" fill="none" opacity=".7">' +
+            '<path d="M61 112c-1-24 0-46 1-62M70 112c1-24 0-46-1-62"/></g>' +
+            // the branches the platform is built onto
             '<g stroke="#5c4429" stroke-width="4.5" fill="none" ' +
             'stroke-linecap="round">' +
-            '<path d="M40 30 18 14M40 30l-14-2M90 26l20-14M90 26l14-1"/></g>' +
-            // the hollow at the base, black inside
-            '<path d="M44 108c0-22 9-34 21-34s21 12 21 34z" fill="#140f07" ' +
-            'stroke="#2a1f12" stroke-width="2.4"/>' +
-            // the eyes watching out of it
+            '<path d="M58 46 30 36M72 44l28-10"/></g>' +
+            // the braces holding the deck up under the trunk
+            '<g stroke="#7a5c39" stroke-width="4" fill="none" ' +
+            'stroke-linecap="round">' +
+            '<path d="M36 76 58 62M94 76 72 62"/></g>' +
+            // The platform itself: a planked deck slung across the branches.
+            // This is what the goblins have built up here.
+            '<path d="M22 62h86v10H22z" fill="#9c6c3e" stroke="#3f2e1b" ' +
+            'stroke-width="2.4" stroke-linejoin="round"/>' +
+            '<g stroke="#6d4826" stroke-width="1.4" opacity=".85">' +
+            '<path d="M36 62v10M50 62v10M65 62v10M80 62v10M94 62v10"/></g>' +
+            // the three goblins standing on it, behind their railing
+            '<g stroke="#25401f" stroke-width="1.8" stroke-linejoin="round">' +
+            // the one on the left, with a spear
+            '<path d="M31 62V50a5 5 0 0 1 10 0v12z" fill="#4a7a3a"/>' +
+            '<circle cx="36" cy="44" r="6" fill="#6aa153"/>' +
+            '<path d="M30 43l-6-4 6-1zM42 43l6-4-6-1z" fill="#6aa153"/>' +
+            '<path d="M45 62V26" stroke="#6b4a24" stroke-width="2.4" fill="none"/>' +
+            '<path d="M45 26l-3 6h6z" fill="#c9ccd2"/>' +
+            // the big one in the middle
+            '<path d="M58 62V46a7 7 0 0 1 14 0v16z" fill="#41702f"/>' +
+            '<circle cx="65" cy="39" r="7.5" fill="#6aa153"/>' +
+            '<path d="M58 38l-7-5 7-1zM72 38l7-5-7-1z" fill="#6aa153"/>' +
+            // the one on the right
+            '<path d="M88 62V51a5 5 0 0 1 10 0v11z" fill="#4a7a3a"/>' +
+            '<circle cx="93" cy="45" r="6" fill="#6aa153"/>' +
+            '<path d="M87 44l-6-4 6-1zM99 44l6-4-6-1z" fill="#6aa153"/>' +
+            '</g>' +
+            // their eyes
             '<g fill="#e4c14a">' +
-            '<circle cx="56" cy="88" r="3.4"/><circle cx="74" cy="88" r="3.4"/>' +
-            '<circle cx="48" cy="97" r="2.2" opacity=".8"/>' +
-            '<circle cx="82" cy="97" r="2.2" opacity=".8"/>' +
-            '<circle cx="65" cy="99" r="2.2" opacity=".62"/>' +
+            '<circle cx="33.5" cy="43.5" r="1.5"/><circle cx="38.5" cy="43.5" r="1.5"/>' +
+            '<circle cx="62" cy="38.5" r="1.9"/><circle cx="68" cy="38.5" r="1.9"/>' +
+            '<circle cx="90.5" cy="44.5" r="1.5"/><circle cx="95.5" cy="44.5" r="1.5"/>' +
             '</g>' +
-            '<g stroke="#2a1f12" stroke-width="1.7" stroke-linecap="round">' +
-            '<path d="M56 85.5v5M74 85.5v5"/></g>' +
-            // the stakes across the mouth of it, stopping half way up so the
-            // eyes are over the top of them
-            '<g fill="#8a5a3a" stroke="#3f2e1b" stroke-width="2" ' +
-            'stroke-linejoin="round" stroke-linecap="round">' +
-            '<path d="M42 110v-8l4-6 4 6v8z"/>' +
-            '<path d="M53 110v-12l4-6 4 6v12z"/>' +
-            '<path d="M64 110v-9l4-6 4 6v9z"/>' +
-            '<path d="M75 110v-13l4-6 4 6v13z"/>' +
-            '</g>' +
-            '<path d="M40 104h48" fill="none" stroke="#5f3b23" stroke-width="3" ' +
+            // the railing along the front of the deck, cut from sticks
+            '<g stroke="#6b4a24" stroke-width="3" stroke-linecap="round" ' +
+            'fill="none">' +
+            '<path d="M24 62V52M46 62V54M65 62V52M84 62V54M106 62V52"/>' +
+            '<path d="M23 55h84"/></g>' +
+            // the ladder up to it
+            '<g stroke="#6b4a24" stroke-width="2.8" stroke-linecap="round" ' +
+            'fill="none">' +
+            '<path d="M28 118 33 72M40 118 43 72"/>' +
+            '<path d="M29 108h11M31 96h10M32 84h10"/></g>' +
+            // their banner on a pole at the end of the deck
+            '<path d="M110 66V34" fill="none" stroke="#3f2e1b" stroke-width="3" ' +
             'stroke-linecap="round"/>' +
+            '<path d="M110 36h-18l5 7-5 7h18z" fill="#8c4a3a" ' +
+            'stroke="#3f2e1b" stroke-width="1.8" stroke-linejoin="round"/>' +
             '</svg>',
 
         // The Sky Draft: a column of air coming up out of the ground hard
@@ -9312,7 +9570,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (b.lastRoll != null) {
             body += '<div class="die">' + pipsHtml(b.lastRoll) + '</div>' +
                 '<div class="muted" style="text-align:center;font-size:13px">' +
-                (b.lastRoll % 2 === 0 ? 'Even — a hit.' : 'Odd — a miss.') + '</div>';
+                (b.lastRoll > 2 ? 'A hit!' : 'A miss.') + '</div>';
         }
 
         // The monster takes its own turn. Nobody presses a button for it any
@@ -9371,7 +9629,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         showModal(body, false, 'battle');
 
         bind('b-roll', () => rollAct('Rolling to strike', 'battleRoll', {},
-                                     'Even connects, odd misses.'));
+                                     'Only a 1 or 2 misses.'));
         $$('#modal [data-move]').forEach(el =>
             el.addEventListener('click', () => act('battleAttack', { moveId: el.dataset.move })));
         bind('b-cooked', () => act('eatSteak', { type: 'cooked' }));
@@ -9401,9 +9659,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     let enemyStep = '';        // the phase we have already acted on
 
     // How long the table sits quiet between your blow landing and the monster
-    // reaching for its die. Two seconds: long enough to read what just
-    // happened before the next thing happens.
-    const ENEMY_PAUSE_MS = 2400;
+    // reaching for its die. Three seconds and change: long enough to read
+    // what just happened before the next thing happens.
+    const ENEMY_PAUSE_MS = 3400;
 
     function driveEnemyTurn(b) {
         const mine = b && b.kind === 'pve' && b.aId === NET.PID;
@@ -9421,7 +9679,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const foe = D.ENEMIES[b.enemyId];
         if (phase === 'enemy_roll') {
             setTimeout(() => {
-                DICE.expect(D.foeName(foe, true), 'It rolls for itself — even connects, odd misses.');
+                DICE.expect(D.foeName(foe, true), 'It rolls for itself — only a 1 or 2 misses.');
                 act('enemyRoll', {});
             }, ENEMY_PAUSE_MS);
         } else {
