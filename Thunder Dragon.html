@@ -3022,6 +3022,141 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             '</svg>'
     };
 
+    /* The raw steak the hunt brings home.
+
+       Cut from the photograph of the real card -- the leaning oval, the band
+       of fat round the outside, the white rind inside that and the marbling
+       across the meat -- but drawn the way everything else here is drawn:
+       blocks of colour inside one hard dark outline, no shading and no
+       gradients. The photograph itself was a paper cut-out lying on a
+       carpet, which had to be cut off its background and still did not sit
+       with the rest of the game; this is the same steak in the same hand.
+
+       The three layers are one shape drawn three times, each smaller and
+       nudged up and to the right of the last, so the fat shows along the
+       bottom and the left where the light does not reach -- which is what it
+       does on the card.
+       ------------------------------------------------------------------ */
+
+    /* The raw steak, traced off the photograph of the card.
+
+       Not drawn by eye -- four goes at that produced, in order, a pizza, a
+       burger patty, a plate and a disc. These outlines are the real ones:
+       the photograph was cut off its carpet, split into fat, meat and pale
+       seams by colour, each region's boundary walked, simplified and written
+       out as a smooth closed curve. So the silhouette leans the way the card
+       leans, the meat sits where the meat sits, and the big seam of fat at
+       the thick end is the one that is actually on it.
+
+       Flat colour inside one hard dark line, like everything else here. The
+       red is the red on the card: rosy, not arterial -- meat that has been
+       butchered and carried home, not something still bleeding.
+       ------------------------------------------------------------------ */
+
+    const STEAK_BODY =
+        'M8.4 0.9C12.4 -0.1 22.0 0.8 27.1 1.4' +
+        'C32.1 2.0 34.7 3.9 38.7 4.7C42.8 5.4 41.7 6.7 51.3 6.1' +
+        'C61.0 5.4 87.7 1.8 96.6 0.9C105.5 0.1 100.3 0.2 104.5 0.9' +
+        'C108.8 1.6 117.8 3.6 122.3 5.1C126.8 6.7 129.1 8.3 131.6 10.3' +
+        'C134.1 12.2 136.0 14.5 137.2 16.8' +
+        'C138.4 19.1 138.8 21.1 139.1 24.3' +
+        'C139.4 27.5 140.2 32.6 139.1 35.9' +
+        'C138.0 39.3 136.8 41.9 132.5 44.3' +
+        'C128.3 46.7 121.5 49.6 113.4 50.4' +
+        'C105.3 51.2 94.8 50.9 84.0 49.0C73.2 47.1 57.9 42.2 48.5 38.7' +
+        'C39.1 35.3 35.0 33.7 27.5 28.5C20.1 23.3 6.6 9.6 3.7 7.5' +
+        'C0.9 5.4 5.9 11.8 10.3 15.9C14.6 19.9 24.4 28.0 29.9 31.7' +
+        'C35.3 35.5 37.3 36.0 42.9 38.3C48.5 40.5 56.3 43.2 63.5 45.3' +
+        'C70.6 47.4 78.4 49.6 85.9 50.9C93.3 52.1 101.5 52.9 108.3 52.7' +
+        'C115.0 52.6 122.3 50.9 126.5 49.9' +
+        'C130.6 48.9 131.0 48.1 133.0 46.7' +
+        'C135.0 45.2 137.9 40.6 138.6 41.1' +
+        'C139.3 41.5 138.0 47.2 137.2 49.5' +
+        'C136.4 51.7 136.4 52.8 133.9 54.6' +
+        'C131.4 56.4 126.9 58.8 122.3 60.2' +
+        'C117.7 61.6 111.3 62.5 106.4 63.0' +
+        'C101.5 63.5 97.3 63.8 92.9 63.5C88.4 63.2 85.9 62.9 79.8 61.1' +
+        'C73.7 59.3 60.6 54.0 56.5 52.7C52.3 51.5 56.9 54.0 55.1 53.7' +
+        'C53.3 53.4 48.4 52.1 45.7 50.9C43.1 49.6 43.9 48.5 39.2 46.2' +
+        'C34.5 43.9 22.2 39.0 17.7 36.9C13.2 34.8 13.4 34.7 12.1 33.6' +
+        'C10.9 32.5 11.7 31.5 10.3 30.3C8.8 29.2 4.9 28.5 3.3 26.6' +
+        'C1.6 24.7 0.9 21.3 0.5 19.1C0.0 17.0 0.1 15.5 0.5 13.5' +
+        'C0.9 11.6 1.5 9.6 2.8 7.5C4.1 5.4 4.4 1.9 8.4 0.9z';
+    const STEAK_MEAT =
+        'M84.9 3.3C92.3 3.3 107.0 4.1 112.9 4.7' +
+        'C118.8 5.2 118.1 5.6 120.4 6.5C122.7 7.5 125.1 9.6 126.9 10.3' +
+        'C128.8 11.0 130.6 10.0 131.6 10.7' +
+        'C132.6 11.5 132.1 13.5 133.0 14.9' +
+        'C133.9 16.3 136.6 16.5 137.2 19.1' +
+        'C137.8 21.8 137.3 27.9 136.7 30.8' +
+        'C136.2 33.7 135.2 34.8 133.9 36.4' +
+        'C132.7 38.0 131.4 39.3 129.3 40.6' +
+        'C127.1 41.9 123.4 43.6 120.9 44.3' +
+        'C118.3 45.0 115.3 45.0 113.9 44.8' +
+        'C112.4 44.6 112.4 42.7 112.0 42.9' +
+        'C111.6 43.2 112.9 45.5 111.5 46.2' +
+        'C110.2 46.9 108.0 47.1 104.1 47.1' +
+        'C100.1 47.1 91.8 47.1 87.7 46.2C83.7 45.3 82.1 42.6 79.8 42.0' +
+        'C77.5 41.4 80.6 44.1 73.7 42.5C66.9 40.8 44.8 34.4 38.7 32.2' +
+        'C32.7 30.0 41.1 32.0 37.3 29.4C33.6 26.8 19.8 19.3 16.3 16.8' +
+        'C12.9 14.3 15.5 14.7 16.8 14.5C18.1 14.2 23.0 15.5 24.3 15.4' +
+        'C25.5 15.3 25.7 14.4 24.3 14.0C22.8 13.6 17.5 13.5 15.4 13.1' +
+        'C13.3 12.7 12.7 12.4 11.7 11.7C10.7 10.9 9.7 9.3 9.3 8.4' +
+        'C8.9 7.5 8.8 6.7 9.3 6.1C9.9 5.4 5.1 4.4 12.6 4.7' +
+        'C20.1 5.0 44.8 8.0 54.1 7.9C63.5 7.9 63.5 5.0 68.6 4.2' +
+        'C73.7 3.4 77.5 3.2 84.9 3.3z';
+    const STEAK_SEAM1 =
+        'M111.5 14.9C113.5 15.2 116.1 20.8 117.1 22.4' +
+        'C118.1 24.0 118.5 24.5 117.6 24.7' +
+        'C116.7 25.0 116.2 23.8 111.5 23.8' +
+        'C106.9 23.8 95.8 24.9 89.6 24.7C83.4 24.6 72.7 23.2 74.2 22.9' +
+        'C75.7 22.6 93.3 23.3 98.5 22.9' +
+        'C103.7 22.5 103.3 21.9 105.5 20.5' +
+        'C107.6 19.2 109.6 14.6 111.5 14.9z';
+    const STEAK_SEAM2 =
+        'M119.0 6.5C118.5 6.4 124.8 9.6 126.9 10.3' +
+        'C129.0 11.0 130.6 10.0 131.6 10.7' +
+        'C132.6 11.5 133.0 14.3 133.0 14.9' +
+        'C133.0 15.6 132.1 15.1 131.6 14.5' +
+        'C131.1 13.8 132.3 12.5 130.2 11.2' +
+        'C128.1 9.9 119.5 6.7 119.0 6.5z';
+    const STEAK_SEAM3 =
+        'M35.9 28.9C37.6 29.7 48.1 34.5 48.5 35.0' +
+        'C49.0 35.5 40.4 33.0 38.7 32.2C37.0 31.4 38.7 30.9 38.3 30.3' +
+        'C37.8 29.8 34.2 28.2 35.9 28.9z';
+    const STEAK_SEAM4 =
+        'M91.9 3.7C92.0 3.7 108.6 4.3 112.9 4.7' +
+        'C117.3 5.1 118.1 6.1 118.1 6.1C118.0 6.1 116.8 5.1 112.5 4.7' +
+        'C108.1 4.3 91.9 3.7 91.9 3.7z';
+
+    const SK = 'stroke="#20180f" stroke-width="2.1" stroke-linejoin="round"';
+
+    const STEAK_ART =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="64.4" ' +
+        'viewBox="0 0 140 64.4">' +
+        '<defs><clipPath id="lofSteak"><path d="' + STEAK_BODY + '"/>' +
+        '</clipPath></defs>' +
+        // the fat, which is the body of it
+        '<path d="' + STEAK_BODY + '" fill="#ecc09f"/>' +
+        '<g clip-path="url(#lofSteak)">' +
+        // the rind: the meat again, drawn a little proud of itself
+        '<path d="' + STEAK_MEAT + '" fill="#f2e8dc" ' +
+        'transform="translate(-2.6 -1.8) scale(1.05)"/>' +
+        // and the meat
+        '<path d="' + STEAK_MEAT + '" fill="#c96660" ' + SK + '/>' +
+        // the seams of fat through it, traced off the card as well
+        '<g fill="#f2e8dc" stroke="#20180f" stroke-width="1.4" ' +
+        'stroke-linejoin="round">' +
+        '<path d="' + STEAK_SEAM1 + '"/>' +
+        '<path d="' + STEAK_SEAM2 + '"/>' +
+        '<path d="' + STEAK_SEAM3 + '"/>' +
+        '<path d="' + STEAK_SEAM4 + '"/>' +
+        '</g>' +
+        '</g>' +
+        // the outline last, one clean line round the whole cut
+        '<path d="' + STEAK_BODY + '" fill="none" ' + SK + '/>' +
+        '</svg>';
+
     // Percent-encode the lot, including apostrophes, so the URI survives
     // being written straight into an HTML attribute.
     function artUri(svg) {
@@ -3031,6 +3166,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     CLASSES.knight.art = artUri(CHARACTER_ART.knight);
     CLASSES.archer.art = artUri(CHARACTER_ART.archer);
     CLASSES.mage.art   = artUri(CHARACTER_ART.mage);
+
+    // Handed out as a URI like the characters are, so there is no extra file
+    // to upload beside the page and nothing that can 404.
+    const STEAK_URI = artUri(STEAK_ART);
 
     const CLASS_ORDER = ['knight', 'archer', 'mage'];
 
@@ -3729,7 +3868,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         ITEM_DECK, POWERUPS, POWERUP_DECK,
         MERCHANT_POTIONS, MERCHANT_GEAR, SUBTYPE_OWNER,
         BOARD, DECOR, START_INDEX, ARENA_INDEX, KEY_FRAGMENTS_NEEDED, RULES,
-        foeName
+        STEAK_URI, foeName
     };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -6608,6 +6747,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     let lastDieSeq = 0;
     let lastTurnKey = '';
     let turnChangedAt = 0;
+    // Set by ui.js. There is no way for this file to know what is on the
+    // screen, and there are two things -- the card saying whose go it is and
+    // the steak flying home -- that the other two must not play through.
+    let busyCheck = null;
     let repeated = { sig: '', count: 0 };
 
     function save() {
@@ -6753,6 +6896,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const job = nextJob();
         if (!job) return;
 
+        // The screen is showing something that has to be got through first,
+        // or is about to. Ask again shortly rather than working out a wait:
+        // the card is queued behind whatever die is still lying on the
+        // board, so how long it has left is not a number this can compute.
+        if (busyCheck && busyCheck()) { timer = setTimeout(schedule, 150); return; }
+
         // Never on top of a die that is still in the air, never straight
         // after the turn has changed hands, never straight on top of the
         // step before it in a fight, and never so fast that the board
@@ -6893,6 +7042,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         roomExists: roomExists,
         act: act,
         subscribe: subscribe,
+        setBusyCheck: function (fn) { busyCheck = fn; },
         closeRoom: closeRoom,
         isBotId: isBotId
     };
@@ -7342,12 +7492,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     const STEAK = (function () {
         let primed = false, seen = 0;
+        // Waiting on the die, or actually flying. Either way nothing else
+        // should be throwing dice at it.
+        let pending = 0, flying = 0;
 
         function play() {
             const target = $('#me-steaks');
             const img = document.createElement('img');
             img.className = 'steak-fly';
-            img.src = 'RawSteak.png';
+            img.src = D.STEAK_URI;
             img.alt = '';
             img.setAttribute('aria-hidden', 'true');
             document.body.appendChild(img);
@@ -7358,7 +7511,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // player switches away would otherwise still be lying across the
             // middle of the screen when they came back.
             let gone = false;
-            const done = () => { if (gone) return; gone = true; img.remove(); };
+            flying += 1;
+            const done = () => {
+                if (gone) return;
+                gone = true;
+                flying = Math.max(0, flying - 1);
+                img.remove();
+            };
             const failsafe = setTimeout(done, 6000);
 
             // Where it is going: the middle of the Steaks line, or failing
@@ -7406,6 +7565,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         }
 
         return {
+            busy() { return pending > 0 || flying > 0; },
+
             saw(state) {
                 const s = state && state.lastSteak;
                 const n = (s && typeof s.n === 'number') ? s.n : 0;
@@ -7416,8 +7577,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 seen = n;
                 if (s.playerId !== NET.PID) return;   // not yours to catch
                 // The steak is won by a throw of the die. Let the die be
-                // read first, then send the steak across.
-                DICE.whenIdle(() => setTimeout(play, 260));
+                // read first, then send the steak across. It counts as busy
+                // from this moment, not from when it takes off, so nothing
+                // slips a die in during the wait.
+                pending += 1;
+                DICE.whenIdle(() => setTimeout(() => {
+                    pending = Math.max(0, pending - 1);
+                    play();
+                }, 260));
             }
         };
     })();
@@ -7426,6 +7593,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         let back = null, cardEl = null, portraitEl = null, nameEl = null, subEl = null;
         let hideT = null;
         let primed = false, seenKey = '';
+        // Queued behind a die that is still on the screen, or up and being
+        // read. A die must not be thrown during either.
+        let pending = 0, showing = false;
 
         function build() {
             if (back) return;
@@ -7456,11 +7626,17 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             void back.offsetWidth;              // restart the animation
             void cardEl.offsetWidth;
             back.classList.add('on');
+            showing = true;
             clearTimeout(hideT);
-            hideT = setTimeout(() => back.classList.remove('on'), 2600);
+            hideT = setTimeout(() => {
+                back.classList.remove('on');
+                showing = false;
+            }, 2600);
         }
 
         return {
+            busy() { return pending > 0 || showing; },
+
             saw(state) {
                 if (!state || state.phase !== 'playing') return;
                 const cur = E.currentPlayer(state);
@@ -7478,8 +7654,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 // checked again on the way in: if the game has moved on
                 // another turn while this was waiting, the announcement it
                 // was going to make is out of date and is dropped.
+                pending += 1;
                 DICE.whenGone(() => {
+                    pending = Math.max(0, pending - 1);
                     const now = E.currentPlayer(S);
+                    // The game moved on another turn while this waited, so
+                    // the announcement it was going to make is out of date.
+                    // `pending` has already been given back, or nothing
+                    // would ever be allowed to throw a die again.
                     if (!now || (S.turnNo | 0) + '/' + now.id !== key) return;
                     play(now, now.id === NET.PID);
                 });
@@ -7518,6 +7700,51 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     /* ------------------------------------------------------------------ */
+    /* Holding the table                                                   */
+    /*                                                                     */
+    /* Two things take the screen over for a moment: the card saying whose */
+    /* go it is, and the steak flying home. Neither may be played over.    */
+    /*                                                                     */
+    /* Both of them wait on the die before they start -- the card for it to */
+    /* leave the screen, the steak for it to stop -- so asking "is the card */
+    /* up?" is not enough. A die thrown in the gap between the turn         */
+    /* changing and the card appearing lands underneath it. That is exactly */
+    /* what went wrong when a Mage's illusion started a fight in the same   */
+    /* instant the turn changed hands: the fight was already rolling before */
+    /* the card had drawn breath. So each of them reports itself busy from  */
+    /* the moment it is owed, not from the moment it is seen.              */
+    /* ------------------------------------------------------------------ */
+
+    const HOLD = (function () {
+        const waiting = [];
+        let poll = null;
+
+        function busyNow() { return TURN_ANNOUNCE.busy() || STEAK.busy(); }
+
+        function pump() {
+            if (busyNow()) { poll = setTimeout(pump, 120); return; }
+            poll = null;
+            // Taken one at a time off the front: a callback that puts the
+            // screen back to busy stops the rest going with it.
+            while (waiting.length && !busyNow()) waiting.shift()();
+            if (waiting.length && !poll) poll = setTimeout(pump, 120);
+        }
+
+        return {
+            busy: busyNow,
+            whenFree(fn) {
+                if (!busyNow()) { fn(); return; }
+                waiting.push(fn);
+                if (!poll) poll = setTimeout(pump, 120);
+            }
+        };
+    })();
+
+    // The other two play themselves, and they are paced in solo.js. It has
+    // no idea what is on the screen, so it is told.
+    if (NET && typeof NET.setBusyCheck === 'function') NET.setBusyCheck(HOLD.busy);
+
+    /* ------------------------------------------------------------------ */
     /* Server actions                                                      */
     /* ------------------------------------------------------------------ */
 
@@ -7536,9 +7763,25 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     }
 
     // An action that throws a die: put the die in the air first.
+    // Every die the player throws goes through here, so this is the one
+    // place it has to be held: never on top of the card saying whose go it
+    // is, and never through the steak on its way to the box.
+    //
+    // Only ever one waiting. `act` already refuses to run two things at
+    // once, but that does not help a throw that has been put in a queue --
+    // pressing the button four times while the card is up would otherwise
+    // buy four throws, which would all go off one after another the moment
+    // it came down.
+    let rollQueued = false;
     function rollAct(title, action, args, sub) {
-        DICE.expect(title, sub);
-        act(action, args);
+        if (rollQueued) return;
+        if (!HOLD.busy()) { DICE.expect(title, sub); act(action, args); return; }
+        rollQueued = true;
+        HOLD.whenFree(() => {
+            rollQueued = false;
+            DICE.expect(title, sub);
+            act(action, args);
+        });
     }
 
     /* ------------------------------------------------------------------ */
@@ -10014,14 +10257,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         const foe = D.ENEMIES[b.enemyId];
         if (phase === 'enemy_roll') {
-            setTimeout(() => {
+            setTimeout(() => HOLD.whenFree(() => {
                 DICE.expect(D.foeName(foe, true),
                     'It rolls for itself — ' + missRule().toLowerCase());
                 act('enemyRoll', {});
-            }, ENEMY_PAUSE_MS);
+            }), ENEMY_PAUSE_MS);
         } else {
             // Let the die finish settling before the blow lands.
-            DICE.whenIdle(() => setTimeout(() => act('enemyStrike', {}), 500));
+            DICE.whenIdle(() => setTimeout(
+                () => HOLD.whenFree(() => act('enemyStrike', {})), 500));
         }
     }
 
