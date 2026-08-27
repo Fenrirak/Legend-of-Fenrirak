@@ -2136,6 +2136,127 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     text-transform: uppercase;
 }
 
+/* ---- called to roll ---------------------------------------------------
+   In front of every die in the game: whose throw it is and what it is for,
+   then the die. Because it runs so often it is built to be got through
+   rather than looked at -- a hair over a second, no dismissing, and a
+   veil rather than the full blackout the turn card uses, so the board
+   stays readable underneath and the game does not feel interrupted.
+
+   The wind-up rule across the foot of the card is the whole timing made
+   visible: it fills as the card stands, and the die is thrown on the beat
+   it reaches the end. Nothing has happened yet while it runs -- on your own
+   throw the action itself is held back with it -- so the rule is a real
+   countdown to the throw and not a decoration over one already made.
+
+   The durations here and SHOW_MS in ui.js are the same 1.15s and have to
+   stay that way; the card must be gone before the die is on the screen.
+   ---------------------------------------------------------------------- */
+
+.roll-call {
+    position: fixed;
+    inset: 0;
+    z-index: 3400;              /* under the turn card, over everything else */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    background: rgba(9, 8, 7, .48);
+}
+.roll-call.on {
+    visibility: visible;
+    animation: roll-call-fade 1.15s ease-out forwards;
+}
+@keyframes roll-call-fade {
+    0%   { opacity: 0; }
+    14%  { opacity: 1; }
+    74%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.roll-call-card {
+    min-width: min(330px, 78vw);
+    max-width: min(460px, 90vw);
+    padding: 20px 30px 16px;
+    text-align: center;
+    background: linear-gradient(180deg, #211d18, #16130f);
+    border: 1px solid var(--panel-edge);
+    border-radius: 12px;
+    box-shadow: 0 22px 54px -16px rgba(0, 0, 0, .9);
+    transform: translateY(10px) scale(.96);
+}
+.roll-call.on .roll-call-card {
+    animation: roll-call-rise 1.15s cubic-bezier(.2, .85, .25, 1) forwards;
+}
+@keyframes roll-call-rise {
+    0%   { transform: translateY(12px) scale(.94); }
+    18%  { transform: translateY(0)    scale(1); }
+    100% { transform: translateY(0)    scale(1); }
+}
+
+.roll-call-who {
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-weight: bold;
+    font-size: clamp(19px, 3.4vw, 25px);
+    line-height: 1.15;
+    color: var(--cream);
+    text-shadow: 0 4px 18px rgba(0, 0, 0, .6);
+}
+.roll-call.mine .roll-call-who { color: var(--gold-bright); }
+
+.roll-call-is {
+    margin: 5px 0 3px;
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #8d8578;
+}
+
+.roll-call-what {
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-weight: bold;
+    font-size: clamp(23px, 4.4vw, 33px);
+    line-height: 1.15;
+    color: var(--gold-bright);
+    text-shadow: 0 4px 22px rgba(217, 163, 92, .3);
+}
+
+.roll-call-sub {
+    margin-top: 8px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: #b9b3a6;
+}
+
+/* The wind-up: it runs out exactly as the die is thrown. */
+.roll-call-wind {
+    margin: 15px auto 2px;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, .09);
+    overflow: hidden;
+}
+.roll-call-wind > i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+    transform: scaleX(0);
+    transform-origin: left center;
+}
+.roll-call.on .roll-call-wind > i {
+    animation: roll-call-wind 1.15s cubic-bezier(.35, 0, .5, 1) forwards;
+}
+@keyframes roll-call-wind {
+    0%   { transform: scaleX(0); }
+    88%  { transform: scaleX(1); }
+    100% { transform: scaleX(1); }
+}
+
 /* ---- the die you have already thrown ----------------------------------
    Shown at the top of the question about your movement bonus, because the
    question only makes sense next to the number it is about.
@@ -2752,7 +2873,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             ability: {
                 id: 'strength_up',
                 name: 'Strength Up',
-                text: 'Roll a die. On an even number, increase your attack by 20 damage for 2 moves.'
+                // The only ability worth anything mid-fight, and the only one
+                // that makes sense there: Agile is a movement roll and an
+                // Illusion starts a battle, which is no use inside one. See
+                // useAbility() in engine.js.
+                inBattle: true,
+                text: 'Roll a die. On an even number, increase your attack by 20 damage ' +
+                      'for 2 moves. May be used in the middle of a battle.'
             },
             colour: '#b9bec7'
         },
@@ -3850,7 +3977,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         startingCoins: 0,
         // One weapon change and one armour change per turn, counted separately.
         equipChangesPerTurn: 1,
-        abilityCooldownTurns: 2,       // one ability every 2 turns
+        // One ability every 3 turns. `turnNo` counts rounds rather than
+        // individual goes -- it only moves on when the order comes back
+        // round to the first player -- so this is 3 of *your* turns however
+        // many people are at the table.
+        abilityCooldownTurns: 3,
         // A Mage's conjured swarm is not the real animal.
         illusionDamageBoost: 15,
         // The conjured swarm is worked out from the real one, so raising
@@ -5457,14 +5588,39 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return ok();
     }
 
+    /* An ability is a free action: it costs you the cooldown and nothing
+       else, so calling on one never uses up the go you were about to take.
+
+       Most of them only make sense between fights -- Agile is a movement roll
+       and an Illusion is a fight starting, which is no use inside one. The
+       one that does belong in a battle is marked `inBattle` on the class, and
+       it is allowed at the top of your turn in the fight, before you roll to
+       strike: the +20 is then on the blow you are about to throw. Waiting
+       until after the roll would let you see whether you had connected first,
+       which is not a decision anybody should be offered. */
     function useAbility(state, pid, payload) {
         const p = player(state, pid);
         if (!p) return fail('Unknown player.');
-        if (!isMyTurn(state, pid)) return fail('Abilities can only be used on your turn.');
-        if (state.turnNo - p.lastAbilityTurn < R.abilityCooldownTurns) {
-            return fail('You may only use an ability every 2 turns.');
-        }
         const cls = D.CLASSES[p.cls];
+        const b = state.battle;
+
+        if (b) {
+            if (!cls.ability.inBattle) {
+                return fail(cls.ability.name + ' is no use in the middle of a fight.');
+            }
+            if (battleActorId(state) !== pid) return fail('Wait for your turn in the fight.');
+            if (b.phase !== 'roll') {
+                return fail('Call on ' + cls.ability.name +
+                            ' at the start of your turn, before you roll to strike.');
+            }
+        } else if (!isMyTurn(state, pid)) {
+            return fail('Abilities can only be used on your turn.');
+        }
+
+        if (state.turnNo - p.lastAbilityTurn < R.abilityCooldownTurns) {
+            return fail('You may only use an ability once every ' +
+                        R.abilityCooldownTurns + ' turns.');
+        }
         p.lastAbilityTurn = state.turnNo;
 
         const roll = throwDie(state, p.name, cls.ability.name);
@@ -6429,6 +6585,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // the table, so it throws for the monster exactly as a person would.
         if (b.phase === 'enemy_roll') return { action: 'enemyRoll', args: {} };
         if (b.phase === 'enemy_act') return { action: 'enemyStrike', args: {} };
+
+        // Strength Up, at the top of the turn, before the die. Only if there
+        // is not already a damage buff standing: a second one on top of the
+        // first would be the cooldown spent for nothing.
+        if (b.phase === 'roll' && D.CLASSES[p.cls].ability.inBattle &&
+            state.turnNo - p.lastAbilityTurn >= D.RULES.abilityCooldownTurns &&
+            !(p.buffs || []).some(x => x.kind === 'damage')) {
+            return { action: 'useAbility', args: {} };
+        }
         // Part way through a run of swings: the turn was bought by the blow
         // that started it, and there is nothing to decide.
         if (b.phase === 'auto') return { action: 'battleAuto', args: {} };
@@ -7479,14 +7644,46 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 // last one is still lying there. The one exception is the
                 // throw this client put up itself a moment ago on pressing
                 // the button -- that one is already in the air and carries on.
-                const age = Date.now() - thrownAt;
-                if (!inFlight || age > 260) throwIt();
-                // land() itself works out how much of the throw is still
-                // to run and eases the cube's turn down over whatever that
-                // is -- called now, the moment the answer is known, rather
-                // than held back until the bounce is over.
-                land(die);
+                if (armed) {
+                    /* Our own. It has been called and thrown already, so
+                       whatever it cost to get the answer back it is not
+                       announced twice and not thrown twice -- `armed` is
+                       exactly "we asked for this one", and a slow round trip
+                       does not make it somebody else's. */
+                    armed = false;
+                    if (inFlight) {
+                        // land() works out how much of the throw is still to
+                        // run and eases the cube's turn down over whatever
+                        // that is -- called now, the moment the answer is
+                        // known, rather than held back until the bounce is
+                        // over.
+                        land(die);
+                        return true;
+                    }
+                    /* Ours, but the die we put up has already been and gone:
+                       the answer took longer to come back than the throw took
+                       to play out, which a bad connection or a tab left in the
+                       background can both manage. Thrown again so the number
+                       can be read -- but not on top of a card, because by now
+                       the next throw may well have been called. It is not
+                       called a second time; it has been named once already. */
+                    ROLL_CALL.whenFree(() => { throwIt(); land(die); });
+                    return true;
+                }
+
+                /* Somebody else's throw, or one of ours that never got into
+                   the air. The answer is already known, so the die is simply
+                   held until whoever threw it has been named -- and behind
+                   the gate as well, because a throw arriving in the middle of
+                   the turn card would otherwise be called out over the top of
+                   it. */
                 armed = false;
+                HOLD.whenFree(() => {
+                    ROLL_CALL.play(die.who, ROLL_CALL.label(die.why), '', false, () => {
+                        throwIt();
+                        land(die);
+                    });
+                });
                 return true;
             },
 
@@ -7572,6 +7769,151 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* ------------------------------------------------------------------ */
 
     /* ------------------------------------------------------------------ */
+    /* Who is rolling, and what for                                        */
+    /*                                                                     */
+    /* A die used to simply arrive. On your own throw you knew what it was */
+    /* for because you had just pressed the button; on anybody else's it   */
+    /* was a cube flying across the screen and a line in the log           */
+    /* afterwards. So every throw is called first: a card, a beat, and     */
+    /* then the die.                                                       */
+    /*                                                                     */
+    /* Strictly before, never over the top. The card comes down and only   */
+    /* then is the die thrown -- on your own throw the action itself is    */
+    /* held back with it, so nothing has happened yet while the card is    */
+    /* up, and on everybody else's the answer is already known and the     */
+    /* throw simply waits its turn. Being short is the whole trick: this   */
+    /* runs in front of every die in the game, so it is barely over a      */
+    /* second and it never asks to be dismissed.                           */
+    /* ------------------------------------------------------------------ */
+
+    const ROLL_CALL = (function () {
+        let back = null, cardEl = null, whoEl = null, whatEl = null, subEl = null;
+        let hideT = null, showing = false;
+        const queue = [];
+        const waiting = [];         // things that must not be shown over one
+        let dueAt = 0, job = null;  // when the card up is due down, and whose
+
+        const SHOW_MS = 1150;       // must match the roll-call keyframes
+
+        /* What the engine stamps on a die, said out loud. `throwDie` writes a
+           short reason meant for the log -- 'move', 'attack', 'raw steak' --
+           and an ability writes its own name, which is already the right
+           words and falls through untouched. */
+        const WHAT = {
+            'order':         'Turn Order',
+            'move':          'Movement',
+            'attack':        'an Attack',
+            'dark spirits':  'the Dark Spirits',
+            'raw steak':     'a Raw Steak',
+            'hunt':          'the Hunt'
+        };
+
+        function build() {
+            if (back) return;
+            back = document.createElement('div');
+            back.className = 'roll-call';
+            back.setAttribute('aria-hidden', 'true');
+            back.innerHTML =
+                '<div class="roll-call-card">' +
+                    '<div class="roll-call-who"></div>' +
+                    '<div class="roll-call-is">is rolling for</div>' +
+                    '<div class="roll-call-what"></div>' +
+                    '<div class="roll-call-sub"></div>' +
+                    '<div class="roll-call-wind"><i></i></div>' +
+                '</div>';
+            document.body.appendChild(back);
+            cardEl = back.querySelector('.roll-call-card');
+            whoEl  = back.querySelector('.roll-call-who');
+            whatEl = back.querySelector('.roll-call-what');
+            subEl  = back.querySelector('.roll-call-sub');
+        }
+
+        /* Taking the card down, throwing the die that was waiting behind it,
+           and letting the next thing go. Written as its own function and
+           guarded on `showing` because there are two ways in: the timer, and
+           a tab that comes back to life owing one. */
+        function finish() {
+            if (!showing) return;
+            const done = job;
+            clearTimeout(hideT);
+            hideT = null;
+            job = null;
+            back.classList.remove('on');
+            showing = false;
+            // The die goes up as the card comes down, not before it.
+            try { done.then(); } finally {
+                pump();
+                // Only once the last of them is down, and only if the die
+                // that just went up did not put another one in the queue.
+                if (!showing && !queue.length) {
+                    while (waiting.length) waiting.shift()();
+                }
+            }
+        }
+
+        /* A tab nobody is looking at can have its timers slowed right down or
+           stopped outright, and this one is holding a die back. Coming back to
+           a game frozen on a card that was due down minutes ago would be far
+           worse than anything the card is there to fix, so anything overdue is
+           finished off the moment the page is looked at again. */
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden || !showing) return;
+            if (Date.now() >= dueAt) finish();
+        });
+
+        function pump() {
+            if (showing || !queue.length) return;
+            job = queue.shift();
+            build();
+            showing = true;
+
+            whoEl.textContent  = job.who;
+            whatEl.textContent = job.what;
+            subEl.textContent  = job.sub || '';
+            subEl.style.display = job.sub ? '' : 'none';
+            back.classList.toggle('mine', !!job.mine);
+
+            back.classList.remove('on');
+            void back.offsetWidth;              // restart the animation
+            void cardEl.offsetWidth;
+            back.classList.add('on');
+
+            clearTimeout(hideT);
+            dueAt = Date.now() + SHOW_MS;
+            hideT = setTimeout(finish, SHOW_MS);
+        }
+
+        return {
+            // The engine's word for a throw, in the words the card uses.
+            label(why) { return WHAT[why] || why || 'a Roll'; },
+
+            /* Announce a throw, and do it once the card has gone. `then` is
+               what actually throws the die -- it is handed over rather than
+               called here so that there is no moment where both are up. */
+            play(who, what, sub, mine, then) {
+                queue.push({
+                    who: who || 'Somebody', what: what || 'a Roll',
+                    sub: sub || '', mine: !!mine, then: then || function () { }
+                });
+                pump();
+            },
+
+            // Up, or owed. Nothing else may take the screen while either.
+            busy() { return showing || queue.length > 0; },
+
+            /* For anything that must not be put up over a card. The gate
+               itself cannot be used for this: the gate asks whether the turn
+               card is owed, and the turn card is the main thing that has to
+               wait here, which would leave the two of them waiting on each
+               other for ever. */
+            whenFree(fn) {
+                if (!showing && !queue.length) { fn(); return; }
+                waiting.push(fn);
+            }
+        };
+    })();
+
+    /* ------------------------------------------------------------------ */
     /* The steak the hunt brings home                                      */
     /*                                                                     */
     /* Winning one used to be a line in the log and a number going up in a */
@@ -7592,6 +7934,16 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // Waiting on the die, or actually flying. Either way nothing else
         // should be throwing dice at it.
         let pending = 0, flying = 0;
+        /* Won, but not yet arrived.
+
+           The state says you have the steak the instant the die lands, so the
+           number on the Steaks line used to go up while the steak was still
+           swelling in the middle of the screen -- the whole flight then had
+           nothing to deliver, because the line had already counted it. Any
+           steak still in the air is held back out of the number, and given to
+           it at the moment it lands, so the count goes up as the line flares
+           rather than a second and a half beforehand. */
+        let held = 0;
 
         function play() {
             const target = $('#me-steaks');
@@ -7609,10 +7961,26 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // middle of the screen when they came back.
             let gone = false;
             flying += 1;
+
+            /* Handing the steak to the line: the number goes up here and
+               nowhere else. Called as the steak arrives, and again out of
+               `done` as a backstop -- a flight that is cut short (the tab
+               was hidden, the browser will not animate) must still leave the
+               count right, or a steak would go missing off the line for the
+               rest of the game. */
+            let landed = false;
+            const land = () => {
+                if (landed) return;
+                landed = true;
+                held = Math.max(0, held - 1);
+                renderHero();
+            };
+
             const done = () => {
                 if (gone) return;
                 gone = true;
                 flying = Math.max(0, flying - 1);
+                land();
                 img.remove();
             };
             const failsafe = setTimeout(done, 6000);
@@ -7652,17 +8020,30 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             anim.onfinish = () => { clearTimeout(failsafe); done(); };
             anim.oncancel = () => { clearTimeout(failsafe); done(); };
 
-            // the line it lands on takes the hit, just as it gets there
-            if (target) setTimeout(() => {
-                target.classList.remove('steak-landed');
-                void target.offsetWidth;
-                target.classList.add('steak-landed');
-                setTimeout(() => target.classList.remove('steak-landed'), 700);
+            /* Arrival: the count goes up and the line flares, in that order
+               and in the same instant.
+
+               The row is looked up again here rather than reused from the top
+               of the flight. `land()` redraws the profile box, so the element
+               that was measured a second and a half ago is not the one on the
+               screen any more -- flaring that one would put the glow on a
+               node that had already been thrown away. */
+            setTimeout(() => {
+                land();
+                const row = $('#me-steaks');
+                if (!row) return;
+                row.classList.remove('steak-landed');
+                void row.offsetWidth;
+                row.classList.add('steak-landed');
+                setTimeout(() => row.classList.remove('steak-landed'), 700);
             }, 1830);
         }
 
         return {
             busy() { return pending > 0 || flying > 0; },
+
+            // How many of your raw steaks are still on their way to the line.
+            held() { return held; },
 
             saw(state) {
                 const s = state && state.lastSteak;
@@ -7678,6 +8059,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 // from this moment, not from when it takes off, so nothing
                 // slips a die in during the wait.
                 pending += 1;
+                held += 1;
+                renderHero();          // take it straight back out again
                 DICE.whenIdle(() => setTimeout(() => {
                     pending = Math.max(0, pending - 1);
                     play();
@@ -7712,6 +8095,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             subEl      = back.querySelector('.turn-announce-sub');
         }
 
+        // As with the roll call: a card left up by a frozen tab holds the
+        // gate shut, and the gate is what every die in the game waits on.
+        let dueAt = 0;
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden || !showing) return;
+            if (Date.now() >= dueAt) {
+                clearTimeout(hideT);
+                back.classList.remove('on');
+                showing = false;
+            }
+        });
+
         function play(p, mine) {
             build();
             const cls = p && p.cls ? D.CLASSES[p.cls] : null;
@@ -7725,6 +8120,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             back.classList.add('on');
             showing = true;
             clearTimeout(hideT);
+            dueAt = Date.now() + 2600;
             hideT = setTimeout(() => {
                 back.classList.remove('on');
                 showing = false;
@@ -7752,7 +8148,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 // another turn while this was waiting, the announcement it
                 // was going to make is out of date and is dropped.
                 pending += 1;
-                DICE.whenGone(() => {
+                // Behind the die on the screen, and behind anybody being
+                // called to roll -- a throw announced in the same instant the
+                // turn changed hands would otherwise be named underneath this.
+                DICE.whenGone(() => ROLL_CALL.whenFree(() => {
                     pending = Math.max(0, pending - 1);
                     const now = E.currentPlayer(S);
                     // The game moved on another turn while this waited, so
@@ -7761,7 +8160,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     // would ever be allowed to throw a die again.
                     if (!now || (S.turnNo | 0) + '/' + now.id !== key) return;
                     play(now, now.id === NET.PID);
-                });
+                }));
             }
         };
     })();
@@ -7816,7 +8215,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const waiting = [];
         let poll = null;
 
-        function busyNow() { return TURN_ANNOUNCE.busy() || STEAK.busy(); }
+        function busyNow() {
+            return TURN_ANNOUNCE.busy() || STEAK.busy() || ROLL_CALL.busy();
+        }
 
         function pump() {
             if (busyNow()) { poll = setTimeout(pump, 120); return; }
@@ -7870,15 +8271,27 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // buy four throws, which would all go off one after another the moment
     // it came down.
     let rollQueued = false;
-    function rollAct(title, action, args, sub) {
-        if (rollQueued) return;
-        if (!HOLD.busy()) { DICE.expect(title, sub); act(action, args); return; }
-        rollQueued = true;
-        HOLD.whenFree(() => {
+    function rollAct(what, action, args, sub, who) {
+        // A throw on somebody else's behalf -- the monster's -- is never
+        // turned away. Nothing re-sends it if it is dropped: the fight would
+        // simply stop, waiting on a die that nobody is going to throw.
+        if (rollQueued && !who) return;
+        const name = who || (me() ? me().name : NET.localName());
+        const go = () => {
             rollQueued = false;
-            DICE.expect(title, sub);
-            act(action, args);
-        });
+            // The card first. The action is sent inside it, as the card comes
+            // down -- held back rather than fired now, so that nothing has
+            // happened yet while it is up and the die cannot beat it onto the
+            // screen. `who` is only passed for the monster, which throws its
+            // own die through the hand of whoever is fighting it.
+            ROLL_CALL.play(name, what, sub, !who, () => {
+                DICE.expect();
+                act(action, args);
+            });
+        };
+        if (!HOLD.busy()) { go(); return; }
+        if (!who) rollQueued = true;
+        HOLD.whenFree(go);
     }
 
     /* ------------------------------------------------------------------ */
@@ -9843,7 +10256,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 '<div class="wide"><span>Key fragments</span>' +
                     fragmentsHtml(x) + '</div>' +
                 '<div class="wide" id="me-steaks"><span>Steaks</span><b>' +
-                    x.steaks.raw + ' raw &middot; ' + x.steaks.cooked +
+                    // A steak still flying across the screen has not landed
+                    // on this line yet, so it is not counted on it yet.
+                    Math.max(0, x.steaks.raw - (isMe ? STEAK.held() : 0)) +
+                    ' raw &middot; ' + x.steaks.cooked +
                     ' seared</b></div>' +
                 '<div class="wide"><span>Weapon</span><b>' +
                     esc(wDef ? wDef.name : 'none') +
@@ -9874,6 +10290,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Game — action buttons                                               */
     /* ------------------------------------------------------------------ */
 
+    /* An ability comes round once every few turns -- three, as it stands.
+       `turnNo` counts rounds rather than individual goes, so that is three of
+       your own turns whatever the size of the table. Asked in three places
+       now (the side panel, the battle panel and the line under the button),
+       so it is worked out in one. */
+    function abilityIsReady(p) {
+        return abilityWait(p) === 0;
+    }
+
+    function abilityWait(p) {
+        const due = (p.lastAbilityTurn | 0) + D.RULES.abilityCooldownTurns;
+        return Math.max(0, due - (S.turnNo | 0));
+    }
+
     function renderActions() {
         const p = me();
         const box = $('#side-actions');
@@ -9886,20 +10316,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 '</button>';
             const b = $('#a-order');
             if (b) b.addEventListener('click', () =>
-                rollAct('Rolling for turn order', 'rollForOrder', {},
-                        'Highest goes first.'));
+                rollAct('Turn Order', 'rollForOrder', {}, 'Highest goes first.'));
             return;
         }
 
         const mine = myTurn() && !S.paused;
         const blocked = !!S.battle || !!S.pending || !!S.paused;
         const cls = D.CLASSES[p.cls];
-        const abilityReady = S.turnNo - p.lastAbilityTurn >= D.RULES.abilityCooldownTurns;
+        const abilityReady = abilityIsReady(p);
 
         const buttons = [];
         buttons.push(btn('a-move', 'Roll & move', 'primary',
             !mine || blocked || p.hasMoved));
-        buttons.push(btn('a-ability', cls.ability.name, '',
+        // When it is not ready, the button says how long it has left rather
+        // than sitting there greyed out for no stated reason.
+        buttons.push(btn('a-ability',
+            cls.ability.name + (abilityReady ? '' : ' \u00b7 in ' + abilityWait(p)), '',
             !mine || blocked || !abilityReady ||
             (cls.ability.id === 'agile' && p.hasMoved)));
         buttons.push(btn('a-shop', 'Visit the Merchant', '', !mine || blocked));
@@ -9943,7 +10375,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             // Just throw it. Anything on offer on top of the die is asked
             // about afterwards, once there is a number to think about.
             const bonus = E.diceModifier(p) + (p.agileBonus || 0);
-            rollAct('Rolling to move', 'rollMove', {},
+            rollAct('Movement', 'rollMove', {},
                     bonus ? 'You will be asked about your ' +
                             (bonus > 0 ? '+' : '') + bonus + ' once it lands.'
                           : 'One die. Move that many squares.');
@@ -9955,7 +10387,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         });
         bind('a-shop', () => { openPanel = 'merchant'; renderModal(); });
         bind('a-trade', () => { openPanel = 'trade'; renderModal(); });
-        bind('a-steak-raw', () => rollAct('Eating a raw steak', 'eatSteak',
+        bind('a-steak-raw', () => rollAct('a Raw Steak', 'eatSteak',
                                          { type: 'raw' }, 'A 3 is food poisoning.'));
         bind('a-steak-cooked', () => act('eatSteak', { type: 'cooked' }));
         bind('a-end', () => act('endTurn', {}));
@@ -10303,8 +10735,25 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             }
         }
 
+        /* The one ability you may call on mid-fight -- the Knight's Strength
+           Up. Offered only at the top of your turn in the fight, before you
+           roll: the +20 then rides on the blow you are about to throw, rather
+           than being something you decide once you already know whether you
+           connected. It costs the cooldown and nothing else, so it does not
+           use up the swing. */
+        const inFightAbility = D.CLASSES[p.cls].ability;
+        const canAbility = involved && myMove && !enemyPhase &&
+                           b.phase === 'roll' && inFightAbility.inBattle;
+
         if (involved) {
             body += '<div class="modal-actions">' +
+                (canAbility
+                    ? '<button class="btn small" id="b-ability"' +
+                      (abilityIsReady(p) ? '' : ' disabled') + '>' +
+                      esc(inFightAbility.name) +
+                      (abilityIsReady(p) ? '' : ' \u00b7 in ' + abilityWait(p)) +
+                      '</button>'
+                    : '') +
                 (p.steaks.cooked > 0 ? '<button class="btn small" id="b-cooked">Eat seared steak</button>' : '') +
                 (p.steaks.raw > 0 ? '<button class="btn small" id="b-raw">Eat raw steak</button>' : '') +
                 (p.powerups.length ? '<button class="btn small" id="b-pu">Play a power-up</button>' : '') +
@@ -10320,12 +10769,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         showModal(body, false, 'battle');
 
-        bind('b-roll', () => rollAct('Rolling to strike', 'battleRoll', {},
-                                     missRule()));
+        bind('b-roll', () => rollAct('an Attack', 'battleRoll', {}, missRule()));
         $$('#modal [data-move]').forEach(el =>
             el.addEventListener('click', () => act('battleAttack', { moveId: el.dataset.move })));
+        bind('b-ability', () => rollAct(D.CLASSES[p.cls].ability.name, 'useAbility', {},
+                                       'An even number and it works.'));
         bind('b-cooked', () => act('eatSteak', { type: 'cooked' }));
-        bind('b-raw', () => rollAct('Eating a raw steak', 'eatSteak',
+        bind('b-raw', () => rollAct('a Raw Steak', 'eatSteak',
                                     { type: 'raw' }, 'A 3 is food poisoning.'));
         bind('b-pu', () => pickFrom('Play a power-up',
             p.powerups.map(c => ({ id: c.uid, name: D.POWERUPS[c.id].name, text: D.POWERUPS[c.id].text })),
@@ -10407,11 +10857,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         const foe = D.ENEMIES[b.enemyId];
         if (phase === 'enemy_roll') {
-            setTimeout(() => HOLD.whenFree(() => {
-                DICE.expect(D.foeName(foe, true),
-                    'It rolls for itself — ' + missRule().toLowerCase());
-                act('enemyRoll', {});
-            }), ENEMY_PAUSE_MS);
+            setTimeout(() => rollAct('an Attack', 'enemyRoll', {},
+                                     'It rolls for itself — ' + missRule().toLowerCase(),
+                                     D.foeName(foe, true)), ENEMY_PAUSE_MS);
         } else {
             // Let the die finish settling before the blow lands.
             DICE.whenIdle(() => setTimeout(
@@ -10591,7 +11039,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 c = n === 0 ? false : n;
             }
             if (pend.type === 'steak_roll') {
-                return rollAct('Out hunting', 'resolvePending', { choice: c },
+                return rollAct('the Hunt', 'resolvePending', { choice: c },
                                'A ' + D.RULES.steakRolls.join(', ') +
                                ' and something comes past.');
             }
