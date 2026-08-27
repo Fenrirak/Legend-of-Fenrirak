@@ -239,13 +239,22 @@ body {
        lightning running across it instead of grain. The board, the cards and
        the panels all sit on top of this.
 
-       A 72px tile carrying three small bolts down its own diagonal, so the
+       A 52x74 tile carrying two small bolts down its own diagonal, so the
        tiling runs them into unbroken lines from the top left to the bottom
        right -- and only that way: nothing lines up along the other diagonal,
-       so the lines have a direction. Each bolt is turned to lie along its
-       own line rather than across it (a positive turn in SVG is clockwise,
-       hence -45), and is drawn twice: once in black a pixel down and across,
-       once in a cold blue-white on top. That is the same light-line-and-
+       so the lines have a direction. The step from one bolt to the next is
+       26 across and 37 down, which sets both the angle (35.1 degrees off the
+       vertical) and the spacing: the step is 45px where the bolt is 30px, so
+       there are 15px of dark between the tail of one and the head of the
+       next. Each bolt is turned to lie along its own line rather than across
+       it. That is not simply the angle of the line: the bolt is drawn leaning
+       7.1 degrees the wrong way to begin with, and turning it by the line's
+       angle alone leaves it lying across the line by that much, which is
+       enough to make a straight run of them look kinked. Its own lean is
+       taken out first, so its two tips sit on the line (42.2 degrees, and a
+       positive turn in SVG is clockwise, hence the minus). Each is drawn
+       twice: once in black a pixel down and across, once in a cold
+       blue-white on top. That is the same light-line-and-
        dark-line trick the wood grain was cut with, so the bolts read as cut
        into the table rather than painted on it.
 
@@ -258,7 +267,7 @@ body {
        the game. */
     background-color: var(--ink);
     background-image:
-        url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='72'%20height='72'%3E%3Cg%20fill='%23000000'%20fill-opacity='.06'%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(13%2013)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(85%2013)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(13%2085)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(85%2085)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(37%2037)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(61%2061)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-11%2061)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(61%20-11)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-11%20-11)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3C/g%3E%3Cg%20fill='%23cfe0f5'%20fill-opacity='.036'%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(12%2012)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(84%2012)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(12%2084)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(84%2084)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(36%2036)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(60%2060)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-12%2060)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(60%20-12)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-12%20-12)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3C/g%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='52'%20height='74'%3E%3Cg%20fill='%23000000'%20fill-opacity='.06'%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(14%2019.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(66%2019.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-12%2056.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(40%2056.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3C/g%3E%3Cg%20fill='%23cfe0f5'%20fill-opacity='.036'%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(13%2018.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(65%2018.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-13%2055.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(39%2055.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3C/g%3E%3C/svg%3E"),
         radial-gradient(ellipse at 50% 0%, rgba(120, 92, 58, .16), transparent 60%),
         linear-gradient(180deg, #1b1714, #131110 60%, #0f0d0c);
     background-attachment: fixed;
