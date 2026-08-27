@@ -235,15 +235,30 @@ body {
     margin: 0;
     padding: 0;
 
-    /* The page is the table the game is laid out on: dark stained wood with
-       the grain running across it. The board, the cards and the panels all
-       sit on top of this. */
+    /* The page is the table the game is laid out on: dark stained wood, with
+       lightning running across it instead of grain. The board, the cards and
+       the panels all sit on top of this.
+
+       A 72px tile carrying three small bolts down its own diagonal, so the
+       tiling runs them into unbroken lines from the top left to the bottom
+       right -- and only that way: nothing lines up along the other diagonal,
+       so the lines have a direction. Each bolt is turned to lie along its
+       own line rather than across it (a positive turn in SVG is clockwise,
+       hence -45), and is drawn twice: once in black a pixel down and across,
+       once in a cold blue-white on top. That is the same light-line-and-
+       dark-line trick the wood grain was cut with, so the bolts read as cut
+       into the table rather than painted on it.
+
+       A bolt that overhangs the tile is drawn again a tile further on, for
+       the part that was clipped to come back in the other side -- a tile
+       does not wrap by itself. Those copies are not a trick: the pattern
+       really does have a bolt there.
+
+       Faint on purpose. It is the table the game is played on, not part of
+       the game. */
     background-color: var(--ink);
     background-image:
-        repeating-linear-gradient(91deg,
-            rgba(255, 255, 255, .014) 0 2px,
-            transparent 2px 7px,
-            rgba(0, 0, 0, .05) 7px 9px),
+        url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='72'%20height='72'%3E%3Cg%20fill='%23000000'%20fill-opacity='.06'%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(13%2013)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(85%2013)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(13%2085)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(85%2085)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(37%2037)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(61%2061)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-11%2061)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(61%20-11)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-11%20-11)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3C/g%3E%3Cg%20fill='%23cfe0f5'%20fill-opacity='.036'%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(12%2012)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(84%2012)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(12%2084)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(84%2084)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(36%2036)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(60%2060)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-12%2060)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(60%20-12)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-12%20-12)%20rotate(-45)%20scale(0.375)%20translate(-20%20-40)'/%3E%3C/g%3E%3C/svg%3E"),
         radial-gradient(ellipse at 50% 0%, rgba(120, 92, 58, .16), transparent 60%),
         linear-gradient(180deg, #1b1714, #131110 60%, #0f0d0c);
     background-attachment: fixed;
@@ -1315,6 +1330,122 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .chip b { color: var(--gold-bright); }
 
+/* ---- what somebody is holding ----------------------------------------
+   The line above each side of a trade: coins, steaks, keys, cards, read off
+   at a glance. Greyed rather than hidden when it is nothing -- "no chest
+   keys" is as much use to the person asking as "two chest keys".
+   ---------------------------------------------------------------------- */
+
+.holds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 9px 11px;
+    border-radius: 4px;
+    background: #191817;
+    border: 1px solid rgba(255,255,255,.07);
+}
+.holds .hold {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 2px 9px 2px 0;
+    margin-right: 3px;
+    border-right: 1px solid rgba(255,255,255,.08);
+    font-size: 12.5px;
+    white-space: nowrap;
+}
+.holds .hold:last-child { border-right: none; margin-right: 0; }
+.holds .hold i { font-style: normal; color: #8e8880; }
+.holds .hold b { color: var(--gold-bright); font-size: 13.5px; }
+.holds .hold.none i,
+.holds .hold.none b { color: #5c5852; }
+
+/* A counter you can put into an offer, with what it is out of written on it
+   -- asking for eleven of somebody's ten coins only ever came back refused. */
+.chip.num {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px 3px 10px;
+}
+.chip.num input {
+    width: 58px;
+    padding: 2px 6px;
+    font-size: 12.5px;
+}
+.chip.num i { font-style: normal; color: #8a8a8a; font-size: 11.5px; }
+.chip.num.none { opacity: .45; }
+
+/* ---- which fragment, exactly -----------------------------------------
+   Three slots, in the order the Gate wants them, each named for the place it
+   is won. The ones they are not carrying are still shown -- an empty slot is
+   the useful half of the answer -- but they cannot be ticked.
+   ---------------------------------------------------------------------- */
+
+.frag-pick {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+.frag-pick .fp-label {
+    font-size: 12.5px;
+    color: #8e8880;
+    margin-right: 2px;
+}
+.frag-pick .fp {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 11px 5px 8px;
+    border-radius: 999px;
+    background: #1d1d1d;
+    border: 1px solid rgba(255,255,255,.08);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: border-color .14s ease, background .14s ease;
+}
+.frag-pick .fp:hover { border-color: var(--gold); }
+.frag-pick .fp .fp-n { color: var(--gold-bright); font-weight: bold; }
+.frag-pick .fp .fp-where { color: #a29b91; }
+.frag-pick .fp input { margin: 0; }
+
+/* Not theirs to give. Left on the screen, because knowing which of the three
+   they are missing is half of what the panel is for. */
+.frag-pick .fp.no {
+    opacity: .42;
+    cursor: default;
+    border-style: dashed;
+}
+.frag-pick .fp.no:hover { border-color: rgba(255,255,255,.08); }
+
+/* A card being ticked into an offer rather than one being read: a row you
+   press, not a paper card. Same family as the chips and the fragment slots
+   above it, so one side of a trade reads as one list of things to tick. */
+.item-grid.trade-pick { margin-top: 10px; }
+.item.pick {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 11px;
+    border-radius: 4px;
+    background: #1d1d1d;
+    border: 1px solid rgba(255,255,255,.08);
+    font-size: 13px;
+    color: #cfcfcf;
+    cursor: pointer;
+    transition: border-color .14s ease, color .14s ease;
+}
+.item.pick:hover { border-color: var(--gold); }
+.item.pick input { margin: 0; flex: 0 0 auto; }
+.item.pick:has(input:checked) {
+    border-color: var(--gold);
+    color: var(--gold-bright);
+}
+
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .log {
@@ -1353,6 +1484,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .battle-statcard { max-width: 250px; margin: 16px auto 0; }
 
 /* ---- modal ----------------------------------------------------------- */
+
+/* The fight is the one panel that stays up across a roll, so it is the one
+   that can be under the mouse while what it says is a turn out of date. It is
+   not redrawn at such a moment -- redrawing it is exactly the early reveal
+   being avoided -- so it is dimmed and taken out of reach instead, and comes
+   back the instant the die has been read. */
+body.holding .modal-back[data-key="battle"] .modal button,
+body.holding .modal-back[data-key="battle"] .modal input {
+    pointer-events: none;
+}
+body.holding .modal-back[data-key="battle"] .modal .btn,
+body.holding .modal-back[data-key="battle"] .modal .move {
+    opacity: .45;
+    transition: opacity .18s ease;
+}
+
 
 .modal-back {
     position: fixed; inset: 0; z-index: 900;
@@ -6306,13 +6453,30 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return ok();
     }
 
+    /* The Gate takes three *different* fragments, so which one you are being
+       offered is the whole question -- a second copy of the one you already
+       carry is worth nothing to you. A bundle therefore names its fragments
+       rather than counting them.
+
+       `keyFragments` is kept alongside as the count. It is what the bundle
+       used to carry on its own, and an offer written by an older client (or
+       still sitting open in a room from before this) has only that; those are
+       honoured the way they always were, any fragments the other side can
+       spare. Anything made from here on names them. */
     function normaliseBundle(x) {
         x = x || {};
+        const frags = [];
+        (x.fragments || []).forEach(v => {
+            const n = v | 0;
+            if (n >= 1 && n <= D.KEY_FRAGMENTS_NEEDED && frags.indexOf(n) < 0) frags.push(n);
+        });
+        frags.sort();
         return {
             coins: Math.max(0, x.coins | 0),
             rawSteaks: Math.max(0, x.rawSteaks | 0),
             cookedSteaks: Math.max(0, x.cookedSteaks | 0),
-            keyFragments: Math.max(0, x.keyFragments | 0),
+            fragments: frags,
+            keyFragments: frags.length || Math.max(0, x.keyFragments | 0),
             chestKeys: Math.max(0, x.chestKeys | 0),
             items: (x.items || []).slice(),
             powerups: (x.powerups || []).slice(),
@@ -6324,7 +6488,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (p.coins < bundle.coins) return false;
         if (p.steaks.raw < bundle.rawSteaks) return false;
         if (p.steaks.cooked < bundle.cookedSteaks) return false;
-        if (fragmentsOf(p).length < bundle.keyFragments) return false;
+        // Named: they have to hold that very one. Unnamed (an older offer):
+        // any of them will do, as many as were asked for.
+        const held = fragmentsOf(p);
+        if (bundle.fragments && bundle.fragments.length) {
+            if (bundle.fragments.some(n => held.indexOf(n) < 0)) return false;
+        } else if (held.length < bundle.keyFragments) return false;
         if (p.chestKeys < bundle.chestKeys) return false;
         if (bundle.items.some(u => !p.inventory.some(i => i.uid === u))) return false;
         if (bundle.powerups.some(u => !p.powerups.some(i => i.uid === u))) return false;
@@ -6336,9 +6505,24 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         from.coins -= bundle.coins;            to.coins += bundle.coins;
         from.steaks.raw -= bundle.rawSteaks;   to.steaks.raw += bundle.rawSteaks;
         from.steaks.cooked -= bundle.cookedSteaks; to.steaks.cooked += bundle.cookedSteaks;
-        // Hand over fragments the other side does not already carry, so
-        // nobody can end up holding the same one twice.
-        if (bundle.keyFragments > 0) {
+        // The ones that were named, and nothing else. A fragment the other
+        // side already carries stays where it is: nobody holds two of the
+        // same one, and destroying it instead would put the Gate out of reach
+        // for everybody at the table.
+        if (bundle.fragments && bundle.fragments.length) {
+            const mine = fragmentsOf(from);
+            const theirs = fragmentsOf(to);
+            bundle.fragments.forEach(n => {
+                const i = mine.indexOf(n);
+                if (i < 0 || theirs.indexOf(n) >= 0) return;
+                theirs.push(mine.splice(i, 1)[0]);
+            });
+            theirs.sort();
+            syncFragments(from);
+            syncFragments(to);
+        // An older offer, which only ever said how many: hand over the ones
+        // the other side does not already carry.
+        } else if (bundle.keyFragments > 0) {
             const mine = fragmentsOf(from);
             const theirs = fragmentsOf(to);
             let left = bundle.keyFragments;
@@ -7307,10 +7491,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Trades                                                              */
     /* ------------------------------------------------------------------ */
 
-    function bundleValue(state, holder, bundle) {
+    /* What a bundle is worth to whoever is being handed it. `holder` is who
+       is giving it up -- their cards are what the uids in it point at --
+       and `to` is who is receiving. */
+    function bundleValue(state, holder, to, bundle) {
         let v = bundle.coins * 0.8;
         v += bundle.rawSteaks * 3 + bundle.cookedSteaks * 6;
-        v += bundle.keyFragments * 90;         // a fragment is a third of the game
+        /* A fragment is a third of the game, but only one you do not already
+           carry: the Gate takes three *different* ones. Now that an offer can
+           name the fragments in it, somebody can ask for the one they are
+           missing and hand back a second copy of one you already have -- which
+           is worth exactly nothing and used to be priced at ninety. */
+        v += fragmentsGained(holder, to, bundle) * 90;
         v += bundle.chestKeys * 12;
         v += bundle.powerups.length * 6 + bundle.potions.length * 6;
         bundle.items.forEach(u => {
@@ -7320,11 +7512,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return v;
     }
 
+    /* How many of the fragments in a bundle would be new to the player
+       receiving it. A bundle that names them is taken at its word; one that
+       only counts them (an older offer) can only be taken at its count. */
+    function fragmentsGained(holder, to, bundle) {
+        const named = bundle.fragments || [];
+        if (!named.length) return bundle.keyFragments | 0;
+        const has = E.fragmentsOf(to);
+        const held = E.fragmentsOf(holder);
+        return named.filter(n => held.indexOf(n) >= 0 && has.indexOf(n) < 0).length;
+    }
+
     function tradeStep(state, p, trade) {
         const from = E.player(state, trade.fromId);
         if (!from) return { action: 'respondTrade', args: { tradeId: trade.id, accept: false } };
-        const gain = bundleValue(state, from, trade.give);
-        const cost = bundleValue(state, p, trade.want);
+        const gain = bundleValue(state, from, p, trade.give);
+        const cost = bundleValue(state, p, from, trade.want);
         // Take a deal that is clearly in your favour; a marginal one is not
         // worth handing a rival what they asked for.
         return {
@@ -8541,7 +8744,13 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 // slips a die in during the wait.
                 pending += 1;
                 held += 1;
-                renderHero();          // take it straight back out again
+                /* Nothing is redrawn here. The steak is won by a die that is
+                   still in the air at this moment, and the profile box is
+                   part of what that die has not finished saying yet -- the
+                   screen is held until it has (see `tableSettled`), and this
+                   counts as one of the things holding it. The count is put
+                   right by `land()`, as the steak arrives on the line, which
+                   is the whole point of the flight. */
                 DICE.whenIdle(() => setTimeout(() => {
                     pending = Math.max(0, pending - 1);
                     play();
@@ -8709,6 +8918,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* the moment it is owed, not from the moment it is seen.              */
     /* ------------------------------------------------------------------ */
 
+    /* Every card in this game has a deadline, because a card that will not
+       come down is worse than no card at all, and this hold is holding back
+       the whole screen. If the table somehow never comes quiet -- an
+       animation a browser declined to run, a timer a backgrounded tab
+       swallowed -- the game is drawn anyway and the buttons are given back,
+       rather than the player being left looking at something dead.
+
+       Long enough never to bite in play: the longest honest hold is a steak
+       flying home, then a die lying on the screen for its three seconds, then
+       the turn card for its two and a half. */
+    const HOLD_GIVE_UP_MS = 12000;
+
     const HOLD = (function () {
         const waiting = [];
         let poll = null;
@@ -8718,11 +8939,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         }
 
         function pump() {
-            if (busyNow()) { poll = setTimeout(pump, 120); return; }
             poll = null;
-            // Taken one at a time off the front: a callback that puts the
-            // screen back to busy stops the rest going with it.
-            while (waiting.length && !busyNow()) waiting.shift()();
+            /* Taken one at a time off the front: a callback that puts the
+               screen back to busy stops the rest going with it.
+
+               And nothing waits here for ever. The gate exists to keep two
+               things off the screen at once, which is worth a second or two
+               and is not worth a game that has stopped -- so anything that
+               has been held longer than the screen itself would wait goes
+               anyway. What is waiting is usually the monster's next move, and
+               a monster that never moves is a fight nobody can finish. */
+            while (waiting.length &&
+                   (!busyNow() || Date.now() - waiting[0].at > HOLD_GIVE_UP_MS)) {
+                waiting.shift().fn();
+            }
             if (waiting.length && !poll) poll = setTimeout(pump, 120);
         }
 
@@ -8730,7 +8960,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             busy: busyNow,
             whenFree(fn) {
                 if (!busyNow()) { fn(); return; }
-                waiting.push(fn);
+                waiting.push({ fn: fn, at: Date.now() });
                 if (!poll) poll = setTimeout(pump, 120);
             }
         };
@@ -8741,6 +8971,66 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     if (NET && typeof NET.setBusyCheck === 'function') NET.setBusyCheck(HOLD.busy);
 
     /* ------------------------------------------------------------------ */
+    /* One thing at a time                                                 */
+    /*                                                                     */
+    /* Everything in this game happens in the same three beats: the die is  */
+    /* thrown, the number is read, and then whatever the number did is      */
+    /* shown. The state does not arrive in beats -- it arrives all at once, */
+    /* the instant the server has worked it out -- so left alone the third  */
+    /* beat lands on top of the first. The chest panel would open over a    */
+    /* die still in the air; the health bar would drop before the blow had  */
+    /* been rolled; the token would still be walking to the square whose    */
+    /* card was already up.                                                */
+    /*                                                                     */
+    /* So the screen is held. A new state is taken in at once -- every      */
+    /* watcher gets it, and the die and the walk and the cards play off it  */
+    /* -- but the board, the log, the panels and the buttons are not        */
+    /* redrawn until the table is quiet again. What that means, exactly:    */
+    /*                                                                     */
+    /*   the request we sent is still out            (busy)                 */
+    /*   a card is up or owed, or a steak is flying  (HOLD)                 */
+    /*   a die is in the air                         (DICE.busy)            */
+    /*   somebody's piece is still walking           (walksRunning)         */
+    /*                                                                     */
+    /* Note that a die *lying* on the table does not hold anything up. It   */
+    /* has been read by then, it sits above everything else on the screen,  */
+    /* and it stays there for another three seconds -- the consequence is   */
+    /* meant to arrive underneath it, not after it.                        */
+    /*                                                                     */
+    /* Nothing here needs a redraw to come free, so nothing can wedge: the  */
+    /* die, the cards and the walk all run on their own timers, and every   */
+    /* one of them has a deadline that survives a tab being left in the     */
+    /* background.                                                          */
+    /* ------------------------------------------------------------------ */
+
+    function walksRunning() {
+        for (const id in walkTimers) if (walkTimers[id]) return true;
+        return false;
+    }
+
+    function tableSettled() {
+        return !busy && !HOLD.busy() && !DICE.busy() && !walksRunning();
+    }
+
+    let heldSince = 0;
+
+    function holdOverdue() {
+        return heldSince > 0 && Date.now() - heldSince > HOLD_GIVE_UP_MS;
+    }
+
+    // Held: busy, and not yet so long that waiting has become the problem.
+    // This, and not `tableSettled`, is what the screen and the buttons obey.
+    function tableHeld() {
+        return !tableSettled() && !holdOverdue();
+    }
+
+    function markHolding() {
+        if (tableSettled()) heldSince = 0;
+        else if (!heldSince) heldSince = Date.now();
+        document.body.classList.toggle('holding', tableHeld());
+    }
+
+    /* ------------------------------------------------------------------ */
     /* Server actions                                                      */
     /* ------------------------------------------------------------------ */
 
@@ -8748,6 +9038,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     async function act(action, args) {
         if (busy) return;
         busy = true;
+        // Out of reach from the moment it is sent rather than from the moment
+        // the answer comes back: a second press in that gap is a second action.
+        refreshActions();
         try {
             await NET.act(ROOM, action, args);
             notice('');
@@ -8755,7 +9048,18 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             if (!err.silent) notice(err.message || String(err));
         } finally {
             busy = false;
+            refreshActions();
         }
+    }
+
+    /* The buttons on their own. For when what has changed is whether they may
+       be pressed rather than anything about the game -- there is no new state
+       to draw, and drawing one would be showing a consequence early. */
+    function refreshActions() {
+        if (!S || S.phase === 'lobby' || S.phase === 'over') return;
+        if (!$('#side-actions')) return;
+        markHolding();
+        renderActions();
     }
 
     // An action that throws a die: put the die in the air first.
@@ -8768,28 +9072,50 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // pressing the button four times while the card is up would otherwise
     // buy four throws, which would all go off one after another the moment
     // it came down.
-    let rollQueued = false;
     function rollAct(what, action, args, sub, who) {
-        // A throw on somebody else's behalf -- the monster's -- is never
-        // turned away. Nothing re-sends it if it is dropped: the fight would
-        // simply stop, waiting on a die that nobody is going to throw.
-        if (rollQueued && !who) return;
         const name = who || (me() ? me().name : NET.localName());
+        const send = () => { DICE.expect(); act(action, args); };
         const go = () => {
-            rollQueued = false;
-            // The card first. The action is sent inside it, as the card comes
-            // down -- held back rather than fired now, so that nothing has
-            // happened yet while it is up and the die cannot beat it onto the
-            // screen. `who` is only passed for the monster, which throws its
-            // own die through the hand of whoever is fighting it.
-            ROLL_CALL.play(name, what, sub, !who, () => {
-                DICE.expect();
-                act(action, args);
-            });
+            /* Once the screen has given up waiting there is nothing left to
+               be polite about: the card is skipped and the die goes straight
+               up, because a throw held back behind something that is never
+               coming down is a throw that never happens. */
+            if (holdOverdue()) { send(); return; }
+            // Otherwise the card first, and the action sent inside it as the
+            // card comes down -- held back rather than fired now, so nothing
+            // has happened yet while it is up and the die cannot beat it onto
+            // the screen. `who` is only passed for the monster, which throws
+            // its own die through the hand of whoever is fighting it.
+            ROLL_CALL.play(name, what, sub, !who, send);
         };
-        if (!HOLD.busy()) { go(); return; }
-        if (!who) rollQueued = true;
-        HOLD.whenFree(go);
+
+        /* A throw of the player's own is never queued. While the last one is
+           still playing out it is simply not heard: a press in the beat after
+           a roll is a press meant for the turn that has just gone, and saving
+           it up to play into the next one is worse than not hearing it. It
+           also means there is no held-back throw to be stranded if something
+           on the screen refuses to finish.
+
+           The buttons beside the board are already out of reach at such a
+           moment, but the fight panel stays up across a roll and its buttons
+           are still under the mouse, so the rule is kept here as well -- this
+           is the one place every die the player throws comes through.
+
+           The monster's is the opposite case and is queued: nothing re-sends
+           it, so a dropped one would leave the fight waiting for ever on a
+           die nobody is going to throw. */
+        if (!who) {
+            if (tableHeld()) return;
+            go();
+        } else if (!HOLD.busy()) {
+            go();
+        } else {
+            HOLD.whenFree(go);
+        }
+
+        // The card is up, or the die is already in the air. Either way this
+        // throw is under way and nothing else may be pressed on top of it.
+        refreshActions();
     }
 
     /* ------------------------------------------------------------------ */
@@ -9439,8 +9765,34 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* Game — turn banner                                                  */
     /* ------------------------------------------------------------------ */
 
+    /* The walk is started outside the gate, because the walk is one of the
+       things the gate waits on -- holding it back until the table was quiet
+       would be waiting for something that had not been set going. It does its
+       own waiting on the die. */
     function renderGame() {
         playWalks();
+        markHolding();
+        if (!tableHeld()) { drawGame(); return; }
+        // Nothing of what just happened is shown yet. The buttons go, though,
+        // and they go now: what is on the screen is a turn that is over.
+        renderActions();
+        holdRender();
+    }
+
+    let settleT = null;
+
+    function holdRender() {
+        if (settleT) return;
+        settleT = setTimeout(() => {
+            settleT = null;
+            if (!S || S.phase === 'lobby' || S.phase === 'over') { heldSince = 0; return; }
+            playWalks();
+            markHolding();
+            if (!tableHeld()) drawGame(); else holdRender();
+        }, 120);
+    }
+
+    function drawGame() {
         renderBanner();
         renderBoard();
         renderHero();
@@ -10809,7 +11161,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         if (S.phase === 'order') {
             box.innerHTML = '<button class="btn primary" id="a-order"' +
-                (p.orderRoll !== null ? ' disabled' : '') + '>' +
+                (p.orderRoll !== null || tableHeld() ? ' disabled' : '') + '>' +
                 (p.orderRoll !== null ? 'Rolled ' + p.orderRoll : 'Roll for turn order') +
                 '</button>';
             const b = $('#a-order');
@@ -10818,8 +11170,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             return;
         }
 
+        /* Nothing may be pressed while the table is still busy with the last
+           thing. The one that matters most: the card saying whose go it is
+           comes down before the turn it announces can be played. It used to be
+           possible to have rolled and moved underneath it -- the turn really
+           was yours, the card was only saying so -- so the announcement of
+           your turn arrived over the top of you taking it. */
+        const holding = tableHeld();
         const mine = myTurn() && !S.paused;
-        const blocked = !!S.battle || !!S.pending || !!S.paused;
+        const blocked = !!S.battle || !!S.pending || !!S.paused || holding;
         const cls = D.CLASSES[p.cls];
         const abilityReady = abilityIsReady(p);
 
@@ -10834,19 +11193,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             (cls.ability.id === 'agile' && p.hasMoved)));
         buttons.push(btn('a-shop', 'Visit the Merchant', '', !mine || blocked));
         buttons.push(btn('a-trade', 'Propose a trade', '',
-            S.players.length < 2 || !!S.paused));
+            S.players.length < 2 || !!S.paused || holding));
         // The Gold Forged Armour Set says you *may* pay in coins. Asking on
         // every single hit would be unbearable, so it is a standing choice
         // you can flip whenever you like.
         const aInst = E.equippedArmour(p);
         const aItem = aInst ? D.ITEMS[aInst.id] : null;
         if (aItem && aItem.payInCoins) {
-            buttons.push(btn('a-coinpay', purseLabel(p), '', !!S.paused));
+            buttons.push(btn('a-coinpay', purseLabel(p), '', !!S.paused || holding));
         }
         buttons.push(btn('a-steak-raw', 'Eat raw steak', '',
-            p.steaks.raw < 1 || !!S.paused));
+            p.steaks.raw < 1 || !!S.paused || holding));
         buttons.push(btn('a-steak-cooked', 'Eat seared steak', '',
-            p.steaks.cooked < 1 || !!S.paused));
+            p.steaks.cooked < 1 || !!S.paused || holding));
         buttons.push(btn('a-end', 'End turn', '', !mine || blocked));
 
         // The two that end things stand together underneath, matched and
@@ -10864,7 +11223,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         box.innerHTML = '<div class="actions">' + buttons.join('') + '</div>' +
             (blocked && !S.paused
                 ? '<div class="muted" style="margin-top:10px;font-size:13px">' +
-                  (S.battle ? 'A battle is under way.' : 'Resolve the square first.') + '</div>'
+                  (S.battle ? 'A battle is under way.'
+                     : S.pending ? 'Resolve the square first.'
+                     : 'One thing at a time \u2014 the last roll is still playing out.') +
+                  '</div>'
                 : '') +
             footer;
 
@@ -11072,6 +11434,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         back.classList.toggle('dock', !!dock);
         if (!dock) clearLandings();
         back.dataset.dismissable = dismissable ? '1' : '0';
+        // Which panel this is, so the stylesheet can tell the fight -- the one
+        // panel that stays up across a roll -- from the rest.
+        back.dataset.key = key || '';
         shownKey = key || null;
     }
 
@@ -12086,42 +12451,109 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
     /* ---- trading ---- */
 
+    /* ------------------------------------------------------------------ */
+    /* One side of a trade                                                 */
+    /*                                                                     */
+    /* At a real table you can see what the other player is sitting behind: */
+    /* their coins are in front of them and their cards are face up. This   */
+    /* used to be guesswork -- the boxes had a `max` on them and nothing    */
+    /* else, so you found out you had asked for four coins too many when    */
+    /* the offer came back refused. Every counter now says what it is out   */
+    /* of, and the whole holding is read off in a line above them.          */
+    /*                                                                     */
+    /* Fragments are picked rather than counted. The Gate takes three       */
+    /* *different* ones, so "a key fragment" is not a thing anybody wants:  */
+    /* the one you are missing is, and a second copy of the one you carry   */
+    /* is worth nothing. Each is a slot you can tick, named for the place   */
+    /* it comes from, and the ones they do not have cannot be ticked.       */
+    /* ------------------------------------------------------------------ */
+
+    // Where each fragment is won, read off the board rather than listed here
+    // a second time.
+    function fragmentPlace(n) {
+        const sq = (D.BOARD || []).find(s => s.keyFragment === n);
+        return sq ? sq.name : '';
+    }
+
+    function heldHtml(label, n) {
+        return '<span class="hold' + (n ? '' : ' none') + '">' +
+            '<i>' + label + '</i><b>' + n + '</b></span>';
+    }
+
+    function numChip(label, id, max) {
+        return '<label class="chip num' + (max ? '' : ' none') + '">' + label +
+            '<input type="number" min="0" max="' + max + '" value="0" id="' + id + '"' +
+            (max ? '' : ' disabled') + '><i>of ' + max + '</i></label>';
+    }
+
+    function fragPickHtml(p, prefix) {
+        const held = E.fragmentsOf ? E.fragmentsOf(p)
+                                   : (p.fragments || []);
+        let out = '<div class="frag-pick"><span class="fp-label">Key fragments</span>';
+        for (let n = 1; n <= D.KEY_FRAGMENTS_NEEDED; n++) {
+            const has = held.indexOf(n) >= 0;
+            const place = fragmentPlace(n);
+            out += '<label class="fp' + (has ? '' : ' no') + '" title="' +
+                (has ? 'Key fragment ' + n + ', won at ' + esc(place)
+                     : 'They do not have key fragment ' + n) + '">' +
+                '<input type="checkbox" data-group="' + prefix + '-frag" value="' + n + '"' +
+                    (has ? '' : ' disabled') + '>' +
+                '<span class="frag' + (has ? ' have' : '') + '"></span>' +
+                '<span class="fp-n">' + n + '</span>' +
+                '<span class="fp-where">' + esc(place) + '</span>' +
+                '</label>';
+        }
+        return out + '</div>';
+    }
+
     function bundleUi(p, prefix) {
-        return '<div class="stat-row">' +
-            '<label class="chip">Coins <input type="number" min="0" max="' + p.coins +
-                '" value="0" id="' + prefix + '-coins" style="width:70px;padding:2px 6px"></label>' +
-            '<label class="chip">Raw steaks <input type="number" min="0" max="' + p.steaks.raw +
-                '" value="0" id="' + prefix + '-raw" style="width:60px;padding:2px 6px"></label>' +
-            '<label class="chip">Seared <input type="number" min="0" max="' + p.steaks.cooked +
-                '" value="0" id="' + prefix + '-cooked" style="width:60px;padding:2px 6px"></label>' +
-            '<label class="chip">Key fragments <input type="number" min="0" max="' + p.keyFragments +
-                '" value="0" id="' + prefix + '-keys" style="width:55px;padding:2px 6px"></label>' +
-            '<label class="chip">Chest keys <input type="number" min="0" max="' + p.chestKeys +
-                '" value="0" id="' + prefix + '-chest" style="width:55px;padding:2px 6px"></label>' +
+        const cards = p.inventory.length + p.powerups.length + p.potions.length;
+        return '<div class="holds">' +
+                heldHtml('Coins', p.coins) +
+                heldHtml('Raw steaks', p.steaks.raw) +
+                heldHtml('Seared steaks', p.steaks.cooked) +
+                heldHtml('Chest keys', p.chestKeys) +
+                heldHtml('Cards', cards) +
+                heldHtml('Key fragments', p.keyFragments + '/' + D.KEY_FRAGMENTS_NEEDED) +
             '</div>' +
-            '<div class="item-grid" style="margin-top:10px">' +
-                p.inventory.map(i => checkItem(prefix + '-item', i.uid, D.ITEMS[i.id].name)).join('') +
-                p.powerups.map(i => checkItem(prefix + '-pu', i.uid, D.POWERUPS[i.id].name + ' (card)')).join('') +
-                p.potions.map(i => checkItem(prefix + '-po', i.uid, D.POWERUPS[i.id].name + ' (potion)')).join('') +
-            '</div>';
+            '<div class="stat-row">' +
+                numChip('Coins', prefix + '-coins', p.coins) +
+                numChip('Raw steaks', prefix + '-raw', p.steaks.raw) +
+                numChip('Seared', prefix + '-cooked', p.steaks.cooked) +
+                numChip('Chest keys', prefix + '-chest', p.chestKeys) +
+            '</div>' +
+            fragPickHtml(p, prefix) +
+            (cards
+                ? '<div class="item-grid trade-pick">' +
+                    p.inventory.map(i => checkItem(prefix + '-item', i.uid, D.ITEMS[i.id].name)).join('') +
+                    p.powerups.map(i => checkItem(prefix + '-pu', i.uid, D.POWERUPS[i.id].name + ' (card)')).join('') +
+                    p.potions.map(i => checkItem(prefix + '-po', i.uid, D.POWERUPS[i.id].name + ' (potion)')).join('') +
+                  '</div>'
+                : '<div class="muted" style="margin-top:10px;font-size:13px">' +
+                  'No cards to trade.</div>');
     }
 
     function checkItem(name, uid, label) {
-        return '<label class="item" style="cursor:pointer">' +
+        return '<label class="item pick">' +
             '<input type="checkbox" data-group="' + name + '" value="' + esc(uid) + '"> ' +
             esc(label) + '</label>';
     }
 
-    function readBundle(prefix) {
-        const num = id => Math.max(0, parseInt(($('#' + id) || {}).value || '0', 10) || 0);
+    /* Read back against whoever it belongs to. A number box can be typed into
+       past its `max`, and an offer for eleven of somebody's ten coins is only
+       ever going to come back refused -- so it is trimmed to what they have
+       on the way out rather than argued about on the way in. */
+    function readBundle(prefix, owner) {
+        const num = (id, max) => Math.min(max,
+            Math.max(0, parseInt(($('#' + id) || {}).value || '0', 10) || 0));
         const checked = group => $$('[data-group="' + group + '"]')
             .filter(c => c.checked).map(c => c.value);
         return {
-            coins: num(prefix + '-coins'),
-            rawSteaks: num(prefix + '-raw'),
-            cookedSteaks: num(prefix + '-cooked'),
-            keyFragments: num(prefix + '-keys'),
-            chestKeys: num(prefix + '-chest'),
+            coins: num(prefix + '-coins', owner.coins),
+            rawSteaks: num(prefix + '-raw', owner.steaks.raw),
+            cookedSteaks: num(prefix + '-cooked', owner.steaks.cooked),
+            chestKeys: num(prefix + '-chest', owner.chestKeys),
+            fragments: checked(prefix + '-frag').map(v => v | 0),
             items: checked(prefix + '-item'),
             powerups: checked(prefix + '-pu'),
             potions: checked(prefix + '-po')
@@ -12144,8 +12576,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 others.map(o => '<option value="' + esc(o.id) + '"' +
                     (o.id === targetId ? ' selected' : '') + '>' + esc(o.name) + '</option>').join('') +
             '</select>' +
-            '<h3 style="margin-top:16px">You give</h3>' + bundleUi(p, 'give') +
+            '<h3 style="margin-top:16px">You give</h3>' +
+                '<div class="sub">What you are carrying, and what of it you are ' +
+                'putting up.</div>' + bundleUi(p, 'give') +
             '<h3 style="margin-top:16px">You want from ' + esc(other.name) + '</h3>' +
+                '<div class="sub">Everything ' + esc(other.name) + ' is carrying. ' +
+                'Ask for as much of it as you like \u2014 they still have to agree.</div>' +
                 bundleUi(other, 'want') +
             '<div class="modal-actions">' +
             '<button class="btn primary" id="tr-send">Send offer</button>' +
@@ -12156,8 +12592,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             renderTradeBuilder();
         });
         bind('tr-send', () => {
-            const give = readBundle('give');
-            const want = readBundle('want');
+            const give = readBundle('give', p);
+            const want = readBundle('want', other);
             openPanel = null;
             act('proposeTrade', { toId: targetId, give: give, want: want });
         });
@@ -12172,7 +12608,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (b.coins) bits.push(chip(b.coins + ' coins'));
         if (b.rawSteaks) bits.push(chip(b.rawSteaks + ' raw steak'));
         if (b.cookedSteaks) bits.push(chip(b.cookedSteaks + ' seared steak'));
-        if (b.keyFragments) bits.push(chip(b.keyFragments + ' key fragment'));
+        if (b.fragments && b.fragments.length) {
+            b.fragments.forEach(n => bits.push(chip('Key fragment ' + n +
+                (fragmentPlace(n) ? ' <b>' + esc(fragmentPlace(n)) + '</b>' : ''))));
+        } else if (b.keyFragments) {
+            bits.push(chip(b.keyFragments + ' key fragment'));
+        }
         if (b.chestKeys) bits.push(chip(b.chestKeys + ' chest key'));
 
         const cards = [];
@@ -12205,7 +12646,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         if (b.coins) parts.push(b.coins + ' coins');
         if (b.rawSteaks) parts.push(b.rawSteaks + ' raw steak');
         if (b.cookedSteaks) parts.push(b.cookedSteaks + ' seared steak');
-        if (b.keyFragments) parts.push(b.keyFragments + ' key fragment(s)');
+        if (b.fragments && b.fragments.length) {
+            parts.push('key fragment ' + b.fragments.join(' and '));
+        } else if (b.keyFragments) {
+            parts.push(b.keyFragments + ' key fragment(s)');
+        }
         if (b.chestKeys) parts.push(b.chestKeys + ' chest key(s)');
         const n = (b.items || []).length + (b.powerups || []).length + (b.potions || []).length;
         if (n) parts.push(n + ' card(s)');
