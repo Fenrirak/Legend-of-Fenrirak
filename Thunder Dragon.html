@@ -1443,6 +1443,112 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .move .mextra i { color: #8f866f; font-style: italic; }
 
+/* ---- what the blow comes to ------------------------------------------
+   The working, then the answer. Laid out as a run of small chips rather
+   than one long sentence, because it is arithmetic and wraps: each chip
+   holds a number and what the number is, and the operators sit between
+   them in a dimmer colour so the eye can follow the sum across a wrap
+   without losing its place.
+
+   The answer is set apart under a rule and given the gold, because it is
+   the thing being chosen between. The working above it is there to be
+   checked, not read every time.
+   ---------------------------------------------------------------------- */
+
+.move .msum {
+    margin-top: 8px;
+    padding-top: 7px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+}
+.move .sum-working {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 3px 4px;
+    font-size: 11px;
+    line-height: 1.35;
+    color: #8d8578;
+}
+.move .sum-bit { white-space: nowrap; }
+.move .sum-bit b {
+    font-weight: bold;
+    color: #cfc6b4;
+}
+.move .sum-op {
+    color: #6d6558;
+    padding: 0 1px;
+}
+.move .sum-total {
+    margin-top: 5px;
+    font-size: 13px;
+    color: #b3aa98;
+}
+.move .sum-total b {
+    font-size: 19px;
+    font-weight: bold;
+    color: var(--gold-bright);
+    padding-right: 3px;
+}
+.move .sum-total i {
+    font-style: italic;
+    color: #9d7b6a;
+    font-size: 11.5px;
+}
+/* An Extra Move's sum sits under its own dashed rule already; a solid one
+   on top of that reads as two lines drawn by mistake. */
+.move.extra .msum { border-top-color: rgba(228, 193, 74, .22); }
+
+/* ---- the purse ------------------------------------------------------
+   Setting the Gold Forged Armour Set. Two buttons for whether, one box for
+   how much, and a line underneath that works the choice through on a hit of
+   fifty -- because "up to 30 coins" is an abstraction and "30 coins and 20
+   health" is the thing actually being decided.
+   ---------------------------------------------------------------------- */
+
+.purse { margin-top: 4px; }
+.purse-choice { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.purse-set {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    font-size: 13.5px;
+    color: #b3aa98;
+}
+.purse-set[hidden] { display: none; }
+.purse-set label { color: #b3aa98; }
+.purse-set input {
+    width: 92px;
+    padding: 8px 10px;
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-size: 16px;
+    text-align: center;
+    color: var(--gold-bright);
+    background: #100e0b;
+    border: 1px solid var(--panel-edge);
+    border-radius: 8px;
+}
+.purse-set input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(217, 163, 92, .16);
+}
+.purse-set input::placeholder { color: #6d6558; font-size: 13px; }
+
+.purse-say {
+    margin-top: 14px;
+    padding: 11px 13px;
+    border-radius: 9px;
+    background: rgba(217, 163, 92, .07);
+    border: 1px solid rgba(217, 163, 92, .2);
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #b3aa98;
+}
+.purse-say b { color: var(--gold-bright); }
+
 /* ---- merchant -------------------------------------------------------- */
 
 .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
@@ -2413,10 +2519,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
+    /* It is a button: the square you want is the thing you are already
+       looking at, so it is the thing you press. */
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
     opacity: .9;
     transition: transform .16s ease, opacity .16s ease, box-shadow .16s ease;
     animation: landing-in .26s cubic-bezier(.2, .9, .3, 1) both;
+}
+.landing:hover, .landing:focus-visible {
+    outline: none;
+    opacity: 1;
+    transform: scale(1.16);
+    border-style: solid;
 }
 @keyframes landing-in {
     from { transform: scale(.55); opacity: 0; }
@@ -2446,7 +2562,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     text-shadow: 0 1px 2px #000;
 }
 
-/* the one being pointed at */
+/* the one being pointed at -- from the bar below or on the board itself */
 .landing.on {
     opacity: 1;
     transform: scale(1.16);
@@ -3075,7 +3191,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             starterArmour: 'rusted_armour',
             moves: [
                 { id: 'light_swing', name: 'Light Swing', damage: 10, energy: 1 },
-                { id: 'heavy_swing', name: 'Heavy Swing', damage: 50, energy: 5 }
+                { id: 'heavy_swing', name: 'Heavy Swing', damage: 60, energy: 5 }
             ],
             ability: {
                 id: 'strength_up',
@@ -3126,10 +3242,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             ability: {
                 id: 'illusion',
                 name: 'Illusion',
-                text: 'Roll a die. On an even number, conjure a Swarm of Bats and choose ' +
-                      'another player to fight it. The conjured swarm hits for 15 more ' +
-                      'and has 20 less health than a real one — 55. They lose their turn ' +
-                      'and receive only the coins.'
+                // Written out below, once the swarm and the rules it is
+                // worked out from have both been declared. Quoting a number
+                // in a sentence written above the thing it comes from is how
+                // a card ends up lying about the game it is part of.
+                text: ''
             },
             colour: '#5c8fc4'
         }
@@ -3516,12 +3633,12 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             id: 'swarm_of_bats',
             name: 'Swarm of Bats',
             crest: { initials: 'SB', tint: '#6d5f8c' }, pic: 'bats',
-            hp: 75,
+            hp: 90,
             defence: 0,
             placeholder: true,           // PLACEHOLDER — no profile card exists for this fight
             moves: [
                 { id: 'bite', name: 'Bite', damage: 30, energy: 1 },
-                { id: 'frenzy', name: 'Frenzy', damage: 60, energy: 5 }
+                { id: 'frenzy', name: 'Frenzy', damage: 75, energy: 5 }
             ]
         },
         seraphina: {
@@ -3546,7 +3663,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             noIllusion: true,
             moves: [
                 { id: 'club_bash', name: 'Club Bash', damage: 40, energy: 1 },
-                { id: 'heavy_wack', name: 'Heavy Wack', damage: 60, energy: 5 }
+                { id: 'heavy_wack', name: 'Heavy Wack', damage: 80, energy: 5 }
             ]
         },
         goblin_hideout: {
@@ -3824,7 +3941,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                   'battle (requires the same amount of energy as Fenrirak).'
         },
         great_bulging_broadsword: {
-            id: 'great_bulging_broadsword', name: 'Great Bulging Broadsword',
+            // The id is the old name and stays that way: it is written into
+            // saved games and into the Crimson Keep's stock list, and renaming
+            // a thing on the card is not the same as renaming it underneath.
+            id: 'great_bulging_broadsword', name: 'Flaming Arming Sword',
             kind: 'weapon', subtype: 'sword', treasure: true, keep: 'knight',
             attack: 30, text: 'Do 30 more damage.'
         },
@@ -4192,7 +4312,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // A Mage's conjured swarm is not the real animal.
         illusionDamageBoost: 15,
         // The conjured swarm is worked out from the real one, so raising
-        // the swarm's health raises the illusion's with it -- 75 - 20 = 55.
+        // the swarm's health raises the illusion's with it.
         illusionHpDrop: 20,
         startingEnergy: 1,
         rawSteakHeal: 5,
@@ -4201,6 +4321,20 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         foodPoisoningRoll: 3,
         steakRolls: [2, 4, 6]
     };
+
+    /* The Illusion card quotes the conjured swarm's health, which is the real
+       swarm's less what the rules take off it. Worked out here rather than
+       written into the sentence, so that changing the swarm changes the card
+       with it -- the card said 55 for a long time after the swarm stopped
+       having 75 health, which is exactly the sort of quiet lie a printed
+       number becomes. */
+    CLASSES.mage.ability.text =
+        'Roll a die. On an even number, conjure a Swarm of Bats and choose ' +
+        'another player to fight it. The conjured swarm hits for ' +
+        RULES.illusionDamageBoost + ' more and has ' + RULES.illusionHpDrop +
+        ' less health than a real one — ' +
+        Math.max(1, ENEMIES.swarm_of_bats.hp - RULES.illusionHpDrop) +
+        '. They lose their turn and receive only the coins.';
 
     global.LOF_DATA = {
         CLASSES, CLASS_ORDER, ENEMIES, ITEMS, TREASURE_POOL, CHEST_POOL,
@@ -4290,8 +4424,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return a;
     }
 
+    /* Every line is numbered as it is written, and the number never comes
+       round again. The log itself is trimmed to its last hundred and twenty,
+       so a line's position in the array is not a fixed thing to point at --
+       anything that wants to say "from here onwards" has to hold a number
+       rather than an index. The battle panel does exactly that. */
     function log(state, text, tone) {
-        state.log.push({ t: text, tone: tone || 'info', at: Date.now() });
+        state.logSeq = (state.logSeq | 0) + 1;
+        state.log.push({ t: text, tone: tone || 'info', at: Date.now(), n: state.logSeq });
         if (state.log.length > 120) state.log.splice(0, state.log.length - 120);
     }
 
@@ -4325,22 +4465,54 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return (p.buffs || []).reduce((n, b) => n + (b.kind === kind ? b.value : 0), 0);
     }
 
+    /* ---- the two sums --------------------------------------------------
+       What a blow comes to is a short piece of arithmetic, and the panel that
+       asks you to choose a move now shows that arithmetic rather than only its
+       answer. So each sum is written out as its own line items, and the total
+       is the sum of those items rather than a second calculation standing
+       beside them: `totalAttackBonus` adds up exactly what the player is shown
+       being added up. Nothing can be in one and not the other.
+
+       Each item is { label, value }. `sum` is the only way either total is
+       arrived at.
+       ------------------------------------------------------------------- */
+
+    function sum(parts) {
+        return parts.reduce((n, x) => n + x.value, 0);
+    }
+
+    function buffParts(p, kind, fallback) {
+        return (p.buffs || [])
+            .filter(b => b.kind === kind && b.value)
+            .map(b => ({ label: b.from || fallback, value: b.value }));
+    }
+
     // Defence reduces damage taken: class defence + armour + any defence buffs.
-    function totalDefence(state, p) {
+    function defenceParts(state, p) {
         const cls = D.CLASSES[p.cls];
         const armour = defOf(equippedArmour(p));
-        return (cls ? cls.defence : 0) +
-               (armour && armour.defence ? armour.defence : 0) +
-               buffTotal(p, 'defence');
+        const out = [];
+        if (cls && cls.defence) out.push({ label: cls.name, value: cls.defence });
+        if (armour && armour.defence) out.push({ label: armour.name, value: armour.defence });
+        return out.concat(buffParts(p, 'defence', 'a power-up'));
+    }
+
+    function totalDefence(state, p) {
+        return sum(defenceParts(state, p));
     }
 
     // Attack bonus added to any move that already deals damage.
-    function totalAttackBonus(p) {
+    function attackParts(p) {
         const weapon = defOf(equippedWeapon(p));
         const armour = defOf(equippedArmour(p));
-        return (weapon && weapon.attack ? weapon.attack : 0) +
-               (armour && armour.attack ? armour.attack : 0) +
-               buffTotal(p, 'damage');
+        const out = [];
+        if (weapon && weapon.attack) out.push({ label: weapon.name, value: weapon.attack });
+        if (armour && armour.attack) out.push({ label: armour.name, value: armour.attack });
+        return out.concat(buffParts(p, 'damage', 'a power-up'));
+    }
+
+    function totalAttackBonus(p) {
+        return sum(attackParts(p));
     }
 
     // Modifier applied to every dice roll this player makes. This is the
@@ -4407,9 +4579,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return true;
     }
 
-    function addBuff(p, kind, value, uses) {
+    // `from` is what to call it when the sum is shown to the player. Buffs
+    // written before this existed have none, and are shown as a plain bonus.
+    function addBuff(p, kind, value, uses, from) {
         p.buffs = p.buffs || [];
-        p.buffs.push({ kind: kind, value: value, uses: uses });
+        p.buffs.push({ kind: kind, value: value, uses: uses, from: from || null });
     }
 
     /* ------------------------------------------------------------------ */
@@ -4550,6 +4724,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             extraRun: null,       // a multi-turn Extra Move part way through
             payInCoins: true,     // Gold Forged Armour Set: pay in coins first
             lastAbilityTurn: -99,
+            // The Gold Forged Armour Set, if they ever wear one: the whole of
+            // each hit out of the purse, which is what the card describes.
+            coinCap: null,
             pendingIllusion: null,
             path: [],
             movesLeft: 0,
@@ -5072,8 +5249,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
             case 'crimson_keep': {
                 // The Keep holds six, two to a class, and shows you only your
-                // own pair: a Knight chooses between the Great Bulging
-                // Broadsword and the Dark Iron Armour and nothing else.
+                // own pair: a Knight chooses between the Flaming Arming
+                // Sword and the Dark Iron Armour and nothing else.
                 const cls = D.CLASSES[p.cls];
                 const options = D.TREASURE_POOL.filter(id => D.ITEMS[id].keep === p.cls);
                 state.pending = {
@@ -5160,6 +5337,10 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             lastRoll: null
         };
         log(state, p.name + ' faces ' + D.foeName(e) + '!', 'battle');
+        // Where this fight's own log begins. Stamped after the line that
+        // announces it, so the battle panel opens empty and fills with
+        // nothing but the fight -- see renderBattleModal.
+        state.battle.logFrom = state.logSeq | 0;
         return ok();
     }
 
@@ -5185,6 +5366,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             lastRoll: null
         };
         log(state, a.name + ' and ' + b.name + ' clash on ' + square(a.pos).name + '!', 'battle');
+        state.battle.logFrom = state.logSeq | 0;
         return ok();
     }
 
@@ -5386,7 +5568,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 
         // Energy Barrier does no damage: it puts a wall up for a turn.
         if (extra && extra.shield) {
-            addBuff(p, 'defence', extra.shield, 1);
+            addBuff(p, 'defence', extra.shield, 1, extra.name);
             log(state, p.name + ' raises an ' + extra.name + ' — ' + extra.shield +
                        ' less damage for a turn.', 'item');
             noteExtraUse(p, extra);
@@ -5511,17 +5693,34 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const dealt = Math.max(0, raw - totalDefence(state, target));
         if (!dealt) return 0;
 
+        /* The Gold Forged Armour Set: the hit comes out of the purse instead
+           of out of you, coin for point.
+
+           How much of it goes that way is the wearer's own instruction, set
+           whenever they like and standing until they change it. `coinCap` is
+           the most it will spend on any one blow -- missing means all of it,
+           which is what the card describes and what the setting starts at. A
+           number caps it, and whatever the purse does not cover is taken as
+           damage in the ordinary way. That way the two figures are both the
+           player's to choose: say what the gold is and the health is the rest
+           of it, which is the same choice from the other end. */
         const armour = defOf(equippedArmour(target));
         if (armour && armour.payInCoins && target.payInCoins !== false && target.coins > 0) {
-            const paid = Math.min(target.coins, dealt);
-            target.coins -= paid;
-            log(state, target.name + ' pays ' + paid + ' coins instead of losing health.',
-                'item');
+            const cap = coinCapOf(target);
+            const paid = Math.min(target.coins, dealt, cap);
+            if (paid > 0) {
+                target.coins -= paid;
+                log(state, target.name + ' pays ' + paid + ' coins instead of losing health.',
+                    'item');
+            }
             const spill = dealt - paid;
             if (spill > 0) {
                 target.hp = Math.max(0, target.hp - spill);
-                log(state, target.name + ' runs out of coins and takes the last ' +
-                           spill + ' as damage.', 'muted');
+                log(state, target.name + (paid > 0
+                        ? (target.coins > 0
+                            ? ' takes the other ' + spill + ' as damage.'
+                            : ' runs out of coins and takes the last ' + spill + ' as damage.')
+                        : ' takes the whole ' + spill + ' as damage.'), 'muted');
             }
             return dealt;
         }
@@ -5697,11 +5896,11 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 log(state, p.name + ' gains ' + def.value + ' energy.', 'item');
                 break;
             case 'damage':
-                addBuff(p, 'damage', def.value, 1);
+                addBuff(p, 'damage', def.value, 1, def.name);
                 log(state, p.name + ' will do ' + def.value + ' more damage on their next move.', 'item');
                 break;
             case 'defence':
-                addBuff(p, 'defence', def.value, 99);   // cleared at end of turn
+                addBuff(p, 'defence', def.value, 99, def.name);  // cleared at end of turn
                 log(state, p.name + ' will take ' + def.value + ' less damage this turn.', 'item');
                 break;
             case 'dice':
@@ -5886,7 +6085,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             p.agileBonus = 2;
             log(state, p.name + ' is agile — +2 to this movement roll.', 'item');
         } else if (cls.ability.id === 'strength_up') {
-            addBuff(p, 'damage', 20, 2);
+            addBuff(p, 'damage', 20, 2, cls.ability.name);
             log(state, p.name + ' surges with strength — +20 damage for 2 moves.', 'item');
         } else if (cls.ability.id === 'illusion') {
             const targetId = payload && payload.targetPlayerId;
@@ -5903,15 +6102,45 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         return ok();
     }
 
-    // The Gold Forged Armour Set says you *may* pay in coins. Being asked on
-    // every hit would be unbearable, so it is a standing choice the wearer
-    // can flip whenever they like.
-    function payInCoins(state, pid, on) {
+    // Missing means the whole hit, which is what the card describes.
+    function coinCapOf(p) {
+        const cap = p.coinCap;
+        return (cap === null || cap === undefined) ? Infinity : Math.max(0, cap | 0);
+    }
+
+    /* The Gold Forged Armour Set says you *may* pay in coins, and this is where
+       you say. Being asked on every single blow would be unbearable -- a fight
+       is already four presses a round -- so it is a standing instruction the
+       wearer sets whenever they like and changes as often as they like,
+       including in the middle of a fight.
+
+       `cap` is the most it will spend on one blow: missing or null for the
+       whole of it, or a number. Saying how much gold to lose is the same thing
+       as saying how much damage to take, from the other end, so there is one
+       figure to set rather than two that could disagree. */
+    function payInCoins(state, pid, on, cap) {
         const p = player(state, pid);
         if (!p) return fail('Unknown player.');
         p.payInCoins = !!on;
-        log(state, p.name + ' will pay for hits in ' + (on ? 'coins' : 'health') +
-                   ' while the Gold Forged Armour Set holds.', 'item');
+        if (cap === undefined) {
+            // left alone
+        } else if (cap === null || cap === false) {
+            p.coinCap = null;
+        } else {
+            const n = Math.max(0, Math.floor(Number(cap) || 0));
+            p.coinCap = n;
+        }
+
+        if (!on) {
+            log(state, p.name + ' will take hits as damage while the Gold Forged ' +
+                       'Armour Set holds.', 'item');
+        } else if (p.coinCap === null || p.coinCap === undefined) {
+            log(state, p.name + ' will pay for hits in coins, as much as it takes, ' +
+                       'while the Gold Forged Armour Set holds.', 'item');
+        } else {
+            log(state, p.name + ' will pay up to ' + p.coinCap + ' coins a hit and take ' +
+                       'the rest as damage, while the Gold Forged Armour Set holds.', 'item');
+        }
         return ok();
     }
 
@@ -6237,7 +6466,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         equip:         (s, pid, a) => equip(s, pid, a.uid),
         useAbility:    (s, pid, a) => useAbility(s, pid, a),
         buy:           (s, pid, a) => buy(s, pid, a.kind, a.id),
-        payInCoins:    (s, pid, a) => payInCoins(s, pid, a.on),
+        payInCoins:    (s, pid, a) => payInCoins(s, pid, a.on, a.cap),
         setPaused:     (s, pid, a) => setPaused(s, pid, a.on),
         resolvePending:(s, pid, a) => resolvePending(s, pid, a.choice),
         proposeTrade:  (s, pid, a) => proposeTrade(s, pid, a.toId, a.give, a.want),
@@ -6296,7 +6525,8 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         proposeTrade, respondTrade, cancelTrade, collapse, closeGame,
         fragmentsOf, suitsClass,
         totalDefence, totalAttackBonus, diceModifier, diceChoosable,
-        equippedWeapon, equippedArmour, player, square, previewWalk, uid, d6
+        equippedWeapon, equippedArmour, player, square, previewWalk,
+        attackParts, defenceParts, uid, d6
     };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -8328,6 +8558,23 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // read. A die must not be thrown during either.
         let pending = 0, showing = false;
 
+        /* Nothing on the table: no die lying on the screen, and nobody being
+           called to roll one.
+
+           This waits on both of them together and keeps asking, rather than
+           waiting for one and then the other. Chaining two one-shot waits
+           looked right and was not: a card being called down *throws a die as
+           it goes* -- that is the entire point of it -- so "wait until no die
+           is on the screen, then wait for the card" ends by handing the turn
+           card a screen with a die newly thrown onto it, which is exactly the
+           thing being guarded against. The order the two come free in is not
+           fixed, so the question has to be asked again each time rather than
+           answered once. */
+        function whenTableClear(fn) {
+            if (!DICE.onScreen() && !ROLL_CALL.busy()) { fn(); return; }
+            setTimeout(() => whenTableClear(fn), 140);
+        }
+
         function build() {
             if (back) return;
             back = document.createElement('div');
@@ -8402,7 +8649,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 // Behind the die on the screen, and behind anybody being
                 // called to roll -- a throw announced in the same instant the
                 // turn changed hands would otherwise be named underneath this.
-                DICE.whenGone(() => ROLL_CALL.whenFree(() => {
+                whenTableClear(() => {
                     pending = Math.max(0, pending - 1);
                     const now = E.currentPlayer(S);
                     // The game moved on another turn while this waited, so
@@ -8411,7 +8658,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     // would ever be allowed to throw a die again.
                     if (!now || (S.turnNo | 0) + '/' + now.id !== key) return;
                     play(now, now.id === NET.PID);
-                }));
+                });
             }
         };
     })();
@@ -10594,8 +10841,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         const aInst = E.equippedArmour(p);
         const aItem = aInst ? D.ITEMS[aInst.id] : null;
         if (aItem && aItem.payInCoins) {
-            buttons.push(btn('a-coinpay',
-                p.payInCoins === false ? 'Paying in health' : 'Paying in coins', '', false));
+            buttons.push(btn('a-coinpay', purseLabel(p), '', !!S.paused));
         }
         buttons.push(btn('a-steak-raw', 'Eat raw steak', '',
             p.steaks.raw < 1 || !!S.paused));
@@ -10642,7 +10888,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                                          { type: 'raw' }, 'A 3 is food poisoning.'));
         bind('a-steak-cooked', () => act('eatSteak', { type: 'cooked' }));
         bind('a-end', () => act('endTurn', {}));
-        bind('a-coinpay', () => act('payInCoins', { on: p.payInCoins === false }));
+        bind('a-coinpay', () => { openPanel = 'purse'; renderModal(); });
         bind('a-close', confirmCloseGame);
         bind('a-leave', leaveRoom);
         bind('a-pause', () => act('setPaused', { on: !S.paused }));
@@ -10843,6 +11089,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         // and your coins and his stock have to come down as you spend. It is a
         // list rather than a form, so there is nothing to lose by redrawing --
         // only where you had scrolled to, which is put back.
+        if (openPanel === 'purse') return openPurse();
         if (openPanel === 'merchant') {
             const keep = $('#modal-back').scrollTop;
             renderMerchant();
@@ -10990,6 +11237,15 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                         // it came off, because it is not one of your class moves.
                         (m.extra ? '<div class="mextra">' + esc(m.note) +
                             '<br><i>off the ' + esc(m.from) + '</i></div>' : '') +
+                        // and what it actually comes to, once everything on
+                        // both sides has been counted
+                        // Whoever is on the other end of it. In a fight
+                        // between players `foe` is always the b side, which is
+                        // you when you are the b side -- the sum would then be
+                        // taking your own defence off your own blow.
+                        damageSumHtml(p, m,
+                            isPvp ? E.player(S, NET.PID === b.aId ? b.bId : b.aId) : foe,
+                            isPvp) +
                         '</button>').join('') + '</div>';
             }
         }
@@ -11015,15 +11271,36 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                     : '') +
                 (p.steaks.cooked > 0 ? '<button class="btn small" id="b-cooked">Eat seared steak</button>' : '') +
                 (p.steaks.raw > 0 ? '<button class="btn small" id="b-raw">Eat raw steak</button>' : '') +
+                // The set is worth setting mid-fight: it is the only place
+                // its number ever gets spent.
+                (aItemOf(p) && aItemOf(p).payInCoins
+                    ? '<button class="btn small" id="b-purse">' + esc(purseLabel(p)) +
+                      '</button>' : '') +
                 (p.powerups.length ? '<button class="btn small" id="b-pu">Play a power-up</button>' : '') +
                 (p.potions.length ? '<button class="btn small" id="b-po">Drink a potion</button>' : '') +
                 '</div>';
         }
 
+        /* The fight's own log, and nothing else.
+
+           It used to be the last dozen lines of the game log whatever they
+           were about, so a battle opened showing the cards you drew two
+           squares ago and the coins you picked up before that -- and on a
+           short fight it never entirely cleared them out. Each fight now
+           records the line number it began after, and this shows only what
+           was written since. It opens empty, because at that point nothing
+           has happened yet.
+
+           The log down the side of the screen is untouched: that one is the
+           whole game and is meant to be. */
+        const since = b.logFrom | 0;
+        const battleLines = (S.log || []).filter(l => (l.n | 0) > since);
         body += '<h3 style="margin-top:18px">Battle log</h3>' +
             '<div class="log" style="max-height:150px">' +
-            (S.log || []).slice(-12).reverse()
-                .map(l => '<div class="t-' + esc(l.tone) + '">' + esc(l.t) + '</div>').join('') +
+            (battleLines.length
+                ? battleLines.slice(-12).reverse()
+                    .map(l => '<div class="t-' + esc(l.tone) + '">' + esc(l.t) + '</div>').join('')
+                : '<div class="t-muted">Nothing yet — the fight has not started.</div>') +
             '</div>';
 
         showModal(body, false, 'battle');
@@ -11033,6 +11310,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             el.addEventListener('click', () => act('battleAttack', { moveId: el.dataset.move })));
         bind('b-ability', () => rollAct(D.CLASSES[p.cls].ability.name, 'useAbility', {},
                                        'An even number and it works.'));
+        bind('b-purse', () => { openPanel = 'purse'; renderModal(); });
         bind('b-cooked', () => act('eatSteak', { type: 'cooked' }));
         bind('b-raw', () => rollAct('a Raw Steak', 'eatSteak',
                                     { type: 'raw' }, 'A 3 is food poisoning.'));
@@ -11248,12 +11526,26 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const sq = slot ? slot.parentNode : null;
             if (!sq) return;
 
-            const el = document.createElement('div');
+            /* A button, not a picture. Being told "your piece would be
+               here" and then having to go back down to the bar to find the
+               number that puts it there is a step that need not exist: the
+               square you want is the thing you are already pointing at, so
+               that is the thing to press. A square reached by more than one
+               number takes the smallest, which is the one that gets you there
+               without spending bonus you might want to keep -- and they all
+               land on the same square anyway. */
+            const el = document.createElement('button');
+            el.type = 'button';
             el.className = 'landing' +
                 (m.outcome === 'zapped' ? ' danger' :
                  m.outcome === 'stopped' ? ' stopped' :
                  m.outcome === 'optional' ? ' optional' : '');
             el.dataset.ns = m.ns.map(t => t.n).join(',');
+            const take = m.ns.reduce((a, t) => (t.n < a.n ? t : a), m.ns[0]);
+            el.dataset.take = take.n;
+            el.title = 'Move ' + take.total +
+                (take.n ? ' (' + (take.n > 0 ? '+' : '') + take.n + ')' : '');
+            el.setAttribute('aria-label', el.title);
             el.style.backgroundImage = 'url(\'' + esc(D.CLASSES[p.cls].art) + '\')';
             /* One number, or two, or -- when a square catches a whole run of
                them, as a STOP square does to everything that would have gone
@@ -11319,6 +11611,67 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             left: 0,
             behavior: 'smooth'
         });
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* What the blow comes to                                              */
+    /*                                                                     */
+    /* A move used to offer its printed damage and leave you to work out    */
+    /* the rest -- the sword, the power-up still standing, the Strength Up  */
+    /* you spent last turn, and whatever the other side's defence takes off */
+    /* the end. That is four or five numbers to hold in your head while     */
+    /* choosing between two buttons, and the game already knows every one   */
+    /* of them.                                                             */
+    /*                                                                     */
+    /* So each move shows its sum: the line of working, and the answer      */
+    /* underneath it. The parts come from the engine (E.attackParts,        */
+    /* E.defenceParts) and the totals over there are made by adding those   */
+    /* same parts up -- so what is shown being added is exactly what is     */
+    /* added, and a new piece of gear appears in the working the day it     */
+    /* appears in the game, without anything here being told about it.      */
+    /* ------------------------------------------------------------------ */
+
+    function damageSumHtml(p, move, foe, isPvp) {
+        if (!move.damage) return '';        // the Energy Barrier and its like
+
+        const parts = E.attackParts(p);
+        const guard = isPvp ? E.defenceParts(S, foe)
+                            : (foe.defence ? [{ label: foe.name, value: foe.defence }] : []);
+        const defence = guard.reduce((n, x) => n + x.value, 0);
+
+        /* The Dark Spirits Set throws a die of its own on every attack -- even
+           is +15, odd is +5 -- so with it on there is no single answer to give
+           yet, only the two the die chooses between. Both are shown. */
+        const armour = E.equippedArmour(p);
+        const spirits = armour && D.ITEMS[armour.id] && D.ITEMS[armour.id].spiritRoll
+                      ? D.ITEMS[armour.id] : null;
+
+        const base = move.damage + parts.reduce((n, x) => n + x.value, 0);
+        const low  = Math.max(0, base + (spirits ? 5 : 0) - defence);
+        const high = Math.max(0, base + (spirits ? 15 : 0) - defence);
+
+        const bit = (sign, label, value) =>
+            '<span class="sum-op">' + sign + '</span>' +
+            '<span class="sum-bit"><b>' + value + '</b> ' + esc(label) + '</span>';
+
+        let working = '<span class="sum-bit"><b>' + move.damage + '</b> base</span>';
+        parts.forEach(x => { working += bit('+', x.label, x.value); });
+        if (spirits) {
+            working += '<span class="sum-op">+</span>' +
+                '<span class="sum-bit"><b>5 or 15</b> ' + esc(spirits.name) +
+                ', on a die</span>';
+        }
+        guard.forEach(x => { working += bit('\u2212', x.label + '\u2019s defence', x.value); });
+
+        const answer = low === high ? low : low + '\u2013' + high;
+        const floored = base + (spirits ? 15 : 0) - defence < 0;
+
+        return '<div class="msum">' +
+            '<div class="sum-working">' + working + '</div>' +
+            '<div class="sum-total"><b>' + answer + '</b> damage' +
+                (floored ? '<i> — their defence stops it dead</i>' : '') +
+            '</div>' +
+        '</div>';
     }
 
     /* ---- pending square choices ---- */
@@ -11483,6 +11836,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 b.addEventListener('focus', on);
                 b.addEventListener('blur', off);
             });
+
+            /* And the other way round: press the square and it presses the
+               number for you. The board is where the decision is actually
+               being made, so it may as well be where it is taken -- the mark
+               hands the click to the button it belongs to rather than sending
+               the action itself, so there is one path out of this panel and
+               not two that have to be kept in step. */
+            $$('.board .landing').forEach(el => {
+                el.addEventListener('mouseenter', () =>
+                    lightLanding(parseInt(el.dataset.take, 10)));
+                el.addEventListener('mouseleave', () => lightLanding(null));
+                el.addEventListener('click', () => {
+                    const btn = $('#modal [data-choice="' + el.dataset.take + '"]');
+                    if (btn) btn.click();
+                });
+            });
         }
 
         $$('#modal [data-choice]').forEach(b => b.addEventListener('click', () => {
@@ -11500,6 +11869,112 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             }
             act('resolvePending', { choice: c });
         }));
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* The purse                                                           */
+    /*                                                                     */
+    /* The Gold Forged Armour Set turns a hit into a bill. Whether it does  */
+    /* and how much of the hit it takes are both the wearer's to say, and   */
+    /* they are the same choice from two ends: the coins you spend are the  */
+    /* damage you do not take. So there is one number to set, and both      */
+    /* sides of it are shown as you set it.                                 */
+    /*                                                                     */
+    /* A standing instruction rather than a question on every blow. A fight */
+    /* is already several presses a round and stopping it dead to ask       */
+    /* "how much of this one?" would wear thin by the second exchange --    */
+    /* this can be changed as often as you like, in a fight or out of one,  */
+    /* and it applies from the next hit onwards.                            */
+    /* ------------------------------------------------------------------ */
+
+    function openPurse() {
+        const p = me();
+        const on = p.payInCoins !== false;
+        const cap = (p.coinCap === null || p.coinCap === undefined) ? '' : p.coinCap;
+
+        showModal('<h2>The Gold Forged Armour Set</h2>' +
+            '<div class="sub">Instead of losing health you may lose coins, ' +
+                'one coin for every point. You have <b>' + p.coins + '</b>.</div>' +
+            '<div class="purse">' +
+                '<div class="purse-choice">' +
+                    '<button class="btn' + (on ? ' primary' : '') + '" id="purse-on">' +
+                        'Pay in coins</button>' +
+                    '<button class="btn' + (on ? '' : ' primary') + '" id="purse-off">' +
+                        'Take it as damage</button>' +
+                '</div>' +
+                '<div class="purse-set"' + (on ? '' : ' hidden') + '>' +
+                    '<label for="purse-cap">At most</label>' +
+                    '<input id="purse-cap" type="number" min="0" step="1" ' +
+                        'inputmode="numeric" placeholder="all of it" value="' + cap + '">' +
+                    '<span>coins a hit \u2014 the rest comes off your health.</span>' +
+                '</div>' +
+                '<div class="purse-say" id="purse-say"></div>' +
+            '</div>' +
+            '<div class="modal-actions">' +
+                '<button class="btn primary" id="purse-save">Done</button>' +
+                '<button class="btn" id="purse-cancel">Back</button>' +
+            '</div>', true, 'purse');
+
+        const input = $('#purse-cap');
+        let want = on;
+
+        /* Worked through on a hit of fifty, because an abstract "up to 30" is
+           hard to picture and "30 coins and 20 health" is not. Fifty is about
+           what a heavy blow lands for once defence has had its say. */
+        const EXAMPLE = 50;
+        function say() {
+            const el = $('#purse-say');
+            if (!want) {
+                el.innerHTML = 'Every hit comes off your health and your coins are ' +
+                    'left alone.';
+                return;
+            }
+            const raw = input.value.trim();
+            const n = raw === '' ? Infinity : Math.max(0, Math.floor(Number(raw) || 0));
+            const paid = Math.min(p.coins, EXAMPLE, n);
+            const hurt = EXAMPLE - paid;
+            // The purse is only worth mentioning when it is the thing doing
+            // the limiting -- saying "you only have 120 coins" about a cap
+            // of 500 on a hit of 50 is true and beside the point.
+            const short = p.coins < Math.min(EXAMPLE, n);
+            el.innerHTML = 'A hit of ' + EXAMPLE + ' would cost you ' +
+                '<b>' + paid + ' coins</b> and <b>' + hurt + ' health</b>' +
+                (short ? ' — your ' + p.coins + ' coins will not cover more.' : '.');
+        }
+
+        function pick(next) {
+            want = next;
+            $('#purse-on').classList.toggle('primary', want);
+            $('#purse-off').classList.toggle('primary', !want);
+            $('.purse-set').hidden = !want;
+            say();
+        }
+
+        bind('purse-on', () => pick(true));
+        bind('purse-off', () => pick(false));
+        input.addEventListener('input', say);
+        say();
+
+        bind('purse-cancel', () => { openPanel = null; renderModal(); });
+        bind('purse-save', () => {
+            const raw = input.value.trim();
+            openPanel = null;
+            act('payInCoins', { on: want, cap: raw === '' ? null : Number(raw) });
+        });
+    }
+
+    // What the button says it is doing, in as few words as it can.
+    // The armour on somebody's back, as its card rather than as the copy in
+    // their bag -- asked for in two places now.
+    function aItemOf(p) {
+        const inst = p && E.equippedArmour(p);
+        return inst ? D.ITEMS[inst.id] : null;
+    }
+
+    function purseLabel(p) {
+        if (p.payInCoins === false) return 'Paying in health';
+        if (p.coinCap === null || p.coinCap === undefined) return 'Paying in coins';
+        return 'Paying ' + p.coinCap + ' a hit';
     }
 
     /* ---- merchant ---- */
