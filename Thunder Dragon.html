@@ -2277,6 +2277,213 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .rolled i { border-radius: 50%; background: transparent; }
 .rolled i.on { background: #24211c; }
 
+/* ---- how far should it carry you -------------------------------------
+   The die is already on the table and the only thing left to say is how far
+   it should take you. That is a question about the board -- whether the
+   extra one lands you on the Chest or carries you past it into a fight --
+   and it used to be asked with the board hidden behind the panel asking it,
+   which left you counting squares in your head.
+
+   So this one question steps out of the middle of the screen and sits along
+   the foot of it, with no dim and no blur over anything: the board stays
+   whole, lit and moving above the bar. And the answer is drawn where the
+   question is -- see .landing below.
+   ---------------------------------------------------------------------- */
+
+.modal-back.dock {
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
+    /* Nothing over the board catches the mouse; only the bar itself does.
+       Without this the whole screen would be a dead sheet of glass laid over
+       a board the player has just been invited to look at. */
+    pointer-events: none;
+}
+.modal-back.dock .modal {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 940px;
+    max-height: none;
+    overflow: visible;
+    padding: 13px 18px;
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+    /* Deeper than the ordinary panel's, because this one has a lit board
+       right behind it rather than a darkened one. */
+    box-shadow: 0 -18px 50px -18px #000, 0 -1px 0 rgba(217,163,92,.35);
+    animation: bonus-dock-up .34s cubic-bezier(.2, .85, .25, 1);
+}
+@keyframes bonus-dock-up {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
+
+.bonus-dock {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* The die you threw, small: it is a reminder, not the point. */
+.bonus-dock .bonus-die {
+    flex: 0 0 auto;
+    width: 46px; height: 46px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 2px;
+    padding: 6px;
+    background: #f4f1e6;
+    border: 1px solid #cfc7b2;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px -2px rgba(0,0,0,.6);
+}
+/* pipsHtml() writes nine <i>, the lit ones marked -- the same shape the big
+   .rolled die is built from, only smaller. */
+.bonus-dock .bonus-die i { border-radius: 50%; background: transparent; }
+.bonus-dock .bonus-die i.on { background: #24211c; }
+
+.bonus-dock .bonus-say {
+    flex: 1 1 260px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.bonus-dock .bonus-say b {
+    color: var(--cream);
+    font-size: 15px;
+    font-weight: normal;
+}
+.bonus-dock .bonus-say span {
+    color: #9d968a;
+    font-size: 12.5px;
+    line-height: 1.35;
+}
+
+.bonus-dock .bonus-row {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.bonus-dock .bonus-row .btn { padding: 9px 13px; }
+.bonus-dock .bonus-row .btn i {
+    font-style: normal;
+    opacity: .62;
+    font-size: 12px;
+}
+
+/* On a narrow screen the bar stacks, and the numbers get the full width so
+   they stay big enough to hit with a thumb. */
+@media (max-width: 720px) {
+    .bonus-dock .bonus-say { flex-basis: 100%; order: 2; }
+    .bonus-dock .bonus-row { flex-basis: 100%; order: 3; justify-content: stretch; }
+    .bonus-dock .bonus-row .btn { flex: 1 1 auto; }
+}
+
+/* ---- your piece, where each number would put it ----------------------
+   A ghost of your own token on every square you could end this move on,
+   with the number that puts it there written across it. Point at one of the
+   numbers in the bar and its square comes up solid while the rest fade --
+   so the whole question is answered by looking rather than by counting.
+
+   Where each one lands is the engine's own walk with the doing left out, so
+   these obey the STOP squares and the Gate exactly as the real move will.
+   A square that catches more than one number shows them all.
+   ---------------------------------------------------------------------- */
+
+.landing {
+    position: absolute;
+    right: 5px;
+    bottom: 4px;
+    z-index: 6;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background-color: rgba(20, 17, 12, .58);
+    background-size: 78%;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 2px dashed var(--gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: .9;
+    transition: transform .16s ease, opacity .16s ease, box-shadow .16s ease;
+    animation: landing-in .26s cubic-bezier(.2, .9, .3, 1) both;
+}
+@keyframes landing-in {
+    from { transform: scale(.55); opacity: 0; }
+    to   { transform: scale(1);   opacity: .9; }
+}
+
+.landing .landing-n {
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--gold-bright);
+    text-shadow: 0 1px 3px #000, 0 0 8px rgba(0,0,0,.9);
+}
+.landing .landing-n i {
+    font-style: normal;
+    opacity: .5;
+    font-size: 11px;
+    padding: 0 1px;
+}
+.landing .landing-tag {
+    margin-top: 1px;
+    font-size: 7px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #f0d6b0;
+    text-shadow: 0 1px 2px #000;
+}
+
+/* the one being pointed at */
+.landing.on {
+    opacity: 1;
+    transform: scale(1.16);
+    border-style: solid;
+    background-color: rgba(20, 17, 12, .78);
+    box-shadow: 0 0 0 2px rgba(217,163,92,.35), 0 0 18px -2px var(--gold);
+}
+/* and the ones that are not */
+.landing.dim { opacity: .28; }
+
+/* a STOP square, which takes the rest of the roll */
+.landing.stopped { border-color: #d98a4a; }
+.landing.stopped .landing-n { color: #f4b483; }
+
+/* an optional stop -- you will be asked again when you get there */
+.landing.optional { border-color: #6fb2c9; }
+.landing.optional .landing-n { color: #a8dcee; }
+
+/* the Gate without the three fragments: it throws you back to Start */
+.landing.danger {
+    border-color: var(--crimson);
+    background-color: rgba(46, 10, 10, .72);
+}
+.landing.danger .landing-n { color: #ff9d9d; }
+.landing.danger.on {
+    box-shadow: 0 0 0 2px rgba(190,40,40,.4), 0 0 18px -2px var(--crimson);
+}
+
+/* The arena is a disc rather than a card, so the mark sits inside it. */
+.arena .landing { right: 12px; bottom: 12px; }
+
+@media (max-width: 900px) {
+    .landing { width: 32px; height: 32px; right: 3px; bottom: 3px; }
+    .landing .landing-n { font-size: 14px; }
+    .landing .landing-tag { display: none; }
+}
+
 .modal-actions.bonus-row { flex-wrap: wrap; justify-content: center; }
 .modal-actions.bonus-row .btn i {
     font-style: normal;
@@ -4686,45 +4893,89 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     // Every square stepped through is recorded in p.path so the board can walk
     // the token along instead of teleporting it. It is cleared at the start of
     // the next turn.
-    function walk(state, p, steps) {
+    /* Where a walk would take you, without taking it.
+
+       This is the walk itself with the doing left out: it counts the squares,
+       reads the same signs and stops in the same places, but touches nothing.
+       `walk` below is written on top of it rather than beside it, so the two
+       cannot drift apart -- there is only one description of how far a number
+       carries you, and the preview shown on the board is that description
+       rather than a second copy of it that might quietly go wrong.
+
+       Returns where you end up, the squares crossed on the way, whatever is
+       left of the roll, and which of the four things happened:
+
+         landed    the whole roll was walked out
+         stopped   a STOP square took the rest of it
+         optional  a square that may be stopped on, and you must say
+         zapped    the Gate, without the three fragments  */
+    function previewWalk(state, p, steps) {
+        let pos = p.pos;
         let remaining = steps;
-        p.path = [p.pos];
+        const path = [pos];
+        let outcome = 'landed';
+
         while (remaining > 0) {
-            if (p.pos >= D.ARENA_INDEX) break;
-            p.pos += 1;
+            if (pos >= D.ARENA_INDEX) break;
+            pos += 1;
             remaining -= 1;
-            p.path.push(p.pos);
-            const sq = square(p.pos);
+            path.push(pos);
+            const sq = square(pos);
 
             // The Gate stops nobody, but it does not let anyone through
             // without the three fragments -- walking past it is still walking
             // through it.
-            if (remaining > 0 && sq.action === 'gate' && p.keyFragments < D.KEY_FRAGMENTS_NEEDED) {
-                zap(state, p);
-                p.movesLeft = 0;
-                sendToStart(state, p, false);
-                p.path.push(p.pos);
-                return ok();
+            if (remaining > 0 && sq.action === 'gate' &&
+                p.keyFragments < D.KEY_FRAGMENTS_NEEDED) {
+                outcome = 'zapped';
+                break;
             }
 
             // STOP is printed on the square: the rest of the roll is lost.
             if (remaining > 0 && sq.stop) {
-                log(state, sq.name + ' — STOP. ' + p.name + ' goes no further.', 'move');
+                outcome = 'stopped';
                 remaining = 0;
                 break;
             }
 
             if (remaining > 0 && sq.optionalStop) {
-                p.movesLeft = remaining;
-                state.pending = {
-                    type: 'optional_stop',
-                    playerId: p.id,
-                    squareIndex: p.pos,
-                    prompt: sq.name + ' — ' + sq.text
-                };
-                return ok();
+                outcome = 'optional';
+                break;
             }
         }
+
+        return { pos: pos, path: path, remaining: remaining, outcome: outcome };
+    }
+
+    function walk(state, p, steps) {
+        const w = previewWalk(state, p, steps);
+        p.path = w.path;
+        p.pos = w.pos;
+
+        if (w.outcome === 'zapped') {
+            zap(state, p);
+            p.movesLeft = 0;
+            sendToStart(state, p, false);
+            p.path.push(p.pos);
+            return ok();
+        }
+
+        if (w.outcome === 'stopped') {
+            log(state, square(p.pos).name + ' — STOP. ' + p.name +
+                       ' goes no further.', 'move');
+        }
+
+        if (w.outcome === 'optional') {
+            p.movesLeft = w.remaining;
+            state.pending = {
+                type: 'optional_stop',
+                playerId: p.id,
+                squareIndex: p.pos,
+                prompt: square(p.pos).name + ' — ' + square(p.pos).text
+            };
+            return ok();
+        }
+
         p.movesLeft = 0;
         return landOn(state, p);
     }
@@ -6045,7 +6296,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         proposeTrade, respondTrade, cancelTrade, collapse, closeGame,
         fragmentsOf, suitsClass,
         totalDefence, totalAttackBonus, diceModifier, diceChoosable,
-        equippedWeapon, equippedArmour, player, square, uid, d6
+        equippedWeapon, equippedArmour, player, square, previewWalk, uid, d6
     };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -10557,15 +10808,23 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     let shownKey = null;       // what the modal is currently displaying
 
     function closeModal() {
-        $('#modal-back').classList.remove('show');
+        $('#modal-back').classList.remove('show', 'dock');
         $('#modal').innerHTML = '';
+        clearLandings();
         shownKey = null;
     }
 
-    function showModal(html, dismissable, key) {
+    /* `dock` is for the one question that is about the board: it puts the
+       panel down at the foot of the screen instead of in the middle of it,
+       and takes away the dim and the blur, so the board is left whole and
+       lit above it. Everything else asks in the middle, over a darkened
+       board, because everything else is about the cards in your hand. */
+    function showModal(html, dismissable, key, dock) {
         const back = $('#modal-back');
         $('#modal').innerHTML = html;
         back.classList.add('show');
+        back.classList.toggle('dock', !!dock);
+        if (!dock) clearLandings();
         back.dataset.dismissable = dismissable ? '1' : '0';
         shownKey = key || null;
     }
@@ -10919,6 +11178,149 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
         bind('pick-cancel', renderModal);
     }
 
+    /* ------------------------------------------------------------------ */
+    /* Where each number would put you                                     */
+    /*                                                                     */
+    /* The die is on the table and the only question left is how far it     */
+    /* should carry you -- which is a question about the board, and used to */
+    /* be asked with the board hidden behind the panel asking it. Counting  */
+    /* six squares along a track in your head, to work out whether the      */
+    /* extra one lands you on the Chest or past it into a fight, is exactly */
+    /* the sort of thing the board is for.                                  */
+    /*                                                                     */
+    /* So the panel steps down to the foot of the screen and the answer is  */
+    /* drawn where the question is: a ghost of your own piece on every      */
+    /* square you could end up on, with the number that puts it there.      */
+    /* Point at a number and its square lights up; the rest go quiet.       */
+    /*                                                                     */
+    /* Where each one lands is worked out by the engine's own walk, run     */
+    /* with the doing left out (E.previewWalk), so the marks obey the STOP  */
+    /* squares and the Gate exactly as the real move will. A preview that   */
+    /* was a second, separate copy of the rules would be worse than none:   */
+    /* it would be believed, and one day it would be wrong.                 */
+    /* ------------------------------------------------------------------ */
+
+    // Just the marks. Re-marking wipes and redraws, and must not forget
+    // which question they were drawn for while it does.
+    function wipeLandings() {
+        $$('.board .landing').forEach(el => el.remove());
+    }
+
+    // The marks, and the question they belonged to.
+    function clearLandings() {
+        wipeLandings();
+        landingKey = '';
+        bonusTotals = [];
+    }
+
+    // What the buttons are offering, worked out by the modal and read by the
+    // board. Set as the panel is built and cleared with the marks.
+    let bonusTotals = [];
+    let landingKey = '';
+
+    // Worst first: what a mark says when several numbers share its square.
+    const RANK = { landed: 0, optional: 1, stopped: 2, zapped: 3 };
+
+    function markLandings(totals) {
+        wipeLandings();
+        const p = me();
+        if (!p) return;
+
+        // Several numbers can end on the same square -- a STOP square catches
+        // everything that would have gone past it -- so they are gathered by
+        // square first and shown as one mark listing all of them.
+        const bySquare = {};
+        (totals || []).forEach(t => {
+            const w = E.previewWalk(S, p, t.total);
+            const key = w.pos;
+            const m = bySquare[key] || (bySquare[key] = { pos: w.pos, outcome: w.outcome, ns: [] });
+            m.ns.push(t);
+            // A square can be reached several ways -- landed on exactly by one
+            // number and stopped at by the four behind it. The mark takes the
+            // worst of them, so a group that contains the Gate is drawn as the
+            // Gate rather than as whichever number happened to be read first.
+            if (RANK[w.outcome] > RANK[m.outcome]) m.outcome = w.outcome;
+        });
+
+        Object.keys(bySquare).forEach(key => {
+            const m = bySquare[key];
+            const slot = $('.board .tokens[data-i="' + m.pos + '"]');
+            const sq = slot ? slot.parentNode : null;
+            if (!sq) return;
+
+            const el = document.createElement('div');
+            el.className = 'landing' +
+                (m.outcome === 'zapped' ? ' danger' :
+                 m.outcome === 'stopped' ? ' stopped' :
+                 m.outcome === 'optional' ? ' optional' : '');
+            el.dataset.ns = m.ns.map(t => t.n).join(',');
+            el.style.backgroundImage = 'url(\'' + esc(D.CLASSES[p.cls].art) + '\')';
+            /* One number, or two, or -- when a square catches a whole run of
+               them, as a STOP square does to everything that would have gone
+               past it -- the span they cover. Five numbers written out inside
+               a mark the size of a token is a smudge; "2–6" is the same
+               thing said in a way that can be read at a glance. */
+            const ns = m.ns.map(t => t.total);
+            const label = ns.length === 1 ? String(ns[0])
+                        : ns.length === 2 ? ns[1] + '<i>/</i>' + ns[0]
+                        : Math.min.apply(null, ns) + '<i>–</i>' +
+                          Math.max.apply(null, ns);
+
+            const TAG = { zapped: 'the Gate', stopped: 'STOP', optional: 'stop?' };
+            el.innerHTML = '<span class="landing-n">' + label + '</span>' +
+                (TAG[m.outcome]
+                    ? '<span class="landing-tag">' + TAG[m.outcome] + '</span>' : '');
+            sq.appendChild(el);
+        });
+    }
+
+    // Point at a number and only its square is lit.
+    function lightLanding(n) {
+        $$('.board .landing').forEach(el => {
+            const list = (el.dataset.ns || '').split(',');
+            el.classList.toggle('on', n !== null && list.indexOf(String(n)) >= 0);
+            el.classList.toggle('dim', n !== null && list.indexOf(String(n)) < 0);
+        });
+    }
+
+    /* The board is taller than the screen on a lot of them, and the panel has
+       just moved to the bottom of it. A mark drawn off the edge of the view is
+       no use, so the board is brought to where the marks are -- but only if
+       they are not already in front of the player, because moving the page
+       under somebody who can see perfectly well is its own annoyance. */
+    function bringLandingsIntoView() {
+        const marks = $$('.board .landing');
+        if (!marks.length) return;
+
+        // The strip of screen the marks have to live in: under the site's own
+        // bar at the top, above the panel that has just come up at the foot.
+        const dock = $('#modal');
+        const floor = (dock ? dock.getBoundingClientRect().top : window.innerHeight) - 12;
+        const ceiling = 72;
+
+        let top = Infinity, bottom = -Infinity;
+        marks.forEach(el => {
+            const r = el.getBoundingClientRect();
+            top = Math.min(top, r.top);
+            bottom = Math.max(bottom, r.bottom);
+        });
+        top -= 16; bottom += 16;                 // a little air either side
+
+        if (top >= ceiling && bottom <= floor) return;   // all of them in sight
+
+        /* Centre the marks in that strip rather than the board, which on a
+           short window is taller than the strip and cannot all be shown at
+           once -- centring the board would then hide some of the very things
+           the player has been told to look at. Centring the marks keeps every
+           one of them in view whenever they will fit, and when they will not
+           it at least keeps them together in the middle. */
+        window.scrollBy({
+            top: (top + bottom) / 2 - (ceiling + floor) / 2,
+            left: 0,
+            behavior: 'smooth'
+        });
+    }
+
     /* ---- pending square choices ---- */
 
     function renderPendingModal() {
@@ -10935,35 +11337,51 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
             const choosable = pend.choosable || 0;
             const floor = pend.offered - choosable;
 
-            let buttons = '';
-            const shown = [];
-            // Every whole number from the whole offer down to the floor.
-            // With every bonus an "up to", the floor is 0 unless something
-            // is being taken off the roll as well -- the Heavy Armour's -1
-            // is the price of wearing it and cannot be declined, so it is
-            // as low as the buttons go.
-            for (let n = pend.offered; n >= floor; n--) shown.push(n);
-            shown.forEach(n => {
-                const total = Math.max(1, pend.raw + n);
-                buttons += '<button class="btn' + (n === pend.offered ? ' primary' : '') +
-                    '" data-choice="' + n + '">' +
-                    (n === 0 ? 'Keep the ' + pend.raw : 'Move ' + total +
-                        ' <i>(' + (n > 0 ? '+' : '') + n + ')</i>') +
-                    '</button>';
-            });
+            /* Every whole number from the whole offer down to the floor.
+               With every bonus an "up to", the floor is 0 unless something is
+               being taken off the roll as well -- the Heavy Armour's -1 is the
+               price of wearing it and cannot be declined, so it is as low as
+               the buttons go. Kept as a list rather than written straight into
+               the markup, because the board wants the same numbers to draw its
+               marks with. */
+            const totals = [];
+            for (let n = pend.offered; n >= floor; n--) {
+                totals.push({ n: n, total: Math.max(1, pend.raw + n) });
+            }
+            // Kept beside the modal rather than hung on `pend`: in a game
+            // against the computer that object is the engine's own, and the
+            // screen's arithmetic has no business being saved with the game.
+            bonusTotals = totals;
 
-            body = '<h2>You rolled a ' + pend.raw + '</h2>' +
-                '<div class="rolled">' + pipsHtml(pend.raw) + '</div>' +
-                '<div class="sub">' +
-                    (from.length ? esc(from.join(' and ')) + ' ' +
-                        (from.length > 1 ? 'give' : 'gives') + ' you ' +
-                        (choosable > 0 ? 'up to ' + sign + pend.offered : sign + pend.offered) +
-                        ' on top' + (from.length > 1 ? ', and they stack' : '') + '. ' : '') +
-                    'Take as much or as little of it as you like — ' +
-                    'a smaller number is sometimes the one you want, to stop ' +
-                    'short of a fight or to land exactly where you mean to.' +
+            const buttons = totals.map(t =>
+                '<button class="btn' + (t.n === pend.offered ? ' primary' : '') +
+                '" data-choice="' + t.n + '">' +
+                (t.n === 0 ? 'Keep the ' + pend.raw
+                           : 'Move ' + t.total +
+                             ' <i>(' + (t.n > 0 ? '+' : '') + t.n + ')</i>') +
+                '</button>').join('');
+
+            /* Laid out along the bar rather than down a card: the die you
+               threw on the left, what is on offer beside it, and the numbers
+               themselves on the right where the thumb is. The long
+               explanation the middle-of-the-screen version carried is gone --
+               the board is showing it now. */
+            body = '<div class="bonus-dock">' +
+                '<div class="bonus-die">' + pipsHtml(pend.raw) + '</div>' +
+                '<div class="bonus-say">' +
+                    '<b>You rolled a ' + pend.raw + '. How far should it carry you?</b>' +
+                    '<span>' +
+                        (from.length ? esc(from.join(' and ')) + ' ' +
+                            (from.length > 1 ? 'give' : 'gives') + ' you ' +
+                            (choosable > 0 ? 'up to ' + sign + pend.offered
+                                           : sign + pend.offered) +
+                            ' on top' + (from.length > 1 ? ', and they stack' : '') +
+                            '. ' : '') +
+                        'Your piece is drawn on every square you could end on.' +
+                    '</span>' +
                 '</div>' +
-                '<div class="modal-actions bonus-row">' + buttons + '</div>';
+                '<div class="bonus-row">' + buttons + '</div>' +
+            '</div>';
         } else if (pend.type === 'steak_roll') {
             // Nothing is thrown until the button is pressed, so there is
             // deliberately no die shown here yet.
@@ -11030,11 +11448,48 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
                 '<button class="btn danger" data-choice="fight">Fight anyway</button></div>';
         }
 
-        showModal(body, false, 'pending');
+        // The one question that is about the board is asked at the foot of it,
+        // with the board left whole and lit above.
+        const onBoard = pend.type === 'move_bonus';
+        showModal(body, false, 'pending', onBoard);
+
+        if (onBoard) {
+            /* Only when the question itself is new. `renderModal` runs again
+               on every state that arrives, and re-marking would drop the
+               square the player was pointing at while they were pointing at
+               it -- and scrolling the board out from under them a second time
+               would be worse still. */
+            /* Which roll this is, taken from the running number the engine
+               stamps on every throw. Describing the question by its own
+               numbers instead -- the die, the offer, the square -- would look
+               the same for two different rolls that happened to match, and
+               the board would then still be showing the answer to the last
+               one. */
+            const key = (S.dieSeq | 0) + '/' + p.pos;
+            if (key !== landingKey) {
+                landingKey = key;
+                markLandings(bonusTotals);
+                bringLandingsIntoView();
+            }
+            // Point at a number and its square lights up while the others go
+            // quiet. Focus counts as pointing, so this works from the keyboard
+            // as well -- tab along the numbers and watch the board answer.
+            $$('#modal [data-choice]').forEach(b => {
+                const n = parseInt(b.dataset.choice, 10);
+                const on = () => lightLanding(n);
+                const off = () => lightLanding(null);
+                b.addEventListener('mouseenter', on);
+                b.addEventListener('mouseleave', off);
+                b.addEventListener('focus', on);
+                b.addEventListener('blur', off);
+            });
+        }
+
         $$('#modal [data-choice]').forEach(b => b.addEventListener('click', () => {
             let c = b.dataset.choice;
             if (pend.type === 'pot') c = parseInt(c, 10);
             if (pend.type === 'move_bonus') {
+                clearLandings();
                 const n = parseInt(c, 10);
                 c = n === 0 ? false : n;
             }
