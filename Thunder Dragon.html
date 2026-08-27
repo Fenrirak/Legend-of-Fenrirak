@@ -1431,6 +1431,19 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .frag-pick .fp.no:hover { border-color: rgba(255,255,255,.08); }
 
+/* Held, but not tradeable: the other side already carries this one, and the
+   Gate wants three different fragments rather than three fragments. Kept
+   apart from the dashed empty slot above, because this is a fragment that is
+   really there -- it is the trade that is impossible, not the holding. The
+   title on the slot says which. */
+.frag-pick .fp.no.dup {
+    opacity: .6;
+    border-style: solid;
+    border-color: rgba(255,255,255,.07);
+    background: repeating-linear-gradient(
+        -35deg, #1d1d1d 0 6px, #232323 6px 12px);
+}
+
 /* A card being ticked into an offer rather than one being read: a row you
    press, not a paper card. Same family as the chips and the fragment slots
    above it, so one side of a trade reads as one list of things to tick. */
@@ -1500,14 +1513,24 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
    being avoided -- so it is dimmed and taken out of reach instead, and comes
    back the instant the die has been read. */
 body.holding .modal-back[data-key="battle"] .modal button,
-body.holding .modal-back[data-key="battle"] .modal input {
+body.holding .modal-back[data-key="battle"] .modal input,
+body.holding .modal-back[data-key="pending"] .modal button,
+body.holding .modal-back[data-key="pending"] .modal input {
     pointer-events: none;
 }
 body.holding .modal-back[data-key="battle"] .modal .btn,
-body.holding .modal-back[data-key="battle"] .modal .move {
+body.holding .modal-back[data-key="battle"] .modal .move,
+body.holding .modal-back[data-key="pending"] .modal .btn {
     opacity: .45;
     transition: opacity .18s ease;
 }
+
+/* The square panel is the other one that outlives the moment it belongs to.
+   Between choosing how far the die carries you and the walk finishing, it sits
+   there still asking a question it has already been answered -- and a second
+   press of it would be read as an answer to whatever question came next. It is
+   dimmed and taken out of reach for that beat, exactly as the fight panel is,
+   and comes back the instant the board is quiet. */
 
 
 .modal-back {
@@ -6114,9 +6137,18 @@ body.holding .modal-back[data-key="battle"] .modal .move {
     function eatSteak(state, pid, type) {
         const p = player(state, pid);
         if (!p) return fail('Unknown player.');
-        const inBattle = state.battle &&
-            (state.battle.aId === pid || state.battle.bId === pid);
-        if (!isMyTurn(state, pid) && !inBattle) return fail('It is not your turn.');
+        // Eating is not a turn action. You may do it whenever you like, on
+        // anybody's go -- there is nothing about opening your own pack that
+        // has to wait for the die to come round to you.
+        //
+        // The two things it must not cut across are the game being stopped and
+        // a question standing unanswered in front of you: a raw steak throws a
+        // die, and there is no throwing one on top of a square you are still
+        // stood on deciding about.
+        if (state.paused) return { ok: false, error: 'The game is paused.', silent: true };
+        if (state.pending && state.pending.playerId === pid) {
+            return fail('Resolve the square first.');
+        }
 
         if (type === 'cooked') {
             if (p.steaks.cooked < 1) return fail('No seared steak.');
@@ -6447,6 +6479,14 @@ body.holding .modal-back[data-key="battle"] .modal .move {
         const b = player(state, toId);
         if (!a || !b) return fail('Unknown player.');
         if (a.id === b.id) return fail('You cannot trade with yourself.');
+        // Haggling is something you do on your own turn, like everything else
+        // you do at this table. Answering an offer is not -- holding the other
+        // side to their own turn as well would mean no trade could ever be
+        // struck -- so `respondTrade` is deliberately left open.
+        if (state.phase !== 'playing') return fail('The game is not running.');
+        if (!isMyTurn(state, fromId)) return fail('You can only offer a trade on your turn.');
+        if (state.battle) return fail('Finish the battle first.');
+        if (state.pending) return fail('Resolve the square first.');
         if (state.trades.some(t => t.fromId === fromId && t.status === 'open')) {
             return fail('You already have an offer waiting.');
         }
@@ -6457,7 +6497,15 @@ body.holding .modal-back[data-key="battle"] .modal .move {
         };
         if (!validateBundle(a, t.give)) return fail('You do not have everything you offered.');
         if (!validateBundle(b, t.want)) return fail(b.name + ' does not have all of that.');
+        const dup = duplicateFragment(t, a, b);
+        if (dup) return fail(dup);
         state.trades.push(t);
+        // Settled offers are history. The log is capped for the same reason:
+        // every action rewrites the whole room, and a night of haggling should
+        // not make each write heavier than the last.
+        const open = state.trades.filter(x => x.status === 'open');
+        const done = state.trades.filter(x => x.status !== 'open');
+        if (done.length > 12) state.trades = done.slice(-12).concat(open);
         log(state, a.name + ' offers ' + b.name + ' a trade.', 'muted');
         return ok();
     }
@@ -6491,6 +6539,29 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             powerups: (x.powerups || []).slice(),
             potions: (x.potions || []).slice()
         };
+    }
+
+    /* Nobody holds two of the same fragment, so a fragment the other side is
+       already carrying cannot change hands. It used to be quietly dropped on
+       the way past: the fragment stayed where it was and the rest of the trade
+       went through regardless, so a player could be paid in full for handing
+       over something they kept. An offer like that is refused outright now, at
+       both ends, and the trade screen greys the slot out long before it gets
+       this far. */
+    function duplicateFragment(t, from, to) {
+        const theirs = (t.give.fragments || [])
+            .filter(n => fragmentsOf(to).indexOf(n) >= 0);
+        if (theirs.length) {
+            return to.name + ' already carries key fragment ' + theirs.join(' and ') +
+                   ' — a second copy is no use to them.';
+        }
+        const mine = (t.want.fragments || [])
+            .filter(n => fragmentsOf(from).indexOf(n) >= 0);
+        if (mine.length) {
+            return 'You already carry key fragment ' + mine.join(' and ') +
+                   ' — a second copy would be no use to you.';
+        }
+        return null;
     }
 
     function validateBundle(p, bundle) {
@@ -6578,6 +6649,12 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             return ok();
         }
         if (!validateBundle(a, t.give) || !validateBundle(b, t.want)) {
+            t.status = 'void';
+            return fail('The goods have changed — the trade is void.');
+        }
+        // One of them may have won the fragment in question between the offer
+        // being made and it being answered.
+        if (duplicateFragment(t, a, b)) {
             t.status = 'void';
             return fail('The goods have changed — the trade is void.');
         }
@@ -8030,7 +8107,26 @@ body.holding .modal-back[data-key="battle"] .modal .move {
     let ROOM = null;           // room code
     let unsub = null;
     let invTab = 'gear';
-    let openPanel = null;      // 'merchant' | 'trade' | null
+    let openPanel = null;      // 'merchant' | 'trade' | 'purse' | null
+
+    /* A small panel opened on top of whatever else is up: the power-up picker
+       in a fight, the Mage's illusion, the question asking whether you really
+       mean to end the game.
+
+       These are things the player is halfway through answering, and they used
+       to be swept away by the next state that arrived, because `renderModal`
+       closes anything it does not recognise and it did not know about these.
+       On your own you rarely saw it; online, anybody else so much as moving
+       took the panel out from under you mid-decision.
+
+       So each one says what it is and how to draw itself again, and is put back
+       only if something else has taken the screen -- never redrawn on top of
+       itself, which would throw away whatever had been chosen in it. */
+    let overlay = null;        // { key, draw }
+
+    function closeOverlay() {
+        overlay = null;
+    }
 
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -8847,14 +8943,29 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             busy() { return pending > 0 || showing; },
 
             saw(state) {
-                if (!state || state.phase !== 'playing') return;
-                const cur = E.currentPlayer(state);
-                const key = (state.turnNo | 0) + '/' + (cur ? cur.id : '-');
-                // The first snapshot of a room is history, not a turn that
-                // just started -- joining or reloading mid-game should not
-                // announce whichever turn happened to already be under way.
+                if (!state) return;
+                const playing = state.phase === 'playing';
+                const cur = playing ? E.currentPlayer(state) : null;
+                // The lobby and the roll for order are nobody's turn, so they
+                // key as nothing. That matters: it is what makes the first real
+                // turn a change rather than the state of affairs.
+                const key = playing
+                    ? (state.turnNo | 0) + '/' + (cur ? cur.id : '-')
+                    : '';
+                /* The first snapshot of a room is history, not a turn that just
+                   started -- joining or reloading mid-game should not announce
+                   whichever turn happened to already be under way.
+
+                   It is the first snapshot of *any* phase that is taken as
+                   history, though, not the first one that happens to be
+                   playing. This used to give up before the game was under way,
+                   so in a game watched from the lobby the snapshot it swallowed
+                   was the one where turn 1 began, and the opening turn of every
+                   game went unannounced. Coming in from the lobby the key
+                   swallowed is now the empty one, and turn 1 is announced like
+                   every turn after it. */
                 if (!primed) { primed = true; seenKey = key; return; }
-                if (!cur || key === seenKey) return;
+                if (!playing || !cur || key === seenKey) return;
                 seenKey = key;
                 // Not over the top of a die that is still on the screen. The
                 // throw that ended the last turn is often still lying there
@@ -9177,11 +9288,17 @@ body.holding .modal-back[data-key="battle"] .modal .move {
 
         $('#btn-resume').addEventListener('click', async () => {
             NET = SOLO;
+            // Carrying a game on is one press. Without this the button stayed
+            // live across the load and a second press resubscribed on top of
+            // the first -- the other three all guard themselves this way.
+            $('#btn-resume').disabled = true;
             try {
                 enterRoom(await SOLO.resumeRoom());
             } catch (err) {
                 $('#btn-resume').style.display = 'none';
                 notice(err.message || 'There is no game to carry on.');
+            } finally {
+                $('#btn-resume').disabled = false;
             }
         });
 
@@ -9195,6 +9312,10 @@ body.holding .modal-back[data-key="battle"] .modal .move {
     }
 
     async function joinFromInput() {
+        // Enter in the code box comes straight here, so the disabled button is
+        // not on its own enough: holding the key down sent a join for every
+        // repeat. The guard belongs on the way in, where both routes meet.
+        if ($('#btn-join').disabled) return;
         const name = $('#inp-name').value.trim();
         const code = $('#inp-code').value.trim().toUpperCase();
         if (!name) return notice('Please enter a name first.');
@@ -11201,20 +11322,33 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             !mine || blocked || !abilityReady ||
             (cls.ability.id === 'agile' && p.hasMoved)));
         buttons.push(btn('a-shop', 'Visit the Merchant', '', !mine || blocked));
+        // Offering a trade is a turn action like any other. It used to be open
+        // at all times, which read as an invitation and was not one: the panel
+        // cannot come up over a battle or over somebody else's square, so the
+        // button sat there lit and did nothing at all when it was pressed.
         buttons.push(btn('a-trade', 'Propose a trade', '',
-            S.players.length < 2 || !!S.paused || holding));
+            S.players.length < 2 || !mine || blocked));
         // The Gold Forged Armour Set says you *may* pay in coins. Asking on
         // every single hit would be unbearable, so it is a standing choice
         // you can flip whenever you like.
         const aInst = E.equippedArmour(p);
         const aItem = aInst ? D.ITEMS[aInst.id] : null;
         if (aItem && aItem.payInCoins) {
-            buttons.push(btn('a-coinpay', purseLabel(p), '', !!S.paused || holding));
+            buttons.push(btn('a-coinpay', purseLabel(p), '',
+                !!S.paused || holding || !!S.pending || !!S.battle));
         }
+        /* Eating is not a turn action -- you may open your own pack on
+           anybody's go. What it will not do is cut across a question standing
+           in front of you: a raw steak throws a die, and there is no throwing
+           one on top of a square you are still stood on deciding about. That
+           is your own square only; somebody else deciding about theirs is no
+           business of your dinner. */
+        const myPending = !!S.pending && S.pending.playerId === NET.PID;
+        const cannotEat = !!S.paused || holding || myPending;
         buttons.push(btn('a-steak-raw', 'Eat raw steak', '',
-            p.steaks.raw < 1 || !!S.paused || holding));
+            p.steaks.raw < 1 || cannotEat));
         buttons.push(btn('a-steak-cooked', 'Eat seared steak', '',
-            p.steaks.cooked < 1 || !!S.paused || holding));
+            p.steaks.cooked < 1 || cannotEat));
         buttons.push(btn('a-end', 'End turn', '', !mine || blocked));
 
         // The two that end things stand together underneath, matched and
@@ -11230,11 +11364,17 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             '</div>';
 
         box.innerHTML = '<div class="actions">' + buttons.join('') + '</div>' +
-            (blocked && !S.paused
+            /* Why the buttons are grey. Simply not being your go counts: the
+               row used to sit there dimmed and unexplained on everybody
+               else's turn, which reads as something being broken rather
+               than as somebody else's go being under way. */
+            ((!mine || blocked) && !S.paused
                 ? '<div class="muted" style="margin-top:10px;font-size:13px">' +
                   (S.battle ? 'A battle is under way.'
-                     : S.pending ? 'Resolve the square first.'
-                     : 'One thing at a time \u2014 the last roll is still playing out.') +
+                     : S.pending ? (myPending ? 'Resolve the square first.'
+                                              : 'Waiting on the square being resolved.')
+                     : holding ? 'One thing at a time \u2014 the last roll is still playing out.'
+                     : 'Not your turn — you can still eat while you wait.') +
                   '</div>'
                 : '') +
             footer;
@@ -11269,6 +11409,7 @@ body.holding .modal-back[data-key="battle"] .modal .move {
     // sitting in the database: a finished game should not go on costing reads
     // and writes for the rest of time.
     function confirmCloseGame() {
+        overlay = { key: 'close', draw: confirmCloseGame };
         const solo = NET === SOLO;
         showModal('<h2>End the game?</h2>' +
             '<div class="sub">' + (solo
@@ -11279,7 +11420,7 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             '<div class="modal-actions">' +
             '<button class="btn danger" id="close-yes">End it and close the room</button>' +
             '<button class="btn" id="close-no">Keep playing</button></div>', true, 'close');
-        bind('close-no', () => { openPanel = null; renderModal(); });
+        bind('close-no', () => { closeOverlay(); openPanel = null; renderModal(); });
         bind('close-yes', async () => {
             const code = ROOM;
             if (solo) {
@@ -11454,6 +11595,16 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             t.status === 'open' && t.toId === NET.PID);
 
         if (S.battle || S.pending) openPanel = null;
+
+        /* Whatever the player has open on top, they keep -- unless it belonged
+           to a fight that is now over. */
+        if (overlay) {
+            if (overlay.key === 'pick' && !S.battle) overlay = null;
+            else {
+                if (shownKey !== overlay.key) overlay.draw();
+                return;
+            }
+        }
 
         if (S.battle) return renderBattleModal();
         if (S.pending && S.pending.playerId === NET.PID) return renderPendingModal();
@@ -11689,10 +11840,12 @@ body.holding .modal-back[data-key="battle"] .modal .move {
         bind('b-raw', () => rollAct('a Raw Steak', 'eatSteak',
                                     { type: 'raw' }, 'A 3 is food poisoning.'));
         bind('b-pu', () => pickFrom('Play a power-up',
-            p.powerups.map(c => ({ id: c.uid, name: D.POWERUPS[c.id].name, text: D.POWERUPS[c.id].text })),
+            () => (me() || p).powerups.map(c =>
+                ({ id: c.uid, name: D.POWERUPS[c.id].name, text: D.POWERUPS[c.id].text })),
             uid => act('usePowerup', { uid: uid })));
         bind('b-po', () => pickFrom('Drink a potion',
-            p.potions.map(c => ({ id: c.uid, name: D.POWERUPS[c.id].name, text: D.POWERUPS[c.id].text })),
+            () => (me() || p).potions.map(c =>
+                ({ id: c.uid, name: D.POWERUPS[c.id].name, text: D.POWERUPS[c.id].text })),
             uid => act('usePotion', { uid: uid })));
 
         driveEnemyTurn(b);
@@ -11819,15 +11972,19 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             '</div>';
     }
 
+    /* The cards are asked for rather than handed over, so that if the panel
+       has to be put back it is built from what is in hand at that moment
+       rather than what was there when it first opened. */
     function pickFrom(title, options, onPick) {
+        overlay = { key: 'pick', draw: () => pickFrom(title, options, onPick) };
         showModal('<h2>' + esc(title) + '</h2><div class="item-grid">' +
-            options.map(o => '<div class="item">' +
+            options().map(o => '<div class="item">' +
                 paperCardHtml('pink', o.name, o.text || '') +
                 '<button class="btn small" data-pick="' + esc(o.id) + '">Use</button></div>').join('') +
             '</div><div class="modal-actions"><button class="btn" id="pick-cancel">Back</button></div>', true, 'pick');
         $$('#modal [data-pick]').forEach(b =>
-            b.addEventListener('click', () => onPick(b.dataset.pick)));
-        bind('pick-cancel', renderModal);
+            b.addEventListener('click', () => { closeOverlay(); onPick(b.dataset.pick); }));
+        bind('pick-cancel', () => { closeOverlay(); renderModal(); });
     }
 
     /* ------------------------------------------------------------------ */
@@ -12228,7 +12385,24 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             });
         }
 
+        /* Which question this panel is asking. The panel is not redrawn while
+           the table is busy playing out the last thing -- redrawing it is the
+           early reveal being avoided -- so after a choice has been made it can
+           sit there for a moment still showing the question it has already
+           answered. A second press would then put an answer to *this* question
+           to whatever question had taken its place, and the two do not mean the
+           same thing: an "optional_stop" reads anything that is not the word
+           "stop" as "keep walking", so a leftover press of "Move 5" would walk
+           the player on without asking. The stylesheet takes the buttons out of
+           reach while the table is held; this is the belt to that pair of
+           braces, and it is what catches the case where the question changes
+           without the table ever being busy. */
+        const asking = (S.turnNo | 0) + '/' + pend.type + '/' + pend.playerId;
+        const stillAsking = () => !!S.pending &&
+            (S.turnNo | 0) + '/' + S.pending.type + '/' + S.pending.playerId === asking;
+
         $$('#modal [data-choice]').forEach(b => b.addEventListener('click', () => {
+            if (!stillAsking()) return;
             let c = b.dataset.choice;
             if (pend.type === 'pot') c = parseInt(c, 10);
             if (pend.type === 'move_bonus') {
@@ -12425,6 +12599,7 @@ body.holding .modal-back[data-key="battle"] .modal .move {
     /* ---- illusion ---- */
 
     function openIllusion() {
+        overlay = { key: 'illusion', draw: openIllusion };
         const others = S.players.filter(x => x.id !== NET.PID && x.cls);
         // Only the Swarm of Bats can be conjured now, so there is nothing to
         // choose: the illusion is named rather than picked from a list.
@@ -12451,11 +12626,15 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             '<button class="btn primary" id="il-go">Cast (roll even to succeed)</button>' +
             '<button class="btn" id="il-cancel">Cancel</button></div>', true, 'illusion');
 
-        bind('il-go', () => act('useAbility', {
-            enemyId: $('#il-enemy').value,
-            targetPlayerId: $('#il-target').value
-        }));
-        bind('il-cancel', renderModal);
+        bind('il-go', () => {
+            const args = {
+                enemyId: $('#il-enemy').value,
+                targetPlayerId: $('#il-target').value
+            };
+            closeOverlay();
+            act('useAbility', args);
+        });
+        bind('il-cancel', () => { closeOverlay(); renderModal(); });
     }
 
     /* ---- trading ---- */
@@ -12484,8 +12663,11 @@ body.holding .modal-back[data-key="battle"] .modal .move {
         return sq ? sq.name : '';
     }
 
-    function heldHtml(label, n) {
-        return '<span class="hold' + (n ? '' : ' none') + '">' +
+    // `zero` is passed when what is shown is not itself a number -- the
+    // fragments read "1 of 3", and "0 of 3" is still nothing to trade.
+    function heldHtml(label, n, zero) {
+        const none = zero === undefined ? !n : zero;
+        return '<span class="hold' + (none ? ' none' : '') + '">' +
             '<i>' + label + '</i><b>' + n + '</b></span>';
     }
 
@@ -12495,18 +12677,38 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             (max ? '' : ' disabled') + '><i>of ' + max + '</i></label>';
     }
 
-    function fragPickHtml(p, prefix) {
-        const held = E.fragmentsOf ? E.fragmentsOf(p)
-                                   : (p.fragments || []);
+    /* `owner` is the side the fragment would come from and `taker` the side it
+       would go to. Both matter. A slot can only be ticked if the owner has that
+       fragment AND the taker has not: the Gate wants three different ones, so a
+       second copy of one somebody already carries is worth nothing to them, and
+       an offer built on one is refused. It used to be quietly half-honoured --
+       the fragment stayed put and the payment went through anyway -- so the
+       slot that cannot be traded is now plainly marked as such. */
+    function fragsOf(p) {
+        return E.fragmentsOf ? E.fragmentsOf(p) : (p.fragments || []);
+    }
+
+    function fragPickHtml(owner, taker, prefix, mine) {
+        const held = fragsOf(owner);
+        const already = fragsOf(taker);
         let out = '<div class="frag-pick"><span class="fp-label">Key fragments</span>';
         for (let n = 1; n <= D.KEY_FRAGMENTS_NEEDED; n++) {
             const has = held.indexOf(n) >= 0;
+            const spare = has && already.indexOf(n) < 0;
             const place = fragmentPlace(n);
-            out += '<label class="fp' + (has ? '' : ' no') + '" title="' +
-                (has ? 'Key fragment ' + n + ', won at ' + esc(place)
-                     : 'They do not have key fragment ' + n) + '">' +
+            const why = !has
+                ? (mine ? 'You do not have key fragment ' + n
+                        : 'They do not have key fragment ' + n)
+                : !spare
+                    ? (mine ? 'They already carry key fragment ' + n +
+                              ' \u2014 a second copy is no use to them.'
+                            : 'You already carry key fragment ' + n +
+                              ' \u2014 a second copy would be no use to you.')
+                    : 'Key fragment ' + n + ', won at ' + place;
+            out += '<label class="fp' + (spare ? '' : ' no') +
+                (has && !spare ? ' dup' : '') + '" title="' + esc(why) + '">' +
                 '<input type="checkbox" data-group="' + prefix + '-frag" value="' + n + '"' +
-                    (has ? '' : ' disabled') + '>' +
+                    (spare ? '' : ' disabled') + '>' +
                 '<span class="frag' + (has ? ' have' : '') + '"></span>' +
                 '<span class="fp-n">' + n + '</span>' +
                 '<span class="fp-where">' + esc(place) + '</span>' +
@@ -12515,7 +12717,7 @@ body.holding .modal-back[data-key="battle"] .modal .move {
         return out + '</div>';
     }
 
-    function bundleUi(p, prefix) {
+    function bundleUi(p, other, prefix, mine) {
         const cards = p.inventory.length + p.powerups.length + p.potions.length;
         return '<div class="holds">' +
                 heldHtml('Coins', p.coins) +
@@ -12523,7 +12725,8 @@ body.holding .modal-back[data-key="battle"] .modal .move {
                 heldHtml('Seared steaks', p.steaks.cooked) +
                 heldHtml('Chest keys', p.chestKeys) +
                 heldHtml('Cards', cards) +
-                heldHtml('Key fragments', p.keyFragments + '/' + D.KEY_FRAGMENTS_NEEDED) +
+                heldHtml('Key fragments', p.keyFragments + '/' + D.KEY_FRAGMENTS_NEEDED,
+                         !p.keyFragments) +
             '</div>' +
             '<div class="stat-row">' +
                 numChip('Coins', prefix + '-coins', p.coins) +
@@ -12531,7 +12734,7 @@ body.holding .modal-back[data-key="battle"] .modal .move {
                 numChip('Seared', prefix + '-cooked', p.steaks.cooked) +
                 numChip('Chest keys', prefix + '-chest', p.chestKeys) +
             '</div>' +
-            fragPickHtml(p, prefix) +
+            fragPickHtml(p, other, prefix, mine) +
             (cards
                 ? '<div class="item-grid trade-pick">' +
                     p.inventory.map(i => checkItem(prefix + '-item', i.uid, D.ITEMS[i.id].name)).join('') +
@@ -12587,11 +12790,11 @@ body.holding .modal-back[data-key="battle"] .modal .move {
             '</select>' +
             '<h3 style="margin-top:16px">You give</h3>' +
                 '<div class="sub">What you are carrying, and what of it you are ' +
-                'putting up.</div>' + bundleUi(p, 'give') +
+                'putting up.</div>' + bundleUi(p, other, 'give', true) +
             '<h3 style="margin-top:16px">You want from ' + esc(other.name) + '</h3>' +
                 '<div class="sub">Everything ' + esc(other.name) + ' is carrying. ' +
                 'Ask for as much of it as you like \u2014 they still have to agree.</div>' +
-                bundleUi(other, 'want') +
+                bundleUi(other, p, 'want', false) +
             '<div class="modal-actions">' +
             '<button class="btn primary" id="tr-send">Send offer</button>' +
             '<button class="btn" id="tr-close">Cancel</button></div>', true, 'trade');
