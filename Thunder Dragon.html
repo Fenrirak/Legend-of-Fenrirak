@@ -4726,7 +4726,7 @@ body.modal-cover #board * {
         minPlayers: 2,
         maxPlayers: 6,
         maxPerClass: 2,
-        turnTimeoutMs: 120000,         // auto-skip after 2 minutes of inactivity
+        turnTimeoutMs: 90000,          // auto-skip after 90 seconds of inactivity
         startingCoins: 0,
         // One weapon change and one armour change per turn, counted separately.
         equipChangesPerTurn: 1,
@@ -9783,6 +9783,24 @@ body.modal-cover #board * {
         }
     }
 
+    /* Out of the room and back to the front page.
+
+       The host ending a game says so twice: the room document is marked
+       closed, and then it is deleted. Either one on its own is the whole
+       news, and both used to be needed -- the marking was never read by
+       anybody and the leaving was done entirely by the delete going through.
+       That made the close depend on having permission to delete, which is not
+       something a player's browser is owed. Now the mark is enough and the
+       delete is tidying up. */
+    /* Not `leaveRoom` -- that name is taken, by the Leave button, which tells
+       the room you are going. Nobody is leaving here: the room itself has
+       ended, and announcing a departure from a game that no longer exists is
+       at best a wasted write and at worst an error in the log. */
+    function leaveClosedRoom(message) {
+        backHome();
+        if (message) notice(message);
+    }
+
     function enterRoom(code) {
         ROOM = code;
         // A solo game has nothing to invite anybody to, so it does not go in
@@ -9805,13 +9823,7 @@ body.modal-cover #board * {
                 return;
             }
             if (gone) {
-                if (unsub) { unsub(); unsub = null; }
-                clearInterval(enterRoom._hb);
-                S = null; ROOM = null;
-                closeModal();
-                try { history.replaceState(null, '', location.pathname); } catch (e) { }
-                showScreen('screen-home');
-                notice('The host ended the game and closed the room.');
+                leaveClosedRoom('The host ended the game and closed the room.');
                 return;
             }
             notice(err.message || 'Connection lost.');
@@ -9895,6 +9907,16 @@ body.modal-cover #board * {
            underneath it -- and after BATTLE_END has been told, so that a fight
            panel whose result is owed is left standing to be filled in rather
            than closed and reopened. */
+        /* The host has ended it. Nothing else in this snapshot matters and
+           none of it should be drawn -- this is the one phase that is not a
+           screen but a door. Read before the die and the cards so a throw
+           that was in the same snapshot as the closing is not played out to
+           an empty room. */
+        if (state.phase === 'closed') {
+            leaveClosedRoom('The host ended the game and closed the room.');
+            return;
+        }
+
         DICE.saw(state);
         ZAP.saw(state);
         STEAK.saw(state);
@@ -11909,22 +11931,24 @@ body.modal-cover #board * {
                 notice('Game ended.');
                 return;
             }
+            /* Marking it closed is the part that has to work: that is what
+               every player at the table is watching for, and it is an ordinary
+               write to a room they are already in. */
             try {
                 await NET.act(code, 'closeGame', {});
-            } catch (err) { /* the room may already be gone */ }
-            try {
-                if (unsub) { unsub(); unsub = null; }
-                clearInterval(enterRoom._hb);
-                await NET.closeRoom(code);
             } catch (err) {
-                notice(err.message || 'Could not close the room.');
+                notice(err.message || 'Could not end the game.');
                 return;
             }
-            S = null; ROOM = null;
-            closeModal();
-            try { history.replaceState(null, '', location.pathname); } catch (e) { }
-            showScreen('screen-home');
-            notice('Room ' + code + ' closed.');
+
+            leaveClosedRoom('Room ' + code + ' closed.');
+
+            /* And then the tidying up, which is allowed to fail. Deleting the
+               document keeps a finished game from costing reads for the rest
+               of time, but a room nobody can get back into is closed whether
+               or not the paperwork went through -- so this is not something to
+               stop and report a failure over. */
+            Promise.resolve(NET.closeRoom(code)).catch(() => { });
         });
     }
 
