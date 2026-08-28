@@ -2401,6 +2401,32 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     .bo-faces { gap: 10px; }
 }
 
+/* ---- nothing moves behind a closed door --------------------------------
+   The board is never still: rivers run, fires gutter, soup simmers, sparks
+   climb, the Gate flickers. Forty-eight of those run at once and they run
+   for as long as the board is on the screen, which is right.
+
+   What is not right is running them behind a panel. A covering panel lays
+   72% black and a 3px blur over the whole viewport -- and a blurred backdrop
+   has to be recomputed whenever anything underneath it moves. So the scenery
+   nobody can see was driving a full-screen blur, frame after frame, through
+   every battle, every hunt and every turn card: precisely the moments the
+   machine is busiest, and precisely when the die needs the room.
+
+   Pausing holds each animation where it stands and lets it go on from there,
+   so nothing jumps when the panel leaves. A *docked* panel covers nothing --
+   it sits at the foot of the screen so the board can be looked at -- and the
+   board keeps moving under it.
+
+   Scoped to the board on purpose: the die is not in it, and the die must
+   never stop turning just because a fight is on the screen.
+   ---------------------------------------------------------------------- */
+
+body.modal-cover #board,
+body.modal-cover #board * {
+    animation-play-state: paused;
+}
+
 /* ---- the merchant's stall --------------------------------------------- */
 
 .shop-section-note { font-size: 13px; color: #9a9a9a; margin: 0 0 10px; }
@@ -11884,6 +11910,7 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
 
     function closeModal() {
         $('#modal-back').classList.remove('show', 'dock');
+        document.body.classList.remove('modal-cover');
         $('#modal').innerHTML = '';
         clearLandings();
         shownKey = null;
@@ -11945,6 +11972,11 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
         $('#modal').innerHTML = html;
         back.classList.add('show');
         back.classList.toggle('dock', !!dock);
+        // A panel that covers the board hides the scenery behind 72% black and
+        // a blur. The stylesheet stops the scenery moving while it is under
+        // there -- see "Nothing moves behind a closed door" in style.css. A
+        // docked panel covers nothing, so the board keeps its life.
+        document.body.classList.toggle('modal-cover', !dock);
         if (!dock) clearLandings();
         back.dataset.dismissable = dismissable ? '1' : '0';
         // Which panel this is, so the stylesheet can tell the fight -- the one
@@ -13441,6 +13473,99 @@ function setLocalName(n) {
 const PID = localId();
 
 /* ---------------------------------------------------------------------- */
+/* Seat locks                                                              */
+/*                                                                         */
+/* A player's id is not a secret. It is drawn into the page on the trade    */
+/* menus and it sits in the room document, which anybody may read -- so     */
+/* until now taking somebody's seat needed no more than reading their id    */
+/* off the screen, pasting it over `lof_pid` in the browser's own storage   */
+/* panel, and reloading. The seat was handed over: their turn, their coins, */
+/* their fragments, and if you picked the host, the power to end the game.  */
+/*                                                                         */
+/* So a seat now carries a lock. The key is made when the seat is first     */
+/* taken, kept in that browser and sent with everything the seat does. What */
+/* the room stores is not the key but its SHA-256 -- the document is world- */
+/* readable, and a lock that published its own key would not be a lock.     */
+/*                                                                         */
+/* The key is per room, so it dies with the room, and a seat that has no    */
+/* lock yet takes one from the first claimant: rooms already in progress    */
+/* keep working, and a refresh still puts you back in your chair, because   */
+/* the key lives in the same storage the id always did.                     */
+/*                                                                         */
+/* This stops the trick above. It does not, and cannot, stop somebody who   */
+/* writes JavaScript: every rule here runs in the player's own browser and  */
+/* they are free to skip it. Only an engine on a server can do that.        */
+/* ---------------------------------------------------------------------- */
+
+function seatSecret(code) {
+    // Keyed to the seat as well as the room. Somebody who pastes another
+    // player's id over their own does not thereby acquire that seat's key --
+    // they get a fresh one, which is exactly what the lock then refuses.
+    const k = 'lof_seat_' + code + '_' + PID;
+    let s = localStorage.getItem(k);
+    if (!s) {
+        const b = new Uint8Array(16);
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+            crypto.getRandomValues(b);
+        } else {
+            for (let i = 0; i < b.length; i++) b[i] = Math.floor(Math.random() * 256);
+        }
+        s = hex(b);
+        localStorage.setItem(k, s);
+    }
+    return s;
+}
+
+function hex(bytes) {
+    let out = '';
+    for (let i = 0; i < bytes.length; i++) {
+        out += (bytes[i] < 16 ? '0' : '') + bytes[i].toString(16);
+    }
+    return out;
+}
+
+/* Kept only for a page opened over plain http on a LAN address, where
+   crypto.subtle is not available. It is not a cryptographic hash and does not
+   pretend to be one -- it is here so the lock still holds against somebody
+   reading the screen, which is the whole of what it is for. */
+function weakHash(str) {
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
+    let g = 52711;
+    for (let i = str.length - 1; i >= 0; i--) g = ((g * 31) ^ str.charCodeAt(i)) >>> 0;
+    return 'w' + h.toString(16) + g.toString(16);
+}
+
+const seatCache = {};
+
+async function seatHash(code) {
+    if (seatCache[code]) return seatCache[code];
+
+    const msg = code + ':' + PID + ':' + seatSecret(code);
+    let out;
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+        out = hex(new Uint8Array(buf));
+    } else {
+        out = weakHash(msg);
+    }
+    seatCache[code] = out;
+    return out;
+}
+
+/* True if this browser may act as `pid`. An unlocked seat is locked here, to
+   the first browser that reaches for it. */
+function holdsSeat(state, pid, hash) {
+    const p = E.player(state, pid);
+    if (!p) return true;                       // no seat yet -- nothing to hold
+    if (!p.seat) { p.seat = hash; return true; }
+    return p.seat === hash;
+}
+
+const TAKEN = 'That seat belongs to another player. If it is yours, rejoin ' +
+              'from the browser you started the game in.';
+
+/* ---------------------------------------------------------------------- */
 /* Actions the engine exposes to the network layer                         */
 /*                                                                         */
 /* The table itself lives in engine.js, because solo.js needs exactly the   */
@@ -13478,6 +13603,8 @@ async function createRoom(name) {
         const snap = await getDoc(ref);
         if (snap.exists()) continue;
         const state = E.createGame(code, PID, name);
+        const host = E.player(state, PID);
+        if (host) host.seat = await seatHash(code);
         await setDoc(ref, clean(state));
         return code;
     }
@@ -13490,18 +13617,23 @@ async function joinRoom(code, name) {
     if (!/^[A-Z]{5}$/.test(code)) throw new Error('Room codes are 5 letters, like ABCDE.');
 
     const ref = roomRef(code);
+    const hash = await seatHash(code);
     const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(ref);
         if (!snap.exists()) throw new Error('No room with the code ' + code + '.');
         const state = snap.data();
         const existing = E.player(state, PID);
         if (existing) {
+            // Coming back to your own chair -- or reaching for somebody else's.
+            if (!holdsSeat(state, PID, hash)) throw new Error(TAKEN);
             existing.name = name || existing.name;
             existing.connected = true;
             existing.lastSeen = Date.now();
         } else {
             const r = E.addPlayer(state, PID, name);
             if (!r.ok) throw new Error(r.error);
+            const seated = E.player(state, PID);
+            if (seated) seated.seat = hash;
         }
         state.updatedAt = Date.now();
         tx.set(ref, clean(state));
@@ -13523,11 +13655,16 @@ async function act(code, action, args) {
     const fn = ACTIONS[action];
     if (!fn) throw new Error('Unknown action: ' + action);
     const ref = roomRef(code);
+    const hash = await seatHash(code);
 
     return runTransaction(db, async (tx) => {
         const snap = await tx.get(ref);
         if (!snap.exists()) throw new Error('This room no longer exists.');
         const state = snap.data();
+
+        // Before the rules, the chair: whatever this move is, it has to be
+        // coming from the browser the seat was taken in.
+        if (!holdsSeat(state, PID, hash)) throw new Error(TAKEN);
 
         const res = fn(state, PID, args || {}) || { ok: true };
         if (!res.ok) {
