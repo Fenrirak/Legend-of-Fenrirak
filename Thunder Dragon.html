@@ -6364,10 +6364,37 @@ body.modal-cover #board * {
         log(state, winner.name + ' defeats ' + loser.name +
                    ' and takes ' + taken + ' coins.', 'system');
         noteBattleEnd(state, b, asPlayer(winner), asPlayer(loser));
+        const fought = b ? b.squareIndex : winner.pos;
         state.battle = null;
         sendToStart(state, loser, true);
         winner.energy = R.startingEnergy;
-        // A forced PvP battle ends the mover's turn.
+
+        /* The square is still owed.
+
+           Landing on somebody starts a fight before the square is read, and
+           the fight used to be the end of it: you walked onto the Chest, won
+           a duel for the right to stand there, and got nothing for it. The
+           square is not a reward for the fight -- it is what that square does
+           to whoever is standing on it, and after this the winner is.
+
+           Only for the player whose go it is, and only if they are still on
+           the square that caused the fight. Somebody who wins as the one
+           being landed on has already had this square, on the turn they
+           landed here themselves; and a mover who *loses* is at the Start,
+           where there is nothing owed to them at all.
+
+           The turn is not ended here any more either. It cannot be: half of
+           what a square does is ask a question -- the Chest, the Crimson
+           Keep, the whirlpool -- and a turn cannot be handed on with the
+           question still open. So the winner finishes their go the ordinary
+           way, by ending it. */
+        const cur = currentPlayer(state);
+        if (cur && cur.id === winner.id && winner.pos === fought) {
+            return resolveSquare(state, winner, square(fought));
+        }
+
+        // Otherwise the mover is done: either they lost, or they were never
+        // the one moving.
         return advanceTurn(state);
     }
 
