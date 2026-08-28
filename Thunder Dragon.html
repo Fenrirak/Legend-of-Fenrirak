@@ -2430,6 +2430,19 @@ body.modal-cover #board * {
 /* ---- the merchant's stall --------------------------------------------- */
 
 .shop-section-note { font-size: 13px; color: #9a9a9a; margin: 0 0 10px; }
+
+/* The shelf a potion sits on. Quieter than the section headings above
+   it -- Potions is the shop's aisle, these are the shelves in it. */
+.shop-shelf {
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #9a938a;
+    margin: 14px 0 7px;
+}
+.shop-shelf:first-of-type { margin-top: 4px; }
 .shop-item .for-who {
     display: inline-block;
     margin-top: 6px;
@@ -3751,7 +3764,9 @@ body.modal-cover #board * {
             '<g ' + K + ' fill="#f0c9a0">' +
             '<path d="M38 20h24v18c0 4-5 7-12 7s-12-3-12-7z"/></g>' +
             '<g fill="#20180f"><circle cx="44" cy="30" r="2"/><circle cx="56" cy="30" r="2"/>' +
-            '<path d="M44 38h12" stroke="#20180f" stroke-width="2" stroke-linecap="round"/></g>' +
+            // The mouth sits below the helmet's nose bar, which ends at 38 --
+            // drawn level with it the two ran together into one mark.
+            '<path d="M44 41h12" stroke="#20180f" stroke-width="2" stroke-linecap="round"/></g>' +
             // the gold helmet, with the cheek plates and the nose bar
             '<g ' + K + ' fill="#f0c33c">' +
             '<path d="M36 22c0-10 6-16 14-16s14 6 14 16v4H36z"/>' +
@@ -4560,8 +4575,8 @@ body.modal-cover #board * {
           action: 'spring', value: 2, text: 'The updraught carries you two spaces forward.' },
 
         { i: 8,  key: 'castle_ruins',     name: 'Castle Ruins',         row: 2, col: 0,
-          action: 'battle', enemy: 'swarm_of_bats', coins: 10, chestKey: 1,
-          text: 'You have to fight a swarm of bats. Finds 10 coins and a chest key.' },
+          action: 'battle', enemy: 'swarm_of_bats', coins: 15, chestKey: 1,
+          text: 'You have to fight a swarm of bats. Finds 15 coins and a chest key.' },
 
         { i: 9,  key: 'sack_of_gold',     name: 'Sack of Gold',         row: 1, col: 0,
           action: 'coins', coins: 10, text: 'Congrats! You found a sack of gold! +10 coins.' },
@@ -4570,9 +4585,9 @@ body.modal-cover #board * {
           action: 'pot', text: 'You may cook steak!' },
 
         { i: 11, key: 'midnight_desert',  name: 'Midnight Desert',      row: 0, col: 1,
-          action: 'battle', enemy: 'seraphina', coins: 8, keyFragment: 1,
+          action: 'battle', enemy: 'seraphina', coins: 10, keyFragment: 1,
           optionalStop: true,
-          text: 'You have to fight Seraphina. Drops 8 coins and a key fragment.' },
+          text: 'You have to fight Seraphina. Drops 10 coins and a key fragment.' },
 
         { i: 12, key: 'chest',            name: 'Chest',                row: 0, col: 2,
           action: 'chest', text: 'Get an armour set or special weapon. (Cost: 1 chest key)' },
@@ -4585,8 +4600,8 @@ body.modal-cover #board * {
           action: 'heal', value: 50, text: 'Heal 50 HP.' },
 
         { i: 15, key: 'uncharted_forest', name: 'Uncharted Forest',     row: 0, col: 5,
-          action: 'battle', enemy: 'goblin_scout_group', coins: 5, keyFragment: 2,
-          text: 'You have to fight a goblin scout group. Drops 5 coins and a key fragment.' },
+          action: 'battle', enemy: 'goblin_scout_group', coins: 10, keyFragment: 2,
+          text: 'You have to fight a goblin scout group. Drops 10 coins and a key fragment.' },
 
         { i: 16, key: 'crimson_keep',     name: 'Crimson Keep',         row: 0, col: 6,
           action: 'crimson_keep',
@@ -8424,6 +8439,18 @@ body.modal-cover #board * {
         const goneQueue = [];
         let thrownAt = 0;           // when this throw left the hand
         let inFlight = false;       // still in the air: nothing else may happen
+        /* Taken, called, but not yet thrown.
+
+           A throw of our own is in the air from the moment the button is
+           pressed, so `inFlight` covers it. Somebody else's is not: it waits
+           behind the gate and behind its own roll call, which is a second or
+           two in which the die has been taken and nothing is flying. The
+           board asks whether the die is busy before it walks a token, and
+           without this it was told no -- so a bot's piece set off before its
+           die had left the hand, and you watched the move before the roll
+           that decided it. */
+        let queued = 0;
+        const queuedT = [];         // one failsafe apiece, see takeThrow()
         let primed = false;         // have we seen this room at all yet?
         let seen = 0;               // the last throw we have shown
         let armed = false;          // we asked for a throw and are waiting
@@ -8525,6 +8552,7 @@ body.modal-cover #board * {
             cubeEl.classList.add('spinning');
 
             thrownAt = Date.now();
+            releaseThrow();
             inFlight = true;
             showing = true;
 
@@ -8627,9 +8655,31 @@ body.modal-cover #board * {
             // -- and it stays where it fell for three seconds before fading.
             settleT = setTimeout(() => {
                 inFlight = false;
-                while (idleQueue.length) idleQueue.shift()();
+                if (!queued) { while (idleQueue.length) idleQueue.shift()(); }
             }, settleMs);
             holdT = setTimeout(fade, settleMs + HOLD_MS);
+        }
+
+        /* Taking a throw, and letting it go again as it leaves the hand.
+
+           The queues a throw waits behind -- the turn card, the roll call --
+           each have their own deadline, so the release below should always
+           come from `throwIt`. The failsafe is here so that "should" is not
+           the only thing holding the board's walks up. */
+        function takeThrow() {
+            queued += 1;
+            queuedT.push(setTimeout(() => {
+                queuedT.shift();
+                queued = Math.max(0, queued - 1);
+                if (!inFlight && !queued) {
+                    while (idleQueue.length) idleQueue.shift()();
+                }
+            }, 12000));
+        }
+
+        function releaseThrow() {
+            if (queuedT.length) clearTimeout(queuedT.shift());
+            queued = Math.max(0, queued - 1);
         }
 
         function fade() {
@@ -8649,7 +8699,11 @@ body.modal-cover #board * {
             inFlight = false;
             armed = false;
             showing = false;
-            while (idleQueue.length) idleQueue.shift()();
+            /* `queued` is deliberately left alone. This is the end of the die
+               that was on the screen; a throw taken since is still waiting to
+               go up, and wiping the count here would let the board walk a
+               token in front of it -- the very thing the count is for. */
+            if (!queued) { while (idleQueue.length) idleQueue.shift()(); }
             // Anything that was waiting for the screen to be clear of dice
             // rather than merely for them to have stopped moving.
             while (goneQueue.length) goneQueue.shift()();
@@ -8703,6 +8757,7 @@ body.modal-cover #board * {
                        can be read -- but not on top of a card, because by now
                        the next throw may well have been called. It is not
                        called a second time; it has been named once already. */
+                    takeThrow();
                     ROLL_CALL.whenFree(() => { throwIt(); land(die); });
                     return true;
                 }
@@ -8714,6 +8769,7 @@ body.modal-cover #board * {
                    the turn card would otherwise be called out over the top of
                    it. */
                 armed = false;
+                takeThrow();
                 HOLD.whenFree(() => {
                     ROLL_CALL.play(die.who, ROLL_CALL.label(die.why), '', false, () => {
                         throwIt();
@@ -8723,10 +8779,10 @@ body.modal-cover #board * {
                 return true;
             },
 
-            // Busy means in the air, not on the screen: once it has come to
-            // rest the game goes on around it while it lies there.
-            busy() { return inFlight; },
-            whenIdle(fn) { if (!inFlight) fn(); else idleQueue.push(fn); },
+            // Busy means taken or in the air, not on the screen: once it has
+            // come to rest the game goes on around it while it lies there.
+            busy() { return inFlight || queued > 0; },
+            whenIdle(fn) { if (!this.busy()) fn(); else idleQueue.push(fn); },
 
             // On the screen at all -- still bouncing, or lying where it fell
             // waiting to fade. `whenGone` is for anything that must not be
@@ -9015,7 +9071,7 @@ body.modal-cover #board * {
         let held = 0;
 
         function play() {
-            const target = $('#me-steaks');
+            const target = $('#me-steaks') || $('#side-hero .mate.you');
             const img = document.createElement('img');
             img.className = 'steak-fly';
             img.src = D.STEAK_URI;
@@ -9054,9 +9110,12 @@ body.modal-cover #board * {
             };
             const failsafe = setTimeout(done, 6000);
 
-            // Where it is going: the middle of the Steaks line, or failing
-            // that the top right corner, so a missing profile box cannot
-            // leave the thing stuck in the middle of the screen.
+            /* Where it is going: the middle of your own Steaks line. If the
+               profile box is showing somebody else, that line is not on the
+               screen, so it goes to your row in the list of players under
+               their block instead -- which is where you are on the screen.
+               Failing both, the top right corner, so a missing profile box
+               cannot leave the thing stuck in the middle. */
             const r = target ? target.getBoundingClientRect() : null;
             const toX = r ? r.left + r.width / 2 : window.innerWidth - 60;
             const toY = r ? r.top + r.height / 2 : 60;
@@ -9930,6 +9989,10 @@ body.modal-cover #board * {
 
         // A scouting party: two goblins, the front one shouldering a club.
         // Long pointed ears and a wide tusked grin do the work.
+        //
+        // The club is drawn first so it passes behind them, and the front
+        // goblin's arm and fist are drawn last so they close over the handle.
+        // Without the arm the club simply hung in the air beside him.
         goblins:
             // the club, over the front goblin's shoulder
             '<g ' + OUT + ' fill="#8a5a3a">' +
@@ -9948,6 +10011,12 @@ body.modal-cover #board * {
             '<path d="M29 53 12 40l13 21zM61 53l17-13-13 21z"/>' +
             '<path d="M33 78h24v20H33z"/>' +
             '</g>' +
+            // the arm reaching out to the handle, and the fist round it
+            '<g fill="none" stroke="#20180f" stroke-width="10" ' +
+            'stroke-linecap="round"><path d="M35 83 21 70"/></g>' +
+            '<g fill="none" stroke="#87a64c" stroke-width="6" ' +
+            'stroke-linecap="round"><path d="M35 83 21 70"/></g>' +
+            '<circle cx="19" cy="68" r="6" fill="#87a64c" ' + OUT + '/>' +
             // faces
             '<g fill="#f4e7b8">' +
             '<circle cx="38" cy="58" r="3.4"/><circle cx="52" cy="58" r="3.4"/>' +
@@ -11615,7 +11684,13 @@ body.modal-cover #board * {
                 '<div><span>Chest keys</span><b>' + x.chestKeys + '</b></div>' +
                 '<div class="wide"><span>Key fragments</span>' +
                     fragmentsHtml(x) + '</div>' +
-                '<div class="wide" id="me-steaks"><span>Steaks</span><b>' +
+                /* The id is on your own line and nobody else's. The steak
+                   flies to it and the line flares as it lands, and neither
+                   belongs on another player's block -- the steak is going to
+                   your count, not theirs. Look at somebody else and the line
+                   is still drawn, just not answering to the name. */
+                '<div class="wide"' + (isMe ? ' id="me-steaks"' : '') +
+                    '><span>Steaks</span><b>' +
                     // A steak still flying across the screen has not landed
                     // on this line yet, so it is not counted on it yet.
                     Math.max(0, x.steaks.raw - (isMe ? STEAK.held() : 0)) +
@@ -13055,7 +13130,7 @@ body.modal-cover #board * {
                      esc(cls.name)) + '</button></div>';
         }).join('');
 
-        const potionHtml = Object.keys(D.MERCHANT_POTIONS).map(id => {
+        const potionCard = (id) => {
             const d = D.POWERUPS[id];
             const price = D.MERCHANT_POTIONS[id].price;
             const stock = S.merchant.potions[id] || 0;
@@ -13065,7 +13140,42 @@ body.modal-cover #board * {
                     price + ' coins · ' + (stock ? stock + ' left' : 'sold out')) +
                 '<button class="btn small" data-buy-potion="' + esc(id) + '"' +
                     (afford ? '' : ' disabled') + '>Buy</button></div>';
-        }).join('');
+        };
+
+        /* The potions came off the pricing sheets in the order they were
+           written down, which left the two Health Ups at opposite ends of the
+           stall with everything else in between. They are laid out by what
+           they do instead, weakest of each first, so you find the shelf and
+           then pick the size.
+
+           Anything whose effect is not named here still gets a shelf of its
+           own at the end: a new potion should turn up in the shop by being
+           added to the merchant's list, not by also being remembered here. */
+        const shelves = [
+            { effect: 'energy',  label: 'Energy' },
+            { effect: 'damage',  label: 'Strength' },
+            { effect: 'health',  label: 'Health' },
+            { effect: 'dice',    label: 'Speed' },
+            { effect: 'defence', label: 'Defence' }
+        ];
+        const stocked = Object.keys(D.MERCHANT_POTIONS);
+        const named = {};
+        shelves.forEach(sh => { named[sh.effect] = true; });
+        const leftovers = stocked.filter(id =>
+            !D.POWERUPS[id] || !named[D.POWERUPS[id].effect]);
+
+        const shelfHtml = (label, ids) => {
+            if (!ids.length) return '';
+            ids = ids.slice().sort((a, b) =>
+                (D.POWERUPS[a].value || 0) - (D.POWERUPS[b].value || 0));
+            return '<h4 class="shop-shelf">' + esc(label) + '</h4>' +
+                   '<div class="shop-grid">' + ids.map(potionCard).join('') + '</div>';
+        };
+
+        const potionHtml =
+            shelves.map(sh => shelfHtml(sh.label, stocked.filter(id =>
+                D.POWERUPS[id] && D.POWERUPS[id].effect === sh.effect))).join('') +
+            (leftovers.length ? shelfHtml('Other', leftovers) : '');
 
         showModal(
             '<h2>The Poor Merchant</h2>' +
@@ -13075,7 +13185,7 @@ body.modal-cover #board * {
             '<p class="shop-section-note">Everything the merchant carries. Each piece ' +
             'says which class it is cut for — you can only buy your own.</p>' +
             '<div class="shop-grid">' + gearHtml + '</div>' +
-            '<h3 style="margin-top:18px">Potions</h3><div class="shop-grid">' + potionHtml + '</div>' +
+            '<h3 style="margin-top:18px">Potions</h3>' + potionHtml +
             '<div class="modal-actions"><button class="btn" id="shop-close">Leave the stall</button></div>',
             true, 'merchant');
 
