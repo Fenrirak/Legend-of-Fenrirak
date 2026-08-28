@@ -9904,7 +9904,9 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
         markHolding();
         if (!tableHeld()) { drawGame(); return; }
         // Nothing of what just happened is shown yet. The buttons go, though,
-        // and they go now: what is on the screen is a turn that is over.
+        // and they go now: what is on the screen is a turn that is over -- and
+        // so does any question that has just been answered.
+        retireAnsweredPanel();
         renderActions();
         holdRender();
     }
@@ -9918,7 +9920,10 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
             if (!S || S.phase === 'lobby' || S.phase === 'over') { heldSince = 0; return; }
             playWalks();
             markHolding();
-            if (!tableHeld()) drawGame(); else holdRender();
+            if (!tableHeld()) { drawGame(); return; }
+            retireAnsweredPanel();
+            renderActions();
+            holdRender();
         }, 120);
     }
 
@@ -11565,11 +11570,46 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
 
     let shownKey = null;       // what the modal is currently displaying
 
+    /* Which question the square panel is asking, as one string. Two things
+       read it: the choice buttons, which refuse to answer a question that has
+       moved on, and `retireAnsweredPanel`, which takes the panel down the
+       moment it has been answered. */
+    function pendingSig(state) {
+        const pend = state && state.pending;
+        if (!pend || pend.playerId !== NET.PID) return '';
+        return (state.turnNo | 0) + '/' + pend.type + '/' + pend.playerId;
+    }
+
+    let askingNow = '';         // the signature the panel on screen belongs to
+
     function closeModal() {
         $('#modal-back').classList.remove('show', 'dock');
         $('#modal').innerHTML = '';
         clearLandings();
         shownKey = null;
+        askingNow = '';
+    }
+
+    /* A question that has been answered stops being asked at once, even though
+       the rest of the screen is still held.
+
+       The hold is there so that what a die *did* is not shown before the die
+       has been read -- but the panel that asked for the die is not a
+       consequence, it is the question, and the question is over the instant it
+       is answered. Left in the hold it sat there over the top of its own
+       throw: press "Go hunting" and the hunting panel stayed up, dimming the
+       board behind the die it had just thrown, and did not leave until the
+       table went quiet -- which is after the next player's card has come and
+       gone. The same went for every square panel; you chose how far to walk
+       and then watched your walk from behind the panel asking where to walk.
+
+       So the panel comes down as soon as the question is not the one on the
+       screen any more. Whatever the answer turned out to mean still waits for
+       the table, as it should. */
+    function retireAnsweredPanel() {
+        if (shownKey !== 'pending' || !askingNow) return;
+        if (pendingSig(S) === askingNow) return;      // still the same question
+        closeModal();
     }
 
     /* `dock` is for the one question that is about the board: it puts the
@@ -12397,9 +12437,9 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
            reach while the table is held; this is the belt to that pair of
            braces, and it is what catches the case where the question changes
            without the table ever being busy. */
-        const asking = (S.turnNo | 0) + '/' + pend.type + '/' + pend.playerId;
-        const stillAsking = () => !!S.pending &&
-            (S.turnNo | 0) + '/' + S.pending.type + '/' + S.pending.playerId === asking;
+        askingNow = pendingSig(S);
+        const asking = askingNow;
+        const stillAsking = () => pendingSig(S) === asking;
 
         $$('#modal [data-choice]').forEach(b => b.addEventListener('click', () => {
             if (!stillAsking()) return;
