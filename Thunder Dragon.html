@@ -207,7 +207,7 @@
 
     <style>
 /* ==== game/style.css ==== */
-@import url('https://fonts.googleapis.com/css2?family=Cutive+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600&family=Cutive+Mono:wght@400;700&display=swap');
 
 /* =========================================================================
    Legend of Fenrirak™, The Thunder Dragon — Online Version
@@ -282,6 +282,31 @@ h2 { font-size: 22px; }
 h3 { font-size: 17px; }
 
 .muted { color: #9a9a9a; }
+
+/* ---- the rules, in something you can actually read ---------------------
+   The whole page is set in Cutive Mono, which is the game's voice: a
+   typewriter, a rulebook run off on one. It carries a heading and a card's
+   worth of text and it carries them well.
+
+   What it does not carry is two paragraphs explaining how to play. Every
+   letter the same width is exactly what you do not want in the one block of
+   text on the site somebody reads straight through, and this is the block
+   they read before deciding whether to play at all. So the rules get a
+   proper reading face and the rest of the page keeps its own.
+
+   Comfortaa is rounded and a little wide, which suits the board, and it
+   sets small for its size -- hence 15.5px against the 14.5 it replaces,
+   which lands at about the same measure on the screen.
+   ---------------------------------------------------------------------- */
+.rules-body {
+    font-family: 'Comfortaa', 'Trebuchet MS', 'Segoe UI', sans-serif;
+    font-size: 15.5px;
+    line-height: 1.75;
+    letter-spacing: .1px;
+    color: #b4b0aa;             /* Comfortaa is lighter on the screen than
+                                   the mono was, so the grey comes up to meet
+                                   it rather than reading as washed out */
+}
 .gold { color: var(--gold-bright); }
 
 .btn {
@@ -3452,7 +3477,7 @@ body.modal-cover #board * {
 
             <div class="card" style="max-width:860px;margin:22px auto 0">
                 <h2>How it plays</h2>
-                <p class="muted" style="font-size:14.5px;line-height:1.7;margin:0">
+                <p class="muted rules-body" style="margin:0">
                     Roll one die to move. Land on a square and do what it says. Monsters are
                     run by the computer — they roll to hit just like you do, and always use the
                     hardest attack they have the energy for. In battle, a roll of 3 or higher
@@ -3462,7 +3487,7 @@ body.modal-cover #board * {
                     arena. Land on the same square as another player and you fight them — that
                     part is not optional.
                 </p>
-                <p class="muted" style="font-size:14.5px;line-height:1.7;margin:12px 0 0">
+                <p class="muted rules-body" style="margin:12px 0 0">
                     Playing on your own is the same game, not a smaller one. The two
                     computer players choose their own gear, weigh up whether a fight is
                     worth having, haggle at the Merchant and decide for themselves how
