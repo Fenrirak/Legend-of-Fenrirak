@@ -762,6 +762,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     padding-bottom: 3px;
     border-bottom: 1px solid #78826b;
 }
+/* Amberwood Village runs a hair longer than its neighbours' names -- a
+   touch smaller keeps it on its one line without shrinking every square. */
+.sq.key-cloverdale .sq-name { font-size: 8px; }
 .sq .sq-text {
     font-size: 9.2px;
     color: #4d5443;
@@ -4736,7 +4739,7 @@ body.modal-cover #board * {
            its own -- and 90 seconds apiece is a long time to sit watching
            somebody else decide which way to swing. There is also less to
            decide: no shop, no trade, no reading the board. */
-        battleTimeoutMs: 45000,
+        battleTimeoutMs: 60000,
         startingCoins: 0,
         // One weapon change and one armour change per turn, counted separately.
         equipChangesPerTurn: 1,
@@ -5783,6 +5786,14 @@ body.modal-cover #board * {
             phase: 'roll',
             lastRoll: null
         };
+        /* A fight runs on its own, shorter clock, so it has to start its own
+           clock too. Without this the time already spent on the ordinary turn
+           -- walking, rolling, reading the square -- is carried into the fight
+           and measured against the battle limit, and anyone who took more than
+           that before landing here would be timed out on the opening turn.
+           Every later exchange is restarted by passBattleTurn; this is the
+           first one. */
+        state.turnStartedAt = Date.now();
         log(state, p.name + ' faces ' + D.foeName(e) + '!', 'battle');
         // Where this fight's own log begins. Stamped after the line that
         // announces it, so the battle panel opens empty and fills with
@@ -5812,6 +5823,8 @@ body.modal-cover #board * {
             phase: 'roll',
             lastRoll: null
         };
+        // The opening exchange starts the battle clock -- see startEnemyBattle.
+        state.turnStartedAt = Date.now();
         log(state, a.name + ' and ' + b.name + ' clash on ' + square(a.pos).name + '!', 'battle');
         state.battle.logFrom = state.logSeq | 0;
         return ok();
