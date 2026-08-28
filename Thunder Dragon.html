@@ -2234,6 +2234,173 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     background: linear-gradient(90deg, #8c2f28, #d2635a);
 }
 
+
+/* ---- the finish of a fight ---------------------------------------------
+   Filled into the panel the fight was fought in, and held for a beat before
+   the next player is called. Both sides are shown, because who lost is half
+   of what happened: the winner stands lit and named, the loser is dimmed
+   and struck through beside them.
+
+   A player winning is gold, like everything that goes your way here. A
+   monster winning is crimson -- the colour the death lines in the log are
+   already written in -- so which way it went reads before a word of it does.
+   ------------------------------------------------------------------------ */
+
+.modal-back[data-key="battle-over"] .modal {
+    max-width: 460px;
+    text-align: center;
+}
+
+.bo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 4px 2px;
+    animation: bo-in .34s cubic-bezier(.2, .85, .25, 1);
+}
+@keyframes bo-in {
+    from { opacity: 0; transform: translateY(9px) scale(.97); }
+    to   { opacity: 1; transform: none; }
+}
+
+.bo-tag {
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #8e8880;
+}
+
+/* winner, "beat", loser -- laid out as the sentence it is */
+.bo-faces {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 2px;
+}
+.bo-beat {
+    font-size: 12.5px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #6f6a63;
+    flex: 0 0 auto;
+}
+.bo-side { position: relative; flex: 0 0 auto; }
+
+.bo-face {
+    border-radius: 50%;
+    background: #f6f3e6 center/86% no-repeat;
+    border: 3px solid var(--panel-edge);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.bo-face img, .bo-face svg { width: 100%; height: 100%; display: block; }
+
+.bo-side.win .bo-face {
+    width: 104px; height: 104px;
+    border-color: var(--gold);
+    box-shadow: 0 0 30px -4px rgba(217, 163, 92, .8),
+                0 14px 30px -12px rgba(0, 0, 0, .85);
+}
+.bo.foe .bo-side.win .bo-face {
+    border-color: var(--crimson);
+    box-shadow: 0 0 30px -4px rgba(168, 53, 44, .85),
+                0 14px 30px -12px rgba(0, 0, 0, .85);
+}
+
+/* Beaten: greyed, shrunk back, and plainly out of it. */
+.bo-side.lost .bo-face {
+    width: 66px; height: 66px;
+    filter: grayscale(1);
+    opacity: .4;
+    border-color: rgba(255, 255, 255, .1);
+}
+.bo-side.lost::after {
+    content: '';
+    position: absolute;
+    left: 4px; right: 4px; top: 50%;
+    height: 2px;
+    background: var(--crimson);
+    transform: rotate(-18deg);
+    opacity: .85;
+}
+
+/* The star sits on the winner's shoulder. */
+.bo-crown {
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #2a1f0c;
+    background: linear-gradient(180deg, #f0d78a, #c79a34);
+    border: 2px solid #1a1a1a;
+    box-shadow: 0 3px 10px -2px rgba(0, 0, 0, .8);
+}
+.bo.foe .bo-crown {
+    background: linear-gradient(180deg, #d2635a, #8f2a22);
+    color: #f6efe4;
+}
+
+.bo-who {
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-weight: bold;
+    font-size: clamp(24px, 5vw, 36px);
+    line-height: 1.1;
+    color: var(--cream);
+    margin-top: 2px;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, .8);
+}
+.bo-verb {
+    font-size: 15px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold-bright);
+}
+.bo.foe .bo-verb { color: var(--bad); }
+.bo.mine .bo-verb {
+    color: var(--gold-bright);
+    text-shadow: 0 0 18px rgba(242, 204, 143, .55);
+}
+
+.bo-lost {
+    font-size: 13px;
+    color: #8e8880;
+    margin-top: -2px;
+}
+
+/* How long it has left, drawn rather than guessed at. Matches SHOW_MS in
+   ui.js -- if the beat is retimed, retime this with it. */
+.bo-bar {
+    width: 128px; height: 3px;
+    margin-top: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .09);
+    overflow: hidden;
+}
+.bo-bar i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: var(--gold);
+    transform-origin: left center;
+    animation: bo-run 2.4s linear forwards;
+}
+.bo.foe .bo-bar i { background: var(--crimson); }
+@keyframes bo-run { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+@media (max-width: 480px) {
+    .bo-side.win .bo-face { width: 84px; height: 84px; }
+    .bo-side.lost .bo-face { width: 54px; height: 54px; }
+    .bo-faces { gap: 10px; }
+}
+
 /* ---- the merchant's stall --------------------------------------------- */
 
 .shop-section-note { font-size: 13px; color: #9a9a9a; margin: 0 0 10px; }
@@ -4852,6 +5019,7 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
             turnStartedAt: Date.now(),
             lastDie: null,
             dieSeq: 0,
+            battleSeq: 0,
             createdAt: Date.now(),
             updatedAt: Date.now(),
             version: 1
@@ -5996,6 +6164,36 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
         return ok();
     }
 
+    /* Who won, stamped with a running number the way a throw of the die and
+       the Gate's lightning are, so every client shows the finish once and
+       nobody sees it twice.
+
+       The battle is gone from the state by the time this is read, and that is
+       the whole point of it: without it the last thing the fight panel ever
+       said was the blow that ended it, and the screen simply moved on. This is
+       what the panel has to say in the beat between the last blow landing and
+       the next player being called. */
+    function noteBattleEnd(state, b, winner, loser) {
+        state.battleSeq = (state.battleSeq | 0) + 1;
+        state.lastBattle = {
+            n: state.battleSeq,
+            kind: b.kind,
+            illusion: !!b.illusion,
+            winner: winner,
+            loser: loser
+        };
+    }
+
+    // One side of a finish, said the same way whoever it was.
+    function asPlayer(p) {
+        return { name: p.name, cls: p.cls || null, enemyId: null };
+    }
+    function asEnemy(enemyId) {
+        // Capitalised: this name is used as a heading and at the head of a
+        // sentence, never mid-line, so "The Swarm of Bats" rather than "the".
+        return { name: D.foeName(D.ENEMIES[enemyId], true), cls: null, enemyId: enemyId };
+    }
+
     function winPve(state, p) {
         const b = state.battle;
         const e = D.ENEMIES[b.enemyId];
@@ -6034,6 +6232,7 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
         }
 
         const wasIllusion = b.illusion;
+        noteBattleEnd(state, b, asPlayer(p), asEnemy(b.enemyId));
         state.battle = null;
         p.energy = R.startingEnergy;
         if (wasIllusion) advanceTurn(state);
@@ -6045,6 +6244,7 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
         const e = D.ENEMIES[b.enemyId];
         log(state, D.foeName(e, true) + ' strikes ' + p.name + ' down. Back to the Start.', 'death');
         const wasIllusion = b.illusion;
+        noteBattleEnd(state, b, asEnemy(b.enemyId), asPlayer(p));
         state.battle = null;
         sendToStart(state, p, true);
         if (wasIllusion) advanceTurn(state);
@@ -6052,11 +6252,13 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     }
 
     function winPvp(state, winner, loser) {
+        const b = state.battle;
         const taken = loser.coins;
         winner.coins += taken;
         loser.coins = 0;
         log(state, winner.name + ' defeats ' + loser.name +
                    ' and takes ' + taken + ' coins.', 'system');
+        noteBattleEnd(state, b, asPlayer(winner), asPlayer(loser));
         state.battle = null;
         sendToStart(state, loser, true);
         winner.energy = R.startingEnergy;
@@ -8885,7 +9087,9 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
            fixed, so the question has to be asked again each time rather than
            answered once. */
         function whenTableClear(fn) {
-            if (!DICE.onScreen() && !ROLL_CALL.busy()) { fn(); return; }
+            if (!DICE.onScreen() && !ROLL_CALL.busy() && !BATTLE_END.busy()) {
+                fn(); return;
+            }
             setTimeout(() => whenTableClear(fn), 140);
         }
 
@@ -9023,6 +9227,88 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     }
 
     /* ------------------------------------------------------------------ */
+    /* Who won                                                             */
+    /*                                                                     */
+    /* A fight ends on a blow, and the blow used to be the last thing the   */
+    /* panel ever said: the health bar reached nil, the panel went, and the */
+    /* next player was called. There was no moment in which the fight was   */
+    /* over -- it simply stopped being on the screen.                       */
+    /*                                                                     */
+    /* So the panel it was fought in is filled with the result and held for */
+    /* a beat. It waits behind the die that decided it, and the card naming */
+    /* the next player waits behind it, so the finish reads in the order it */
+    /* happened: the blow, the number, who won, whose go it is now.         */
+    /* ------------------------------------------------------------------ */
+
+    const BATTLE_END = (function () {
+        const SHOW_MS = 2400;
+
+        let primed = false;      // have we seen this room at all yet?
+        let seen = 0;            // the last finish we have shown
+        let pending = 0;         // owed, but waiting on the die
+        let showing = false;
+        let hideT = null;
+        let dueAt = 0;
+
+        // As with every other card here: one left up by a frozen tab holds
+        // the gate shut, and the gate is what the whole screen waits on.
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden || !showing) return;
+            if (Date.now() >= dueAt) done();
+        });
+
+        function done() {
+            clearTimeout(hideT);
+            if (!showing) return;
+            showing = false;
+            // The result was put into the fight's own panel, so taking it
+            // away is what closes the panel.
+            if (shownKey === 'battle-over') closeModal();
+        }
+
+        /* Behind the die. The blow that ended the fight may have thrown one
+           of its own -- the Dark Spirits Set does -- and that number is the
+           reason the fight is over, so it is read first. Only the turning is
+           waited on: a die lying on the table is read by then and the result
+           is meant to arrive underneath it, as everything else does. */
+        function whenClear(fn) {
+            if (!DICE.busy() && !ROLL_CALL.busy()) { fn(); return; }
+            setTimeout(() => whenClear(fn), 120);
+        }
+
+        function play(r) {
+            showing = true;
+            showModal(battleOverHtml(r), false, 'battle-over');
+            dueAt = Date.now() + SHOW_MS;
+            clearTimeout(hideT);
+            hideT = setTimeout(done, SHOW_MS);
+        }
+
+        return {
+            busy() { return pending > 0 || showing; },
+
+            saw(state) {
+                const r = state && state.lastBattle;
+                const n = (r && typeof r.n === 'number') ? r.n : 0;
+                // The first snapshot of a room is history, not a fight that
+                // just finished -- joining or reloading should not announce
+                // somebody else's battle from ten minutes ago.
+                if (!primed) { primed = true; seen = n; return; }
+                if (!r || n === seen) return;
+                seen = n;
+                // Taking the dragon ends the game, and the victory screen says
+                // so far better than a panel would.
+                if (state.phase !== 'playing') return;
+                pending += 1;
+                whenClear(() => {
+                    pending = Math.max(0, pending - 1);
+                    play(r);
+                });
+            }
+        };
+    })();
+
+    /* ------------------------------------------------------------------ */
     /* Holding the table                                                   */
     /*                                                                     */
     /* Two things take the screen over for a moment: the card saying whose */
@@ -9055,7 +9341,8 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
         let poll = null;
 
         function busyNow() {
-            return TURN_ANNOUNCE.busy() || STEAK.busy() || ROLL_CALL.busy();
+            return TURN_ANNOUNCE.busy() || STEAK.busy() || ROLL_CALL.busy() ||
+                   BATTLE_END.busy();
         }
 
         function pump() {
@@ -9435,9 +9722,22 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
 
     function onState(state) {
         S = state;
+        /* The order these are taken in is the order they will reach the
+           screen, so it is the order the beats belong in: the die that decided
+           things goes up first, then the result of the fight it decided, and
+           only then is the next player called.
+
+           `retireAnsweredPanel` sits between them deliberately. It must run
+           before the card -- the card is played from TURN_ANNOUNCE.saw, and a
+           square panel that has been answered must not still be on the screen
+           underneath it -- and after BATTLE_END has been told, so that a fight
+           panel whose result is owed is left standing to be filled in rather
+           than closed and reopened. */
         DICE.saw(state);
         ZAP.saw(state);
         STEAK.saw(state);
+        BATTLE_END.saw(state);
+        retireAnsweredPanel();
         TURN_ANNOUNCE.saw(state);
         if (state.phase === 'lobby') { showScreen('screen-lobby'); renderLobby(); }
         else if (state.phase === 'over') {
@@ -11607,6 +11907,29 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
        screen any more. Whatever the answer turned out to mean still waits for
        the table, as it should. */
     function retireAnsweredPanel() {
+        /* The fight is over. Its panel goes now rather than sitting there
+           through the card announcing whose go it is next -- the battle ending
+           is often the thing that passes the turn on, so the card is already
+           owed at the moment the last blow lands, and the panel was being
+           carried along behind it: you saw the next player announced over the
+           top of a fight that had already finished, and only then did the
+           fight leave the screen.
+
+           Not over the top of a die that is still deciding something, though.
+           A blow that throws its own die -- the Dark Spirits Set -- has to be
+           read before the panel it belongs to is taken away, so this waits for
+           the cube to stop. That still comes well before the card, which waits
+           for the die to leave the screen altogether rather than merely to
+           stop turning. */
+        if (shownKey === 'battle') {
+            // Not while the result of that fight is owed or on the screen --
+            // the result is put into this very panel, so closing it first
+            // would blink the screen between the two.
+            if (!S.battle && !DICE.busy() && !BATTLE_END.busy()) closeModal();
+            return;
+        }
+        // The result panel is the fight's own, and it leaves on its own clock.
+        if (shownKey === 'battle-over') return;
         if (shownKey !== 'pending' || !askingNow) return;
         if (pendingSig(S) === askingNow) return;      // still the same question
         closeModal();
@@ -11683,6 +12006,54 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     }
     function missRule() {
         return missesUpTo() === 1 ? 'Only a 1 misses.' : 'Only a 1 or 2 misses.';
+    }
+
+    /* The finish, drawn into the panel the fight was fought in.
+
+       Both sides are shown, because who lost is half of what happened: the
+       winner stands lit and named, the loser is dimmed and struck through
+       beside them. A player winning is gold; a monster winning is not, and
+       says so in the crimson the death lines in the log are written in. */
+    function battleFaceHtml(side, big) {
+        const n = big ? 104 : 66;
+        if (side.enemyId && D.ENEMIES[side.enemyId]) {
+            return enemyPic(D.ENEMIES[side.enemyId], n);
+        }
+        if (side.cls && D.CLASSES[side.cls]) {
+            return '<img src="' + esc(D.CLASSES[side.cls].art) + '" alt="' +
+                   esc(side.name) + '">';
+        }
+        return '';
+    }
+
+    function battleOverHtml(r) {
+        const monsterWon = !!r.winner.enemyId;
+        const mine = !r.winner.enemyId && me() &&
+                     r.winner.cls === me().cls && r.winner.name === me().name;
+        const what = r.kind === 'pvp' ? 'Player battle'
+                   : r.illusion ? 'The illusion breaks'
+                   : 'Battle over';
+
+        return '<div class="bo' + (monsterWon ? ' foe' : '') +
+                   (mine ? ' mine' : '') + '">' +
+            '<div class="bo-tag">' + esc(what) + '</div>' +
+
+            '<div class="bo-faces">' +
+                '<div class="bo-side win">' +
+                    '<div class="bo-face">' + battleFaceHtml(r.winner, true) + '</div>' +
+                    '<div class="bo-crown">\u2605</div>' +
+                '</div>' +
+                '<div class="bo-beat">beat</div>' +
+                '<div class="bo-side lost">' +
+                    '<div class="bo-face">' + battleFaceHtml(r.loser, false) + '</div>' +
+                '</div>' +
+            '</div>' +
+
+            '<div class="bo-who">' + esc(r.winner.name) + '</div>' +
+            '<div class="bo-verb">' + (mine ? 'you win' : 'wins') + '</div>' +
+            '<div class="bo-lost">' + esc(r.loser.name) + ' is beaten</div>' +
+            '<div class="bo-bar"><i></i></div>' +
+        '</div>';
     }
 
     function renderBattleModal() {
