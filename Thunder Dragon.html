@@ -4192,7 +4192,11 @@ body.modal-cover #board * {
         heavy_armour: {
             id: 'heavy_armour', name: 'Heavy Armour', kind: 'armour', subtype: 'knight',
             defence: 20, dice: -1,
-            text: 'Take 20 less damage, but every dice roll is reduced by 1.'
+            // "every dice roll" was not true: the -1 is applied in rollMove
+            // and nowhere else, so it never touched a roll to strike, a hunt
+            // or an ability. The weight slows you down the board, not in a
+            // fight, which is also the sense the card was meant to have.
+            text: 'Take 20 less damage, but minus 1 to your movement roll.'
         },
         royal_guards_uniform: {
             id: 'royal_guards_uniform', name: "Royal Guard's Uniform", kind: 'armour', subtype: 'knight',
@@ -4727,6 +4731,12 @@ body.modal-cover #board * {
         maxPlayers: 6,
         maxPerClass: 2,
         turnTimeoutMs: 90000,          // auto-skip after 90 seconds of inactivity
+        /* A battle turn is a shorter clock than a whole go. The turn clock is
+           already restarted at every handover in a fight -- each exchange gets
+           its own -- and 90 seconds apiece is a long time to sit watching
+           somebody else decide which way to swing. There is also less to
+           decide: no shop, no trade, no reading the board. */
+        battleTimeoutMs: 45000,
         startingCoins: 0,
         // One weapon change and one armour change per turn, counted separately.
         equipChangesPerTurn: 1,
@@ -4736,7 +4746,7 @@ body.modal-cover #board * {
         // many people are at the table.
         abilityCooldownTurns: 3,
         // A Mage's conjured swarm is not the real animal.
-        illusionDamageBoost: 15,
+        illusionDamageBoost: 10,
         // The conjured swarm is worked out from the real one, so raising
         // the swarm's health raises the illusion's with it.
         illusionHpDrop: 20,
@@ -5341,10 +5351,20 @@ body.modal-cover #board * {
         return ok();
     }
 
+    /* How long the player whose go it is has, before the clock takes it off
+       them. A fight runs on a shorter one -- see battleTimeoutMs. Kept here
+       rather than worked out at each of the three places that need it (the
+       engine's own check, the heartbeat that calls it, and the number counting
+       down on the screen), so the clock the player is watching is the clock
+       they are actually being held to. */
+    function turnLimit(state) {
+        return state && state.battle ? R.battleTimeoutMs : R.turnTimeoutMs;
+    }
+
     function checkTimeout(state, now) {
         if (state.phase !== 'playing') return false;
         if (state.paused) return false;        // the clock stops with everything else
-        if ((now - (state.turnStartedAt || 0)) < R.turnTimeoutMs) return false;
+        if ((now - (state.turnStartedAt || 0)) < turnLimit(state)) return false;
 
         // A battle must be settled, not silently deleted — otherwise the AFK
         // player escapes and the other side never gets what they earned.
@@ -5747,7 +5767,7 @@ body.modal-cover #board * {
         p.energy = R.startingEnergy;
         p.extraRun = null;              // a fresh fight, a fresh Triple Whack
         // A Mage's conjuring is a nastier thing than the real animal: it hits
-        // for 15 more and there is 20 less of it.
+        // for 10 more and there is 20 less of it. Both numbers are in RULES.
         const conjuredHp = Math.max(1, e.hp - (isIllusion ? R.illusionHpDrop : 0));
         state.battle = {
             kind: 'pve',
@@ -7080,7 +7100,7 @@ body.modal-cover #board * {
         usePowerup, usePotion, eatSteak, cookSteaks, equip, useAbility, buy,
         payInCoins, setPaused,
         proposeTrade, respondTrade, cancelTrade, collapse, closeGame,
-        fragmentsOf, suitsClass,
+        fragmentsOf, suitsClass, turnLimit,
         totalDefence, totalAttackBonus, diceModifier, diceChoosable,
         equippedWeapon, equippedArmour, player, square, previewWalk,
         attackParts, defenceParts, uid, d6
@@ -8257,7 +8277,7 @@ body.modal-cover #board * {
                 if (!res || !res.ok) {
                     // Truly wedged: retire the turn the way the clock would.
                     E.checkTimeout(state,
-                        (state.turnStartedAt || 0) + D.RULES.turnTimeoutMs + 1);
+                        (state.turnStartedAt || 0) + E.turnLimit(state) + 1);
                     repeated = { sig: '', count: 0 };
                 }
             }
@@ -9843,7 +9863,7 @@ body.modal-cover #board * {
         reaped = false;
         enterRoom._hb = setInterval(() => {
             if (!S || S.phase !== 'playing') return;
-            if (Date.now() - (S.turnStartedAt || 0) < D.RULES.turnTimeoutMs) return;
+            if (Date.now() - (S.turnStartedAt || 0) < E.turnLimit(S)) return;
 
             const waitingOn = S.battle ? E.battleActorId(S) :
                 (S.pending ? S.pending.playerId :
@@ -10585,7 +10605,7 @@ body.modal-cover #board * {
     function tickTimer() {
         const el = $('#turn-timer');
         if (!el || !S || S.phase !== 'playing') return;
-        const left = Math.max(0, D.RULES.turnTimeoutMs - (Date.now() - (S.turnStartedAt || 0)));
+        const left = Math.max(0, E.turnLimit(S) - (Date.now() - (S.turnStartedAt || 0)));
         el.textContent = left > 0 ? Math.ceil(left / 1000) + 's left' : 'skipping…';
     }
     setInterval(tickTimer, 1000);
