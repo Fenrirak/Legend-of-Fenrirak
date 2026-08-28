@@ -4229,17 +4229,17 @@ body.modal-cover #board * {
         light_armour: {
             id: 'light_armour', name: 'Light Armour', kind: 'armour', subtype: 'archer',
             defence: 0, dice: 1,
-            text: 'Add up to 1 to your dice roll.'
+            text: 'Add up to 1 to your movement roll.'
         },
         plated_light_armour: {
             id: 'plated_light_armour', name: 'Plated Light Armour', kind: 'armour', subtype: 'archer',
             defence: 5, dice: 1,
-            text: 'Take 5 less damage and add up to 1 to your dice roll.'
+            text: 'Take 5 less damage and add up to 1 to your movement roll.'
         },
         royal_archers_suit: {
             id: 'royal_archers_suit', name: "Royal Archer's Suit", kind: 'armour', subtype: 'archer',
             defence: 20, dice: 1,
-            text: 'Take 20 less damage and add up to 1 to your dice roll.'
+            text: 'Take 20 less damage and add up to 1 to your movement roll.'
         },
 
         /* --- Mage: magic ----------------------------------------------- */
@@ -4328,7 +4328,7 @@ body.modal-cover #board * {
             id: 'reinforced_light_armour', name: 'Reinforced Light Armour',
             kind: 'armour', subtype: 'any',
             defence: 10, dice: 1, price: 12,
-            text: 'Take 10 less damage and add up to 1 to your dice roll.'
+            text: 'Take 10 less damage and add up to 1 to your movement roll.'
         },
         iron_armour: {
             id: 'iron_armour', name: 'Iron Armour', kind: 'armour', subtype: 'any',
@@ -4429,7 +4429,7 @@ body.modal-cover #board * {
             id: 'charged_speed_set', name: 'Charged Speed Set',
             kind: 'armour', subtype: 'any', chest: true,
             defence: 5, diceUpTo: 3,
-            text: 'Take 5 less damage and you may add up to 3 to your dice roll.'
+            text: 'Take 5 less damage and you may add up to 3 to your movement roll.'
         },
 
         /* one special weapon for each class, each with its Extra Move */
@@ -8394,7 +8394,11 @@ body.modal-cover #board * {
     function subscribe(code, onState, onError) {
         listeners.push(onState);
         if (state) setTimeout(() => onState(state), 0);
-        else if (onError) setTimeout(() => onError(new Error('The room was closed.')), 0);
+        else if (onError) setTimeout(() => {
+            const gone = new Error('The room was closed.');
+            gone.roomGone = true;          // flagged, as in net.js
+            onError(gone);
+        }, 0);
         return function unsubscribe() {
             listeners = listeners.filter(fn => fn !== onState);
             if (!listeners.length) clearTimeout(timer);
@@ -9861,8 +9865,85 @@ body.modal-cover #board * {
         if (message) notice(message);
     }
 
+    /* Listening to the room, and *keeping* listening to it.
+
+       Firestore's error callback is the end of a listener: once it has been
+       called that stream is finished and the SDK will not pick it up again.
+       Left at a notice, as this was, a client that lost its listener sat
+       frozen on the last state it had been sent -- for ever, until the player
+       thought to reload. The room went on without them.
+
+       That is worst exactly where it is least excusable: a pause. Everybody
+       idles, tabs go to the background, phones sleep, a connection blips --
+       and the last state anyone was sent was the paused one. The host lifts
+       the pause and the game moves on, but those clients never hear it and
+       sit on "Paused" with no way out. So a dropped listener is re-opened
+       rather than reported, backing off a little each time so a room that is
+       genuinely unreachable is not hammered. */
+
+    let reconnectT = null;
+    let reconnectN = 0;
+    /* Each attempt is numbered, and only the newest one is listened to. A
+       listener that has been replaced may still have a snapshot or an error
+       in flight, and neither is allowed to speak for the room any more --
+       otherwise a stale one clears the warning, or cancels the retry that is
+       the only thing bringing the game back. */
+    let listenGen = 0;
+    const RECONNECT_NOTICE = 'Connection lost — reconnecting…';
+
+    function stopReconnecting() {
+        if (reconnectT) { clearTimeout(reconnectT); reconnectT = null; }
+        reconnectN = 0;
+    }
+
+    function listen(code) {
+        const gen = ++listenGen;
+        unsub = NET.subscribe(code, state => {
+            if (gen !== listenGen) return;              // superseded
+            // A snapshot is proof the line is open again.
+            if (reconnectN) {
+                stopReconnecting();
+                if (($('#notice') || {}).textContent === RECONNECT_NOTICE) notice('');
+            }
+            onState(state);
+        }, err => {
+            if (gen !== listenGen) return;              // superseded
+            // This listener is already dead; do not leave a handle to it.
+            unsub = null;
+
+            /* Only the flag set where the room is actually found missing --
+               never the wording of the message, which for a network fault is
+               written by Firestore and is not ours to read. */
+            const gone = !!err.roomGone;
+            // The room being deleted underneath a finished game is the
+            // finished game being tidied up, not somebody ending it. Stay
+            // on the victory screen.
+            if (gone && S && S.phase === 'over') {
+                clearInterval(enterRoom._hb);
+                return;
+            }
+            if (gone) {
+                leaveClosedRoom('The host ended the game and closed the room.');
+                return;
+            }
+
+            // Anything else is the line going down, not the room going away.
+            if (ROOM !== code) return;          // we have since left this room
+            const wait = Math.min(1000 * Math.pow(2, reconnectN), 15000);
+            reconnectN += 1;
+            notice(RECONNECT_NOTICE);
+            if (reconnectT) clearTimeout(reconnectT);
+            reconnectT = setTimeout(() => {
+                reconnectT = null;
+                if (ROOM !== code) return;
+                listen(code);
+            }, wait);
+        });
+    }
+
     function enterRoom(code) {
         ROOM = code;
+        stopReconnecting();
         // A solo game has nothing to invite anybody to, so it does not go in
         // the address bar.
         if (NET !== SOLO) {
@@ -9872,22 +9953,7 @@ body.modal-cover #board * {
         }
 
         if (unsub) unsub();
-        unsub = NET.subscribe(code, onState, err => {
-            const gone = /closed|no longer exists/i.test(err.message || '');
-            // The room being deleted underneath a finished game is the
-            // finished game being tidied up, not somebody ending it. Stay
-            // on the victory screen.
-            if (gone && S && S.phase === 'over') {
-                if (unsub) { unsub(); unsub = null; }
-                clearInterval(enterRoom._hb);
-                return;
-            }
-            if (gone) {
-                leaveClosedRoom('The host ended the game and closed the room.');
-                return;
-            }
-            notice(err.message || 'Connection lost.');
-        });
+        listen(code);
 
         // No idle chatter: the only background write is retiring a turn that
         // has genuinely run out, and only a player who is not the one being
@@ -9946,6 +10012,7 @@ body.modal-cover #board * {
         const code = ROOM;
         setTimeout(() => {
             try { if (unsub) { unsub(); unsub = null; } } catch (e) { }
+            try { stopReconnecting(); } catch (e) { }
             try { clearInterval(enterRoom._hb); } catch (e) { }
             Promise.resolve(NET.closeRoom(code)).catch(() => {
                 /* somebody else got there first, or the network went away --
@@ -10437,6 +10504,11 @@ body.modal-cover #board * {
     function backHome() {
         if (unsub) unsub();
         unsub = null;
+        // ROOM is cleared below, which is what stops a pending retry, but the
+        // timer itself goes now rather than firing into an empty screen, and
+        // the generation moves on so nothing still in flight is listened to.
+        listenGen += 1;
+        stopReconnecting();
         clearInterval(enterRoom._hb);
         ROOM = null; S = null;
         closeModal();
@@ -13950,7 +14022,14 @@ function subscribe(code, onState, onError) {
     return onSnapshot(roomRef(code),
         (snap) => {
             if (!snap.exists()) {
-                onError && onError(new Error('The room was closed.'));
+                // The room really is gone. Flagged rather than left to be
+                // recognised by its wording: a caller that has to read the
+                // message to tell "the room was deleted" from "the line went
+                // down" will one day meet a network error with the word
+                // "closed" in it and throw a player out of a live game.
+                const gone = new Error('The room was closed.');
+                gone.roomGone = true;
+                onError && onError(gone);
                 return;
             }
             onState(snap.data());
