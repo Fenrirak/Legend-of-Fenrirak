@@ -4214,14 +4214,20 @@ body.modal-cover #board * {
         },
 
         /* --- Mage: armour ---------------------------------------------- */
+        // Both Light Cloaks carry the +1. They were transcribed from the
+        // photographs as two different cards, one with the movement bonus and
+        // one without; on your instruction they now do the same thing. The two
+        // ids stay separate because saved games and the Mage's armour deck
+        // both name them.
         light_cloak: {
             id: 'light_cloak', name: 'Light Cloak', kind: 'armour', subtype: 'mage',
-            defence: 5, text: 'Take 5 less damage.'
+            defence: 5, dice: 1,
+            text: 'Take 5 less damage. Add up to 1 to your movement roll.'
         },
         light_cloak_swift: {
             id: 'light_cloak_swift', name: 'Light Cloak', kind: 'armour', subtype: 'mage',
             defence: 5, dice: 1,
-            text: 'Take 5 less damage. Add up to one to your dice roll.'
+            text: 'Take 5 less damage. Add up to 1 to your movement roll.'
         },
         royal_mages_robe: {
             id: 'royal_mages_robe', name: "Royal Mage's Robe", kind: 'armour', subtype: 'mage',
@@ -4306,11 +4312,19 @@ body.modal-cover #board * {
             text: 'Take 30 less damage. You will always attack first in a PvP battle.'
         },
         dragon_scale_armour: {
-            id: 'dragon_scale_armour', name: 'Dragon Scale Armour',
+            // The id is the old name and stays that way: it is written into
+            // saved games and into the Crimson Keep's stock list, and renaming
+            // a thing on the card is not the same as renaming it underneath.
+            id: 'dragon_scale_armour', name: "Fenrirak's Scale Tunic",
             kind: 'armour', subtype: 'archer', treasure: true, keep: 'archer',
             defence: 35, fenrirakMovesPvp: true,
-            text: 'Take 35 less damage. You may use one of Fenrirak’s attacks in a PvP ' +
-                  'battle (requires the same amount of energy as Fenrirak).'
+            // Which of Fenrirak's three it lends. Thunder is left out: at 1
+            // energy it was the one you could always afford, so the tunic was
+            // in effect a free 75-damage blow every battle turn.
+            fenrirakMoveIds: ['electrocute', 'discharge'],
+            text: 'Take 35 less damage. You may use Fenrirak’s Electrocute or ' +
+                  'Discharge in a PvP battle (requires the same amount of energy ' +
+                  'as Fenrirak).'
         },
         great_bulging_broadsword: {
             // The id is the old name and stays that way: it is written into
@@ -4360,9 +4374,9 @@ body.modal-cover #board * {
         dark_spirits_set: {
             id: 'dark_spirits_set', name: 'Dark Spirits Set',
             kind: 'armour', subtype: 'any', chest: true,
-            defence: 5, spiritRoll: true,
-            text: 'Take 5 less damage, and when you attack you may roll a die: on an ' +
-                  'even number do 15 more damage, on an odd number do 5 more damage.'
+            defence: 10, spiritRoll: true,
+            text: 'Take 10 less damage, and when you attack you may roll a die: on an ' +
+                  'even number do 20 more damage, on an odd number do 5 more damage.'
         },
         charged_speed_set: {
             id: 'charged_speed_set', name: 'Charged Speed Set',
@@ -4459,8 +4473,8 @@ body.modal-cover #board * {
         low_health_up:      { id: 'low_health_up',      name: 'Low Health Up',      effect: 'health',  value: 15, text: 'Add 15 health to your character.' },
         health_up:          { id: 'health_up',          name: 'Health Up',          effect: 'health',  value: 25, text: 'Add 25 health to your character.' },
         super_health_up:    { id: 'super_health_up',    name: 'Super Health Up',    effect: 'health',  value: 50, text: 'Add 50 health to your character.' },
-        low_speed_up:       { id: 'low_speed_up',       name: 'Low Speed Up',       effect: 'dice',    value: 1,  text: 'Add up to 1 to your dice roll.' },
-        speed_up:           { id: 'speed_up',           name: 'Speed Up',           effect: 'dice',    value: 3,  text: 'Add up to 3 to your dice roll.' },
+        low_speed_up:       { id: 'low_speed_up',       name: 'Low Speed Up',       effect: 'dice',    value: 1,  text: 'Add up to 1 to your movement roll.' },
+        speed_up:           { id: 'speed_up',           name: 'Speed Up',           effect: 'dice',    value: 3,  text: 'Add up to 3 to your movement roll.' },
         low_defence_up:     { id: 'low_defence_up',     name: 'Low Defence Up',     effect: 'defence', value: 5,  text: 'Take 5 less damage.' },
         defence_up:         { id: 'defence_up',         name: 'Defence Up',         effect: 'defence', value: 10, text: 'Take 10 less damage.' }
     };
@@ -5759,13 +5773,18 @@ body.modal-cover #board * {
         const cls = D.CLASSES[p.cls];
         let moves = cls.moves.slice();
 
-        // Dragon Scale Armour lends you Fenrirak's attacks in PvP.
+        // Fenrirak's Scale Tunic lends you some of Fenrirak's attacks in PvP
+        // -- which ones is written on the card, so a tunic that names none
+        // still lends the lot and an older save keeps working.
         const armour = defOf(equippedArmour(p));
         if (b.kind === 'pvp' && armour && armour.fenrirakMovesPvp) {
-            moves = moves.concat(D.ENEMIES.fenrirak.moves.map(m => ({
-                id: 'fenrirak_' + m.id, name: m.name + ' (Fenrirak)',
-                damage: m.damage, energy: m.energy
-            })));
+            const lent = armour.fenrirakMoveIds;
+            moves = moves.concat(D.ENEMIES.fenrirak.moves
+                .filter(m => !lent || lent.indexOf(m.id) !== -1)
+                .map(m => ({
+                    id: 'fenrirak_' + m.id, name: m.name + ' (Fenrirak)',
+                    damage: m.damage, energy: m.energy
+                })));
         }
 
         // A chest weapon carries an Extra Move printed on the other half of
@@ -5953,12 +5972,12 @@ body.modal-cover #board * {
         let bonus = totalAttackBonus(p);
 
         // The Dark Spirits Set throws its own die on every attack: even is
-        // +15, odd is +5. It is thrown on the table like every other die, so
+        // +20, odd is +5. It is thrown on the table like every other die, so
         // the overlay shows it and the log says what it came to.
         const armour = defOf(equippedArmour(p));
         if (armour && armour.spiritRoll && move.damage > 0) {
             const sp = throwDie(state, p.name, 'dark spirits');
-            const add = sp % 2 === 0 ? 15 : 5;
+            const add = sp % 2 === 0 ? 20 : 5;
             bonus += add;
             log(state, 'The Dark Spirits Set rolled a ' + sp + ' — ' +
                        (sp % 2 === 0 ? 'even' : 'odd') + ', +' + add + ' damage.', 'roll');
@@ -7114,10 +7133,10 @@ body.modal-cover #board * {
         v += (def.attack || 0);
         v += (def.dice || 0) * 6;
         v += (def.diceUpTo || 0) * 4;
-        if (def.spiritRoll) v += 10;              // +5 or +15 on every swing
+        if (def.spiritRoll) v += 12;              // +5 or +20 on every swing
         if (def.avoidPvp) v += 10;
         if (def.firstStrikePvp) v += 8;
-        if (def.fenrirakMovesPvp) v += 10;
+        if (def.fenrirakMovesPvp) v += 8;   // Electrocute and Discharge only
         if (def.payInCoins) v += Math.min(40, (p ? p.coins : 0)) / 4;
         if (def.uses) v -= 6;
         return v;
@@ -8760,6 +8779,38 @@ body.modal-cover #board * {
             hideT = setTimeout(() => back.classList.remove('on'), 1600);
         }
 
+        /* Not before the die.
+
+           The lightning arrives on the same snapshot as the throw that caused
+           it -- one transaction rolled the die, walked the token into the Gate
+           and threw the player off. But it is the *end* of that story, not the
+           start of it. Played the moment the snapshot landed, it went up while
+           the throw was still being called: you saw somebody flung back to the
+           Start and then watched them roll for the move that did it.
+
+           The walk is already held behind the die (see playWalks), so it is
+           held behind the same things here, and then behind the walk itself.
+           A clear table is not by itself proof the walk is over -- it may not
+           have started yet, since it only picks up once the die is read -- so
+           the die and its card must be done for a few beats running before the
+           walk is asked about. The cap is there so the flash is never simply
+           lost if one of those never finishes. */
+        function whenWalked(fn) {
+            const giveUp = Date.now() + 6000;
+            let settled = 0;
+            (function tick() {
+                if (Date.now() > giveUp) { fn(); return; }
+                if (DICE.busy() || ROLL_CALL.busy()) {
+                    settled = 0;
+                    setTimeout(tick, 120);
+                    return;
+                }
+                settled += 1;
+                if (settled < 4 || walksRunning()) { setTimeout(tick, 120); return; }
+                fn();
+            })();
+        }
+
         return {
             saw(state) {
                 const z = state && state.lastZap;
@@ -8769,7 +8820,8 @@ body.modal-cover #board * {
                 if (!primed) { primed = true; seen = n; return; }
                 if (!z || n === seen) return;
                 seen = n;
-                play(z.who || 'Somebody');
+                const who = z.who || 'Somebody';
+                whenWalked(() => play(who));
             }
         };
     })();
@@ -10935,9 +10987,6 @@ body.modal-cover #board * {
             '<path d="M58 104V86a12 12 0 0 1 24 0v18z" fill="#3f3850"/>' +
             '<g stroke="#6f6680" stroke-width="1.6" opacity=".9">' +
             '<path d="M62 88v16M70 84v20M78 88v16M58 92h24M58 98h24"/></g>' +
-            // the courses in the stone
-            '<g stroke="#7d7490" stroke-width="1.3" fill="none" opacity=".7">' +
-            '<path d="M14 82h112M14 93h44M82 93h44M52 58h36M52 72h36"/></g>' +
             // the banners off the towers
             '<g fill="#c4413a" stroke="#5e1a17" stroke-width="1.6">' +
             '<path d="M21 26V8h16l-4 6 4 6H21z"/>' +
@@ -12614,7 +12663,7 @@ body.modal-cover #board * {
         const defence = guard.reduce((n, x) => n + x.value, 0);
 
         /* The Dark Spirits Set throws a die of its own on every attack -- even
-           is +15, odd is +5 -- so with it on there is no single answer to give
+           is +20, odd is +5 -- so with it on there is no single answer to give
            yet, only the two the die chooses between. Both are shown. */
         const armour = E.equippedArmour(p);
         const spirits = armour && D.ITEMS[armour.id] && D.ITEMS[armour.id].spiritRoll
@@ -12622,7 +12671,7 @@ body.modal-cover #board * {
 
         const base = move.damage + parts.reduce((n, x) => n + x.value, 0);
         const low  = Math.max(0, base + (spirits ? 5 : 0) - defence);
-        const high = Math.max(0, base + (spirits ? 15 : 0) - defence);
+        const high = Math.max(0, base + (spirits ? 20 : 0) - defence);
 
         const bit = (sign, label, value) =>
             '<span class="sum-op">' + sign + '</span>' +
