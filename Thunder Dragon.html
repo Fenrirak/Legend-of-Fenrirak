@@ -1666,6 +1666,9 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     color: var(--gold-bright);
     font-family: 'Cutive Mono', 'Courier New', monospace;
     font-size: 14px;
+    /* The glyph box carries no leading of its own, so the grid centres the
+       digit rather than the line it sits on. */
+    line-height: 1;
     margin-top: 1px;
 }
 .guide-steps b, .home-steps b {
@@ -1675,7 +1678,12 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     margin-bottom: 2px;
     font-weight: 600;
 }
-.guide-steps span, .home-steps span {
+/* The step's description, and only that. Written as a bare `span` this also
+   caught the numbered badge -- which is a span too, and a more specific
+   selector than the badge's own -- and quietly took its display, its size and
+   its colour away. That is what knocked the numbers off centre: `place-items`
+   does nothing to a block. Aimed at the text beside the badge instead. */
+.guide-steps div span, .home-steps div span {
     display: block;
     color: #b6b2ab;
     font-size: 13.5px;
@@ -3656,6 +3664,28 @@ body.modal-cover #board * {
    only, and only for this panel -- the modal is shared, and other panels
    have art that is allowed to sit proud. */
 #modal-back[data-key="guide"] .modal { overflow-x: hidden; }
+
+/* The first-run question. Deliberately small and quiet -- it is a doorway,
+   not the guide itself, and it stands between a new player and their first
+   go, so it says its piece in two lines and gets out of the way. */
+.guide-ask { font-family: 'Comfortaa', 'Trebuchet MS', 'Segoe UI', sans-serif; }
+.guide-ask h2 {
+    margin: 0 0 8px;
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    color: var(--gold-bright);
+    letter-spacing: .5px;
+}
+.guide-ask .sub {
+    margin: 0;
+    color: #bdb9b2;
+    font-size: 14px;
+    line-height: 1.7;
+}
+.guide-ask .sub b { color: var(--cream); font-weight: 600; }
+/* The doorway is narrower than the guide it opens onto -- but wide enough to
+   keep both answers on one row, so neither reads as the afterthought under
+   the other. They still stack on a phone, where everything does. */
+#modal-back[data-key="guide-ask"] .modal { max-width: 520px; }
 
     </style>
 
@@ -12742,17 +12772,51 @@ body.modal-cover #board * {
         });
     }
 
-    /* Shown once, the first time somebody gets to a board, and never again.
-       Never over the top of anything either: if the table is busy, or a
-       question is already being asked, it waits and tries on the next
-       render. */
+    /* Asked once, the first time somebody gets to a board, and never again.
+
+       Asked rather than simply shown: a player who already knows the game --
+       or who would rather find it out by playing -- should not have to close
+       a wall of rules to get to their first go. It is two buttons, and the
+       answer is taken either way.
+
+       Never over the top of anything: if the table is busy, or a question is
+       already being asked, it waits and tries again on the next render. */
     function offerGuideOnce() {
         let seen = '1';
         try { seen = localStorage.getItem(GUIDE_SEEN_KEY); } catch (e) { seen = '1'; }
         if (seen) return;
         if (!S || S.phase !== 'playing') return;
         if (overlay || S.battle || S.pending || tableHeld()) return;
-        openGuide();
+        askAboutGuide();
+    }
+
+    function markGuideSeen() {
+        try { localStorage.setItem(GUIDE_SEEN_KEY, '1'); } catch (e) { /* private mode */ }
+    }
+
+    function askAboutGuide() {
+        overlay = { key: 'guide-ask', draw: askAboutGuide };
+        showModal(
+            '<div class="guide-ask">' +
+                '<h2>First time here?</h2>' +
+                '<div class="sub">There is a short run-through of how a turn works, ' +
+                    'what the squares do and how fighting is scored. It takes a minute, ' +
+                    'and you can open it again whenever you like from ' +
+                    '<b>How to play</b> beside your actions.</div>' +
+                '<div class="modal-actions">' +
+                    '<button class="btn primary" id="guide-yes">Show me how to play</button>' +
+                    '<button class="btn" id="guide-no">I’ll work it out</button>' +
+                '</div>' +
+            '</div>', true, 'guide-ask');
+
+        // Either answer settles it for good -- being asked twice is the thing
+        // this is meant to avoid.
+        bind('guide-yes', () => { markGuideSeen(); openGuide(); });
+        bind('guide-no', () => {
+            markGuideSeen();
+            closeOverlay();
+            if (S && ROOM) renderModal(); else closeModal();
+        });
     }
 
 
