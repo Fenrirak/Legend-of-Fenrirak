@@ -1,8 +1,13 @@
 /* =========================================================================
-   Legend of Fenrirak — shared site navigation.
+   Legend of Fenrirak — shared site navigation & scroll-experience kit.
 
-   One flat, quiet bar used by every page. Edit here, not in each page.
+   One flat, quiet bar used by every page, plus a small set of reusable
+   "chronicle" components (chapter index, reveal-on-scroll, lightbox,
+   progress bar, back-to-top) used by the longer story-style pages.
+   Edit here, not in each page.
    ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Comfortaa:wght@400;500;700&display=swap');
 
 .topbar {
     /* Set here rather than relying on a global reset: without it the side
@@ -49,9 +54,10 @@
     box-shadow: none;
     white-space: nowrap;
     text-decoration: none;
-    font-family: Allegro, serif;
-    font-size: 14px;
-    letter-spacing: 0.2px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
     color: #9c9a95;
     border-bottom: 2px solid transparent;
     cursor: pointer;
@@ -127,7 +133,7 @@
     padding: 11px 16px;
     border-bottom: none;
     border-left: 2px solid transparent;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .topbar .nav-menu a:hover {
@@ -156,7 +162,7 @@
     .topbar .nav-links a,
     .topbar .nav-trigger {
         padding: 12px 10px;
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .topbar .nav-links > a > span,
@@ -182,3 +188,183 @@
 
     .topbar .nav-menu a span { display: inline; }
 }
+
+/* =========================================================================
+   SHARED "CHRONICLE" COMPONENTS
+   Used by the longer, scrolling story-style pages (About, Creators).
+   Every rule below is inert unless the matching element exists on the page,
+   so it never changes how the short pages (Home, AfterShowdowns) look.
+   ========================================================================= */
+
+/* ---- reveal-on-scroll --------------------------------------------------
+   Gated behind html.js so that with JavaScript disabled everything is
+   simply visible right away — content is never hidden behind a script. */
+.js .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+    will-change: opacity, transform;
+}
+.js .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .js .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* ---- top scroll-progress thread ---------------------------------------- */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(217, 163, 92, 0.55), rgb(242, 204, 143));
+    z-index: 400;
+    transition: width 0.1s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+    .scroll-progress { transition: none; }
+}
+
+/* ---- chapter index / sub-nav -------------------------------------------
+   A sticky row of pills just under the main topbar, letting people jump
+   straight to a chapter. The active pill borrows that chapter's own
+   accent colour (set per link via inline style/CSS custom property), so
+   the index doubles as a little key to the colour-coding used below. */
+.subnav {
+    position: sticky;
+    top: var(--topbar-h, 58px);
+    z-index: 190;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding: 10px 16px;
+    margin: 0 0 30px 0;
+    background: rgba(18, 18, 18, 0.88);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.subnav::-webkit-scrollbar { display: none; }
+
+.subnav a {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #b7b3ac;
+    text-decoration: none;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.subnav a:hover {
+    color: #efe9de;
+    border-color: rgba(255, 255, 255, 0.32);
+}
+
+.subnav a.active {
+    color: var(--tab-c, rgb(242, 204, 143));
+    border-color: var(--tab-c, rgb(217, 163, 92));
+    background: color-mix(in srgb, var(--tab-c, rgb(217, 163, 92)) 14%, transparent);
+}
+
+/* ---- floating back-to-top ----------------------------------------------- */
+.back-to-top {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 300;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #1b1b20;
+    border: 1px solid rgba(217, 163, 92, 0.4);
+    color: rgb(242, 204, 143);
+    text-decoration: none;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+.back-to-top svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+.back-to-top.visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+.back-to-top:hover {
+    background-color: #292930;
+    border-color: rgb(217, 163, 92);
+}
+
+/* ---- lightbox ------------------------------------------------------------ */
+.lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5vh 5vw;
+    background: rgba(8, 8, 9, 0.92);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+}
+.lightbox-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+.lightbox-overlay img {
+    max-width: 100%;
+    max-height: 90vh;
+    width: auto;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+.lightbox-overlay .lightbox-close {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #efe9de;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+.lightbox-overlay .lightbox-close:hover { background: rgba(255, 255, 255, 0.14); }
+
+/* Any image opted into the lightbox gets an inviting little lift. */
+.lightbox-trigger { cursor: zoom-in; }

@@ -1,197 +1,314 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
     <meta charset="UTF-8">
 
+    <!-- Adds a `js` class immediately (before anything paints) so the
+         reveal-on-scroll effect below can safely hide .reveal elements
+         only when JavaScript is actually going to bring them back. If
+         this script never runs, .reveal content is simply visible. -->
+    <script>document.documentElement.classList.add('js');</script>
+
     <!-- Makes the website fit phone screens -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>About - Legend of Fenrirak</title>
+    <title>About &amp; Gallery - Legend of Fenrirak</title>
 
     <link rel="icon" type="image/png" href="Favicon.png">
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet">
+    <meta name="description"
+        content="The story of Legend of Fenrirak, its games and books, and a photo gallery of them all.">
 
     <link rel="stylesheet" href="site-nav.css">
 
     <style>
 
+        :root {
+            --c-cream: rgb(255, 246, 230);
+            --c-thunder: #ebca13;
+            --c-ice: #7373ff;
+            --c-showdowns: #4a82c7;
+            --c-forgotten: #b98d1b;
+            --c-minecraft: #4caf50;
+            --c-timeline: #d9a35c;
+        }
+
+        * { box-sizing: border-box; }
+
         body {
             background-color: #121212;
-
             color: white;
-
-            text-align: center;
-
             margin: 0;
-
             font-family: 'Comfortaa', sans-serif;
         }
 
+        /* Skip straight to content for keyboard & screen-reader users */
+        .skip-link {
+            position: absolute;
+            left: 12px;
+            top: -60px;
+            background: rgb(217, 163, 92);
+            color: #121212;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            z-index: 999;
+            transition: top 0.2s ease;
+        }
+        .skip-link:focus { top: 12px; }
+
         .container {
-            max-width: 800px;
-
-            margin: 40px auto;
-
-            padding: 20px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 10px 20px 20px;
         }
 
-        .content-block {
-            margin-bottom: 80px;
+        h1, h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--c-cream);
+            margin: 0 0 18px 0;
+            line-height: 1.25;
         }
 
-        h1 {
-            font-family: Allegro, serif;
-
-            font-size: 45px;
-
-            color: rgb(255, 246, 230);
-        }
-
-        h2 {
-            font-family: Allegro, serif;
-
-            font-size: 35px;
-
-            color: rgb(235, 202, 19);
-        }
-
-        h3 {
-            font-family: Allegro, serif;
-
-            font-size: 35px;
-
-            color: rgb(115, 115, 255);
-        }
-
-        h4 {
-            font-family: Allegro, serif;
-
-            font-size: 35px;
-
-            color: rgb(185, 141, 27);
-        }
-
-        h5 {
-            font-family: Allegro, serif;
-
-            font-size: 35px;
-
-            color: rgb(25, 141, 25);
-        }
-
-        h6 {
-            font-family: Allegro, serif;
-
-            font-size: 35px;
-
-            color: rgb(37, 84, 137);
-
-            margin-top: 0;
-
-            margin-bottom: 35px;
-        }
+        h1 { font-size: 44px; }
+        h2 { font-size: 32px; color: var(--accent, var(--c-cream)); }
 
         p {
             color: #f3f3f3;
-
-            line-height: 1.6;
-
-            margin-bottom: 40px;
-
-            font-size: 18px;
+            line-height: 1.7;
+            font-size: 17px;
+            margin: 0 0 16px 0;
         }
 
-        /* Navigation buttons */
+        .kicker {
+            display: inline-block;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent, rgb(217, 163, 92));
+            margin-bottom: 10px;
+        }
 
+        /* ---- hero / overview ------------------------------------------ */
+        .hero {
+            text-align: center;
+            padding: 30px 0 56px;
+        }
+        .hero p {
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 19px;
+        }
+        .hero-rule {
+            width: 90px;
+            height: 3px;
+            margin: 22px auto 30px;
+            background: linear-gradient(90deg, transparent, rgb(217, 163, 92), transparent);
+            border-radius: 3px;
+        }
+
+        /* ---- chapters ---------------------------------------------------
+           Two flavours: a two-column "chapter" (text + media side by side)
+           and a full-width "spread" (text on top, media grid stretching
+           the full width) for sections with a lot of images. */
+        .chapter {
+            scroll-margin-top: calc(var(--topbar-h, 58px) + 66px);
+            padding: 54px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .chapter:first-of-type { border-top: none; }
+
+        .chapter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 34px;
+            align-items: center;
+        }
+        .chapter.reverse .chapter-grid { direction: rtl; }
+        .chapter.reverse .chapter-grid > * { direction: ltr; }
+
+        .chapter-media img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+        }
+
+        /* mini gameplay-photo grid beneath a featured image */
+        .media-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .media-strip img { border-radius: 9px; }
+
+        .media-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        figure { margin: 0; }
+        figcaption {
+            font-size: 14px;
+            font-style: italic;
+            color: #b7b3ac;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        img.lightbox-trigger {
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        img.lightbox-trigger:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+        }
+
+        /* ---- showdowns highlight card ----------------------------------- */
+        .highlight-card {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 40px 34px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #1a1a1a, #141414);
+            border: 1px solid color-mix(in srgb, var(--c-showdowns) 45%, transparent);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), 0 30px 60px -30px color-mix(in srgb, var(--c-showdowns) 55%, transparent);
+        }
+        .highlight-card p { text-align: left; }
+
+        /* ---- forgotten adventure: book jacket -------------------------- */
+        .book-cover {
+            perspective: 900px;
+        }
+        .book-cover img {
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+        }
+        .book-cover:hover img {
+            transform: rotateY(-8deg) rotateX(2deg);
+            box-shadow: 22px 26px 50px rgba(0, 0, 0, 0.55);
+        }
+        .blurb {
+            font-style: italic;
+            color: #e7e3da;
+        }
+
+        /* ---- full-width spreads (minecraft / timeline) ------------------ */
+        .spread-media { margin-top: 26px; }
+
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        .screenshot-grid img { border-radius: 9px; }
+
+        .timeline-figure {
+            max-width: 760px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #121212;
+            background: var(--c-timeline);
+            padding: 4px 12px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+        }
+
+        /* ---- CTA buttons (kept from the original site) ------------------ */
         .section {
             display: block;
-
             margin: 10px auto;
-
             padding: 15px;
-
             width: 80%;
-
             max-width: 350px;
-
             background: linear-gradient(180deg, #1e1e1e, #141414);
-
             color: white;
-
             text-decoration: none;
-
             border: 1px solid rgba(217, 163, 92, 0.28);
-
             border-radius: 12px;
-
-            font-family: Allegro, serif;
-
-            font-size: 20px;
-
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 17px;
+            text-align: center;
             transition:
                 border-color 0.25s ease,
                 background-color 0.25s ease,
                 transform 0.25s ease,
                 color 0.25s ease;
         }
-
         .section:hover {
             background-color: #333333;
-
             border-color: rgb(217, 163, 92);
-
             color: rgb(242, 204, 143);
-
             transform: translateY(-2px);
+        }
+        .cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .cta-row .section { margin: 0; }
 
+        .closing {
+            text-align: center;
+            padding: 60px 0 30px;
         }
 
-        /* PHONE VERSION */
+        /* ---- phone version ------------------------------------------- */
+        @media (max-width: 700px) {
+            .container { padding: 4px 16px 16px; }
 
-        @media (max-width: 600px) {
+            h1 { font-size: 32px; }
+            h2 { font-size: 26px; }
+            p { font-size: 16px; }
 
-            .container {
-                padding: 15px;
+            .hero { padding: 18px 0 40px; }
+
+            .chapter { padding: 40px 0; }
+            .chapter-grid,
+            .chapter.reverse .chapter-grid {
+                grid-template-columns: 1fr;
+                direction: ltr;
             }
+            .chapter-media { order: -1; }
 
+            .media-strip { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+            .media-grid-2 { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .screenshot-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
 
-            h1 {
-                font-size: 36px;
-            }
+            .highlight-card { padding: 28px 20px; }
 
-            h2,
-            h3,
-            h4,
-            h5,
-            h6 {
-                font-size: 28px;
-            }
-
-            p {
-                font-size: 16px;
-
-                line-height: 1.7;
-            }
-
-            .section {
-                width: 90%;
-
-                font-size: 18px;
-            }
-
+            .section { width: 100%; max-width: 320px; }
         }
-
     </style>
 
 </head>
 
 <body>
 
-    <nav class="topbar">
+    <a class="skip-link" href="#overview">Skip to content</a>
+
+    <div class="scroll-progress" aria-hidden="true"></div>
+
+    <nav class="topbar" aria-label="Main">
         <div class="nav-links">
             <a href="index.html">
                 <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg>
@@ -204,10 +321,6 @@
             <a href="Creators.html">
                 <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><circle cx="17" cy="7" r="3"/><path d="M22 21v-1.5a4 4 0 0 0-3-3.87"/></svg>
                 <span>Creators</span>
-            </a>
-            <a href="Images.html">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                <span>Photo Gallery</span>
             </a>
             <div class="nav-group">
                 <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false">
@@ -229,141 +342,205 @@
         </div>
     </nav>
 
-    <div class="container">
+    <nav class="subnav" aria-label="Chapters of the legend">
+        <a href="#overview" style="--tab-c: var(--c-cream)">Overview</a>
+        <a href="#thunder-dragon" style="--tab-c: var(--c-thunder)">Thunder Dragon</a>
+        <a href="#ice-dragon" style="--tab-c: var(--c-ice)">Ice Dragon</a>
+        <a href="#showdowns" style="--tab-c: var(--c-showdowns)">Showdowns</a>
+        <a href="#forgotten-adventure" style="--tab-c: var(--c-forgotten)">Forgotten Adventure</a>
+        <a href="#minecraft-edition" style="--tab-c: var(--c-minecraft)">Minecraft Edition</a>
+        <a href="#timeline" style="--tab-c: var(--c-timeline)">Timeline</a>
+    </nav>
 
-        <!-- First block -->
+    <main class="container">
 
-        <div class="content-block">
-
-            <h1>About Legend of Fenrirak™</h1>
-
+        <!-- OVERVIEW -->
+        <section class="hero reveal" id="overview" data-accent="cream">
+            <span class="kicker">The story so far</span>
+            <h1>About Legend of Fenrirak&trade;</h1>
+            <div class="hero-rule"></div>
             <p>
-
-                Legend Of Fenrirak was originally created by four Year 7 students at Murrays Bay Intermediate in New Zealand. Since then, it has continued to grow and evolve into something much larger.
-
-                <br><br>
-
-                Currently, Legend of Fenrirak includes 2 board games, 3 in-progress story books, an in-progress online version, and countless future ideas waiting to be developed.
-
+                Legend Of Fenrirak was originally created by four Year 7 students at Murrays Bay Intermediate in New Zealand.
+                Since then, it has continued to grow and evolve into something much larger.
             </p>
+            <p>
+                Currently, Legend of Fenrirak includes 2 board games, 3 in-progress story books, an in-progress online
+                version, and countless future ideas waiting to be developed.
+            </p>
+        </section>
 
+        <!-- THUNDER DRAGON -->
+        <article class="chapter reveal" id="thunder-dragon" data-accent="thunder" style="--accent: var(--c-thunder)">
+            <div class="chapter-grid">
+                <div class="chapter-text">
+                    <span class="kicker">Game one</span>
+                    <h2>Legend of Fenrirak, The Thunder Dragon</h2>
+                    <p>
+                        Legend of Fenrirak, The Thunder Dragon is the original board game and the birth of Legend of Fenrirak.
+                    </p>
+                    <p>
+                        The core concept of the board game is that each player (up to six) selects a character
+                        class&mdash;mage, knight, or archer&mdash;and then moves around the board to collect items,
+                        gold, and keys while battling monsters that serve under the command of the final boss,
+                        Fenrirak. Through the adventure players have to gather the correct keys to unlock the gate
+                        to the boss arena, where they will face Fenrirak, a large, ocean-blue dragon coated in a
+                        heavy layer of scales.
+                    </p>
+                </div>
+                <div class="chapter-media">
+                    <figure>
+                        <img class="lightbox-trigger" src="Fenrirak.png" alt="Fenrirak, the ocean-blue dragon and final boss of The Thunder Dragon">
+                        <figcaption>Fenrirak &mdash; the final boss</figcaption>
+                    </figure>
+                    <div class="media-strip">
+                        <img class="lightbox-trigger" src="LOF1 Horizontal.jpeg" alt="The Thunder Dragon board set up for play">
+                        <img class="lightbox-trigger" src="LOF1 All.jpeg" alt="All components of the Thunder Dragon board game">
+                        <img class="lightbox-trigger" src="LOF1 Bird.jpeg" alt="Bird's-eye view of the Thunder Dragon board">
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ICE DRAGON -->
+        <article class="chapter reverse reveal" id="ice-dragon" data-accent="ice" style="--accent: var(--c-ice)">
+            <div class="chapter-grid">
+                <div class="chapter-text">
+                    <span class="kicker">Game two</span>
+                    <h2>Legend of Fenrirak, The Ice Dragon</h2>
+                    <p>
+                        Legend of Fenrirak, The Ice Dragon is the second board game acting as a sequel to the
+                        Thunder Dragon due to its magnificent success.
+                    </p>
+                    <p>
+                        The main objective of this board game is similar to the original; however, several
+                        enhancements have been introduced to improve gameplay. The board now features an
+                        increased number of squares, a new playable character, the barbarian, and a dedicated
+                        box has been designed to store the game and all its components. In addition, rule
+                        refinements and a new battling system were added, resulting in the completion of the
+                        second version of the board game.
+                    </p>
+                </div>
+                <div class="chapter-media">
+                    <div class="media-grid-2">
+                        <img class="lightbox-trigger" src="LOF2 Board.jpeg" alt="The Ice Dragon game board">
+                        <img class="lightbox-trigger" src="LOF2 Cards.jpeg" alt="Ice Dragon card designs">
+                        <img class="lightbox-trigger" src="LOF2 Character.jpeg" alt="An Ice Dragon character piece">
+                        <img class="lightbox-trigger" src="LOF2 Box.jpeg" alt="The Ice Dragon game box">
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- SHOWDOWNS -->
+        <article class="chapter reveal" id="showdowns" data-accent="showdowns" style="--accent: var(--c-showdowns)">
+            <div class="highlight-card">
+                <span class="kicker">Playable online now</span>
+                <h2 style="text-align:center">Legend of Fenrirak &ndash; Showdowns</h2>
+                <p>
+                    The origins of Legend of Fenrirak Showdowns are as unexpected as you can get. The idea began
+                    on a Saturday night when Nathan dreamed of a basic PvP game concept. Upon waking the next
+                    morning, he immediately documented the game's rules and simple mechanics. Together with
+                    Ronald, they then developed the concept further, eventually bringing it to life as a
+                    playable game.
+                </p>
+                <p>
+                    The main objective of this board game is to defeat all the other players on the board. The
+                    board is filled with different terrains and chests, forcing players to make important
+                    decisions that can completely change the course of the game.
+                </p>
+                <p>
+                    After weeks of hard work, we finally have an ONLINE version for everyone to play! It's
+                    currently single-player, where you'll battle against AI opponents.
+                </p>
+                <a href="Testplay Showdowns.html" class="section" style="border-color: color-mix(in srgb, var(--c-showdowns) 55%, transparent)">
+                    Play Legend of Fenrirak Showdowns!
+                </a>
+            </div>
+        </article>
+
+        <!-- FORGOTTEN ADVENTURE -->
+        <article class="chapter reverse reveal" id="forgotten-adventure" data-accent="forgotten" style="--accent: var(--c-forgotten)">
+            <div class="chapter-grid">
+                <div class="chapter-text">
+                    <span class="kicker">Prequel story</span>
+                    <h2>Legend of Fenrirak, The Forgotten Adventure</h2>
+                    <p>
+                        Legend of Fenrirak, The Forgotten Adventure is a story that happened 100 years before The
+                        Thunder Dragon. It sets the backstory of why Fenrirak became a threat to humans. Read the
+                        blurb below!
+                    </p>
+                    <p class="blurb">
+                        A young mage named Aldemar is forced into a war he does not believe in when rival kingdoms
+                        unite to hunt Fenrirak, a legendary dragon thought dead for centuries but now stirring
+                        once more. As armies march into elven territory, the mission unravels into chaos and
+                        betrayal, revealing a truth far more dangerous than anyone expected. With his closest
+                        friend, Alexander, and the determined Queen Silvia, Aldemar must navigate a shattered
+                        world where trust is fragile and power comes at a cost. As a shadow rises from the ruins
+                        of war and threatens both humans and elves alike, Aldemar is drawn toward a destiny that
+                        will decide the fate of everything he knows.
+                    </p>
+                </div>
+                <div class="chapter-media book-cover">
+                    <img class="lightbox-trigger" src="Book Cover Reoutline.jpg" alt="Cover art for The Forgotten Adventure">
+                </div>
+            </div>
+        </article>
+
+        <!-- MINECRAFT EDITION -->
+        <article class="chapter reveal" id="minecraft-edition" data-accent="minecraft" style="--accent: var(--c-minecraft)">
+            <span class="kicker">Side project</span>
+            <h2>Legend of Fenrirak, The Thunder Dragon &ndash; MINECRAFT EDITION</h2>
+            <p>Minecraft is a trademark of Mojang Studios.</p>
+            <p>
+                Legend of Fenrirak, The Thunder Dragon was recreated in Minecraft as a fun and easy way for us to
+                meet up and play our board game online&hellip;
+            </p>
+            <p>
+                Only, it took us over 2 years to finish most of it, and some components were impossible to add
+                using Minecraft (see below). We ended up pausing the project and focusing our attention on other
+                projects such as the Ice Dragon and The Forgotten Adventure.
+            </p>
+            <div class="spread-media screenshot-grid">
+                <img class="lightbox-trigger" src="1.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 1 of 10">
+                <img class="lightbox-trigger" src="2.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 2 of 10">
+                <img class="lightbox-trigger" src="3.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 3 of 10">
+                <img class="lightbox-trigger" src="4.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 4 of 10">
+                <img class="lightbox-trigger" src="5.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 5 of 10">
+                <img class="lightbox-trigger" src="6.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 6 of 10">
+                <img class="lightbox-trigger" src="7.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 7 of 10">
+                <img class="lightbox-trigger" src="8.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 8 of 10">
+                <img class="lightbox-trigger" src="9.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 9 of 10">
+                <img class="lightbox-trigger" src="10.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 10 of 10">
+            </div>
+        </article>
+
+        <!-- TIMELINE -->
+        <article class="chapter reveal" id="timeline" data-accent="timeline" style="--accent: var(--c-timeline)">
+            <span class="kicker">What's next</span>
+            <h2>The Timeline for Legend of Fenrirak</h2>
+            <div>
+                <span class="badge">Subject to change</span>
+            </div>
+            <div class="spread-media timeline-figure">
+                <img class="lightbox-trigger" src="Timeline.png" alt="Timeline of Legend of Fenrirak's past and upcoming projects">
+            </div>
+        </article>
+
+        <!-- CLOSING -->
+        <div class="closing">
+            <h2 style="color: var(--c-cream); font-size: 24px;">Continue exploring</h2>
+            <div class="cta-row">
+                <a href="index.html" class="section">Back to Home Page</a>
+                <a href="Creators.html" class="section">Meet the Creators!</a>
+                <a href="Testplay Showdowns.html" class="section">Play Legend of Fenrirak Showdowns</a>
+            </div>
         </div>
 
-        <!-- Thunder Dragon -->
+    </main>
 
-        <div class="content-block">
-
-            <h2>Legend of Fenrirak, The Thunder Dragon</h2>
-
-            <p>
-
-                Legend of Fenrirak, The Thunder Dragon is the original board game and the birth of Legend of Fenrirak.
-
-                <br><br>
-
-                The core concept of the board game is that each player (up to six) selects a character class—mage, knight, or archer—and then moves around the board (see Photo Gallery) to collect items, gold, and keys while battling monsters that serve under the command of the final boss, Fenrirak. Through the adventure players have to gather the correct keys to unlock the gate to the boss arena, where they will face Fenrirak, a large, ocean-blue dragon coated in a heavy layer of scales.
-
-            </p>
-
-        </div>
-
-        <!-- Ice Dragon -->
-
-        <div class="content-block">
-
-            <h3>Legend of Fenrirak, The Ice Dragon</h3>
-
-            <p>
-
-                Legend of Fenrirak, The Ice Dragon is the second board game acting as a sequel to the Thunder Dragon due to its magnificent success.
-
-                <br><br>
-
-                The main objective of this board game is similar to the original; however, several enhancements have been introduced to improve gameplay. The board now features an increased number of squares, a new playable character, the barbarian, and a dedicated box has been designed to store the game and all its components. In addition, rule refinements and a new battling system were added, resulting in the completion of the second version of the board game.
-
-            </p>
-
-        </div>
-
-        <!-- Showdowns -->
-
-        <div class="content-block">
-
-            <h6>Legend of Fenrirak - Showdowns</h6>
-
-            <p>
-
-                The origins of Legend of Fenrirak Showdowns are as unexpected as you can get. The idea began on a Saturday night when Nathan dreamed of a basic PvP game concept. Upon waking the next morning, he immediately documented the game's rules and simple mechanics. Together with Ronald, they then developed the concept further, eventually bringing it to life as a playable game.
-
-                <br><br>
-
-                The main objective of this board game is to defeat all the other players on the board. The board is filled with different terrains and chests, forcing players to make important decisions that can completely change the course of the game.
-
-                <br><br>
-
-                After weeks of hard work, we finally have an ONLINE version for everyone to play! It's currently single-player, where you'll battle against AI opponents.
-
-            </p>
-
-            <a href= "Testplay Showdowns.html" class="section">
-                Play Legend of Fenrirak Showdowns!
-            </a>
-
-        </div>
-
-        <!-- Forgotten Adventure -->
-
-        <div class="content-block">
-
-            <h4>Legend of Fenrirak, The Forgotten Adventure</h4>
-
-            <p>
-
-                Legend of Fenrirak, The Forgotten Adventure is a story that happened 100 years before The Thunder Dragon. It sets the backstory of why Fenrirak became a threat to humans. Read the blurb below!
-
-                <br><br>
-
-                A young mage named Aldemar is forced into a war he does not believe in when rival kingdoms unite to hunt Fenrirak, a legendary dragon thought dead for centuries but now stirring once more. As armies march into elven territory, the mission unravels into chaos and betrayal, revealing a truth far more dangerous than anyone expected. With his closest friend, Alexander, and the determined Queen Silvia, Aldemar must navigate a shattered world where trust is fragile and power comes at a cost. As a shadow rises from the ruins of war and threatens both humans and elves alike, Aldemar is drawn toward a destiny that will decide the fate of everything he knows.
-
-            </p>
-
-        </div>
-
-        <!-- Minecraft -->
-
-        <div class="content-block">
-
-            <h5>Legend of Fenrirak, The Thunder Dragon - MINECRAFT EDITION</h5>
-
-            <p>
-
-                Minecraft is a trademark of Mojang Studios.
-
-                <br><br>
-
-                Legend of Fenrirak, The Thunder Dragon was recreated in Minecraft as a fun and easy way for us to meet up and play our board game online...
-
-                <br><br>
-
-                Only, it took us over 2 years to finish most of it, and some components were impossible to add using Minecraft (see our mostly completed game in the Photo Gallery). We ended up pausing the project and focusing our attention on other projects such as the Ice Dragon and The Forgotten Adventure.
-
-            </p>
-
-        </div>
-
-        <!-- Navigation -->
-
-        <a href="index.html" class="section">Back to Home Page</a>
-
-        <a href="Creators.html" class="section">Meet the Creators!</a>
-
-        <a href="Images.html" class="section">View Photo Gallery</a>
-
-        <a href="Testplay Showdowns.html" class="section">
-            Play Legend of Fenrirak Showdowns
-        </a>
-
-    </div>
+    <a href="#top" class="back-to-top" aria-label="Back to top">
+        <svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+    </a>
 
     <script src="site-nav.js" defer></script>
 

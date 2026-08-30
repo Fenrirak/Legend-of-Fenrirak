@@ -2,207 +2,275 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
+
+    <!-- See About.html for why this line exists: it lets .reveal content
+         hide only when JavaScript is actually going to bring it back. -->
+    <script>document.documentElement.classList.add('js');</script>
 
     <!-- Makes the website fit phone screens -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Creators</title>
+    <title>Creators - Legend of Fenrirak</title>
 
     <link rel="icon" type="image/png" href="Favicon.png">
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet">
+    <meta name="description"
+        content="Meet the four creators behind Legend of Fenrirak.">
 
     <link rel="stylesheet" href="site-nav.css">
 
     <style>
-        body {
-            margin: 0;
-            background-color: #121212;
+
+        :root {
+            --c-cream: rgb(255, 246, 230);
+            --p-nathan: #d9a35c;
+            --p-ronald: #4fd1c5;
+            --p-justin: #a78bfa;
+            --p-ashton: #ff8a65;
         }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            font-family: 'Comfortaa', sans-serif;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: 12px;
+            top: -60px;
+            background: rgb(217, 163, 92);
+            color: #121212;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            z-index: 999;
+            transition: top 0.2s ease;
+        }
+        .skip-link:focus { top: 12px; }
 
         .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 10px 20px 20px;
         }
 
-        /* TITLE */
+        h1, h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--c-cream);
+            margin: 0 0 10px 0;
+            line-height: 1.25;
+        }
 
-        .title {
-            width: fit-content;
+        h1 { font-size: 42px; }
+        h2 { font-size: 28px; color: var(--accent, var(--c-cream)); }
 
-            margin: 0 auto 40px auto;
+        p {
+            color: #f3f3f3;
+            line-height: 1.7;
+            font-size: 17px;
+            margin: 0 0 16px 0;
+        }
 
-            padding: 25px;
+        .kicker {
+            display: inline-block;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgb(217, 163, 92);
+            margin-bottom: 10px;
+        }
 
+        /* ---- hero -------------------------------------------------------- */
+        .hero {
             text-align: center;
-
-            font-family: Allegro, serif;
-
-            font-size: 35px;
-
-            color: rgb(255, 246, 230);
+            padding: 30px 0 20px;
+        }
+        .hero p {
+            max-width: 560px;
+            margin: 0 auto;
+            font-size: 18px;
+            color: #cfcbc2;
+        }
+        .hero-rule {
+            width: 90px;
+            height: 3px;
+            margin: 18px auto 22px;
+            background: linear-gradient(90deg, transparent, rgb(217, 163, 92), transparent);
+            border-radius: 3px;
         }
 
-        .main {
-            display: flex;
-            justify-content: center;
+        /* ---- crew rows ----------------------------------------------------- */
+        .crew-row {
+            scroll-margin-top: calc(var(--topbar-h, 58px) + 66px);
+            padding: 46px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
         }
+        .crew-row:first-of-type { border-top: none; }
 
-        .left {
+        .crew-grid {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 34px;
+            align-items: start;
+        }
+        .crew-row.reverse .crew-grid { direction: rtl; }
+        .crew-row.reverse .crew-grid > * { direction: ltr; }
+
+        .portrait-frame {
+            position: relative;
+            border-radius: 14px;
+            padding: 5px;
+            background: linear-gradient(160deg, var(--accent, rgb(217,163,92)), transparent 60%);
+        }
+        .portrait-frame img {
+            display: block;
             width: 100%;
-        }
-
-        .row {
-            display: flex;
-
-            align-items: center;
-
-            gap: 20px;
-
-            margin-bottom: 40px;
-
-            font-family: 'Comfortaa', sans-serif;
-
-            font-size: 20px;
-
-            color: white;
-        }
-
-        /* IMAGES */
-
-        .image {
-            width: 130px;
-
-            height: 250px;
-
+            height: 260px;
             object-fit: cover;
-
             border-radius: 10px;
+            filter: grayscale(45%) contrast(1.02);
+            transition: filter 0.4s ease;
+        }
+        .portrait-frame:hover img,
+        .portrait-frame:focus-within img {
+            filter: none;
+        }
 
+        .name-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .role-badge {
+            display: inline-block;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            color: #121212;
+            background: var(--accent, rgb(217, 163, 92));
+            padding: 4px 12px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .favourite-class {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #cfcbc2;
+            margin: 4px 0 14px;
+        }
+        .favourite-class strong { color: var(--accent, rgb(217, 163, 92)); }
+
+        .contact-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .contact-line a {
+            color: var(--accent, rgb(217, 163, 92));
+            text-decoration: none;
+            border-bottom: 1px solid color-mix(in srgb, var(--accent, rgb(217,163,92)) 55%, transparent);
+        }
+        .contact-line a:hover { border-bottom-color: currentColor; }
+        .contact-line svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--accent, rgb(217, 163, 92));
+            fill: none;
+            stroke-width: 1.8;
             flex-shrink: 0;
         }
 
-        /* TEXT */
-
-        .text-box {
-            flex: 1;
-
-            line-height: 1.5;
-
-            min-width: 0;
-        }
-
-        /* LINKS */
-
-        .links {
-            margin-top: 60px;
-
-            text-align: center;
-
-            font-family: Allegro, serif;
-
-            font-size: 25px;
-        }
-
+        /* ---- CTA buttons (kept from the original site) ------------------- */
         .section {
             display: block;
-
             margin: 10px auto;
-
             padding: 15px;
-
             width: 80%;
-
             max-width: 350px;
-
             background: linear-gradient(180deg, #1e1e1e, #141414);
-
             color: white;
-
             text-decoration: none;
-
             border: 1px solid rgba(217, 163, 92, 0.28);
-
             border-radius: 12px;
-
-            font-family: Allegro, serif;
-
-            font-size: 25px;
-
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 17px;
+            text-align: center;
             transition:
                 border-color 0.25s ease,
                 background-color 0.25s ease,
                 transform 0.25s ease,
                 color 0.25s ease;
         }
-
         .section:hover {
             background-color: #333333;
-
             border-color: rgb(217, 163, 92);
-
             color: rgb(242, 204, 143);
-
             transform: translateY(-2px);
+        }
+        .cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .cta-row .section { margin: 0; }
 
+        .closing {
+            text-align: center;
+            padding: 56px 0 30px;
         }
 
-        /* PHONE VERSION */
-
+        /* ---- phone version ------------------------------------------------ */
         @media (max-width: 700px) {
+            .container { padding: 4px 16px 16px; }
 
-            .container {
-                padding: 0 15px;
-            }
+            h1 { font-size: 32px; }
+            h2 { font-size: 24px; }
+            p { font-size: 16px; }
 
-
-            .title {
-                font-size: 32px;
-
-                padding: 15px;
-            }
-
-            .row {
-                flex-direction: column;
-
+            .crew-row { padding: 36px 0; }
+            .crew-grid,
+            .crew-row.reverse .crew-grid {
+                grid-template-columns: 1fr;
+                direction: ltr;
                 text-align: center;
-
-                gap: 15px;
-
-                margin-bottom: 50px;
+                justify-items: center;
             }
+            .portrait-frame { max-width: 220px; }
+            .name-row { justify-content: center; }
+            .favourite-class { justify-content: center; }
 
-            .image {
-                width: 160px;
-
-                height: auto;
-
-                max-width: 100%;
-            }
-
-            .text-box {
-                font-size: 18px;
-
-                width: 100%;
-            }
-
-            .section {
-                width: 90%;
-
-                font-size: 22px;
-            }
+            .section { width: 100%; max-width: 320px; }
         }
-
     </style>
 
 </head>
 
 <body>
 
-    <nav class="topbar">
+    <a class="skip-link" href="#nathan">Skip to content</a>
+
+    <div class="scroll-progress" aria-hidden="true"></div>
+
+    <nav class="topbar" aria-label="Main">
         <div class="nav-links">
             <a href="index.html">
                 <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg>
@@ -215,10 +283,6 @@
             <a href="Creators.html" class="active">
                 <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><circle cx="17" cy="7" r="3"/><path d="M22 21v-1.5a4 4 0 0 0-3-3.87"/></svg>
                 <span>Creators</span>
-            </a>
-            <a href="Images.html">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                <span>Photo Gallery</span>
             </a>
             <div class="nav-group">
                 <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false">
@@ -240,101 +304,147 @@
         </div>
     </nav>
 
-    <div class="container">
+    <nav class="subnav" aria-label="Jump to a creator">
+        <a href="#nathan" style="--tab-c: var(--p-nathan)">Nathan</a>
+        <a href="#ronald" style="--tab-c: var(--p-ronald)">Ronald</a>
+        <a href="#justin" style="--tab-c: var(--p-justin)">Justin</a>
+        <a href="#ashton" style="--tab-c: var(--p-ashton)">Ashton</a>
+    </nav>
 
-        <div class="title">Meet the Creators!</div>
+    <main class="container">
 
-        <div class="main">
+        <section class="hero reveal">
+            <span class="kicker">The people behind it</span>
+            <h1>Meet the Creators!</h1>
+            <div class="hero-rule"></div>
+            <p>
+                The four Year 7 students who started it all &mdash; and are still building it.
+            </p>
+        </section>
 
-            <div class="left">
-
-                <div class="row">
-
-                    <img src="Nathan.jpg" class="image" alt="Nathan">
-
-                    <div class="text-box">
-
-                        Hi, I’m Nathan and I am one of the main creators of Legend Of Fenrirak! I am the one who came up with the idea for Legend Of Fenrirak while everyone else was stumped at the start of our project! From then on all of us have been building on the idea to make the awesome board games! I then decieded to write a story for Legend of Fenrirak, so far it has over 12000 words in! Also thank you for taking the time to view this simple website (created by me!), enjoy the rest of your day!
-
-                        <br><br>
-
-                        I bet Ronald in a game of The Thunder Dragon on the 25/08/2026 for the FIRST time, though he claims it was "unfair" due to a minor bug in the website 🙄. And yes, Mage IS the best class to play!
-
-                        <br><br>
-
-                        If any questions or you just want to know more, feel free to email:
-
-                        <br><br>
-
-                        Fenrirak.guy@gmail.com
-
-                    </div>
-
+        <!-- NATHAN -->
+        <article class="crew-row reveal" id="nathan" style="--accent: var(--p-nathan)">
+            <div class="crew-grid">
+                <div class="portrait-frame">
+                    <img src="Nathan.jpg" alt="Nathan">
                 </div>
-
-                <div class="row">
-
-                    <img src="Ronald.jpeg" class="image" alt="Ronald">
-
-                    <div class="text-box">
-
-                        Hi, I’m Ronald, and I’m One of the main creators of this board game (The Legend Of Fenrirak) and I’ve decided to share some fun facts and some tips. Firstly though, I want to tell you about my favourite character, which is the Archer which is also (in my opinion) the best character in the game, but some people disagree with me (Nathan...). I think this is because everyone who's used the Archer has won (including me, I’ve won every game played with Archer), or it could be just a skill issue.
-
+                <div class="crew-text">
+                    <div class="name-row">
+                        <h2>Nathan</h2>
+                        <span class="role-badge">Original Idea &amp; Story Writer</span>
                     </div>
-
+                    <p class="favourite-class">Favourite class: <strong>Mage</strong> 🧙</p>
+                    <p>
+                        Hi, I&rsquo;m Nathan and I am one of the main creators of Legend Of Fenrirak! I am the one
+                        who came up with the idea for Legend Of Fenrirak while everyone else was stumped at the
+                        start of our project! From then on all of us have been building on the idea to make the
+                        awesome board games! I then decided to write a story for Legend of Fenrirak, so far it
+                        has over 12,000 words in it! Also thank you for taking the time to view this simple
+                        website (created by me!), enjoy the rest of your day!
+                    </p>
+                    <p>
+                        I bet Ronald in a game of The Thunder Dragon on the 25/08/2026 for the FIRST time, though
+                        he claims it was &ldquo;unfair&rdquo; due to a minor bug in the website 🙄. And yes, Mage
+                        IS the best class to play!
+                    </p>
+                    <p class="contact-line">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 6 8 7 8-7"/></svg>
+                        <a href="mailto:Fenrirak.guy@gmail.com">Fenrirak.guy@gmail.com</a>
+                    </p>
                 </div>
-
-                <div class="row">
-
-                    <img src="Justin.png" class="image" alt="Justin">
-
-                    <div class="text-box">
-
-                        Hello everyone, I’m Justin, one of the creators of Legend Of Fenrirak. Thank you for your interest in The Legend of Fenrirak™. We have poured our hearts and souls into creating this immersive gaming experience, and we truly hope you find it an exciting journey filled with adventure and challenges. As you embark on this epic quest, remember that your strategic prowess and ability to work as a team will be crucial in overcoming the formidable Fenrirak and achieving victory. Get ready to dive into a world teeming with monsters, where every decision you make will shape your destiny. Good luck, and may the best warriors emerge victorious.
-
-                    </div>
-
-                </div>
-
-                <div class="row">
-
-                    <img src="Ashton.jpeg" class="image" alt="Ashton">
-
-                    <div class="text-box">
-
-                        Hello, I am Ashton, I am one of the creators of Legend Of Fenrirak, I am the guy who drew most of the things in the first board game, like the characters and monsters. I think playing Legend Of Fenrirak is super cool because you get to hang out with your friends or family and do something different. It's cool to see everyone get competitive and try to win, plus there's always lots of laughing and joking around. Legend Of Fenrirak makes you think hard and plan your moves. It's also a great way to take a break from phones and screens. Legend Of Fenrirak is just a blast and makes awesome memories!
-
-                    </div>
-
-                </div>
-
             </div>
+        </article>
 
+        <!-- RONALD -->
+        <article class="crew-row reverse reveal" id="ronald" style="--accent: var(--p-ronald)">
+            <div class="crew-grid">
+                <div class="portrait-frame">
+                    <img src="Ronald.jpeg" alt="Ronald">
+                </div>
+                <div class="crew-text">
+                    <div class="name-row">
+                        <h2>Ronald</h2>
+                        <span class="role-badge">Co-Creator, Showdowns</span>
+                    </div>
+                    <p class="favourite-class">Favourite class: <strong>Archer</strong> 🏹</p>
+                    <p>
+                        Hi, I&rsquo;m Ronald, and I&rsquo;m one of the main creators of this board game (The
+                        Legend Of Fenrirak) and I&rsquo;ve decided to share some fun facts and some tips. Firstly
+                        though, I want to tell you about my favourite character, which is the Archer, which is
+                        also (in my opinion) the best character in the game, but some people disagree with me
+                        (Nathan&hellip;). I think this is because everyone who&rsquo;s used the Archer has won
+                        (including me, I&rsquo;ve won every game played with Archer), or it could be just a
+                        skill issue.
+                    </p>
+                </div>
+            </div>
+        </article>
+
+        <!-- JUSTIN -->
+        <article class="crew-row reveal" id="justin" style="--accent: var(--p-justin)">
+            <div class="crew-grid">
+                <div class="portrait-frame">
+                    <img src="Justin.png" alt="Justin">
+                </div>
+                <div class="crew-text">
+                    <div class="name-row">
+                        <h2>Justin</h2>
+                        <span class="role-badge">Co-Creator</span>
+                    </div>
+                    <p>
+                        Hello everyone, I&rsquo;m Justin, one of the creators of Legend Of Fenrirak. Thank you for
+                        your interest in The Legend of Fenrirak&trade;. We have poured our hearts and souls into
+                        creating this immersive gaming experience, and we truly hope you find it an exciting
+                        journey filled with adventure and challenges. As you embark on this epic quest, remember
+                        that your strategic prowess and ability to work as a team will be crucial in overcoming
+                        the formidable Fenrirak and achieving victory. Get ready to dive into a world teeming
+                        with monsters, where every decision you make will shape your destiny. Good luck, and may
+                        the best warriors emerge victorious.
+                    </p>
+                </div>
+            </div>
+        </article>
+
+        <!-- ASHTON -->
+        <article class="crew-row reverse reveal" id="ashton" style="--accent: var(--p-ashton)">
+            <div class="crew-grid">
+                <div class="portrait-frame">
+                    <img src="Ashton.jpeg" alt="Ashton">
+                </div>
+                <div class="crew-text">
+                    <div class="name-row">
+                        <h2>Ashton</h2>
+                        <span class="role-badge">Character &amp; Monster Artist</span>
+                    </div>
+                    <p>
+                        Hello, I am Ashton, I am one of the creators of Legend Of Fenrirak, I am the guy who drew
+                        most of the things in the first board game, like the characters and monsters. I think
+                        playing Legend Of Fenrirak is super cool because you get to hang out with your friends
+                        or family and do something different. It&rsquo;s cool to see everyone get competitive
+                        and try to win, plus there&rsquo;s always lots of laughing and joking around. Legend Of
+                        Fenrirak makes you think hard and plan your moves. It&rsquo;s also a great way to take a
+                        break from phones and screens. Legend Of Fenrirak is just a blast and makes awesome
+                        memories!
+                    </p>
+                </div>
+            </div>
+        </article>
+
+        <!-- CLOSING -->
+        <div class="closing">
+            <h2 style="font-size: 24px;">Continue exploring</h2>
+            <div class="cta-row">
+                <a href="index.html" class="section">Back to Home Page</a>
+                <a href="About.html" class="section">About Legend of Fenrirak</a>
+                <a href="Testplay Showdowns.html" class="section">Play Legend of Fenrirak Showdowns</a>
+            </div>
         </div>
 
-        <!-- LINKS -->
+    </main>
 
-        <div class="links">
-
-            <a href="index.html" class="section">
-                Back to Home Page
-            </a>
-
-            <a href="About.html" class="section">
-                About Legend of Fenrirak
-            </a>
-
-            <a href="Images.html" class="section">
-                View Photo Gallery
-            </a>
-
-            <a href="Testplay Showdowns.html" class="section">
-                Play Legend of Fenrirak Showdowns
-            </a>
-
-        </div>
-
-    </div>
+    <a href="#top" class="back-to-top" aria-label="Back to top">
+        <svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+    </a>
 
     <script src="site-nav.js" defer></script>
 
