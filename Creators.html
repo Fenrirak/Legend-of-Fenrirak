@@ -5,10 +5,6 @@
 
     <meta charset="UTF-8">
 
-    <!-- See About.html for why this line exists: it lets .reveal content
-         hide only when JavaScript is actually going to bring it back. -->
-    <script>document.documentElement.classList.add('js');</script>
-
     <!-- Makes the website fit phone screens -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -62,7 +58,7 @@
         }
 
         h1, h2 {
-            font-family: 'Cinzel', serif;
+            font-family: Allegro, serif;
             color: var(--c-cream);
             margin: 0 0 10px 0;
             line-height: 1.25;
@@ -80,7 +76,7 @@
 
         .kicker {
             display: inline-block;
-            font-family: 'Cinzel', serif;
+            font-family: Allegro, serif;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: 2px;
@@ -110,7 +106,7 @@
 
         /* ---- crew rows ----------------------------------------------------- */
         .crew-row {
-            scroll-margin-top: calc(var(--topbar-h, 58px) + 66px);
+            scroll-margin-top: calc(var(--topbar-h, 58px) + 20px);
             padding: 46px 0;
             border-top: 1px solid rgba(255, 255, 255, 0.07);
         }
@@ -154,7 +150,7 @@
 
         .role-badge {
             display: inline-block;
-            font-family: 'Cinzel', serif;
+            font-family: Allegro, serif;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.4px;
@@ -208,7 +204,7 @@
             text-decoration: none;
             border: 1px solid rgba(217, 163, 92, 0.28);
             border-radius: 12px;
-            font-family: 'Cinzel', serif;
+            font-family: Allegro, serif;
             font-weight: 600;
             font-size: 17px;
             text-align: center;
@@ -304,37 +300,30 @@
         </div>
     </nav>
 
-    <nav class="subnav" aria-label="Jump to a creator">
-        <a href="#nathan" style="--tab-c: var(--p-nathan)">Nathan</a>
-        <a href="#ronald" style="--tab-c: var(--p-ronald)">Ronald</a>
-        <a href="#justin" style="--tab-c: var(--p-justin)">Justin</a>
-        <a href="#ashton" style="--tab-c: var(--p-ashton)">Ashton</a>
-    </nav>
-
     <main class="container">
 
-        <section class="hero reveal">
-            <span class="kicker">The people behind it</span>
-            <h1>Meet the Creators!</h1>
-            <div class="hero-rule"></div>
-            <p>
+        <section class="hero pop-group">
+            <span class="kicker pop-in">The people behind it</span>
+            <h1 class="pop-in">Meet the Creators!</h1>
+            <div class="hero-rule pop-in"></div>
+            <p class="pop-in">
                 The four Year 7 students who started it all &mdash; and are still building it.
             </p>
         </section>
 
         <!-- NATHAN -->
-        <article class="crew-row reveal" id="nathan" style="--accent: var(--p-nathan)">
+        <article class="crew-row pop-group" id="nathan" style="--accent: var(--p-nathan)">
             <div class="crew-grid">
-                <div class="portrait-frame">
+                <div class="portrait-frame pop-in">
                     <img src="Nathan.jpg" alt="Nathan">
                 </div>
                 <div class="crew-text">
-                    <div class="name-row">
+                    <div class="name-row pop-in">
                         <h2>Nathan</h2>
                         <span class="role-badge">Original Idea &amp; Story Writer</span>
                     </div>
-                    <p class="favourite-class">Favourite class: <strong>Mage</strong> 🧙</p>
-                    <p>
+                    <p class="favourite-class pop-in">Favourite class: <strong>Mage</strong> 🧙</p>
+                    <p class="pop-in">
                         Hi, I&rsquo;m Nathan and I am one of the main creators of Legend Of Fenrirak! I am the one
                         who came up with the idea for Legend Of Fenrirak while everyone else was stumped at the
                         start of our project! From then on all of us have been building on the idea to make the
@@ -342,12 +331,12 @@
                         has over 12,000 words in it! Also thank you for taking the time to view this simple
                         website (created by me!), enjoy the rest of your day!
                     </p>
-                    <p>
+                    <p class="pop-in">
                         I bet Ronald in a game of The Thunder Dragon on the 25/08/2026 for the FIRST time, though
                         he claims it was &ldquo;unfair&rdquo; due to a minor bug in the website 🙄. And yes, Mage
                         IS the best class to play!
                     </p>
-                    <p class="contact-line">
+                    <p class="contact-line pop-in">
                         <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 6 8 7 8-7"/></svg>
                         <a href="mailto:Fenrirak.guy@gmail.com">Fenrirak.guy@gmail.com</a>
                     </p>
@@ -356,18 +345,18 @@
         </article>
 
         <!-- RONALD -->
-        <article class="crew-row reverse reveal" id="ronald" style="--accent: var(--p-ronald)">
+        <article class="crew-row reverse pop-group" id="ronald" style="--accent: var(--p-ronald)">
             <div class="crew-grid">
-                <div class="portrait-frame">
+                <div class="portrait-frame pop-in">
                     <img src="Ronald.jpeg" alt="Ronald">
                 </div>
                 <div class="crew-text">
-                    <div class="name-row">
+                    <div class="name-row pop-in">
                         <h2>Ronald</h2>
                         <span class="role-badge">Co-Creator, Showdowns</span>
                     </div>
-                    <p class="favourite-class">Favourite class: <strong>Archer</strong> 🏹</p>
-                    <p>
+                    <p class="favourite-class pop-in">Favourite class: <strong>Archer</strong> 🏹</p>
+                    <p class="pop-in">
                         Hi, I&rsquo;m Ronald, and I&rsquo;m one of the main creators of this board game (The
                         Legend Of Fenrirak) and I&rsquo;ve decided to share some fun facts and some tips. Firstly
                         though, I want to tell you about my favourite character, which is the Archer, which is
@@ -381,17 +370,17 @@
         </article>
 
         <!-- JUSTIN -->
-        <article class="crew-row reveal" id="justin" style="--accent: var(--p-justin)">
+        <article class="crew-row pop-group" id="justin" style="--accent: var(--p-justin)">
             <div class="crew-grid">
-                <div class="portrait-frame">
+                <div class="portrait-frame pop-in">
                     <img src="Justin.png" alt="Justin">
                 </div>
                 <div class="crew-text">
-                    <div class="name-row">
+                    <div class="name-row pop-in">
                         <h2>Justin</h2>
                         <span class="role-badge">Co-Creator</span>
                     </div>
-                    <p>
+                    <p class="pop-in">
                         Hello everyone, I&rsquo;m Justin, one of the creators of Legend Of Fenrirak. Thank you for
                         your interest in The Legend of Fenrirak&trade;. We have poured our hearts and souls into
                         creating this immersive gaming experience, and we truly hope you find it an exciting
@@ -406,17 +395,17 @@
         </article>
 
         <!-- ASHTON -->
-        <article class="crew-row reverse reveal" id="ashton" style="--accent: var(--p-ashton)">
+        <article class="crew-row reverse pop-group" id="ashton" style="--accent: var(--p-ashton)">
             <div class="crew-grid">
-                <div class="portrait-frame">
+                <div class="portrait-frame pop-in">
                     <img src="Ashton.jpeg" alt="Ashton">
                 </div>
                 <div class="crew-text">
-                    <div class="name-row">
+                    <div class="name-row pop-in">
                         <h2>Ashton</h2>
                         <span class="role-badge">Character &amp; Monster Artist</span>
                     </div>
-                    <p>
+                    <p class="pop-in">
                         Hello, I am Ashton, I am one of the creators of Legend Of Fenrirak, I am the guy who drew
                         most of the things in the first board game, like the characters and monsters. I think
                         playing Legend Of Fenrirak is super cool because you get to hang out with your friends
@@ -446,6 +435,8 @@
         <svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
     </a>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/ScrollTrigger.min.js" defer></script>
     <script src="site-nav.js" defer></script>
 
 </body>

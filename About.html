@@ -5,12 +5,6 @@
 
     <meta charset="UTF-8">
 
-    <!-- Adds a `js` class immediately (before anything paints) so the
-         reveal-on-scroll effect below can safely hide .reveal elements
-         only when JavaScript is actually going to bring them back. If
-         this script never runs, .reveal content is simply visible. -->
-    <script>document.documentElement.classList.add('js');</script>
-
     <!-- Makes the website fit phone screens -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -67,7 +61,7 @@
         }
 
         h1, h2 {
-            font-family: 'Cinzel', serif;
+            font-family: Allegro, serif;
             color: var(--c-cream);
             margin: 0 0 18px 0;
             line-height: 1.25;
@@ -85,7 +79,7 @@
 
         .kicker {
             display: inline-block;
-            font-family: 'Cinzel', serif;
+            font-family: Allegro, serif;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: 2px;
@@ -118,7 +112,7 @@
            and a full-width "spread" (text on top, media grid stretching
            the full width) for sections with a lot of images. */
         .chapter {
-            scroll-margin-top: calc(var(--topbar-h, 58px) + 66px);
+            scroll-margin-top: calc(var(--topbar-h, 58px) + 20px);
             padding: 54px 0;
             border-top: 1px solid rgba(255, 255, 255, 0.07);
         }
@@ -242,7 +236,7 @@
             text-decoration: none;
             border: 1px solid rgba(217, 163, 92, 0.28);
             border-radius: 12px;
-            font-family: 'Cinzel', serif;
+            font-family: Allegro, serif;
             font-weight: 600;
             font-size: 17px;
             text-align: center;
@@ -342,43 +336,33 @@
         </div>
     </nav>
 
-    <nav class="subnav" aria-label="Chapters of the legend">
-        <a href="#overview" style="--tab-c: var(--c-cream)">Overview</a>
-        <a href="#thunder-dragon" style="--tab-c: var(--c-thunder)">Thunder Dragon</a>
-        <a href="#ice-dragon" style="--tab-c: var(--c-ice)">Ice Dragon</a>
-        <a href="#showdowns" style="--tab-c: var(--c-showdowns)">Showdowns</a>
-        <a href="#forgotten-adventure" style="--tab-c: var(--c-forgotten)">Forgotten Adventure</a>
-        <a href="#minecraft-edition" style="--tab-c: var(--c-minecraft)">Minecraft Edition</a>
-        <a href="#timeline" style="--tab-c: var(--c-timeline)">Timeline</a>
-    </nav>
-
     <main class="container">
 
         <!-- OVERVIEW -->
-        <section class="hero reveal" id="overview" data-accent="cream">
-            <span class="kicker">The story so far</span>
-            <h1>About Legend of Fenrirak&trade;</h1>
-            <div class="hero-rule"></div>
-            <p>
+        <section class="hero pop-group" id="overview">
+            <span class="kicker pop-in">The story so far</span>
+            <h1 class="pop-in">About Legend of Fenrirak&trade;</h1>
+            <div class="hero-rule pop-in"></div>
+            <p class="pop-in">
                 Legend Of Fenrirak was originally created by four Year 7 students at Murrays Bay Intermediate in New Zealand.
                 Since then, it has continued to grow and evolve into something much larger.
             </p>
-            <p>
+            <p class="pop-in">
                 Currently, Legend of Fenrirak includes 2 board games, 3 in-progress story books, an in-progress online
                 version, and countless future ideas waiting to be developed.
             </p>
         </section>
 
         <!-- THUNDER DRAGON -->
-        <article class="chapter reveal" id="thunder-dragon" data-accent="thunder" style="--accent: var(--c-thunder)">
+        <article class="chapter pop-group" id="thunder-dragon" style="--accent: var(--c-thunder)">
             <div class="chapter-grid">
                 <div class="chapter-text">
-                    <span class="kicker">Game one</span>
-                    <h2>Legend of Fenrirak, The Thunder Dragon</h2>
-                    <p>
+                    <span class="kicker pop-in">Game one</span>
+                    <h2 class="pop-in">Legend of Fenrirak, The Thunder Dragon</h2>
+                    <p class="pop-in">
                         Legend of Fenrirak, The Thunder Dragon is the original board game and the birth of Legend of Fenrirak.
                     </p>
-                    <p>
+                    <p class="pop-in">
                         The core concept of the board game is that each player (up to six) selects a character
                         class&mdash;mage, knight, or archer&mdash;and then moves around the board to collect items,
                         gold, and keys while battling monsters that serve under the command of the final boss,
@@ -388,30 +372,30 @@
                     </p>
                 </div>
                 <div class="chapter-media">
-                    <figure>
+                    <figure class="pop-in">
                         <img class="lightbox-trigger" src="Fenrirak.png" alt="Fenrirak, the ocean-blue dragon and final boss of The Thunder Dragon">
                         <figcaption>Fenrirak &mdash; the final boss</figcaption>
                     </figure>
                     <div class="media-strip">
-                        <img class="lightbox-trigger" src="LOF1 Horizontal.jpeg" alt="The Thunder Dragon board set up for play">
-                        <img class="lightbox-trigger" src="LOF1 All.jpeg" alt="All components of the Thunder Dragon board game">
-                        <img class="lightbox-trigger" src="LOF1 Bird.jpeg" alt="Bird's-eye view of the Thunder Dragon board">
+                        <img class="lightbox-trigger pop-in" src="LOF1 Horizontal.jpeg" alt="The Thunder Dragon board set up for play">
+                        <img class="lightbox-trigger pop-in" src="LOF1 All.jpeg" alt="All components of the Thunder Dragon board game">
+                        <img class="lightbox-trigger pop-in" src="LOF1 Bird.jpeg" alt="Bird's-eye view of the Thunder Dragon board">
                     </div>
                 </div>
             </div>
         </article>
 
         <!-- ICE DRAGON -->
-        <article class="chapter reverse reveal" id="ice-dragon" data-accent="ice" style="--accent: var(--c-ice)">
+        <article class="chapter reverse pop-group" id="ice-dragon" style="--accent: var(--c-ice)">
             <div class="chapter-grid">
                 <div class="chapter-text">
-                    <span class="kicker">Game two</span>
-                    <h2>Legend of Fenrirak, The Ice Dragon</h2>
-                    <p>
+                    <span class="kicker pop-in">Game two</span>
+                    <h2 class="pop-in">Legend of Fenrirak, The Ice Dragon</h2>
+                    <p class="pop-in">
                         Legend of Fenrirak, The Ice Dragon is the second board game acting as a sequel to the
                         Thunder Dragon due to its magnificent success.
                     </p>
-                    <p>
+                    <p class="pop-in">
                         The main objective of this board game is similar to the original; however, several
                         enhancements have been introduced to improve gameplay. The board now features an
                         increased number of squares, a new playable character, the barbarian, and a dedicated
@@ -422,54 +406,54 @@
                 </div>
                 <div class="chapter-media">
                     <div class="media-grid-2">
-                        <img class="lightbox-trigger" src="LOF2 Board.jpeg" alt="The Ice Dragon game board">
-                        <img class="lightbox-trigger" src="LOF2 Cards.jpeg" alt="Ice Dragon card designs">
-                        <img class="lightbox-trigger" src="LOF2 Character.jpeg" alt="An Ice Dragon character piece">
-                        <img class="lightbox-trigger" src="LOF2 Box.jpeg" alt="The Ice Dragon game box">
+                        <img class="lightbox-trigger pop-in" src="LOF2 Board.jpeg" alt="The Ice Dragon game board">
+                        <img class="lightbox-trigger pop-in" src="LOF2 Cards.jpeg" alt="Ice Dragon card designs">
+                        <img class="lightbox-trigger pop-in" src="LOF2 Character.jpeg" alt="An Ice Dragon character piece">
+                        <img class="lightbox-trigger pop-in" src="LOF2 Box.jpeg" alt="The Ice Dragon game box">
                     </div>
                 </div>
             </div>
         </article>
 
         <!-- SHOWDOWNS -->
-        <article class="chapter reveal" id="showdowns" data-accent="showdowns" style="--accent: var(--c-showdowns)">
+        <article class="chapter pop-group" id="showdowns" style="--accent: var(--c-showdowns)">
             <div class="highlight-card">
-                <span class="kicker">Playable online now</span>
-                <h2 style="text-align:center">Legend of Fenrirak &ndash; Showdowns</h2>
-                <p>
+                <span class="kicker pop-in">Playable online now</span>
+                <h2 class="pop-in" style="text-align:center">Legend of Fenrirak &ndash; Showdowns</h2>
+                <p class="pop-in">
                     The origins of Legend of Fenrirak Showdowns are as unexpected as you can get. The idea began
                     on a Saturday night when Nathan dreamed of a basic PvP game concept. Upon waking the next
                     morning, he immediately documented the game's rules and simple mechanics. Together with
                     Ronald, they then developed the concept further, eventually bringing it to life as a
                     playable game.
                 </p>
-                <p>
+                <p class="pop-in">
                     The main objective of this board game is to defeat all the other players on the board. The
                     board is filled with different terrains and chests, forcing players to make important
                     decisions that can completely change the course of the game.
                 </p>
-                <p>
+                <p class="pop-in">
                     After weeks of hard work, we finally have an ONLINE version for everyone to play! It's
                     currently single-player, where you'll battle against AI opponents.
                 </p>
-                <a href="Testplay Showdowns.html" class="section" style="border-color: color-mix(in srgb, var(--c-showdowns) 55%, transparent)">
+                <a href="Testplay Showdowns.html" class="section pop-in" style="border-color: color-mix(in srgb, var(--c-showdowns) 55%, transparent)">
                     Play Legend of Fenrirak Showdowns!
                 </a>
             </div>
         </article>
 
         <!-- FORGOTTEN ADVENTURE -->
-        <article class="chapter reverse reveal" id="forgotten-adventure" data-accent="forgotten" style="--accent: var(--c-forgotten)">
+        <article class="chapter reverse pop-group" id="forgotten-adventure" style="--accent: var(--c-forgotten)">
             <div class="chapter-grid">
                 <div class="chapter-text">
-                    <span class="kicker">Prequel story</span>
-                    <h2>Legend of Fenrirak, The Forgotten Adventure</h2>
-                    <p>
+                    <span class="kicker pop-in">Prequel story</span>
+                    <h2 class="pop-in">Legend of Fenrirak, The Forgotten Adventure</h2>
+                    <p class="pop-in">
                         Legend of Fenrirak, The Forgotten Adventure is a story that happened 100 years before The
                         Thunder Dragon. It sets the backstory of why Fenrirak became a threat to humans. Read the
                         blurb below!
                     </p>
-                    <p class="blurb">
+                    <p class="blurb pop-in">
                         A young mage named Aldemar is forced into a war he does not believe in when rival kingdoms
                         unite to hunt Fenrirak, a legendary dragon thought dead for centuries but now stirring
                         once more. As armies march into elven territory, the mission unravels into chaos and
@@ -480,48 +464,48 @@
                         will decide the fate of everything he knows.
                     </p>
                 </div>
-                <div class="chapter-media book-cover">
+                <div class="chapter-media book-cover pop-in">
                     <img class="lightbox-trigger" src="Book Cover Reoutline.jpg" alt="Cover art for The Forgotten Adventure">
                 </div>
             </div>
         </article>
 
         <!-- MINECRAFT EDITION -->
-        <article class="chapter reveal" id="minecraft-edition" data-accent="minecraft" style="--accent: var(--c-minecraft)">
-            <span class="kicker">Side project</span>
-            <h2>Legend of Fenrirak, The Thunder Dragon &ndash; MINECRAFT EDITION</h2>
-            <p>Minecraft is a trademark of Mojang Studios.</p>
-            <p>
+        <article class="chapter pop-group" id="minecraft-edition" style="--accent: var(--c-minecraft)">
+            <span class="kicker pop-in">Side project</span>
+            <h2 class="pop-in">Legend of Fenrirak, The Thunder Dragon &ndash; MINECRAFT EDITION</h2>
+            <p class="pop-in">Minecraft is a trademark of Mojang Studios.</p>
+            <p class="pop-in">
                 Legend of Fenrirak, The Thunder Dragon was recreated in Minecraft as a fun and easy way for us to
                 meet up and play our board game online&hellip;
             </p>
-            <p>
+            <p class="pop-in">
                 Only, it took us over 2 years to finish most of it, and some components were impossible to add
                 using Minecraft (see below). We ended up pausing the project and focusing our attention on other
                 projects such as the Ice Dragon and The Forgotten Adventure.
             </p>
             <div class="spread-media screenshot-grid">
-                <img class="lightbox-trigger" src="1.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 1 of 10">
-                <img class="lightbox-trigger" src="2.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 2 of 10">
-                <img class="lightbox-trigger" src="3.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 3 of 10">
-                <img class="lightbox-trigger" src="4.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 4 of 10">
-                <img class="lightbox-trigger" src="5.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 5 of 10">
-                <img class="lightbox-trigger" src="6.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 6 of 10">
-                <img class="lightbox-trigger" src="7.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 7 of 10">
-                <img class="lightbox-trigger" src="8.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 8 of 10">
-                <img class="lightbox-trigger" src="9.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 9 of 10">
-                <img class="lightbox-trigger" src="10.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 10 of 10">
+                <img class="lightbox-trigger pop-in" src="1.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 1 of 10">
+                <img class="lightbox-trigger pop-in" src="2.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 2 of 10">
+                <img class="lightbox-trigger pop-in" src="3.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 3 of 10">
+                <img class="lightbox-trigger pop-in" src="4.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 4 of 10">
+                <img class="lightbox-trigger pop-in" src="5.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 5 of 10">
+                <img class="lightbox-trigger pop-in" src="6.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 6 of 10">
+                <img class="lightbox-trigger pop-in" src="7.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 7 of 10">
+                <img class="lightbox-trigger pop-in" src="8.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 8 of 10">
+                <img class="lightbox-trigger pop-in" src="9.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 9 of 10">
+                <img class="lightbox-trigger pop-in" src="10.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 10 of 10">
             </div>
         </article>
 
         <!-- TIMELINE -->
-        <article class="chapter reveal" id="timeline" data-accent="timeline" style="--accent: var(--c-timeline)">
-            <span class="kicker">What's next</span>
-            <h2>The Timeline for Legend of Fenrirak</h2>
+        <article class="chapter pop-group" id="timeline" style="--accent: var(--c-timeline)">
+            <span class="kicker pop-in">What's next</span>
+            <h2 class="pop-in">The Timeline for Legend of Fenrirak</h2>
             <div>
-                <span class="badge">Subject to change</span>
+                <span class="badge pop-in">Subject to change</span>
             </div>
-            <div class="spread-media timeline-figure">
+            <div class="spread-media timeline-figure pop-in">
                 <img class="lightbox-trigger" src="Timeline.png" alt="Timeline of Legend of Fenrirak's past and upcoming projects">
             </div>
         </article>
@@ -542,6 +526,8 @@
         <svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
     </a>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/ScrollTrigger.min.js" defer></script>
     <script src="site-nav.js" defer></script>
 
 </body>

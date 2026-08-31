@@ -2,12 +2,11 @@
    Legend of Fenrirak — shared site navigation & scroll-experience kit.
 
    One flat, quiet bar used by every page, plus a small set of reusable
-   "chronicle" components (chapter index, reveal-on-scroll, lightbox,
-   progress bar, back-to-top) used by the longer story-style pages.
-   Edit here, not in each page.
+   scroll-experience components (lightbox, progress bar, back-to-top)
+   used by the longer story-style pages. Edit here, not in each page.
    ========================================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Comfortaa:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa&display=swap');
 
 .topbar {
     /* Set here rather than relying on a global reset: without it the side
@@ -54,7 +53,7 @@
     box-shadow: none;
     white-space: nowrap;
     text-decoration: none;
-    font-family: 'Cinzel', serif;
+    font-family: Allegro, serif;
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.3px;
@@ -190,32 +189,18 @@
 }
 
 /* =========================================================================
-   SHARED "CHRONICLE" COMPONENTS
+   SHARED SCROLL-EXPERIENCE COMPONENTS
    Used by the longer, scrolling story-style pages (About, Creators).
    Every rule below is inert unless the matching element exists on the page,
    so it never changes how the short pages (Home, AfterShowdowns) look.
    ========================================================================= */
 
-/* ---- reveal-on-scroll --------------------------------------------------
-   Gated behind html.js so that with JavaScript disabled everything is
-   simply visible right away — content is never hidden behind a script. */
-.js .reveal {
-    opacity: 0;
-    transform: translateY(28px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-    will-change: opacity, transform;
-}
-.js .reveal.is-visible {
-    opacity: 1;
-    transform: none;
-}
-@media (prefers-reduced-motion: reduce) {
-    .js .reveal {
-        opacity: 1;
-        transform: none;
-        transition: none;
-    }
-}
+/* ---- pop-in-as-you-scroll --------------------------------------------
+   No CSS rule here hides anything. The animation (About.html /
+   Creators.html, via GSAP + ScrollTrigger) sets its own "from" state as
+   an inline style right when it runs — so if that script is ever blocked
+   or fails to load, nothing ever gets stuck invisible; content simply
+   sits in its normal, visible place. See the bottom of site-nav.js. */
 
 /* ---- top scroll-progress thread ---------------------------------------- */
 .scroll-progress {
@@ -230,57 +215,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .scroll-progress { transition: none; }
-}
-
-/* ---- chapter index / sub-nav -------------------------------------------
-   A sticky row of pills just under the main topbar, letting people jump
-   straight to a chapter. The active pill borrows that chapter's own
-   accent colour (set per link via inline style/CSS custom property), so
-   the index doubles as a little key to the colour-coding used below. */
-.subnav {
-    position: sticky;
-    top: var(--topbar-h, 58px);
-    z-index: 190;
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    padding: 10px 16px;
-    margin: 0 0 30px 0;
-    background: rgba(18, 18, 18, 0.88);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-.subnav::-webkit-scrollbar { display: none; }
-
-.subnav a {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    padding: 7px 14px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    color: #b7b3ac;
-    text-decoration: none;
-    font-family: 'Cinzel', serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    white-space: nowrap;
-    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
-}
-
-.subnav a:hover {
-    color: #efe9de;
-    border-color: rgba(255, 255, 255, 0.32);
-}
-
-.subnav a.active {
-    color: var(--tab-c, rgb(242, 204, 143));
-    border-color: var(--tab-c, rgb(217, 163, 92));
-    background: color-mix(in srgb, var(--tab-c, rgb(217, 163, 92)) 14%, transparent);
 }
 
 /* ---- floating back-to-top ----------------------------------------------- */

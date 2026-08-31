@@ -3,8 +3,8 @@
 
    Every feature below checks for its own element before doing anything,
    so pages that don't use a feature (Home, AfterShowdowns) are completely
-   unaffected — only About and Creators currently use the chapter index,
-   reveal-on-scroll, progress thread, back-to-top and lightbox.
+   unaffected — only About and Creators currently use the pop-in-on-scroll
+   animation, progress thread, back-to-top and lightbox.
    ========================================================================= */
 
 (function () {
@@ -50,9 +50,9 @@
         });
     }
 
-    /* ---- keep --topbar-h in sync, so the chapter index (and each
-       chapter's scroll-margin-top) sits right below the real bar height,
-       whatever that happens to be at the current screen size ----------- */
+    /* ---- keep --topbar-h in sync, so each section's scroll-margin-top
+       clears the real bar height, whatever that is at the current
+       screen size ----------------------------------------------------- */
     function initStickyOffset() {
         var bar = document.querySelector('.topbar');
         if (!bar) return;
@@ -66,43 +66,67 @@
         if (window.ResizeObserver) new ResizeObserver(measure).observe(bar);
     }
 
-    /* ---- reveal-on-scroll ---------------------------------------------
-       Every item also gets a staggered fallback timer, so content can
-       never end up permanently invisible if the observer ever misses an
-       element (an oddly-tall section, an unusual zoom level, and so on).
-       Whichever fires first wins; the other is simply a no-op. -------- */
-    function initReveal() {
-        var items = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
-        if (!items.length) return;
+    /* ---- pop-in-as-you-scroll ------------------------------------------
+       Real scrollytelling-style reveals, via GSAP + ScrollTrigger (loaded
+       only on the pages that use this — see the <script> tags near the
+       bottom of About.html / Creators.html).
 
-        if (!('IntersectionObserver' in window) || reduceMotion) {
-            items.forEach(function (el) { el.classList.add('is-visible'); });
-            return;
-        }
+       Every ".pop-group" (a whole chapter / crew row) fires once, as soon
+       as it scrolls into view, cascading its ".pop-in" children in one
+       after another rather than fading the whole block in at once — that
+       staggered cascade is what makes it read as "things popping up",
+       not just a section quietly fading in.
 
-        var timers = new Map();
+       Safety net: GSAP's gsap.from() only ever hides an element the
+       instant this code actually runs, by writing an inline style —
+       there is no CSS rule anywhere that hides ".pop-in" content. So if
+       this script (or the GSAP CDN it depends on) never loads at all,
+       nothing is ever hidden in the first place. The one remaining edge
+       case — GSAP loads fine, but ScrollTrigger somehow never fires for
+       a particular group — is covered by a plain fallback timer per
+       group that force-finishes the animation regardless. ------------ */
+    function initPopIn() {
+        if (typeof gsap === 'undefined') return;
 
-        function reveal(el) {
-            el.classList.add('is-visible');
-            var t = timers.get(el);
-            if (t) {
-                clearTimeout(t);
-                timers.delete(el);
+        var groups = Array.prototype.slice.call(document.querySelectorAll('.pop-group'));
+        if (!groups.length) return;
+
+        if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+
+        groups.forEach(function (group, gi) {
+            var items = Array.prototype.slice.call(group.querySelectorAll('.pop-in'));
+            if (!items.length) return;
+
+            if (reduceMotion || !window.ScrollTrigger) {
+                gsap.set(items, { clearProps: 'all' });
+                return;
             }
-        }
 
-        var io = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    reveal(entry.target);
-                    io.unobserve(entry.target);
+            var done = false;
+            var tween = gsap.from(items, {
+                opacity: 0,
+                y: 34,
+                scale: 0.97,
+                duration: 0.7,
+                ease: 'power2.out',
+                stagger: 0.12,
+                scrollTrigger: {
+                    trigger: group,
+                    start: 'top 82%',
+                    once: true,
+                    onEnter: function () { done = true; }
                 }
             });
-        }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
 
-        items.forEach(function (el, i) {
-            io.observe(el);
-            timers.set(el, setTimeout(function () { reveal(el); }, 1800 + i * 120));
+            /* Belt-and-braces: whatever happens with ScrollTrigger, this
+               group is guaranteed to have popped in a few seconds after
+               it's been on the page a while. */
+            setTimeout(function () {
+                if (!done) {
+                    tween.progress(1);
+                    gsap.set(items, { clearProps: 'all' });
+                }
+            }, 4000 + gi * 150);
         });
     }
 
@@ -145,48 +169,6 @@
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
         });
-    }
-
-    /* ---- chapter index scrollspy ---------------------------------------
-       Highlights the pill for whichever chapter currently occupies a thin
-       band near the top of the viewport. Each pill borrows its chapter's
-       own accent colour via --tab-c, set inline on the link itself. ---- */
-    function initSubnav() {
-        var nav = document.querySelector('.subnav');
-        if (!nav) return;
-
-        var links = Array.prototype.slice.call(nav.querySelectorAll('a[href^="#"]'));
-        var map = {};
-        var targets = [];
-
-        links.forEach(function (a) {
-            var id = a.getAttribute('href').slice(1);
-            var el = document.getElementById(id);
-            if (el) {
-                map[id] = a;
-                targets.push(el);
-            }
-        });
-        if (!targets.length) return;
-
-        function setActive(id) {
-            links.forEach(function (a) { a.classList.remove('active'); });
-            if (map[id]) map[id].classList.add('active');
-        }
-
-        if (!('IntersectionObserver' in window)) {
-            setActive(targets[0].id);
-            return;
-        }
-
-        var io = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) setActive(entry.target.id);
-            });
-        }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
-
-        targets.forEach(function (el) { io.observe(el); });
-        setActive(targets[0].id);
     }
 
     /* ---- lightbox -------------------------------------------------------
@@ -237,10 +219,9 @@
     function init() {
         initGamesMenu();
         initStickyOffset();
-        initReveal();
+        initPopIn();
         initProgress();
         initBackToTop();
-        initSubnav();
         initLightbox();
     }
 
