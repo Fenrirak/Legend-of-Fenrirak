@@ -5,6 +5,13 @@
 
     <meta charset="UTF-8">
 
+    <!-- Runs immediately, before anything paints, so .pop-in content
+         (see site-nav.css / site-nav.js) is hidden from the very first
+         frame rather than flashing visible and then disappearing. If
+         this line is ever missing, .pop-in content simply stays visible
+         with no animation — it is never hidden without this running. -->
+    <script>document.documentElement.classList.add('js-ready');</script>
+
     <!-- Makes the website fit phone screens -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -204,7 +211,20 @@
             grid-template-columns: repeat(5, 1fr);
             gap: 10px;
         }
-        .screenshot-grid img { border-radius: 9px; }
+        .screenshot-grid img {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            display: block;
+            border-radius: 9px;
+        }
+
+        .timeline-figure img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+        }
 
         .timeline-figure {
             max-width: 760px;
@@ -526,8 +546,6 @@
         <svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
     </a>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/gsap.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/ScrollTrigger.min.js" defer></script>
     <script src="site-nav.js" defer></script>
 
 </body>

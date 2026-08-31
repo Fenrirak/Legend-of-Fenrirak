@@ -67,66 +67,56 @@
     }
 
     /* ---- pop-in-as-you-scroll ------------------------------------------
-       Real scrollytelling-style reveals, via GSAP + ScrollTrigger (loaded
-       only on the pages that use this — see the <script> tags near the
-       bottom of About.html / Creators.html).
+       Real scrollytelling-style reveals — built entirely from this file
+       plus the CSS in site-nav.css, with no external library and no
+       network request, so it can never be silently broken by a blocked
+       or slow CDN in whatever environment the page is opened in.
 
-       Every ".pop-group" (a whole chapter / crew row) fires once, as soon
-       as it scrolls into view, cascading its ".pop-in" children in one
-       after another rather than fading the whole block in at once — that
-       staggered cascade is what makes it read as "things popping up",
-       not just a section quietly fading in.
+       Every ".pop-group" (a whole chapter / crew row) fires once, the
+       moment it scrolls into view: its ".pop-in" children get ".is-visible"
+       added one after another, a fraction of a second apart (via a small
+       per-item transition-delay), which is what makes them cascade in
+       rather than the whole block fading in as one flat rectangle.
 
-       Safety net: GSAP's gsap.from() only ever hides an element the
-       instant this code actually runs, by writing an inline style —
-       there is no CSS rule anywhere that hides ".pop-in" content. So if
-       this script (or the GSAP CDN it depends on) never loads at all,
-       nothing is ever hidden in the first place. The one remaining edge
-       case — GSAP loads fine, but ScrollTrigger somehow never fires for
-       a particular group — is covered by a plain fallback timer per
-       group that force-finishes the animation regardless. ------------ */
+       Safety net: the hidden state only ever exists once html.js-ready is
+       set below, and only for the length of this function — every group
+       also gets a fallback timer that force-reveals it regardless, so
+       nothing can end up permanently invisible even in an odd edge case
+       (an unusually tall section, a browser quirk, and so on). --------- */
     function initPopIn() {
-        if (typeof gsap === 'undefined') return;
-
         var groups = Array.prototype.slice.call(document.querySelectorAll('.pop-group'));
         if (!groups.length) return;
 
-        if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+        document.documentElement.classList.add('js-ready');
 
-        groups.forEach(function (group, gi) {
+        function revealGroup(group) {
+            if (group.dataset.popped) return;
+            group.dataset.popped = 'true';
+
             var items = Array.prototype.slice.call(group.querySelectorAll('.pop-in'));
-            if (!items.length) return;
+            items.forEach(function (el, i) {
+                el.style.transitionDelay = reduceMotion ? '0s' : (i * 0.1) + 's';
+                el.classList.add('is-visible');
+            });
+        }
 
-            if (reduceMotion || !window.ScrollTrigger) {
-                gsap.set(items, { clearProps: 'all' });
-                return;
-            }
+        if (reduceMotion || !('IntersectionObserver' in window)) {
+            groups.forEach(revealGroup);
+            return;
+        }
 
-            var done = false;
-            var tween = gsap.from(items, {
-                opacity: 0,
-                y: 34,
-                scale: 0.97,
-                duration: 0.7,
-                ease: 'power2.out',
-                stagger: 0.12,
-                scrollTrigger: {
-                    trigger: group,
-                    start: 'top 82%',
-                    once: true,
-                    onEnter: function () { done = true; }
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    revealGroup(entry.target);
+                    io.unobserve(entry.target);
                 }
             });
+        }, { threshold: 0.12, rootMargin: '0px 0px -10% 0px' });
 
-            /* Belt-and-braces: whatever happens with ScrollTrigger, this
-               group is guaranteed to have popped in a few seconds after
-               it's been on the page a while. */
-            setTimeout(function () {
-                if (!done) {
-                    tween.progress(1);
-                    gsap.set(items, { clearProps: 'all' });
-                }
-            }, 4000 + gi * 150);
+        groups.forEach(function (group, gi) {
+            io.observe(group);
+            setTimeout(function () { revealGroup(group); }, 3000 + gi * 150);
         });
     }
 

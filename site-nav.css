@@ -195,12 +195,34 @@
    so it never changes how the short pages (Home, AfterShowdowns) look.
    ========================================================================= */
 
-/* ---- pop-in-as-you-scroll --------------------------------------------
-   No CSS rule here hides anything. The animation (About.html /
-   Creators.html, via GSAP + ScrollTrigger) sets its own "from" state as
-   an inline style right when it runs — so if that script is ever blocked
-   or fails to load, nothing ever gets stuck invisible; content simply
-   sits in its normal, visible place. See the bottom of site-nav.js. */
+/* ---- pop-in-as-you-scroll -----------------------------------------------
+   Self-contained: no external library, no CDN, no network request — this
+   works the instant the page's own JS runs, in any hosting environment or
+   preview sandbox, offline or on. site-nav.js watches each ".pop-group"
+   and, as it scrolls into view, adds ".is-visible" to its ".pop-in"
+   children one at a time (a few milliseconds apart), which is what makes
+   them cascade in rather than all fade together.
+
+   Gated behind html.js-ready so nothing is ever hidden unless the script
+   that will actually bring it back has already started running. With
+   JavaScript disabled, or before that class is added, .pop-in content is
+   simply visible — never permanently stuck invisible. */
+.js-ready .pop-in {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.js-ready .pop-in.is-visible {
+    opacity: 1;
+    transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .js-ready .pop-in {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
 
 /* ---- top scroll-progress thread ---------------------------------------- */
 .scroll-progress {
