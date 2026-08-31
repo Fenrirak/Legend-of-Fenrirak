@@ -196,33 +196,14 @@
    ========================================================================= */
 
 /* ---- pop-in-as-you-scroll -----------------------------------------------
-   Self-contained: no external library, no CDN, no network request — this
-   works the instant the page's own JS runs, in any hosting environment or
-   preview sandbox, offline or on. site-nav.js watches each ".pop-group"
-   and, as it scrolls into view, adds ".is-visible" to its ".pop-in"
-   children one at a time (a few milliseconds apart), which is what makes
-   them cascade in rather than all fade together.
-
-   Gated behind html.js-ready so nothing is ever hidden unless the script
-   that will actually bring it back has already started running. With
-   JavaScript disabled, or before that class is added, .pop-in content is
-   simply visible — never permanently stuck invisible. */
-.js-ready .pop-in {
-    opacity: 0;
-    transform: translateY(30px) scale(0.97);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.js-ready .pop-in.is-visible {
-    opacity: 1;
-    transform: none;
-}
-@media (prefers-reduced-motion: reduce) {
-    .js-ready .pop-in {
-        opacity: 1;
-        transform: none;
-        transition: none;
-    }
-}
+   No CSS here hides anything. site-nav.js computes each ".pop-in"
+   element's opacity live, every scroll frame, from its position on
+   screen, and applies it as an inline style — so it stays perfectly in
+   sync with the scrollbar (scroll partway and content sits partway
+   revealed; scroll back up and it recedes again). Since only that
+   running script ever sets those styles, a page with JavaScript
+   disabled (or a blocked/broken script) simply shows this content
+   normally — it is never hidden by a stylesheet rule with no way back. */
 
 /* ---- top scroll-progress thread ---------------------------------------- */
 .scroll-progress {

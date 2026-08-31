@@ -67,65 +67,87 @@
     }
 
     /* ---- pop-in-as-you-scroll ------------------------------------------
-       Real scrollytelling-style reveals — built entirely from this file
-       plus the CSS in site-nav.css, with no external library and no
-       network request, so it can never be silently broken by a blocked
-       or slow CDN in whatever environment the page is opened in.
+       True scroll-scrubbed reveal: every ".pop-in" element's opacity and
+       position are recalculated on every scroll frame, directly from how
+       far it has scrolled up through the viewport — not a fixed-duration
+       animation that gets triggered once and then plays on its own. Stop
+       scrolling halfway and it sits at exactly that halfway point; scroll
+       back up and it fades back down. It's driven by the scrollbar the
+       same way the word-by-word brightening on a page like Jesko Jets is.
 
-       Every ".pop-group" (a whole chapter / crew row) fires once, the
-       moment it scrolls into view: its ".pop-in" children get ".is-visible"
-       added one after another, a fraction of a second apart (via a small
-       per-item transition-delay), which is what makes them cascade in
-       rather than the whole block fading in as one flat rectangle.
+       Each item computes its OWN reveal window from its own position, so
+       this behaves correctly regardless of how tall a section is (a
+       10-image grid doesn't reveal its later images too early just
+       because the section started near the top of the screen). Items
+       that share a row get a small extra pixel offset per index, purely
+       so a row of images cascades left-to-right instead of popping in
+       all at once.
 
-       Safety net: the hidden state only ever exists once html.js-ready is
-       set below, and only for the length of this function — every group
-       also gets a fallback timer that force-reveals it regardless, so
-       nothing can end up permanently invisible even in an odd edge case
-       (an unusually tall section, a browser quirk, and so on). --------- */
+       No CSS class or rule ever hides this content — the only thing that
+       ever sets its opacity is this function actually running. So if
+       this script is ever blocked entirely, nothing is hidden in the
+       first place; the page is simply static, not broken. ------------- */
     function initPopIn() {
         var groups = Array.prototype.slice.call(document.querySelectorAll('.pop-group'));
         if (!groups.length) return;
 
-        document.documentElement.classList.add('js-ready');
-
-        function revealGroup(group) {
-            if (group.dataset.popped) return;
-            group.dataset.popped = 'true';
-
+        var entries = [];
+        groups.forEach(function (group) {
             var items = Array.prototype.slice.call(group.querySelectorAll('.pop-in'));
             items.forEach(function (el, i) {
-                el.style.transitionDelay = reduceMotion ? '0s' : (i * 0.1) + 's';
-                el.classList.add('is-visible');
+                entries.push({ el: el, offset: i * 22 });
             });
-        }
+        });
+        if (!entries.length) return;
 
-        if (reduceMotion || !('IntersectionObserver' in window)) {
-            groups.forEach(revealGroup);
+        if (reduceMotion) {
+            entries.forEach(function (e) { e.el.style.opacity = 1; });
             return;
         }
 
-        var io = new IntersectionObserver(function (entries) {
+        function update() {
+            var vh = window.innerHeight;
+            var startY = vh * 0.92;
+            var endY = vh * 0.52;
+
             entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    revealGroup(entry.target);
-                    io.unobserve(entry.target);
+                var top = entry.el.getBoundingClientRect().top + entry.offset;
+                var progress = (startY - top) / (startY - endY);
+                if (progress < 0) progress = 0;
+                else if (progress > 1) progress = 1;
+
+                if (progress >= 1) {
+                    /* Fully revealed: clear the inline styles rather than
+                       setting them to their "settled" values, so this
+                       element's own CSS (e.g. a :hover lift on a button)
+                       can take over again. An inline style always wins
+                       over a stylesheet rule, even one saying "none". */
+                    entry.el.style.opacity = '';
+                    entry.el.style.transform = '';
+                } else {
+                    entry.el.style.opacity = progress;
+                    entry.el.style.transform = 'translateY(' + (26 * (1 - progress)) + 'px)';
                 }
             });
-        }, { threshold: 0.12, rootMargin: '0px 0px -10% 0px' });
+        }
 
-        groups.forEach(function (group) {
-            io.observe(group);
-            /* Genuine last resort only — IntersectionObserver is reliable
-               in every current browser, so this should in practice never
-               fire. It exists purely so a section can't stay invisible
-               forever in some freak edge case, without undermining the
-               scroll-triggered reveal for anyone reading at a normal
-               pace (the earlier version of this fired within 3–4
-               seconds of load, which was fast enough to reveal whole
-               sections before they'd even been scrolled to — that bug
-               is what this longer delay fixes). */
-            setTimeout(function () { revealGroup(group); }, 20000);
+        var ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(function () { update(); ticking = false; });
+                ticking = true;
+            }
+        }
+
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+
+        /* Images loading in changes page layout after the fact — re-run
+           once each one settles so positions (and thus reveal state)
+           stay accurate instead of drifting from what's on screen. */
+        document.querySelectorAll('img').forEach(function (img) {
+            if (!img.complete) img.addEventListener('load', onScroll, { once: true });
         });
     }
 
