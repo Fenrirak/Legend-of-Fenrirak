@@ -114,9 +114,18 @@
             });
         }, { threshold: 0.12, rootMargin: '0px 0px -10% 0px' });
 
-        groups.forEach(function (group, gi) {
+        groups.forEach(function (group) {
             io.observe(group);
-            setTimeout(function () { revealGroup(group); }, 3000 + gi * 150);
+            /* Genuine last resort only — IntersectionObserver is reliable
+               in every current browser, so this should in practice never
+               fire. It exists purely so a section can't stay invisible
+               forever in some freak edge case, without undermining the
+               scroll-triggered reveal for anyone reading at a normal
+               pace (the earlier version of this fired within 3–4
+               seconds of load, which was fast enough to reveal whole
+               sections before they'd even been scrolled to — that bug
+               is what this longer delay fixes). */
+            setTimeout(function () { revealGroup(group); }, 20000);
         });
     }
 
