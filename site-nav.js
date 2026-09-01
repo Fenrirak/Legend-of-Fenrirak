@@ -256,10 +256,10 @@
         if (reduceMotion || !tiltEls.length) return;
 
         function bindTilt(el) {
-            var maxDeg = 7;
+            var maxDeg = 12;
             var frame = null, rotX = 0, rotY = 0;
             function apply() {
-                el.style.transform = 'perspective(800px) rotateX(' + rotX.toFixed(2) +
+                el.style.transform = 'perspective(600px) rotateX(' + rotX.toFixed(2) +
                     'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
                 frame = null;
             }
@@ -273,7 +273,7 @@
             });
             el.addEventListener('mouseleave', function () {
                 rotX = 0; rotY = 0;
-                el.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg)';
+                el.style.transform = 'perspective(600px) rotateX(0deg) rotateY(0deg)';
             });
         }
 
