@@ -5,6 +5,13 @@
 
     <meta charset="UTF-8">
 
+    <!-- Runs immediately, before anything paints, so .pop-in content
+         (see site-nav.css / site-nav.js) is hidden from the very first
+         frame rather than flashing visible and then disappearing. If
+         this line is ever missing, .pop-in content simply stays visible
+         with no animation — it is never hidden without this running. -->
+    <script>document.documentElement.classList.add('js-ready');</script>
+
     <!-- Makes the website fit phone screens -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -220,7 +227,7 @@
         }
 
         .timeline-figure {
-            max-width: 480px;
+            max-width: 760px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -274,16 +281,6 @@
         }
         .cta-row .section { margin: 0; }
 
-        /* A CTA that sits under left-aligned paragraph text (Thunder Dragon)
-           rather than centered in its own card (Showdowns): compact and
-           inline on desktop, full-width like every other button on phones. */
-        .section--inline {
-            display: inline-block;
-            width: auto;
-            max-width: none;
-            margin: 14px 0 0 0;
-        }
-
         .closing {
             text-align: center;
             padding: 60px 0 30px;
@@ -314,7 +311,6 @@
             .highlight-card { padding: 28px 20px; }
 
             .section { width: 100%; max-width: 320px; }
-            .section--inline { display: block; width: 100%; max-width: 320px; margin: 14px auto 0; }
         }
     </style>
 
@@ -355,6 +351,10 @@
                         <svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
                         <span>The Thunder Dragon</span>
                     </a>
+                    <a href="Ice Dragon.html">
+                        <svg viewBox="0 0 24 24"><path d="M12 2v20M4.5 6l15 12M19.5 6l-15 12"/></svg>
+                        <span>The Ice Dragon</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -372,7 +372,7 @@
                 Since then, it has continued to grow and evolve into something much larger.
             </p>
             <p class="pop-in">
-                Currently, Legend of Fenrirak includes 3 board games, 3 in-progress story books, an in-progress online
+                Currently, Legend of Fenrirak includes 2 board games, 3 in-progress story books, an in-progress online
                 version, and countless future ideas waiting to be developed.
             </p>
         </section>
@@ -394,9 +394,6 @@
                         to the boss arena, where they will face Fenrirak, a large, ocean-blue dragon coated in a
                         heavy layer of scales.
                     </p>
-                    <a href="Thunder Dragon.html" class="section section--inline pop-in" style="border-color: color-mix(in srgb, var(--c-thunder) 55%, transparent)">
-                        Play Legend of Fenrirak, The Thunder Dragon!
-                    </a>
                 </div>
                 <div class="chapter-media">
                     <figure class="pop-in">

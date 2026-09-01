@@ -5,6 +5,13 @@
 
     <meta charset="UTF-8">
 
+    <!-- Runs immediately, before anything paints, so .pop-in content
+         (see site-nav.css / site-nav.js) is hidden from the very first
+         frame rather than flashing visible and then disappearing. If
+         this line is ever missing, .pop-in content simply stays visible
+         with no animation — it is never hidden without this running. -->
+    <script>document.documentElement.classList.add('js-ready');</script>
+
     <!-- Makes the website fit phone screens -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -294,6 +301,10 @@
                     <a href="Thunder Dragon.html">
                         <svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
                         <span>The Thunder Dragon</span>
+                    </a>
+                    <a href="Ice Dragon.html">
+                        <svg viewBox="0 0 24 24"><path d="M12 2v20M4.5 6l15 12M19.5 6l-15 12"/></svg>
+                        <span>The Ice Dragon</span>
                     </a>
                 </div>
             </div>
