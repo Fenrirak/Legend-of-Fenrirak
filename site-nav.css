@@ -6,9 +6,10 @@
    used by the longer story-style pages. Edit here, not in each page.
 
    Also below: a further set of opt-in accents for story-style pages —
-   spotlight/tilt hover, an ambient cursor light, scroll parallax, and a
-   scroll-scrubbed text glow. Same rule as everything above: nothing
-   activates on a page unless that page adds the matching class.
+   hover brighten, push-tilt, an ambient cursor light, a liquid dye
+   field, scroll parallax, and a scroll-scrubbed text glow. Same rule as
+   everything above: nothing activates on a page unless that page adds
+   the matching class.
    ========================================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa&display=swap');
@@ -312,21 +313,20 @@
 .lightbox-trigger { cursor: zoom-in; }
 
 /* =========================================================================
-   ABOUT-PAGE ACCENTS — cursor light, tilt, ambient glow, parallax, text glow
-   Opt-in via class name, exactly like the scroll-experience kit above:
-   add the class to an element in your HTML and site-nav.js does the rest.
-   Nothing here runs, or even queries the DOM, unless its element exists.
+   ABOUT-PAGE ACCENTS — hover brighten, push-tilt, ambient glow, dye field,
+   parallax, text glow. Opt-in via class name, exactly like the scroll-
+   experience kit above: add the class to an element in your HTML and
+   site-nav.js does the rest. Nothing here runs, or even queries the DOM,
+   unless its element exists.
    ========================================================================= */
 
-/* ---- cursor-tracked spotlight (hover) -----------------------------------
+/* ---- gentle whole-element brighten (hover) -------------------------------
    Put .glow-hover on a card, portrait, or panel — NOT directly on an
    <img>: browsers don't render ::after on replaced elements like img,
-   video or input, so the glow would silently do nothing. Wrap the image
-   in a plain <div class="glow-hover"> instead. site-nav.js follows the
-   pointer inside the element and writes it to --gx/--gy, so the light
-   sits under the cursor instead of in a fixed spot. Works even without
-   JS or with a mouse that never moves inside it: the default 50%/50%
-   position still gives a plain centered glow on :hover/:focus-within. */
+   video or input, so this would silently do nothing. Wrap the image in
+   a plain <div class="glow-hover"> instead. A small, uniform lift across
+   the whole element, not a spotlight that chases the cursor — so there's
+   nothing for site-nav.js to track here, just a plain :hover/:focus-within. */
 .glow-hover {
     position: relative;
     isolation: isolate;
@@ -341,8 +341,7 @@
        else on the same element (e.g. a hover shadow that's meant to
        spill outside the box, as on the .book-cover art below). */
     border-radius: inherit;
-    background: radial-gradient(circle 240px at var(--gx, 50%) var(--gy, 50%),
-                rgba(242, 204, 143, 0.28), transparent 70%);
+    background: rgba(242, 204, 143, 0.08);
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
@@ -354,9 +353,12 @@
     .glow-hover::after { transition: none; }
 }
 
-/* ---- cursor-tracked tilt (hover) -----------------------------------------
-   Put .tilt-hover on the same element as .glow-hover, or on its own, for
-   a light 3D lean toward the cursor — a couple of degrees, not a gimmick. */
+/* ---- cursor-tracked tilt / "push" (hover) --------------------------------
+   Put .tilt-hover directly on an image (this one's fine on <img> — it's a
+   real transform, not generated content) for a light lean away from
+   wherever the cursor is pushing from, in either direction on both axes —
+   push from the left and it leans right, push from below and it leans up,
+   and so on. Pairs well with .glow-hover on a wrapping element. */
 .tilt-hover {
     transform: perspective(800px) rotateX(0deg) rotateY(0deg);
     transition: transform 0.35s ease;
@@ -364,6 +366,44 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .tilt-hover { transition: none !important; transform: none !important; }
+}
+
+/* ---- liquid dye field (hover) ---------------------------------------
+   Put .dye-hover on a card. A short trail of blurred, high-contrast
+   blobs follows the cursor around inside the box and melts together the
+   way two drops of dye do when they touch — the classic blur-then-
+   contrast "metaball" trick, which needs a filter on the whole layer
+   (not each blob) to actually fuse the shapes together. site-nav.js
+   creates the layer and its blobs once and just moves them; tinted with
+   whatever --accent the card already sets (falls back to house amber). */
+.dye-hover {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+.dye-hover .dye-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    filter: blur(18px) contrast(24);
+    mix-blend-mode: screen;
+}
+.dye-hover:hover .dye-layer,
+.dye-hover:focus-within .dye-layer { opacity: 1; }
+.dye-hover .dye-blob {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 110px;
+    height: 110px;
+    margin: -55px 0 0 -55px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent, rgb(217, 163, 92)) 0%, transparent 72%);
+}
+@media (prefers-reduced-motion: reduce) {
+    .dye-hover .dye-layer { display: none; }
 }
 
 /* ---- ambient ember light ---------------------------------------------

@@ -6,9 +6,10 @@
    unaffected — only About and Creators currently use the pop-in-on-scroll
    animation, progress thread, back-to-top and lightbox.
 
-   Further down: a matching set of opt-in accents — cursor-tracked glow
-   and tilt, an ambient cursor light, scroll parallax, and a scroll-
-   scrubbed text glow — following the exact same rule.
+   Further down: a matching set of opt-in accents — a hover brighten and
+   push-tilt, an ambient cursor light, a liquid dye field, scroll
+   parallax, and a scroll-scrubbed text glow — following the exact same
+   rule.
    ========================================================================= */
 
 (function () {
@@ -241,32 +242,18 @@
         });
     }
 
-    /* ---- cursor-tracked spotlight + tilt (hover) ------------------------
-       .glow-hover tracks the pointer inside the element and writes it to
-       --gx/--gy (read by the radial-gradient in the CSS). .tilt-hover
-       computes a small perspective tilt from the same pointer position.
-       An element can carry either class alone, or both together. Each
-       listener is rAF-throttled so a fast mouse can't queue up more style
-       writes than the browser can paint. */
-    function initHoverEffects() {
-        var glowEls = Array.prototype.slice.call(document.querySelectorAll('.glow-hover'));
+    /* ---- cursor-tracked push-tilt (hover) --------------------------------
+       .tilt-hover computes a small perspective tilt from the pointer's
+       position inside the element and pushes the opposite way — hover
+       near the left edge and it leans right, near the bottom and it
+       leans up, so it reads as being "pushed" from wherever the cursor
+       is rather than tilting the same fixed way every time. rAF-
+       throttled so a fast mouse can't queue up more style writes than
+       the browser can paint. (.glow-hover has nothing to set up here —
+       it's a plain CSS :hover/:focus-within brighten now.) */
+    function initTiltHover() {
         var tiltEls = Array.prototype.slice.call(document.querySelectorAll('.tilt-hover'));
-        if (reduceMotion || (!glowEls.length && !tiltEls.length)) return;
-
-        function bindGlow(el) {
-            var frame = null, x = 50, y = 50;
-            function apply() {
-                el.style.setProperty('--gx', x + '%');
-                el.style.setProperty('--gy', y + '%');
-                frame = null;
-            }
-            el.addEventListener('mousemove', function (e) {
-                var rect = el.getBoundingClientRect();
-                x = ((e.clientX - rect.left) / rect.width) * 100;
-                y = ((e.clientY - rect.top) / rect.height) * 100;
-                if (!frame) frame = window.requestAnimationFrame(apply);
-            });
-        }
+        if (reduceMotion || !tiltEls.length) return;
 
         function bindTilt(el) {
             var maxDeg = 7;
@@ -290,8 +277,64 @@
             });
         }
 
-        glowEls.forEach(bindGlow);
         tiltEls.forEach(bindTilt);
+    }
+
+    /* ---- liquid dye field (hover) ------------------------------------
+       Builds the .dye-layer and its .dye-blob children once per
+       .dye-hover element, then on every mousemove chains each blob
+       toward the one ahead of it (blob 0 chases the cursor, blob 1
+       chases blob 0's last position, and so on) so the trail stretches
+       out behind the pointer instead of every blob snapping to the same
+       spot. The blur+contrast fusing itself is pure CSS (see the .dye-
+       layer rule) — this just has to keep moving the blobs. */
+    function initDyeField() {
+        var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
+        if (!hosts.length || reduceMotion) return;
+
+        var BLOB_COUNT = 5;
+        var EASE = 0.35;
+
+        hosts.forEach(function (host) {
+            var layer = document.createElement('div');
+            layer.className = 'dye-layer';
+            var blobs = [];
+            for (var i = 0; i < BLOB_COUNT; i++) {
+                var blob = document.createElement('div');
+                blob.className = 'dye-blob';
+                layer.appendChild(blob);
+                blobs.push({ el: blob, x: 0, y: 0 });
+            }
+            host.appendChild(layer);
+
+            var targetX = 0, targetY = 0, raf = null;
+
+            function tick() {
+                var leadX = targetX, leadY = targetY;
+                blobs.forEach(function (blob) {
+                    blob.x += (leadX - blob.x) * EASE;
+                    blob.y += (leadY - blob.y) * EASE;
+                    blob.el.style.transform = 'translate(' + blob.x.toFixed(1) + 'px, ' + blob.y.toFixed(1) + 'px)';
+                    leadX = blob.x;
+                    leadY = blob.y;
+                });
+                raf = window.requestAnimationFrame(tick);
+            }
+
+            host.addEventListener('mousemove', function (e) {
+                var rect = host.getBoundingClientRect();
+                targetX = e.clientX - rect.left;
+                targetY = e.clientY - rect.top;
+                if (!raf) raf = window.requestAnimationFrame(tick);
+            });
+
+            host.addEventListener('mouseleave', function () {
+                if (raf) {
+                    window.cancelAnimationFrame(raf);
+                    raf = null;
+                }
+            });
+        });
     }
 
     /* ---- ambient ember light ---------------------------------------------
@@ -438,8 +481,9 @@
         initProgress();
         initBackToTop();
         initLightbox();
-        initHoverEffects();
+        initTiltHover();
         initEmberField();
+        initDyeField();
         initParallax();
         initRevealText();
     }
