@@ -4,6 +4,11 @@
    One flat, quiet bar used by every page, plus a small set of reusable
    scroll-experience components (lightbox, progress bar, back-to-top)
    used by the longer story-style pages. Edit here, not in each page.
+
+   Also below: a further set of opt-in accents for story-style pages —
+   spotlight/tilt hover, an ambient cursor light, scroll parallax, and a
+   scroll-scrubbed text glow. Same rule as everything above: nothing
+   activates on a page unless that page adds the matching class.
    ========================================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa&display=swap');
@@ -305,3 +310,117 @@
 
 /* Any image opted into the lightbox gets an inviting little lift. */
 .lightbox-trigger { cursor: zoom-in; }
+
+/* =========================================================================
+   ABOUT-PAGE ACCENTS — cursor light, tilt, ambient glow, parallax, text glow
+   Opt-in via class name, exactly like the scroll-experience kit above:
+   add the class to an element in your HTML and site-nav.js does the rest.
+   Nothing here runs, or even queries the DOM, unless its element exists.
+   ========================================================================= */
+
+/* ---- cursor-tracked spotlight (hover) -----------------------------------
+   Put .glow-hover on a card, portrait, or panel — NOT directly on an
+   <img>: browsers don't render ::after on replaced elements like img,
+   video or input, so the glow would silently do nothing. Wrap the image
+   in a plain <div class="glow-hover"> instead. site-nav.js follows the
+   pointer inside the element and writes it to --gx/--gy, so the light
+   sits under the cursor instead of in a fixed spot. Works even without
+   JS or with a mouse that never moves inside it: the default 50%/50%
+   position still gives a plain centered glow on :hover/:focus-within. */
+.glow-hover {
+    position: relative;
+    isolation: isolate;
+}
+.glow-hover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Matches whatever rounding the element already has — a background is
+       always clipped to border-radius on its own, with no need for
+       overflow: hidden, which would otherwise risk clipping something
+       else on the same element (e.g. a hover shadow that's meant to
+       spill outside the box, as on the .book-cover art below). */
+    border-radius: inherit;
+    background: radial-gradient(circle 240px at var(--gx, 50%) var(--gy, 50%),
+                rgba(242, 204, 143, 0.28), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+.glow-hover:hover::after,
+.glow-hover:focus-within::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+    .glow-hover::after { transition: none; }
+}
+
+/* ---- cursor-tracked tilt (hover) -----------------------------------------
+   Put .tilt-hover on the same element as .glow-hover, or on its own, for
+   a light 3D lean toward the cursor — a couple of degrees, not a gimmick. */
+.tilt-hover {
+    transform: perspective(800px) rotateX(0deg) rotateY(0deg);
+    transition: transform 0.35s ease;
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .tilt-hover { transition: none !important; transform: none !important; }
+}
+
+/* ---- ambient ember light ---------------------------------------------
+   Add one empty <div class="ember-field"></div>, once, right after the
+   opening <body> tag. It sits behind nothing in particular — it's a
+   fixed, page-wide layer — and casts a soft warm light that drifts
+   toward wherever the cursor currently is, for atmosphere rather than
+   as a UI control: pointer-events: none keeps it out of the way of every
+   click, and it's the one accent on this page that simply doesn't render
+   at all under prefers-reduced-motion rather than just holding still. */
+.ember-field {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+.ember-field::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 640px;
+    height: 640px;
+    margin: -320px 0 0 -320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(217, 163, 92, 0.16), transparent 70%);
+    mix-blend-mode: screen;
+    transform: translate(var(--ex, 0px), var(--ey, 0px));
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .ember-field { display: none; }
+}
+
+/* ---- scroll parallax drift ------------------------------------------
+   Add .parallax, plus an optional data-speed (default 0.2), to anything
+   you want drifting at a different rate than the page scrolls — a
+   background portrait, a decorative rune, a title sitting behind copy.
+   Keep values small (0.1–0.4); this is a drift, not a scene change. */
+.parallax {
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .parallax { transform: none !important; }
+}
+
+/* ---- scroll-scrubbed text glow ---------------------------------------
+   Add .reveal-text to a heading or paragraph of plain text (avoid nested
+   links or bold/italic spans — site-nav.js rebuilds the element word by
+   word). Words sit dim and brighten in sequence as the block travels
+   through the reveal band, scrubbed by the scrollbar exactly like
+   .pop-in above — scroll back up and they dim back down. */
+.reveal-text .word {
+    display: inline-block;
+    opacity: 0.25;
+}
+@media (prefers-reduced-motion: reduce) {
+    .reveal-text .word { opacity: 1; }
+}

@@ -318,6 +318,8 @@
 
 <body>
 
+    <div class="ember-field" aria-hidden="true"></div>
+
     <a class="skip-link" href="#overview">Skip to content</a>
 
     <div class="scroll-progress" aria-hidden="true"></div>
@@ -395,9 +397,11 @@
                         heavy layer of scales.
                     </p>
                 </div>
-                <div class="chapter-media">
+                <div class="chapter-media parallax" data-speed="0.12">
                     <figure class="pop-in">
-                        <img class="lightbox-trigger" src="Fenrirak.png" alt="Fenrirak, the ocean-blue dragon and final boss of The Thunder Dragon">
+                        <div class="glow-hover" style="border-radius: 12px;">
+                            <img class="lightbox-trigger" src="Fenrirak.png" alt="Fenrirak, the ocean-blue dragon and final boss of The Thunder Dragon">
+                        </div>
                         <figcaption>Fenrirak &mdash; the final boss</figcaption>
                     </figure>
                     <div class="media-strip">
@@ -428,7 +432,7 @@
                         second version of the board game.
                     </p>
                 </div>
-                <div class="chapter-media">
+                <div class="chapter-media parallax" data-speed="-0.12">
                     <div class="media-grid-2">
                         <img class="lightbox-trigger pop-in" src="LOF2 Board.jpeg" alt="The Ice Dragon game board">
                         <img class="lightbox-trigger pop-in" src="LOF2 Cards.jpeg" alt="Ice Dragon card designs">
@@ -441,7 +445,7 @@
 
         <!-- SHOWDOWNS -->
         <article class="chapter pop-group" id="showdowns" style="--accent: var(--c-showdowns)">
-            <div class="highlight-card">
+            <div class="highlight-card glow-hover">
                 <span class="kicker pop-in">Playable online now</span>
                 <h2 class="pop-in" style="text-align:center">Legend of Fenrirak &ndash; Showdowns</h2>
                 <p class="pop-in">
@@ -477,7 +481,7 @@
                         Thunder Dragon. It sets the backstory of why Fenrirak became a threat to humans. Read the
                         blurb below!
                     </p>
-                    <p class="blurb pop-in">
+                    <p class="blurb reveal-text">
                         A young mage named Aldemar is forced into a war he does not believe in when rival kingdoms
                         unite to hunt Fenrirak, a legendary dragon thought dead for centuries but now stirring
                         once more. As armies march into elven territory, the mission unravels into chaos and
@@ -488,7 +492,7 @@
                         will decide the fate of everything he knows.
                     </p>
                 </div>
-                <div class="chapter-media book-cover pop-in">
+                <div class="chapter-media book-cover pop-in glow-hover" style="border-radius: 12px;">
                     <img class="lightbox-trigger" src="Book Cover Reoutline.jpg" alt="Cover art for The Forgotten Adventure">
                 </div>
             </div>
@@ -508,7 +512,7 @@
                 using Minecraft (see below). We ended up pausing the project and focusing our attention on other
                 projects such as the Ice Dragon and The Forgotten Adventure.
             </p>
-            <div class="spread-media screenshot-grid">
+            <div class="spread-media screenshot-grid parallax" data-speed="0.1">
                 <img class="lightbox-trigger pop-in" src="1.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 1 of 10">
                 <img class="lightbox-trigger pop-in" src="2.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 2 of 10">
                 <img class="lightbox-trigger pop-in" src="3.png" alt="Screenshot from the Thunder Dragon Minecraft recreation, 3 of 10">
@@ -530,7 +534,9 @@
                 <span class="badge pop-in">Subject to change</span>
             </div>
             <div class="spread-media timeline-figure pop-in">
-                <img class="lightbox-trigger" src="Timeline.png" alt="Timeline of Legend of Fenrirak's past and upcoming projects">
+                <div class="glow-hover" style="border-radius: 12px;">
+                    <img class="lightbox-trigger" src="Timeline.png" alt="Timeline of Legend of Fenrirak's past and upcoming projects">
+                </div>
             </div>
         </article>
 

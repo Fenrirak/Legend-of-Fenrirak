@@ -5,6 +5,10 @@
    so pages that don't use a feature (Home, AfterShowdowns) are completely
    unaffected — only About and Creators currently use the pop-in-on-scroll
    animation, progress thread, back-to-top and lightbox.
+
+   Further down: a matching set of opt-in accents — cursor-tracked glow
+   and tilt, an ambient cursor light, scroll parallax, and a scroll-
+   scrubbed text glow — following the exact same rule.
    ========================================================================= */
 
 (function () {
@@ -237,6 +241,196 @@
         });
     }
 
+    /* ---- cursor-tracked spotlight + tilt (hover) ------------------------
+       .glow-hover tracks the pointer inside the element and writes it to
+       --gx/--gy (read by the radial-gradient in the CSS). .tilt-hover
+       computes a small perspective tilt from the same pointer position.
+       An element can carry either class alone, or both together. Each
+       listener is rAF-throttled so a fast mouse can't queue up more style
+       writes than the browser can paint. */
+    function initHoverEffects() {
+        var glowEls = Array.prototype.slice.call(document.querySelectorAll('.glow-hover'));
+        var tiltEls = Array.prototype.slice.call(document.querySelectorAll('.tilt-hover'));
+        if (reduceMotion || (!glowEls.length && !tiltEls.length)) return;
+
+        function bindGlow(el) {
+            var frame = null, x = 50, y = 50;
+            function apply() {
+                el.style.setProperty('--gx', x + '%');
+                el.style.setProperty('--gy', y + '%');
+                frame = null;
+            }
+            el.addEventListener('mousemove', function (e) {
+                var rect = el.getBoundingClientRect();
+                x = ((e.clientX - rect.left) / rect.width) * 100;
+                y = ((e.clientY - rect.top) / rect.height) * 100;
+                if (!frame) frame = window.requestAnimationFrame(apply);
+            });
+        }
+
+        function bindTilt(el) {
+            var maxDeg = 7;
+            var frame = null, rotX = 0, rotY = 0;
+            function apply() {
+                el.style.transform = 'perspective(800px) rotateX(' + rotX.toFixed(2) +
+                    'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+                frame = null;
+            }
+            el.addEventListener('mousemove', function (e) {
+                var rect = el.getBoundingClientRect();
+                var px = (e.clientX - rect.left) / rect.width - 0.5;
+                var py = (e.clientY - rect.top) / rect.height - 0.5;
+                rotX = -py * maxDeg * 2;
+                rotY = px * maxDeg * 2;
+                if (!frame) frame = window.requestAnimationFrame(apply);
+            });
+            el.addEventListener('mouseleave', function () {
+                rotX = 0; rotY = 0;
+                el.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg)';
+            });
+        }
+
+        glowEls.forEach(bindGlow);
+        tiltEls.forEach(bindTilt);
+    }
+
+    /* ---- ambient ember light ---------------------------------------------
+       A single .ember-field div drifts a soft radial light toward the
+       cursor. Position eases toward the pointer each frame (a simple lerp)
+       rather than snapping straight to it, so it reads as something with
+       a little weight — an ember drifting on its own air currents, not a
+       spotlight glued to the mouse. */
+    function initEmberField() {
+        var field = document.querySelector('.ember-field');
+        if (!field || reduceMotion) return;
+
+        var targetX = 0, targetY = 0, curX = 0, curY = 0, raf = null;
+
+        function tick() {
+            curX += (targetX - curX) * 0.08;
+            curY += (targetY - curY) * 0.08;
+            field.style.setProperty('--ex', curX.toFixed(1) + 'px');
+            field.style.setProperty('--ey', curY.toFixed(1) + 'px');
+
+            if (Math.abs(targetX - curX) > 0.5 || Math.abs(targetY - curY) > 0.5) {
+                raf = window.requestAnimationFrame(tick);
+            } else {
+                raf = null;
+            }
+        }
+
+        window.addEventListener('mousemove', function (e) {
+            targetX = e.clientX - window.innerWidth / 2;
+            targetY = e.clientY - window.innerHeight / 2;
+            if (!raf) raf = window.requestAnimationFrame(tick);
+        }, { passive: true });
+    }
+
+    /* ---- scroll parallax drift --------------------------------------- */
+    function initParallax() {
+        var els = Array.prototype.slice.call(document.querySelectorAll('.parallax'));
+        if (!els.length || reduceMotion) return;
+
+        var items = els.map(function (el) {
+            var speed = parseFloat(el.getAttribute('data-speed'));
+            return { el: el, speed: isNaN(speed) ? 0.2 : speed };
+        });
+
+        function update() {
+            var mid = window.innerHeight / 2;
+            items.forEach(function (item) {
+                var rect = item.el.getBoundingClientRect();
+                var offset = (mid - (rect.top + rect.height / 2)) * item.speed;
+                item.el.style.transform = 'translateY(' + offset.toFixed(1) + 'px)';
+            });
+        }
+
+        var ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(function () { update(); ticking = false; });
+                ticking = true;
+            }
+        }
+
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+    }
+
+    /* ---- scroll-scrubbed text glow ----------------------------------------
+       Splits each .reveal-text element into one <span class="word"> per
+       word (plain text only — see the CSS comment for why) and brightens
+       them in sequence as the block travels through the reveal band. Same
+       scrub-not-trigger philosophy as initPopIn above: this is recomputed
+       from scratch every frame from the element's live position, never a
+       one-shot animation, so scrolling back up dims words back down. */
+    function initRevealText() {
+        var blocks = Array.prototype.slice.call(document.querySelectorAll('.reveal-text'));
+        if (!blocks.length) return;
+
+        var entries = blocks.map(function (block) {
+            var pieces = block.textContent.split(/(\s+)/);
+            block.textContent = '';
+            pieces.forEach(function (chunk) {
+                if (chunk === '') return;
+                if (/^\s+$/.test(chunk)) {
+                    block.appendChild(document.createTextNode(chunk));
+                } else {
+                    var span = document.createElement('span');
+                    span.className = 'word';
+                    span.textContent = chunk;
+                    block.appendChild(span);
+                }
+            });
+            return { el: block, words: Array.prototype.slice.call(block.querySelectorAll('.word')) };
+        });
+
+        if (reduceMotion) {
+            entries.forEach(function (entry) {
+                entry.words.forEach(function (w) { w.style.opacity = 1; });
+            });
+            return;
+        }
+
+        function update() {
+            var vh = window.innerHeight;
+            var revealStart = vh * 0.85;
+            var revealEnd = vh * 0.35;
+
+            entries.forEach(function (entry) {
+                var rect = entry.el.getBoundingClientRect();
+                var span = (revealStart - revealEnd) + rect.height;
+                var progress = span > 0 ? (revealStart - rect.top) / span : 1;
+                if (progress < 0) progress = 0;
+                else if (progress > 1) progress = 1;
+
+                var lit = progress * entry.words.length;
+                entry.words.forEach(function (word, i) {
+                    var diff = lit - i;
+                    var op;
+                    if (diff <= 0) op = 0.25;
+                    else if (diff >= 1) op = 1;
+                    else op = 0.25 + diff * 0.75;
+                    word.style.opacity = op;
+                    word.style.textShadow = op > 0.92 ? '0 0 10px rgba(242, 204, 143, 0.35)' : 'none';
+                });
+            });
+        }
+
+        var ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(function () { update(); ticking = false; });
+                ticking = true;
+            }
+        }
+
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+    }
+
     function init() {
         initGamesMenu();
         initStickyOffset();
@@ -244,6 +438,10 @@
         initProgress();
         initBackToTop();
         initLightbox();
+        initHoverEffects();
+        initEmberField();
+        initParallax();
+        initRevealText();
     }
 
     if (document.readyState === 'loading') {
