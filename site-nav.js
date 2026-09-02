@@ -15,6 +15,12 @@
 (function () {
     'use strict';
 
+    // Quick sanity check for testing: open DevTools > Console. If this
+    // line isn't there, the browser is running a different site-nav.js
+    // than the one you think it is (almost always a caching issue) —
+    // nothing below matters until that's fixed first.
+    if (window.console) console.log('[site-nav.js] loaded — build 2026-09-02c');
+
     var reduceMotion = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -311,14 +317,16 @@
 
             function tick() {
                 var leadX = targetX, leadY = targetY;
+                var settled = true;
                 blobs.forEach(function (blob) {
                     blob.x += (leadX - blob.x) * EASE;
                     blob.y += (leadY - blob.y) * EASE;
+                    if (Math.abs(leadX - blob.x) > 0.3 || Math.abs(leadY - blob.y) > 0.3) settled = false;
                     blob.el.style.transform = 'translate(' + blob.x.toFixed(1) + 'px, ' + blob.y.toFixed(1) + 'px)';
                     leadX = blob.x;
                     leadY = blob.y;
                 });
-                raf = window.requestAnimationFrame(tick);
+                raf = settled ? null : window.requestAnimationFrame(tick);
             }
 
             host.addEventListener('mousemove', function (e) {
