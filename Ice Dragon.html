@@ -377,41 +377,30 @@ body {
     margin: 0;
     padding: 0;
 
-    /* The page is the table the game is laid out on: dark stained wood, with
-       lightning running across it instead of grain. The board, the cards and
-       the panels all sit on top of this.
+    /* The page is the table the game is laid out on: dark stained wood,
+       with snow drifting across it instead of the Thunder Dragon's
+       lightning. The board, the cards and the panels all sit on top of
+       this.
 
-       A 52x74 tile carrying two small bolts down its own diagonal, so the
-       tiling runs them into unbroken lines from the top left to the bottom
-       right -- and only that way: nothing lines up along the other diagonal,
-       so the lines have a direction. The step from one bolt to the next is
-       26 across and 37 down, which sets both the angle (35.1 degrees off the
-       vertical) and the spacing: the step is 45px where the bolt is 30px, so
-       there are 15px of dark between the tail of one and the head of the
-       next. Each bolt is turned to lie along its own line rather than across
-       it. That is not simply the angle of the line: the bolt is drawn leaning
-       7.1 degrees the wrong way to begin with, and turning it by the line's
-       angle alone leaves it lying across the line by that much, which is
-       enough to make a straight run of them look kinked. Its own lean is
-       taken out first, so its two tips sit on the line (42.2 degrees, and a
-       positive turn in SVG is clockwise, hence the minus). Each is drawn
+       A 70x84 tile carrying three six-armed snowflakes at different
+       sizes, scattered rather than lined up, so the repeat does not read
+       as a grid at a glance. Unlike the lightning bolt, a snowflake is
+       the same shape from every direction, so none of the bolt's
+       diagonal-run math (the lean, the tile-edge wraparound copies)
+       applies here -- each flake sits whole inside its own tile with
+       room to spare, and the tile just repeats. Each flake is drawn
        twice: once in black a pixel down and across, once in a cold
-       blue-white on top. That is the same light-line-and-
-       dark-line trick the wood grain was cut with, so the bolts read as cut
-       into the table rather than painted on it.
+       blue-white on top. That is the same light-line-and-dark-line
+       trick the wood grain (and the lightning before it) was cut with,
+       so the snow reads as cut into the table rather than painted on it.
 
-       A bolt that overhangs the tile is drawn again a tile further on, for
-       the part that was clipped to come back in the other side -- a tile
-       does not wrap by itself. Those copies are not a trick: the pattern
-       really does have a bolt there.
-
-       Faint on purpose. It is the table the game is played on, not part of
-       the game. */
+       Faint on purpose. It is the table the game is played on, not part
+       of the game. */
     background-color: var(--ink);
     background-image:
-        url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='52'%20height='74'%3E%3Cg%20fill='%23000000'%20fill-opacity='.06'%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(14%2019.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(66%2019.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-12%2056.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(40%2056.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3C/g%3E%3Cg%20fill='%23cfe0f5'%20fill-opacity='.036'%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(13%2018.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(65%2018.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(-13%2055.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3Cpath%20d='M24%200%206%2044h14l-6%2036%2020-48H20z'%20transform='translate(39%2055.5)%20rotate(-42.22)%20scale(0.375)%20translate(-20%20-40)'/%3E%3C/g%3E%3C/svg%3E"),
-        radial-gradient(ellipse at 50% 0%, rgba(120, 92, 58, .16), transparent 60%),
-        linear-gradient(180deg, #1b1714, #131110 60%, #0f0d0c);
+        url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2770%27%20height%3D%2784%27%3E%3Cg%20transform%3D%27translate%281%201%29%27%20stroke%3D%27%23000000%27%20stroke-opacity%3D%270.09%27%20stroke-width%3D%271.1%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27%3E%3Cpath%20d%3D%27M18.0%2020.0L18.0%207.0%20M18.0%2012.5L15.6%209.1%20M18.0%2012.5L20.4%209.1%20M18.0%2020.0L29.3%2013.5%20M24.5%2016.2L26.3%2012.4%20M24.5%2016.2L28.7%2016.6%20M18.0%2020.0L29.3%2026.5%20M24.5%2023.8L28.7%2023.4%20M24.5%2023.8L26.3%2027.6%20M18.0%2020.0L18.0%2033.0%20M18.0%2027.5L20.4%2030.9%20M18.0%2027.5L15.6%2030.9%20M18.0%2020.0L6.7%2026.5%20M11.5%2023.8L9.7%2027.6%20M11.5%2023.8L7.3%2023.4%20M18.0%2020.0L6.7%2013.5%20M11.5%2016.2L7.3%2016.6%20M11.5%2016.2L9.7%2012.4%27%2F%3E%3Cpath%20d%3D%27M52.0%2046.0L52.0%2036.0%20M52.0%2040.0L50.2%2037.4%20M52.0%2040.0L53.8%2037.4%20M52.0%2046.0L60.7%2041.0%20M57.2%2043.0L58.5%2040.1%20M57.2%2043.0L60.4%2043.3%20M52.0%2046.0L60.7%2051.0%20M57.2%2049.0L60.4%2048.7%20M57.2%2049.0L58.5%2051.9%20M52.0%2046.0L52.0%2056.0%20M52.0%2052.0L53.8%2054.6%20M52.0%2052.0L50.2%2054.6%20M52.0%2046.0L43.3%2051.0%20M46.8%2049.0L45.5%2051.9%20M46.8%2049.0L43.6%2048.7%20M52.0%2046.0L43.3%2041.0%20M46.8%2043.0L43.6%2043.3%20M46.8%2043.0L45.5%2040.1%27%2F%3E%3Cpath%20d%3D%27M34.0%2066.0L34.0%2058.0%20M34.0%2061.4L32.5%2059.3%20M34.0%2061.4L35.5%2059.3%20M34.0%2066.0L40.9%2062.0%20M38.0%2063.7L39.1%2061.3%20M38.0%2063.7L40.6%2063.9%20M34.0%2066.0L40.9%2070.0%20M38.0%2068.3L40.6%2068.1%20M38.0%2068.3L39.1%2070.7%20M34.0%2066.0L34.0%2074.0%20M34.0%2070.6L35.5%2072.7%20M34.0%2070.6L32.5%2072.7%20M34.0%2066.0L27.1%2070.0%20M30.0%2068.3L28.9%2070.7%20M30.0%2068.3L27.4%2068.1%20M34.0%2066.0L27.1%2062.0%20M30.0%2063.7L27.4%2063.9%20M30.0%2063.7L28.9%2061.3%27%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%27translate%280%200%29%27%20stroke%3D%27%23cfe0f5%27%20stroke-opacity%3D%270.1%27%20stroke-width%3D%271.1%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27%3E%3Cpath%20d%3D%27M18.0%2020.0L18.0%207.0%20M18.0%2012.5L15.6%209.1%20M18.0%2012.5L20.4%209.1%20M18.0%2020.0L29.3%2013.5%20M24.5%2016.2L26.3%2012.4%20M24.5%2016.2L28.7%2016.6%20M18.0%2020.0L29.3%2026.5%20M24.5%2023.8L28.7%2023.4%20M24.5%2023.8L26.3%2027.6%20M18.0%2020.0L18.0%2033.0%20M18.0%2027.5L20.4%2030.9%20M18.0%2027.5L15.6%2030.9%20M18.0%2020.0L6.7%2026.5%20M11.5%2023.8L9.7%2027.6%20M11.5%2023.8L7.3%2023.4%20M18.0%2020.0L6.7%2013.5%20M11.5%2016.2L7.3%2016.6%20M11.5%2016.2L9.7%2012.4%27%2F%3E%3Cpath%20d%3D%27M52.0%2046.0L52.0%2036.0%20M52.0%2040.0L50.2%2037.4%20M52.0%2040.0L53.8%2037.4%20M52.0%2046.0L60.7%2041.0%20M57.2%2043.0L58.5%2040.1%20M57.2%2043.0L60.4%2043.3%20M52.0%2046.0L60.7%2051.0%20M57.2%2049.0L60.4%2048.7%20M57.2%2049.0L58.5%2051.9%20M52.0%2046.0L52.0%2056.0%20M52.0%2052.0L53.8%2054.6%20M52.0%2052.0L50.2%2054.6%20M52.0%2046.0L43.3%2051.0%20M46.8%2049.0L45.5%2051.9%20M46.8%2049.0L43.6%2048.7%20M52.0%2046.0L43.3%2041.0%20M46.8%2043.0L43.6%2043.3%20M46.8%2043.0L45.5%2040.1%27%2F%3E%3Cpath%20d%3D%27M34.0%2066.0L34.0%2058.0%20M34.0%2061.4L32.5%2059.3%20M34.0%2061.4L35.5%2059.3%20M34.0%2066.0L40.9%2062.0%20M38.0%2063.7L39.1%2061.3%20M38.0%2063.7L40.6%2063.9%20M34.0%2066.0L40.9%2070.0%20M38.0%2068.3L40.6%2068.1%20M38.0%2068.3L39.1%2070.7%20M34.0%2066.0L34.0%2074.0%20M34.0%2070.6L35.5%2072.7%20M34.0%2070.6L32.5%2072.7%20M34.0%2066.0L27.1%2070.0%20M30.0%2068.3L28.9%2070.7%20M30.0%2068.3L27.4%2068.1%20M34.0%2066.0L27.1%2062.0%20M30.0%2063.7L27.4%2063.9%20M30.0%2063.7L28.9%2061.3%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"),
+        radial-gradient(ellipse at 50% 0%, rgba(92, 120, 140, .16), transparent 60%),
+        linear-gradient(180deg, #171a1d, #111314 60%, #0d0f10);
     background-attachment: fixed;
     min-height: 100vh;
 }
@@ -783,14 +772,21 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .board {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    /* Ice Dragon's board is 10 columns by 7 rows -- a loop round the edge,
+       the fork's short route cutting straight down the middle, its long
+       route round the right side, meeting back up at the Gate, with the
+       arena filling the open interior. See NOTES-ICE.md for how this
+       replaced the original, broken layout (not enough grid cells for
+       the square count, several squares overlapping, and a large arena
+       block floating disconnected from everything else). */
+    grid-template-columns: repeat(10, minmax(0, 1fr));
     /* Every row the same height, so a square with a long card on it does
        not come out taller than its neighbours. The tracks are 1fr, which
        levels them off at whatever the fullest square needs; the writing is
        set small enough that this lands under the old 108px floor rather
        than over it, so the board is shorter than it used to be, not
        taller. */
-    grid-template-rows: repeat(5, minmax(0, 1fr));
+    grid-template-rows: repeat(7, minmax(0, 1fr));
     gap: 9px;
     padding: 20px;
     border-radius: 5px;
@@ -2256,8 +2252,8 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     .game-grid { grid-template-columns: 1fr; }
     .lobby-grid { grid-template-columns: 1fr; }
     /* Still every row the same height, only a shorter floor. */
-    .board { grid-template-rows: repeat(5, minmax(84px, 1fr)); }
-    .sq { min-height: 84px; }
+    .board { grid-template-rows: repeat(7, minmax(60px, 1fr)); }
+    .sq { min-height: 60px; }
     .sq .sq-text { display: none; }
     /* The name on the disc is sized off the disc -- see .arena-title -- so
        there is nothing to override here by window width any more. Doing so
@@ -2271,7 +2267,7 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     .home-hero h1 { font-size: 30px; }
     .class-picker { grid-template-columns: 1fr; }
     /* Equal rows here too -- only a shorter floor. */
-    .board { gap: 5px; padding: 8px; grid-template-rows: repeat(5, minmax(66px, 1fr)); }
+    .board { gap: 4px; padding: 6px; grid-template-rows: repeat(7, minmax(46px, 1fr)); }
     .sq { min-height: 66px; padding: 5px; }
     .sq .sq-name { font-size: 10px; }
     .sq .sq-badge { display: none; }
@@ -4274,16 +4270,120 @@ body.modal-cover #board * {
               'stroke-linecap="round"';
 
     const CHARACTER_ART = {
-        // Redrawn from the photos: the Knight in his grey plate, red
-        // helmet plume, kite shield (the diagonal cross and gold studs
-        // are cut right off the card) and the sword planted point-down
-        // beside it. The Archer keeps his Spartan-style helmet and drawn
-        // bow, front-to-back crest running over the crown.
+        // Same art as The Thunder Dragon's Knight and Archer -- per
+        // request, these two classes look identical across both games.
+        // The Barbarian (below) has no Thunder Dragon equivalent, so his
+        // art is his own, drawn from the photo.
         knight:
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#b9bec7"><path d="M38 74h11v20H38zM53 74h11v20H53z"/></g><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#8b909a"><path d="M37 90h13v6H37zM52 90h13v6H52z"/></g><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#b9bec7"><path d="M34 42c0-8 7-14 16-14s16 6 16 14v34H34z"/></g><path d="M34 62h32v8H34z" fill="#8b909a"/><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#a6acb5"><path d="M60 40h12v24H60z"/></g><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#b9bec7"><path d="M26 40h13v16l6 8-8 7-9-9z"/></g><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#cfd5dc"><path d="M22 38c0-8 6-13 13-13s11 5 11 10-4 9-11 9-13-1-13-6z"/><path d="M56 39c0-7 5-11 10-11s9 4 9 10-4 8-10 8-9-2-9-7z"/></g><g stroke="#20180f" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" fill="#aab0b8"><path d="M50 38 30 46v16c0 14 20 24 20 24s20-10 20-24V46z"/></g><path d="M50 42 34 49v13c0 11 16 19 16 19s16-8 16-19V49z" fill="none" stroke="#7d838c" stroke-width="1.6"/><path d="M36 49l28 26M64 49 36 75" stroke="#7d838c" stroke-width="1.6" fill="none"/><g fill="#e0c250" stroke="#20180f" stroke-width="1.6"><rect x="44" y="52" width="12" height="4" rx="1"/><rect x="42" y="60" width="5" height="5" rx="1" transform="rotate(45 44.5 62.5)"/></g><g stroke="#20180f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M22 56h4l2 26-4 4-4-4z" fill="#c3c9d1"/><path d="M18 56h12v3H18z" fill="#8a5a30"/><circle cx="24" cy="52" r="3.4" fill="#c9a13a"/><path d="M24 55v2" stroke="#8a5a30" stroke-width="3"/></g><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#c3c9d1"><path d="M36 20c0-9 6-15 14-15s14 6 14 15v5c0 8-6 14-14 14s-14-6-14-14z"/></g><path d="M32 21c0-2 2-3 4-3M68 21c0-2-2-3-4-3" fill="none" stroke="#20180f" stroke-width="2" stroke-linecap="round"/><path d="M39 22h22" stroke="#20180f" stroke-width="2.6" stroke-linecap="round"/><g fill="#20180f"><rect x="43" y="27" width="3" height="4" rx="1"/><rect x="54" y="27" width="3" height="4" rx="1"/></g><path d="M44 33h12" stroke="#20180f" stroke-width="1.6" stroke-linecap="round"/><g fill="#c8443a" stroke="#20180f" stroke-width="2"><path d="M48 6c-2 4-2 9 1 12 2-5 1-9 3-13-2 0-3 0-4 1z"/><path d="M52 5c2 5 1 10-2 13-1-5 0-9-2-13 2-1 3-1 4 0z"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+            // the shield, standing behind him on his far side
+            '<g ' + K + ' fill="#9aa1aa">' +
+            '<path d="M60 26h34v30c0 16-17 24-17 24s-17-8-17-24z"/>' +
+            '</g>' +
+            '<path d="M65 31h24v24c0 12-12 18-12 18s-12-6-12-18z" fill="none" ' +
+            'stroke="#6d737b" stroke-width="2"/>' +
+            // legs
+            '<g ' + K + ' fill="#c3c9d1">' +
+            '<path d="M36 72h13v22H36zM53 72h13v22H53z"/>' +
+            '</g>' +
+            // the body, and the dark undersuit at the waist
+            '<g ' + K + ' fill="#b9bec7">' +
+            '<path d="M32 40c0-7 8-12 18-12s18 5 18 12v30H32z"/>' +
+            '</g>' +
+            '<path d="M32 58h36v9H32z" fill="#4a4e55"/>' +
+            // the near arm: out from under the pauldron, turning in a little
+            // as it comes down, to the fist on the grip of the sword
+            '<g ' + K + ' fill="#b9bec7">' +
+            '<path d="M20 46h14v18l-3 14H17l3-14z"/>' +
+            '</g>' +
+            // the near pauldron
+            '<g ' + K + ' fill="#cfd5dc">' +
+            '<path d="M18 44c0-9 7-15 15-15s10 6 10 12-5 11-12 11-13-2-13-8z"/>' +
+            '</g>' +
+            // the far arm
+            '<g ' + K + ' fill="#a6acb5"><path d="M66 44h11v22H66z"/></g>' +
+            // the great helm: a dome that tapers to the chin, with the visor
+            // slit across it and the breaths punched in below
+            '<g ' + K + ' fill="#c3c9d1">' +
+            '<path d="M36 18c0-9 6-15 14-15s14 6 14 15v6c0 8-6 14-14 14s-14-6-14-14z"/>' +
+            '</g>' +
+            '<path d="M37 20h26v6H37z" fill="#20180f"/>' +
+            '<g fill="#20180f">' +
+            '<path d="M44 30h3v5h-3zM53 30h3v5h-3z"/></g>' +
+            '<path d="M36 24h28" fill="none" stroke="#8f959e" stroke-width="1.6"/>' +
+            // the plume, swept back off the crown
+            '<g ' + K + ' fill="#c8342b">' +
+            '<path d="M44 6c0-7 3-11 6-11s6 4 6 11l-2 3h-8z"/>' +
+            '<path d="M50 -3 62 -8 56 4z"/>' +
+            '</g>' +
+            // the grip, and the pommel on the end of it
+            '<path d="M12 73h18v8H12z" fill="#6d4a2a" stroke="#20180f" ' +
+            'stroke-width="2"/>' +
+            '<circle cx="10" cy="77" r="4.5" fill="#8f959e" stroke="#20180f" ' +
+            'stroke-width="2"/>' +
+            // the blade: its butt end is at x=28, behind the crossguard, and
+            // its centre line at that end is y=77 -- the guard's own middle
+            '<g ' + K + ' fill="#e4e8ee">' +
+            '<path d="M28 72.6 84 64.3l6 4.4-6 4.4-56 8.3z"/>' +
+            '</g>' +
+            // the crossguard, over the foot of the blade
+            '<path d="M29 67h7v20h-7z" fill="#6d737b" stroke="#20180f" ' +
+            'stroke-width="2" stroke-linejoin="round"/>' +
+            // the gauntlet, closed round the grip in front of the lot
+            '<rect x="14" y="68" width="15" height="15" rx="5" fill="#cfd5dc" ' +
+            'stroke="#20180f" stroke-width="2.2"/>' +
+            '<g stroke="#8f959e" stroke-width="1.5" stroke-linecap="round">' +
+            '<path d="M18 72.5v6M22 72v6.5M26 72.5v6"/></g>' +
+            '</svg>',
 
         archer:
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#c9a26a"><path d="M40 74h9v18h-9zM52 74h9v18h-9z"/></g><g stroke="#20180f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="#8a5a30"><path d="M38 90h12v5c0 2-2 3-6 3s-6-1-6-3z"/><path d="M51 90h12v5c0 2-2 3-6 3s-6-1-6-3z"/></g><g stroke="#20180f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" fill="#d8a43f"><path d="M36 68h29l-3 12-5-6-4 6-4-6-4 6-4-6-3 6z"/></g><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#d8a43f"><path d="M38 44c0-5 5-8 12-8s12 3 12 8v26H38z"/></g><circle cx="50" cy="58" r="4.4" fill="#8a5a30" stroke="#20180f" stroke-width="1.8"/><circle cx="50" cy="58" r="1.6" fill="#e0c250"/><g stroke="#20180f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="#c9a26a"><path d="M62 46h9v18h-9z"/></g><path d="M74 30c8 4 10 12 10 20s-2 16-10 20" fill="none" stroke="#c8443a" stroke-width="4.4" stroke-linecap="round"/><path d="M75 32 34 50l41 18" fill="none" stroke="#e8e2d4" stroke-width="1.2"/><g stroke="#20180f" stroke-width="1.6" stroke-linecap="round"><path d="M34 50h48" stroke="#3a2a1c" stroke-width="2.2"/><path d="M82 50l7-4v8z" fill="#20180f"/></g><g stroke="#20180f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="#c9a26a"><path d="M28 40h11l6 9-4 5-9-3z"/></g><circle cx="35" cy="42" r="6.4" fill="#e0c250" stroke="#20180f" stroke-width="2"/><g stroke="#20180f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" fill="#e8c48a"><circle cx="48" cy="26" r="12"/></g><g stroke="#20180f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="#d8a43f"><path d="M35 22c0-9 6-15 13-15s13 6 13 15v3H35z"/><path d="M35 24h6v9c0 3-2 5-4 5s-2-4-2-6z"/><path d="M55 24h6v8c0 2 0 6-2 6s-4-2-4-5z"/></g><path d="M42 20h12" stroke="#20180f" stroke-width="1.8" stroke-linecap="round"/><g fill="#2a1c12"><circle cx="44" cy="27" r="1.6"/><circle cx="52" cy="27" r="1.6"/></g><path d="M46 32c1 1 3 1 4 0" stroke="#20180f" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M34 10c5-4 12-6 16-6s11 2 16 6c-5 2-11 3-16 3s-11-1-16-3z" fill="#c8443a" stroke="#20180f" stroke-width="2" stroke-linejoin="round"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+            // the bow, behind the figure
+            '<path d="M74 12c14 12 14 64 0 76" fill="none" stroke="#20180f" ' +
+            'stroke-width="9" stroke-linecap="round"/>' +
+            '<path d="M74 12c14 12 14 64 0 76" fill="none" stroke="#b8342c" ' +
+            'stroke-width="5.5" stroke-linecap="round"/>' +
+            // legs and boots
+            '<g ' + K + ' fill="#e8b98a">' +
+            '<path d="M32 74h11v14H32zM56 74h11v14H56z"/></g>' +
+            '<g ' + K + ' fill="#8a5a3a">' +
+            '<path d="M28 86h17v10H28zM54 86h17v10H54z"/></g>' +
+            // the strap skirt
+            '<g ' + K + ' fill="#a06a3f">' +
+            '<path d="M32 62h36v14H32z"/></g>' +
+            '<g stroke="#6f4227" stroke-width="1.6"><path d="M40 62v14M50 62v14M60 62v14"/></g>' +
+            // the tunic, with its gold boss
+            '<g ' + K + ' fill="#8a5a3a">' +
+            '<path d="M34 38c0-5 7-9 16-9s16 4 16 9v26H34z"/></g>' +
+            '<path d="M50 42l8 8-8 8-8-8z" fill="#f0c33c" stroke="#20180f" stroke-width="2"/>' +
+            // arms: one drawing the string, one holding the bow
+            '<g ' + K + ' fill="#e8b98a">' +
+            '<path d="M18 44h18v9H18zM66 44h14v9H66z"/></g>' +
+            // the face under the helmet
+            '<g ' + K + ' fill="#f0c9a0">' +
+            '<path d="M38 20h24v18c0 4-5 7-12 7s-12-3-12-7z"/></g>' +
+            '<g fill="#20180f"><circle cx="44" cy="30" r="2"/><circle cx="56" cy="30" r="2"/>' +
+            '<path d="M44 41h12" stroke="#20180f" stroke-width="2" stroke-linecap="round"/></g>' +
+            // the gold helmet, with the cheek plates and the nose bar
+            '<g ' + K + ' fill="#f0c33c">' +
+            '<path d="M36 22c0-10 6-16 14-16s14 6 14 16v4H36z"/>' +
+            '<path d="M36 26h7v18h-7zM57 26h7v18h-7z"/>' +
+            '<path d="M47 24h6v14h-6z"/>' +
+            '</g>' +
+            // the crest
+            '<g ' + K + ' fill="#8c2a24">' +
+            '<path d="M44 8c0-6 3-10 6-10s6 4 6 10l-3 4h-6z"/>' +
+            '<path d="M50 2 40 0l4 8z"/>' +
+            '</g>' +
+            // the string, at full draw
+            '<path d="M74 12 20 48l54 40" fill="none" stroke="#20180f" ' +
+            'stroke-width="2.2"/>' +
+            // the arrow, nocked and pointing out
+            '<path d="M20 48h62" fill="none" stroke="#c9c2b4" stroke-width="3" ' +
+            'stroke-linecap="round"/>' +
+            '<path d="M96 48 80 42v12z" fill="#8f959e" stroke="#20180f" stroke-width="2"/>' +
+            '<path d="M20 48 12 43v10z" fill="#b8342c" stroke="#20180f" stroke-width="1.8"/>' +
+            '</svg>',
 
         // The Mage: the tall blue star-spangled hat pulled down over his
         // eyes, the great white beard under it. Both arms are on him -- the
@@ -5177,141 +5277,141 @@ body.modal-cover #board * {
     /* ------------------------------------------------------------------ */
 
     const BOARD = [
-        { i: 0,  key: 'start',        name: 'Start',                 row: 7, col: 0,
+        { i: 0,  key: 'start',        name: 'Start',                 row: 6, col: 9,
           text: 'Every journey begins here.' },
 
-        { i: 1,  key: 'chest',        name: 'Chest',                 row: 6, col: 0,
+        { i: 1,  key: 'chest',        name: 'Chest',                 row: 6, col: 8,
           action: 'draw_powerup', count: 2, text: 'Draw 2 item cards.' },
 
-        { i: 2,  key: 'chest',        name: 'Chest',                 row: 5, col: 0,
+        { i: 2,  key: 'chest',        name: 'Chest',                 row: 6, col: 7,
           action: 'draw_item_key', count: 1,
           text: 'Draw 1 item card and get 1 flint.' },
 
-        { i: 3,  key: 'chest',        name: 'Chest',                 row: 4, col: 0,
+        { i: 3,  key: 'chest',        name: 'Chest',                 row: 6, col: 6,
           action: 'flint', flint: 3, text: 'Get 3 flint.' },
 
-        { i: 4,  key: 'chest',        name: 'Chest',                 row: 3, col: 0,
+        { i: 4,  key: 'chest',        name: 'Chest',                 row: 6, col: 5,
           action: 'draw_special', count: 1,
           text: 'Draw 1 special equipment card.' },
 
-        { i: 5,  key: 'chest',        name: 'Chest',                 row: 2, col: 0,
+        { i: 5,  key: 'chest',        name: 'Chest',                 row: 6, col: 4,
           action: 'draw_powerup', count: 2, text: 'Draw 2 item cards.' },
 
-        { i: 6,  key: 'chest',        name: 'Chest',                 row: 1, col: 0,
+        { i: 6,  key: 'chest',        name: 'Chest',                 row: 6, col: 3,
           action: 'flint', flint: 1, text: 'Get 1 flint.' },
 
-        { i: 7,  key: 'eagles_ascent', name: "Eagle's Ascent",       row: 0, col: 0,
+        { i: 7,  key: 'eagles_ascent', name: "Eagle's Ascent",       row: 6, col: 2,
           action: 'battle', enemy: 'hawk', coins: 10, keyFragment: 1,
           diceMod: -1, stop: true,
           text: 'This square takes 1 off your dice roll, then you proceed with the ' +
                 'adjusted result. Battle: the Hawk. STOP.' },
 
-        { i: 8,  key: 'eagles_descent', name: "Eagle's Descent",     row: 0, col: 1,
+        { i: 8,  key: 'eagles_descent', name: "Eagle's Descent",     row: 6, col: 1,
           action: 'dice_mod', diceMod: 1, stop: true,
           text: 'This square adds one to your dice roll, then you proceed with the ' +
                 'adjusted result. STOP.' },
 
-        { i: 9,  key: 'campfire',     name: 'Campfire Logs',         row: 0, col: 2,
+        { i: 9,  key: 'campfire',     name: 'Campfire Logs',         row: 6, col: 0,
           action: 'campfire', value: 15, optionalStop: true,
           text: 'Heal 15 HP. Cost: 1 flint. Optional stop.' },
 
-        { i: 10, key: 'barbarians_cave', name: "Barbarian's Cave",   row: 0, col: 3,
+        { i: 10, key: 'barbarians_cave', name: "Barbarian's Cave",   row: 5, col: 0,
           action: 'battle', enemy: 'barbarian_foe', coins: 15, keyFragment: 2,
           text: 'Battle: the Barbarian.' },
 
-        { i: 11, key: 'chest',        name: 'Chest',                 row: 0, col: 4,
+        { i: 11, key: 'chest',        name: 'Chest',                 row: 4, col: 0,
           action: 'flint', flint: 2, text: 'Get 2 flint.' },
 
-        { i: 12, key: 'frozen_plateau', name: 'Frozen Plateau',      row: 0, col: 5,
+        { i: 12, key: 'frozen_plateau', name: 'Frozen Plateau',      row: 3, col: 0,
           action: 'lose_powerups', count: 2, text: 'Lose 2 item cards.' },
 
-        { i: 13, key: 'chest',        name: 'Chest',                 row: 0, col: 6,
+        { i: 13, key: 'chest',        name: 'Chest',                 row: 2, col: 0,
           action: 'draw_special', count: 1,
           text: 'Draw 1 special equipment card.' },
 
-        { i: 14, key: 'amethyst_harbour', name: 'Amethyst Harbour',  row: 0, col: 7,
+        { i: 14, key: 'amethyst_harbour', name: 'Amethyst Harbour',  row: 1, col: 0,
           action: 'harbour', text: 'Pick up 1 Amethyst Harbour card.' },
 
-        { i: 15, key: 'glacial_sea',  name: 'Glacial Sea',           row: 0, col: 8,
+        { i: 15, key: 'glacial_sea',  name: 'Glacial Sea',           row: 0, col: 0,
           action: 'die_event', table: 'glacial_sea',
           text: 'Roll a die. Odd: take 15 damage. Even: lose an item card.' },
 
-        { i: 16, key: 'campfire',     name: 'Campfire Logs',         row: 0, col: 9,
+        { i: 16, key: 'campfire',     name: 'Campfire Logs',         row: 0, col: 1,
           action: 'campfire', value: 15, optionalStop: true,
           text: 'Heal 15 HP. Cost: 1 flint. Optional stop.' },
 
-        { i: 17, key: 'ice_tomb_cavern', name: 'Ice Tomb Cavern',    row: 0, col: 10,
+        { i: 17, key: 'ice_tomb_cavern', name: 'Ice Tomb Cavern',    row: 0, col: 2,
           action: 'battle', enemy: 'ice_golem', coins: 20, keyFragment: 3, skill: 'attack',
           text: 'Battle: the Ice Golem.' },
 
-        { i: 18, key: 'frostwell_sanctuary', name: 'Frostwell Sanctuary', row: 0, col: 11,
+        { i: 18, key: 'frostwell_sanctuary', name: 'Frostwell Sanctuary', row: 0, col: 3,
           action: 'heal', value: 25, text: 'Heal 25 HP.' },
 
-        { i: 19, key: 'stalactite_cave', name: 'Stalactite Cave',    row: 1, col: 11,
+        { i: 19, key: 'stalactite_cave', name: 'Stalactite Cave',    row: 0, col: 4,
           action: 'die_event', table: 'stalactite_cave',
           text: 'Roll a die. 1, 2 or 3: skip your next turn. 4, 5 or 6: nothing happens.' },
 
-        { i: 20, key: 'chest',        name: 'Chest',                 row: 2, col: 11,
+        { i: 20, key: 'chest',        name: 'Chest',                 row: 0, col: 5,
           action: 'draw_item', count: 1, text: 'Draw 1 equipment card.' },
 
-        { i: 21, key: 'snowy_village', name: 'Snowy Village',        row: 3, col: 11,
+        { i: 21, key: 'snowy_village', name: 'Snowy Village',        row: 0, col: 6,
           action: 'snowy_village', stop: true, fork: true,
           text: 'CHOOSE 1 — heal 20 HP, get 10 gold, or get 2 flint. Then choose ' +
                 'Route 1 or Route 2. STOP.' },
 
         /* ---- Route 1: the short way, along the top of the river --------- */
 
-        { i: 22, key: 'frozen_tundra', name: 'Frozen Tundra',        row: 3, col: 10,
+        { i: 22, key: 'frozen_tundra', name: 'Frozen Tundra',        row: 1, col: 6,
           route: 1, action: 'battle', enemy: 'mammoth', coins: 15, keyFragment: 4, skill: 'speed',
           text: 'Battle: the Enraged Woolly Mammoth.' },
 
-        { i: 23, key: 'stalagmite_cave', name: 'Stalagmite Cave',    row: 3, col: 9,
+        { i: 23, key: 'stalagmite_cave', name: 'Stalagmite Cave',    row: 2, col: 6,
           route: 1, action: 'die_event', table: 'stalagmite_cave',
           text: 'Roll a die. 1, 2 or 3: nothing happens. 4, 5 or 6: skip your next turn.' },
 
-        { i: 24, key: 'aurora_crystal', name: 'Aurora Crystal',      row: 3, col: 8,
+        { i: 24, key: 'aurora_crystal', name: 'Aurora Crystal',      row: 3, col: 6,
           route: 1, action: 'heal', value: 100, optionalStop: true, next: 35,
           text: 'Heal 100 HP. Optional stop.' },
 
         /* ---- Route 2: the long way, round the bottom of the board ------- */
 
-        { i: 25, key: 'cracked_ice',  name: 'Cracked Ice',           row: 4, col: 11,
+        { i: 25, key: 'cracked_ice',  name: 'Cracked Ice',           row: 0, col: 7,
           route: 2, action: 'die_event', table: 'cracked_ice',
           text: 'Roll a die. Odd: take 15 damage. Even: lose 1 item card.' },
 
-        { i: 26, key: 'campfire',     name: 'Campfire Logs',         row: 5, col: 11,
+        { i: 26, key: 'campfire',     name: 'Campfire Logs',         row: 0, col: 8,
           route: 2, action: 'campfire', value: 15, optionalStop: true,
           text: 'Heal 15 HP. Cost: 1 flint. Optional stop.' },
 
-        { i: 27, key: 'snowbound_ridge', name: 'Snowbound Ridge',    row: 6, col: 11,
+        { i: 27, key: 'snowbound_ridge', name: 'Snowbound Ridge',    row: 0, col: 9,
           route: 2, action: 'battle', enemy: 'yeti', coins: 25,
           stop: true, text: 'Battle: the Yeti. STOP.' },
 
-        { i: 28, key: 'frostbite_abyss', name: 'Frostbite Abyss',    row: 6, col: 10,
+        { i: 28, key: 'frostbite_abyss', name: 'Frostbite Abyss',    row: 1, col: 9,
           route: 2, action: 'die_event', table: 'frostbite_abyss',
           text: 'Roll a die. 1-4: take 5 damage. 5 or 6: skip your next turn.' },
 
-        { i: 29, key: 'frostclaw_expanse', name: 'Frostclaw Expanse', row: 6, col: 9,
+        { i: 29, key: 'frostclaw_expanse', name: 'Frostclaw Expanse', row: 2, col: 9,
           route: 2, action: 'battle', enemy: 'polar_bear', coins: 15,
           text: 'Battle: the Polar Bear.' },
 
-        { i: 30, key: 'bandit_outpost', name: 'Bandit Outpost',      row: 6, col: 8,
+        { i: 30, key: 'bandit_outpost', name: 'Bandit Outpost',      row: 3, col: 9,
           route: 2, action: 'bandit_outpost',
           text: 'CHOOSE 1 — lose one of your equipped items, or lose 25 gold.' },
 
-        { i: 31, key: 'frozen_cemetery', name: 'Frozen Cemetery',    row: 6, col: 7,
+        { i: 31, key: 'frozen_cemetery', name: 'Frozen Cemetery',    row: 4, col: 9,
           route: 2, action: 'battle', enemy: 'frost_wraith', coins: 10, skill: 'knowledge',
           text: 'Battle: the Frost Wraith.' },
 
-        { i: 32, key: 'chest',        name: 'Chest',                 row: 6, col: 6,
+        { i: 32, key: 'chest',        name: 'Chest',                 row: 5, col: 9,
           route: 2, action: 'draw_special', count: 1,
           text: 'Draw 1 special equipment card.' },
 
-        { i: 33, key: 'campfire',     name: 'Campfire Logs',         row: 5, col: 6,
+        { i: 33, key: 'campfire',     name: 'Campfire Logs',         row: 5, col: 8,
           route: 2, action: 'campfire', value: 15, optionalStop: true,
           text: 'Heal 15 HP. Cost: 1 flint. Optional stop.' },
 
-        { i: 34, key: 'merchant_cabin', name: "Merchant's Cosy Cabin", row: 4, col: 6,
+        { i: 34, key: 'merchant_cabin', name: "Merchant's Cosy Cabin", row: 5, col: 7,
           route: 2, action: 'merchant', optionalStop: true,
           text: 'Choose 1 Merchant food, and trade with the Merchant. Optional stop.' },
 
@@ -5322,8 +5422,8 @@ body.modal-cover #board * {
           text: 'Discard one of each of the four Frost Gate Keys to pass. ' +
                 'Without them you are cast back to the Start. STOP.' },
 
-        { i: 36, key: 'arena',        name: "Fenrirak's Arena",      row: 1, col: 3,
-          rowSpan: 3, colSpan: 4,
+        { i: 36, key: 'arena',        name: "Fenrirak's Arena",      row: 2, col: 2,
+          rowSpan: 4, colSpan: 4,
           action: 'battle', enemy: 'fenrirak', arena: true,
           text: 'The Ice Dragon waits. Defeat Fenrirak and the legend is yours.' }
     ];
@@ -5352,30 +5452,13 @@ body.modal-cover #board * {
         ]
     };
 
-    // Scenery, not a square you can land on.
-    const DECOR = [
-        { kind: 'pine',      row: 2, col: 1,  size: .82, nudge: -12 },
-        { kind: 'pine',      row: 5, col: 2,  size: .62, drop: 10 },
-        { kind: 'pine',      row: 1, col: 8,  size: .58, drop: -10 },
-        { kind: 'ruins',     row: 6, col: 2,  size: .60, drop: 12 },
-        { kind: 'village',   row: 3, col: 11, size: .78, drop: 6 },
-        { kind: 'fountain',  row: 0, col: 11, size: .70 },
-        { kind: 'desert',    row: 0, col: 8,  size: .72, drop: 16 },
-        { kind: 'forest',    row: 3, col: 10, size: .70, drop: 14 },
-        { kind: 'keep',      row: 0, col: 10, size: .60, drop: 34 },
-        { kind: 'hideout',   row: 6, col: 11, size: .62, drop: 26 },
-        { kind: 'pot',       row: 0, col: 2,  size: .58, drop: 24 },
-        { kind: 'pot',       row: 0, col: 9,  size: .58, drop: 24 },
-        { kind: 'pot',       row: 5, col: 11, size: .58, drop: 24 },
-        { kind: 'pot',       row: 5, col: 6,  size: .58, drop: 24 },
-        { kind: 'bush',      row: 1, col: 1,  size: .26, berries: true, nudge: -60, drop: -58 },
-        { kind: 'bush',      row: 4, col: 2,  size: .22, nudge: 80, drop: 46 },
-        { kind: 'bush',      row: 1, col: 9,  size: .24, nudge: 66, drop: 64 },
-        { kind: 'bush',      row: 5, col: 8,  size: .30, berries: true, nudge: -20, drop: -22 },
-        { kind: 'bush',      row: 6, col: 4,  size: .26, berries: true, nudge: -56, drop: -50 },
-        { kind: 'bush',      row: 5, col: 4,  size: .22, nudge: 40, drop: 30 },
-        { kind: 'bush',      row: 2, col: 8,  size: .27, berries: true, nudge: -34, drop: 40 }
-    ];
+    // No scenery on this board -- see NOTES-ICE.md. The Thunder Dragon's
+    // pines/ruins/village/fountain/desert/forest/keep/hideout/pot/bush set
+    // was autumn-and-stone dressing for that board; it never fit an ice
+    // board even before the coordinates were wrong (they were carried
+    // over from the old, broken board layout). Left empty rather than
+    // guessing at snow-themed replacements nobody asked for.
+    const DECOR = [];
 
     const START_INDEX = 0;
     const ARENA_INDEX = 36;
@@ -10917,11 +11000,11 @@ body.modal-cover #board * {
         golem:
             '<g fill="currentColor"><path d="M50 4l5 13-5-3-5 3zM36 9l6 12-7-3-3 5zM64 9l-6 12 7-3 3 5z"/><path d="M33 21 50 12l17 9-3 17-14 8-14-8z"/><path d="M6 44l15-9 8 6-2 17-17 9-11-9z"/><path d="M94 44l-15-9-8 6 2 17 17 9 11-9z"/><path d="M26 45h48l4 32-28 13-28-13z"/></g><g fill="#f4e7b8" opacity=".9"><path d="M39 25l6-3 1 4-5 3z"/><path d="M61 25l-6-3-1 4 5 3z"/></g><g fill="none" stroke="#20180f" stroke-width="1.6" stroke-linejoin="round" opacity=".35"><path d="M50 12v9M42 34l8-4 8 4M17 42l6 9M83 42l-6 9M50 45v32M32 51l18-6 18 6"/></g>',
 
-        // The Mammoth: the high shoulder hump, the trunk hanging and
-        // curling under the chin, tusks crossing in front of it, one
-        // big fan ear.
+        // The Mammoth: the high shoulder hump, a rounded droopy ear set
+        // well back so it doesn't blur into the trunk, the trunk hanging
+        // and curling under, two thin tusks out in front of it.
         mammoth:
-            '<path d="M22 28c-11-3-20 4-21 14 8 3 18-1 23-9z" fill="currentColor" opacity=".75"/><g fill="currentColor"><path d="M33 32c6-7 16-10 25-10 17 0 31 9 35 21 3 0 5 2 5 5s-3 5-6 5H35c-5-1-9-4-11-9-4 0-7-3-7-6s3-5 7-6z"/><path d="M44 58h9v15h-9zM65 58h9v15h-9zM84 58h7v14h-7z"/></g><path d="M33 32c-6 1-10 6-9 13 1 7 4 13 10 16 2-2 3-5 1-8-4-2-6-7-6-12 0-4 1-7 4-9z" fill="currentColor"/><g fill="#eee6d6"><path d="M27 44c-8 1-13 7-13 15 6 0 11-6 13-15z"/><path d="M29 50c-6 3-9 9-7 15 5-2 8-8 7-15z"/></g><circle cx="28" cy="36" r="2.2" fill="#f4e7b8"/>',
+            '<g fill="currentColor"><path d="M40 32c6-5 14-7 21-7 17 0 31 9 35 21 3 0 5 2 5 5s-3 5-6 5H45c-5-1-9-4-11-9-4 0-7-3-7-6s3-5 7-6z"/><path d="M50 56h9v16h-9zM70 56h9v16h-9zM88 56h7v15h-7z"/><path d="M30 20c-10-3-18 2-19 11 8 3 16-1 19-11z" opacity=".8"/><path d="M32 26c0-7 5-12 12-12 5 0 9 3 11 7 2 8-1 14-9 16-8 1-14-4-14-11z"/></g><path d="M25 30c-5 2-8 6-7 12 1 8 3 15 10 19 2-2 2-5 0-7-5-3-7-9-7-15 0-3 1-6 4-9z" fill="currentColor"/><g fill="none" stroke="#eee6d6" stroke-width="3.4" stroke-linecap="round"><path d="M22 42c-6 4-9 10-7 17"/><path d="M25 48c-4 4-6 9-4 15"/></g><circle cx="33" cy="22" r="2" fill="#f4e7b8"/>',
 
         // The Yeti: mid-stride, arms swinging, a shaggy jagged-fringed
         // head.
