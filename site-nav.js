@@ -287,19 +287,29 @@
     }
 
     /* ---- soothing ambient glow (always on) --------------------------------
-       Builds one .dye-layer + .dye-blob pair per .dye-hover element and
-       eases it very slowly around a small, gentle orbit centred on the
-       card — no cursor tracking, no sharp motion, just a calm light
-       that never quite sits still. Under prefers-reduced-motion it's
-       placed once, dead centre, and left alone (see the CSS fallback
-       transform). */
+       Builds one .dye-layer + .dye-blob pair per .dye-hover element. The
+       blob is a box-shadow halo hugging the card's own edges (see the
+       CSS), and rather than drifting continuously, it mostly just sits
+       there: every few seconds a new, slightly different target (how
+       far the glow reaches, how tight it hugs, a small offset) is
+       picked, and the current values ease toward it and hold — a slow
+       "warble" now and then rather than constant motion. Under
+       prefers-reduced-motion the halo is still inserted (so it's still
+       visible) but left at the CSS's own resting values and never
+       animated. */
     function initDyeField() {
         var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
         if (!hosts.length) return;
 
-        var DRIFT_SPEED = 0.00012;  // full lap of the orbit roughly every 140s
-        var ORBIT_X = 26;           // how far the glow wanders side to side
-        var ORBIT_Y = 16;           // how far the glow wanders up and down
+        var EASE = 0.015;           // slow, soothing catch-up toward each new target
+        var MIN_HOLD = 2400;        // shortest pause before picking a new target (ms)
+        var MAX_HOLD = 5200;        // longest pause before picking a new target (ms)
+        var BLUR_BASE = 46, BLUR_RANGE = 22;     // box-shadow blur radius
+        var SPREAD_BASE = 14, SPREAD_RANGE = 10; // box-shadow spread
+        var OFFSET_RANGE = 10;                   // small x/y wander, px
+        var OPACITY_BASE = 0.6, OPACITY_RANGE = 0.18;
+
+        function rand(min, max) { return min + Math.random() * (max - min); }
 
         hosts.forEach(function (host) {
             var layer = document.createElement('div');
@@ -312,22 +322,31 @@
             // so the source order matches the paint order for anyone
             // reading the markup later.
             host.insertBefore(layer, host.firstChild);
+            if (reduceMotion) return;
 
-            if (reduceMotion) {
-                blob.style.transform = 'translate(-50%, -50%)';
-                return;
+            var current = { blur: BLUR_BASE, spread: SPREAD_BASE, x: 0, y: 0, opacity: OPACITY_BASE };
+            var target = { blur: BLUR_BASE, spread: SPREAD_BASE, x: 0, y: 0, opacity: OPACITY_BASE };
+
+            function pickTarget() {
+                target.blur = BLUR_BASE + rand(-BLUR_RANGE, BLUR_RANGE);
+                target.spread = SPREAD_BASE + rand(-SPREAD_RANGE, SPREAD_RANGE);
+                target.x = rand(-OFFSET_RANGE, OFFSET_RANGE);
+                target.y = rand(-OFFSET_RANGE, OFFSET_RANGE);
+                target.opacity = OPACITY_BASE + rand(-OPACITY_RANGE, OPACITY_RANGE);
+                window.setTimeout(pickTarget, rand(MIN_HOLD, MAX_HOLD));
             }
-
-            var drift = Math.random() * Math.PI * 2;
+            window.setTimeout(pickTarget, rand(0, MAX_HOLD));
 
             function tick() {
-                drift += DRIFT_SPEED;
-                // Two slightly different phases on x and y so the glow
-                // traces a slow, lazy loop rather than a straight back-
-                // and-forth line.
-                var dx = Math.sin(drift) * ORBIT_X;
-                var dy = Math.cos(drift * 0.8) * ORBIT_Y;
-                blob.style.transform = 'translate(calc(-50% + ' + dx.toFixed(1) + 'px), calc(-50% + ' + dy.toFixed(1) + 'px))';
+                current.blur += (target.blur - current.blur) * EASE;
+                current.spread += (target.spread - current.spread) * EASE;
+                current.x += (target.x - current.x) * EASE;
+                current.y += (target.y - current.y) * EASE;
+                current.opacity += (target.opacity - current.opacity) * EASE;
+                blob.style.boxShadow = current.x.toFixed(1) + 'px ' + current.y.toFixed(1) + 'px '
+                    + current.blur.toFixed(1) + 'px ' + current.spread.toFixed(1)
+                    + 'px color-mix(in srgb, var(--accent, #4a82c7) 55%, transparent)';
+                blob.style.opacity = current.opacity.toFixed(2);
                 window.requestAnimationFrame(tick);
             }
             window.requestAnimationFrame(tick);

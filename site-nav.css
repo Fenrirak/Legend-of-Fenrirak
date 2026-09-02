@@ -369,43 +369,35 @@
 }
 
 /* ---- soothing ambient glow (always on) -----------------------------------
-   Put .dye-hover on a card for a soft, calm light that sits just behind
-   it and drifts slowly on its own — no cursor interaction, no motion
-   beyond the drift, nothing sharp. A single big, heavily blurred radial
-   glow, tinted from the card's own --accent, that site-nav.js eases
-   very slowly around a small orbit so it never looks static but also
-   never calls attention to itself. Sits at z-index -1, so it always
-   paints behind the card's own heading, copy and button. Under
-   prefers-reduced-motion it's placed once, centred, and never moves. */
+   Put .dye-hover on a card for a soft light that traces just outside
+   its edges rather than sitting over the middle — a box-shadow glow
+   (not a centred blob), so it reads as a halo hugging the card's own
+   shape, tinted from the card's own --accent. It mostly holds still;
+   every few seconds site-nav.js eases it toward a new, slightly
+   different size/reach/offset and holds there a while, so it "warbles"
+   now and then rather than drifting continuously. Sits at z-index -1,
+   so it always paints behind the card's own heading, copy and button.
+   Under prefers-reduced-motion it's set once, centred, and never
+   changes again. */
 .dye-hover {
     position: relative;
     isolation: isolate;
 }
 .dye-hover .dye-layer {
     position: absolute;
-    inset: -20%;
+    inset: 0;
     pointer-events: none;
     z-index: -1;
+    border-radius: inherit;
 }
 .dye-hover .dye-blob {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 70%;
-    height: 70%;
-    border-radius: 50%;
-    background: radial-gradient(
-        circle,
-        color-mix(in srgb, var(--accent, #4a82c7) 55%, white 45%) 0%,
-        color-mix(in srgb, var(--accent, #4a82c7) 40%, transparent) 45%,
-        transparent 75%
-    );
-    filter: blur(38px);
-    opacity: 0.55;
-    will-change: transform;
-}
-@media (prefers-reduced-motion: reduce) {
-    .dye-hover .dye-blob { transform: translate(-50%, -50%) !important; }
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 46px 14px color-mix(in srgb, var(--accent, #4a82c7) 55%, transparent);
+    opacity: 0.6;
+    filter: blur(6px);
+    will-change: box-shadow, opacity;
 }
 
 /* ---- ambient ember light ---------------------------------------------
