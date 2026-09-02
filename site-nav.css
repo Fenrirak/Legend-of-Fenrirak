@@ -7,7 +7,7 @@
 
    Also below: a further set of opt-in accents for story-style pages —
    hover brighten, push-tilt, an ambient cursor light, a liquid dye
-   field, scroll parallax, and a scroll-scrubbed text glow. Same rule as
+   border, scroll parallax, and a scroll-scrubbed text glow. Same rule as
    everything above: nothing activates on a page unless that page adds
    the matching class.
    ========================================================================= */
@@ -368,31 +368,37 @@
     .tilt-hover { transition: none !important; transform: none !important; }
 }
 
-/* ---- liquid field (always on) -----------------------------------------
-   Put .dye-hover on a card. A handful of blurred, high-contrast blobs
-   sit inside the box and melt together the way drops of milky dye do
-   when they touch — the classic blur-then-contrast "metaball" trick,
-   which needs a filter on the whole layer (not each blob) to actually
-   fuse the shapes together. Unlike the other hover accents, this one is
-   meant to be visible all the time, standing in for a static glow: it
-   drifts on its own when the cursor's elsewhere, and gets pulled toward
-   the cursor when it passes through, the way an object trails through
-   still water. Tinted with whatever --accent the card already sets
-   (falls back to house amber), lightened toward white for a milky look.
-   site-nav.js creates the layer/blobs once and places them; under
-   prefers-reduced-motion it places them once and never moves them
-   again, so the fused shape is still there, just motionless. */
+/* ---- liquid border (always on) -----------------------------------------
+   Put .dye-hover on a card. A ring of blurred, high-contrast blobs
+   traces a line just outside the card's own edge and melts together the
+   way drops of milky dye do when they touch — the classic blur-then-
+   contrast "metaball" trick, which needs a filter on the whole layer
+   (not each blob) to actually fuse the shapes together. It drifts in a
+   slow current around the border on its own, and where the cursor
+   passes close by on the inside, that stretch of the ring bulges
+   outward and away, the way water piles up ahead of a hull and folds
+   back in behind it — see site-nav.js for the push. The layer sits at
+   z-index -1, so it always paints behind the card's own heading, copy
+   and button (an ordinary in-flow child always paints above a negative-
+   z-index absolute sibling in the same stacking context) — nothing here
+   can ever wash out the text the way a centred glow would. Tinted in
+   cool blues lightened toward white for a milky look, with --accent
+   still driving the base hue. site-nav.js creates the layer/blobs once
+   and moves them; under prefers-reduced-motion it places them once in
+   their resting ring and never moves them again, so the fused shape is
+   still there, just motionless. */
 .dye-hover {
     position: relative;
     isolation: isolate;
-    overflow: hidden;
 }
 .dye-hover .dye-layer {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    filter: blur(14px) contrast(24);
+    filter: blur(20px) contrast(15);
     mix-blend-mode: screen;
+    opacity: 0.9;
+    z-index: -1;
 }
 .dye-hover .dye-blob {
     /* Solid and fully opaque on purpose: the blur-then-contrast trick
@@ -401,15 +407,17 @@
        opaque or fully transparent, welding overlapping blobs together.
        A blob that's already fading to transparent (e.g. a radial-
        gradient) gives contrast almost nothing solid to grab, so it
-       reads as a faint smear instead of a fused liquid shape. */
+       reads as a faint smear instead of a fused liquid shape. Colour is
+       set per-blob in site-nav.js, picked from a small cool-blue
+       palette so the ring reads as a body of water rather than one
+       flat tint smeared around a circle. */
     position: absolute;
     top: 0;
     left: 0;
-    width: 120px;
-    height: 120px;
-    margin: -60px 0 0 -60px;
+    width: 150px;
+    height: 150px;
+    margin: -75px 0 0 -75px;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--accent, rgb(217, 163, 92)) 55%, white 40%);
 }
 
 /* ---- ambient ember light ---------------------------------------------

@@ -7,7 +7,7 @@
    animation, progress thread, back-to-top and lightbox.
 
    Further down: a matching set of opt-in accents — a hover brighten and
-   push-tilt, an ambient cursor light, a liquid dye field, scroll
+   push-tilt, an ambient cursor light, a liquid dye border, scroll
    parallax, and a scroll-scrubbed text glow — following the exact same
    rule.
    ========================================================================= */
@@ -19,7 +19,7 @@
     // line isn't there, the browser is running a different site-nav.js
     // than the one you think it is (almost always a caching issue) —
     // nothing below matters until that's fixed first.
-    if (window.console) console.log('[site-nav.js] loaded — build 2026-09-02d');
+    if (window.console) console.log('[site-nav.js] loaded — build 2026-09-02e');
 
     var reduceMotion = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -286,27 +286,57 @@
         tiltEls.forEach(bindTilt);
     }
 
-    /* ---- liquid field (always on) -------------------------------------
+    /* ---- liquid border (always on) --------------------------------------
        Builds the .dye-layer and its .dye-blob children once per
-       .dye-hover element and keeps a chain of them moving toward a
-       single "lead" point (blob 0 chases the lead, blob 1 chases blob
-       0's last position, and so on, stretching the shape out like a
-       trail). Most of the time that lead point is a slow, quiet orbit
-       around the middle of the box — an idle drift so the liquid reads
-       as "always there" rather than dead — and while the cursor is
-       actually inside the box, the lead switches to following it
-       instead, so the liquid gets pulled along behind the pointer like
-       an object dragged through still water. The blur+contrast fusing
-       itself is pure CSS (see the .dye-layer rule); this just moves the
-       blobs. Under prefers-reduced-motion, blobs are placed once in a
-       resting arrangement and never move again — still visible, just
-       motionless. */
+       .dye-hover element and traces them around the card's own edge
+       instead of letting them pool in the middle — each blob has a
+       fixed stop ("t", 0..1) on the perimeter, and pointOnBorder() below
+       turns that into an x/y just outside whichever edge it falls on,
+       plus the outward direction at that spot. The whole ring turns
+       slowly on its own (drift) so it reads as a current, not a static
+       decal, and while the cursor is inside the card, any blob whose
+       home spot is near the pointer gets shoved further outward along
+       that same direction — a bow wave that eases back in once the
+       cursor moves on. The blur+contrast fusing itself is pure CSS (see
+       the .dye-layer rule); this just moves the blobs. Under
+       prefers-reduced-motion, blobs are placed once in their resting
+       ring and never move again — still visible, just motionless. */
     function initDyeField() {
         var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
         if (!hosts.length) return;
 
-        var BLOB_COUNT = 5;
-        var EASE = 0.06;
+        var BLOB_COUNT = 16;
+        var EASE = 0.08;
+        var DRIFT_SPEED = 0.00028;   // full lap of the ring roughly every 60s
+        var HOVER_OFFSET = 22;       // how far outside the card's edge the ring rests
+        var PUSH_RADIUS = 190;       // how close the cursor must be to shove the ring
+        var PUSH_STRENGTH = 60;      // extra outward travel at the very centre of a push
+        // A small rotating palette of cool tones — a bright crest, the
+        // card's own accent as the body colour, and a deep navy for
+        // shadow — so the fused ring reads as a body of water rather
+        // than one flat tint smeared into a circle.
+        var PALETTE = [
+            'color-mix(in srgb, var(--accent, #4a82c7) 35%, white 65%)',
+            'color-mix(in srgb, var(--accent, #4a82c7) 70%, white 30%)',
+            'color-mix(in srgb, var(--accent, #4a82c7) 55%, #0b1830 35%)'
+        ];
+
+        // Point at fraction t (0..1, clockwise from the top-left corner)
+        // around a w-by-h rectangle, nudged outward by `offset` along the
+        // normal for that edge. Treated as a sharp-cornered rectangle —
+        // the card's own 16px corner radius is small enough next to the
+        // blur that rounding it here would never be visible.
+        function pointOnBorder(t, w, h, offset) {
+            var perim = 2 * (w + h);
+            var d = (((t % 1) + 1) % 1) * perim;
+            if (d < w) return { x: d, y: -offset, nx: 0, ny: -1 };
+            d -= w;
+            if (d < h) return { x: w + offset, y: d, nx: 1, ny: 0 };
+            d -= h;
+            if (d < w) return { x: w - d, y: h + offset, nx: 0, ny: 1 };
+            d -= w;
+            return { x: -offset, y: h - d, nx: -1, ny: 0 };
+        }
 
         hosts.forEach(function (host) {
             var layer = document.createElement('div');
@@ -315,42 +345,59 @@
             for (var i = 0; i < BLOB_COUNT; i++) {
                 var blob = document.createElement('div');
                 blob.className = 'dye-blob';
+                blob.style.background = PALETTE[i % PALETTE.length];
                 layer.appendChild(blob);
-                blobs.push({ el: blob, x: 0, y: 0 });
+                blobs.push({ el: blob, t: i / BLOB_COUNT, x: 0, y: 0, pushX: 0, pushY: 0 });
             }
-            host.appendChild(layer);
+            // Behind the card's own in-flow content regardless of DOM
+            // order (see the z-index: -1 rule), but inserted first anyway
+            // so the source order matches the paint order for anyone
+            // reading the markup later.
+            host.insertBefore(layer, host.firstChild);
 
-            function place(rect, angleOffset) {
-                blobs.forEach(function (blob, i) {
-                    var angle = angleOffset + (i / BLOB_COUNT) * Math.PI * 2;
-                    blob.x = rect.width / 2 + Math.cos(angle) * rect.width * 0.16;
-                    blob.y = rect.height / 2 + Math.sin(angle) * rect.height * 0.14;
+            function layoutOnce() {
+                var rect = host.getBoundingClientRect();
+                blobs.forEach(function (blob) {
+                    var p = pointOnBorder(blob.t, rect.width, rect.height, HOVER_OFFSET);
+                    blob.x = p.x;
+                    blob.y = p.y;
                     blob.el.style.transform = 'translate(' + blob.x.toFixed(1) + 'px, ' + blob.y.toFixed(1) + 'px)';
                 });
             }
 
-            place(host.getBoundingClientRect(), 0);
+            layoutOnce();
             if (reduceMotion) return;
 
-            var pointerX = null, pointerY = null, t = 0;
+            var pointerX = null, pointerY = null, drift = 0;
 
             function tick() {
-                t += 1;
+                drift += DRIFT_SPEED;
                 var rect = host.getBoundingClientRect();
-                var leadX, leadY;
-                if (pointerX !== null) {
-                    leadX = pointerX;
-                    leadY = pointerY;
-                } else {
-                    leadX = rect.width / 2 + Math.cos(t * 0.006) * rect.width * 0.2;
-                    leadY = rect.height / 2 + Math.sin(t * 0.008) * rect.height * 0.16;
-                }
                 blobs.forEach(function (blob) {
-                    blob.x += (leadX - blob.x) * EASE;
-                    blob.y += (leadY - blob.y) * EASE;
-                    blob.el.style.transform = 'translate(' + blob.x.toFixed(1) + 'px, ' + blob.y.toFixed(1) + 'px)';
-                    leadX = blob.x;
-                    leadY = blob.y;
+                    var home = pointOnBorder(blob.t + drift, rect.width, rect.height, HOVER_OFFSET);
+                    var pushX = 0, pushY = 0;
+                    if (pointerX !== null) {
+                        var dx = home.x - pointerX;
+                        var dy = home.y - pointerY;
+                        var dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < PUSH_RADIUS) {
+                            // Squared falloff so the shove is felt strongly
+                            // right where the cursor is and fades quickly
+                            // away from it, like a hull rather than a tide.
+                            var force = 1 - dist / PUSH_RADIUS;
+                            force *= force;
+                            var inv = dist > 0.01 ? 1 / dist : 0;
+                            pushX = dx * inv * force * PUSH_STRENGTH;
+                            pushY = dy * inv * force * PUSH_STRENGTH;
+                        }
+                    }
+                    blob.pushX += (pushX - blob.pushX) * 0.15;
+                    blob.pushY += (pushY - blob.pushY) * 0.15;
+                    blob.x += (home.x - blob.x) * EASE;
+                    blob.y += (home.y - blob.y) * EASE;
+                    var tx = blob.x + blob.pushX;
+                    var ty = blob.y + blob.pushY;
+                    blob.el.style.transform = 'translate(' + tx.toFixed(1) + 'px, ' + ty.toFixed(1) + 'px)';
                 });
                 window.requestAnimationFrame(tick);
             }
