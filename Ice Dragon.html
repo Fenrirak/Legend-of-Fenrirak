@@ -5835,27 +5835,27 @@ body {
     /* ------------------------------------------------------------------ */
 
     const BOARD = [
-        { i: 0,  key: 'start',        name: 'Start',                 row: 8, col: 0,
+        { i: 0,  key: 'start',        name: 'Start',                 row: 7, col: 0,
           text: 'Every journey begins here.' },
 
-        { i: 1,  key: 'chest',        name: 'Chest',                 row: 7, col: 0,
+        { i: 1,  key: 'chest',        name: 'Chest',                 row: 6, col: 0,
           action: 'draw_powerup', count: 2, text: 'Draw 2 item cards.' },
 
-        { i: 2,  key: 'chest',        name: 'Chest',                 row: 6, col: 0,
+        { i: 2,  key: 'chest',        name: 'Chest',                 row: 5, col: 0,
           action: 'draw_item_key', count: 1,
           text: 'Draw 1 item card and get 1 flint.' },
 
-        { i: 3,  key: 'chest',        name: 'Chest',                 row: 5, col: 0,
+        { i: 3,  key: 'chest',        name: 'Chest',                 row: 4, col: 0,
           action: 'flint', flint: 3, text: 'Get 3 flint.' },
 
-        { i: 4,  key: 'chest',        name: 'Chest',                 row: 4, col: 0,
+        { i: 4,  key: 'chest',        name: 'Chest',                 row: 3, col: 0,
           action: 'draw_special', count: 1,
           text: 'Draw 1 special equipment card.' },
 
-        { i: 5,  key: 'chest',        name: 'Chest',                 row: 3, col: 0,
+        { i: 5,  key: 'chest',        name: 'Chest',                 row: 2, col: 0,
           action: 'draw_powerup', count: 2, text: 'Draw 2 item cards.' },
 
-        { i: 6,  key: 'chest',        name: 'Chest',                 row: 2, col: 0,
+        { i: 6,  key: 'chest',        name: 'Chest',                 row: 1, col: 0,
           action: 'flint', flint: 1, text: 'Get 1 flint.' },
 
         { i: 7,  key: 'eagles_ascent', name: "Eagle's Ascent",       row: 0, col: 0,
@@ -5905,82 +5905,82 @@ body {
         { i: 18, key: 'frostwell_sanctuary', name: 'Frostwell Sanctuary', row: 0, col: 11,
           action: 'heal', value: 25, text: 'Heal 25 HP.' },
 
-        { i: 19, key: 'stalactite_cave', name: 'Stalactite Cave',    row: 1, col: 14,
+        { i: 19, key: 'stalactite_cave', name: 'Stalactite Cave',    row: 1, col: 13,
           action: 'die_event', table: 'stalactite_cave',
           text: 'Roll a die. 1, 2 or 3: skip your next turn. 4, 5 or 6: nothing happens.' },
 
-        { i: 20, key: 'chest',        name: 'Chest',                 row: 2, col: 14,
+        { i: 20, key: 'chest',        name: 'Chest',                 row: 2, col: 13,
           action: 'draw_item', count: 1, text: 'Draw 1 equipment card.' },
 
-        { i: 21, key: 'snowy_village', name: 'Snowy Village',        row: 3, col: 14,
+        { i: 21, key: 'snowy_village', name: 'Snowy Village',        row: 3, col: 13,
           action: 'snowy_village', stop: true, fork: true,
           text: 'CHOOSE 1 — heal 20 HP, get 10 gold, or get 2 flint. Then choose ' +
                 'Route 1 or Route 2. STOP.' },
 
         /* ---- Route 1: the short way, along the top of the river --------- */
 
-        { i: 22, key: 'frozen_tundra', name: 'Frozen Tundra',        row: 3, col: 13,
+        { i: 22, key: 'frozen_tundra', name: 'Frozen Tundra',        row: 3, col: 12,
           route: 1, action: 'battle', enemy: 'mammoth', coins: 15, keyFragment: 4, skill: 'speed',
           text: 'Battle: the Enraged Woolly Mammoth.' },
 
-        { i: 23, key: 'stalagmite_cave', name: 'Stalagmite Cave',    row: 3, col: 12,
+        { i: 23, key: 'stalagmite_cave', name: 'Stalagmite Cave',    row: 3, col: 11,
           route: 1, action: 'die_event', table: 'stalagmite_cave',
           text: 'Roll a die. 1, 2 or 3: nothing happens. 4, 5 or 6: skip your next turn.' },
 
-        { i: 24, key: 'aurora_crystal', name: 'Aurora Crystal',      row: 3, col: 11,
+        { i: 24, key: 'aurora_crystal', name: 'Aurora Crystal',      row: 3, col: 10,
           route: 1, action: 'heal', value: 100, optionalStop: true, next: 35,
           text: 'Heal 100 HP. Optional stop.' },
 
         /* ---- Route 2: the long way, round the bottom of the board ------- */
 
-        { i: 25, key: 'cracked_ice',  name: 'Cracked Ice',           row: 4, col: 14,
+        { i: 25, key: 'cracked_ice',  name: 'Cracked Ice',           row: 4, col: 13,
           route: 2, action: 'die_event', table: 'cracked_ice',
           text: 'Roll a die. Odd: take 15 damage. Even: lose 1 item card.' },
 
-        { i: 26, key: 'campfire',     name: 'Campfire Logs',         row: 5, col: 14,
+        { i: 26, key: 'campfire',     name: 'Campfire Logs',         row: 5, col: 13,
           route: 2, action: 'campfire', value: 15, optionalStop: true,
           text: 'Heal 15 HP. Cost: 1 flint. Optional stop.' },
 
-        { i: 27, key: 'snowbound_ridge', name: 'Snowbound Ridge',    row: 8, col: 14,
+        { i: 27, key: 'snowbound_ridge', name: 'Snowbound Ridge',    row: 7, col: 13,
           route: 2, action: 'battle', enemy: 'yeti', coins: 25,
           stop: true, text: 'Battle: the Yeti. STOP.' },
 
-        { i: 28, key: 'frostbite_abyss', name: 'Frostbite Abyss',    row: 8, col: 13,
+        { i: 28, key: 'frostbite_abyss', name: 'Frostbite Abyss',    row: 7, col: 12,
           route: 2, action: 'die_event', table: 'frostbite_abyss',
           text: 'Roll a die. 1-4: take 5 damage. 5 or 6: skip your next turn.' },
 
-        { i: 29, key: 'frostclaw_expanse', name: 'Frostclaw Expanse', row: 8, col: 12,
+        { i: 29, key: 'frostclaw_expanse', name: 'Frostclaw Expanse', row: 7, col: 11,
           route: 2, action: 'battle', enemy: 'polar_bear', coins: 15,
           text: 'Battle: the Polar Bear.' },
 
-        { i: 30, key: 'bandit_outpost', name: 'Bandit Outpost',      row: 8, col: 11,
+        { i: 30, key: 'bandit_outpost', name: 'Bandit Outpost',      row: 7, col: 10,
           route: 2, action: 'bandit_outpost',
           text: 'CHOOSE 1 — lose one of your equipped items, or lose 25 gold.' },
 
-        { i: 31, key: 'frozen_cemetery', name: 'Frozen Cemetery',    row: 8, col: 9,
+        { i: 31, key: 'frozen_cemetery', name: 'Frozen Cemetery',    row: 7, col: 8,
           route: 2, action: 'battle', enemy: 'frost_wraith', coins: 10, skill: 'knowledge',
           text: 'Battle: the Frost Wraith.' },
 
-        { i: 32, key: 'chest',        name: 'Chest',                 row: 7, col: 8,
+        { i: 32, key: 'chest',        name: 'Chest',                 row: 6, col: 7,
           route: 2, action: 'draw_special', count: 1,
           text: 'Draw 1 special equipment card.' },
 
-        { i: 33, key: 'campfire',     name: 'Campfire Logs',         row: 6, col: 8,
+        { i: 33, key: 'campfire',     name: 'Campfire Logs',         row: 5, col: 7,
           route: 2, action: 'campfire', value: 15, optionalStop: true,
           text: 'Heal 15 HP. Cost: 1 flint. Optional stop.' },
 
-        { i: 34, key: 'merchant_cabin', name: "Merchant's Cosy Cabin", row: 5, col: 8,
+        { i: 34, key: 'merchant_cabin', name: "Merchant's Cosy Cabin", row: 4, col: 7,
           route: 2, action: 'merchant', optionalStop: true, next: 36,
           text: 'Choose 1 Merchant food, and trade with the Merchant. Optional stop.' },
 
         /* ---- and back together ------------------------------------------ */
 
-        { i: 35, key: 'gate',         name: 'The Frozen Gate',       row: 3, col: 10,
+        { i: 35, key: 'gate',         name: 'The Frozen Gate',       row: 3, col: 9,
           action: 'gate', stop: true,
           text: 'The Frozen Gate. Discard one of each of the four Frost Gate Keys to pass into Fenrirak’s Arena. ' +
                 'Without all four keys, you are cast back to the Start. STOP.' },
 
-        { i: 36, key: 'arena',        name: "Fenrirak's Arena",      row: 2, col: 7,
+        { i: 36, key: 'arena',        name: "Fenrirak's Arena",      row: 2, col: 6,
           rowSpan: 3, colSpan: 3,
           action: 'battle', enemy: 'fenrirak', arena: true,
           text: 'The Ice Dragon waits. Defeat Fenrirak and the legend is yours.' }
@@ -15911,3 +15911,12 @@ window.dispatchEvent(new Event('lof-net-ready'));
 
 </body>
 </html>
+
+<!-- Corrected board layout based on the supplied annotated image. -->
+<style>
+.board {
+  grid-template-columns: repeat(14, minmax(78px, 1fr)) !important;
+  grid-template-rows: repeat(8, clamp(122px, 7.4vw, 148px)) !important;
+  min-width: 1300px !important;
+}
+</style>
