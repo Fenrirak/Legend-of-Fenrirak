@@ -6,7 +6,7 @@
    used by the longer story-style pages. Edit here, not in each page.
 
    Also below: a further set of opt-in accents for story-style pages —
-   hover brighten, push-tilt, an ambient cursor light, a liquid dye
+   hover brighten, push-tilt, an ambient cursor light, a soothing drifting glow
    border, scroll parallax, and a scroll-scrubbed text glow. Same rule as
    everything above: nothing activates on a page unless that page adds
    the matching class.
@@ -313,7 +313,7 @@
 .lightbox-trigger { cursor: zoom-in; }
 
 /* =========================================================================
-   ABOUT-PAGE ACCENTS — hover brighten, push-tilt, ambient glow, dye field,
+   ABOUT-PAGE ACCENTS — hover brighten, push-tilt, ambient glow, drifting glow,
    parallax, text glow. Opt-in via class name, exactly like the scroll-
    experience kit above: add the class to an element in your HTML and
    site-nav.js does the rest. Nothing here runs, or even queries the DOM,
@@ -368,60 +368,44 @@
     .tilt-hover { transition: none !important; transform: none !important; }
 }
 
-/* ---- liquid fluid field (always on) -------------------------------------
-   Put .dye-hover on a card. A thick, drifting band of blurred, high-
-   contrast, rainbow-hued blobs wraps just outside the card's own edge
-   and melts together the way swirling dye does — the classic blur-
-   then-contrast "metaball" trick, which needs a filter on the whole
-   layer (not each blob) to actually fuse the shapes together. Each
-   blob also wanders slowly back and forth across the band's thickness
-   on its own clock, so the band breathes and curls instead of sitting
-   as a rigid ring. Where the cursor passes close by on the inside,
-   that stretch of fluid both bulges outward AND curls sideways around
-   the push — a little vortex, the way stirring a finger through real
-   liquid drags a swirl behind it — see site-nav.js for the push math.
-   The layer sits at z-index -1, so it always paints behind the card's
-   own heading, copy and button (an ordinary in-flow child always
-   paints above a negative-z-index absolute sibling in the same
-   stacking context) — nothing here can ever wash out the text the way
-   a centred glow would. Each blob gets its own hue from site-nav.js so
-   the fused band reads as a full spectrum rather than one flat tint.
-   site-nav.js creates the layer/blobs once and moves them; under
-   prefers-reduced-motion it places them once in their resting band and
-   never moves them again, so the fused shape is still there, just
-   motionless. */
+/* ---- soothing ambient glow (always on) -----------------------------------
+   Put .dye-hover on a card for a soft, calm light that sits just behind
+   it and drifts slowly on its own — no cursor interaction, no motion
+   beyond the drift, nothing sharp. A single big, heavily blurred radial
+   glow, tinted from the card's own --accent, that site-nav.js eases
+   very slowly around a small orbit so it never looks static but also
+   never calls attention to itself. Sits at z-index -1, so it always
+   paints behind the card's own heading, copy and button. Under
+   prefers-reduced-motion it's placed once, centred, and never moves. */
 .dye-hover {
     position: relative;
     isolation: isolate;
 }
 .dye-hover .dye-layer {
     position: absolute;
-    inset: 0;
+    inset: -20%;
     pointer-events: none;
-    filter: blur(22px) contrast(16);
-    mix-blend-mode: screen;
-    opacity: 0.95;
     z-index: -1;
 }
 .dye-hover .dye-blob {
-    /* Solid and fully opaque on purpose: the blur-then-contrast trick
-       only fuses shapes that are solid to begin with — blur softens the
-       edge, then contrast pushes that softened edge back to fully
-       opaque or fully transparent, welding overlapping blobs together.
-       A blob that's already fading to transparent (e.g. a radial-
-       gradient) gives contrast almost nothing solid to grab, so it
-       reads as a faint smear instead of a fused liquid shape. Colour
-       and size are set per-blob in site-nav.js (a full hue sweep plus
-       some size variety) so the fused edge reads as an organic, many-
-       coloured liquid rather than a row of identical tinted coins;
-       the width/height/margin below are just a fallback shape. */
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 150px;
-    height: 150px;
-    margin: -75px 0 0 -75px;
+    top: 50%;
+    left: 50%;
+    width: 70%;
+    height: 70%;
     border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        color-mix(in srgb, var(--accent, #4a82c7) 55%, white 45%) 0%,
+        color-mix(in srgb, var(--accent, #4a82c7) 40%, transparent) 45%,
+        transparent 75%
+    );
+    filter: blur(38px);
+    opacity: 0.55;
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .dye-hover .dye-blob { transform: translate(-50%, -50%) !important; }
 }
 
 /* ---- ambient ember light ---------------------------------------------

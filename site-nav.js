@@ -7,7 +7,7 @@
    animation, progress thread, back-to-top and lightbox.
 
    Further down: a matching set of opt-in accents — a hover brighten and
-   push-tilt, an ambient cursor light, a liquid dye border, scroll
+   push-tilt, an ambient cursor light, a soothing drifting glow, scroll
    parallax, and a scroll-scrubbed text glow — following the exact same
    rule.
    ========================================================================= */
@@ -286,161 +286,51 @@
         tiltEls.forEach(bindTilt);
     }
 
-    /* ---- liquid fluid field (always on) ----------------------------------
-       Builds the .dye-layer and its .dye-blob children once per
-       .dye-hover element and traces them around the card's own edge in
-       a thick band instead of a thin ring — each blob has a fixed stop
-       ("t", 0..1) on the perimeter plus its own spot ("jitter") across
-       the band's thickness, and pointOnBorder() below turns t into an
-       x/y just outside whichever edge it falls on, plus the outward
-       direction at that spot. The whole band turns slowly on its own
-       (drift) and each blob also wobbles across the band's thickness on
-       its own clock (bandOffset), so it reads as a live current rather
-       than a static decal. While the cursor is inside the card, any
-       blob whose home spot is near the pointer gets shoved outward AND
-       curled sideways around that same spot — a small vortex, the way
-       dragging a finger through real liquid both piles it up ahead and
-       drags a swirl behind — easing back in once the cursor moves on.
-       The blur+contrast fusing itself is pure CSS (see the .dye-layer
-       rule); this just moves the blobs. Under prefers-reduced-motion,
-       blobs are placed once in their resting band and never move again
-       — still visible, just motionless. */
+    /* ---- soothing ambient glow (always on) --------------------------------
+       Builds one .dye-layer + .dye-blob pair per .dye-hover element and
+       eases it very slowly around a small, gentle orbit centred on the
+       card — no cursor tracking, no sharp motion, just a calm light
+       that never quite sits still. Under prefers-reduced-motion it's
+       placed once, dead centre, and left alone (see the CSS fallback
+       transform). */
     function initDyeField() {
         var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
         if (!hosts.length) return;
 
-        var BLOB_COUNT = 28;
-        var EASE = 0.08;
-        var DRIFT_SPEED = 0.00022;   // full lap of the band roughly every 75s
-        var BAND_OFFSET = 34;        // how far outside the card's edge the band centres
-        var BAND_JITTER = 26;        // how thick the band is, blob to blob
-        var PUSH_RADIUS = 220;       // how close the cursor must be to disturb the fluid
-        var PUSH_STRENGTH = 70;      // outward travel at the very centre of a push
-        var SWIRL_STRENGTH = 55;     // sideways curl added alongside the outward push
-
-        // Point at fraction t (0..1, clockwise from the top-left corner)
-        // around a w-by-h rectangle, nudged outward by `offset` along the
-        // normal for that edge. Treated as a sharp-cornered rectangle —
-        // the card's own 16px corner radius is small enough next to the
-        // blur that rounding it here would never be visible.
-        function pointOnBorder(t, w, h, offset) {
-            var perim = 2 * (w + h);
-            var d = (((t % 1) + 1) % 1) * perim;
-            if (d < w) return { x: d, y: -offset, nx: 0, ny: -1 };
-            d -= w;
-            if (d < h) return { x: w + offset, y: d, nx: 1, ny: 0 };
-            d -= h;
-            if (d < w) return { x: w - d, y: h + offset, nx: 0, ny: 1 };
-            d -= w;
-            return { x: -offset, y: h - d, nx: -1, ny: 0 };
-        }
+        var DRIFT_SPEED = 0.00012;  // full lap of the orbit roughly every 140s
+        var ORBIT_X = 26;           // how far the glow wanders side to side
+        var ORBIT_Y = 16;           // how far the glow wanders up and down
 
         hosts.forEach(function (host) {
             var layer = document.createElement('div');
             layer.className = 'dye-layer';
-            var blobs = [];
-            for (var i = 0; i < BLOB_COUNT; i++) {
-                var blob = document.createElement('div');
-                blob.className = 'dye-blob';
-                // A full hue sweep, one step per blob, so the fused band
-                // reads as a shifting rainbow rather than one flat tint.
-                var hue = Math.round((i / BLOB_COUNT) * 360);
-                blob.style.background = 'hsl(' + hue + ', 90%, 60%)';
-                // A little size variety keeps the fused edge organic
-                // instead of a row of identical coins.
-                var size = 120 + Math.round(Math.random() * 90);
-                blob.style.width = size + 'px';
-                blob.style.height = size + 'px';
-                blob.style.marginTop = (-size / 2) + 'px';
-                blob.style.marginLeft = (-size / 2) + 'px';
-                layer.appendChild(blob);
-                blobs.push({
-                    el: blob,
-                    t: i / BLOB_COUNT,
-                    jitter: (Math.random() - 0.5) * 2,   // -1..1, own place across the band
-                    phase: Math.random() * Math.PI * 2,  // own timing for that wobble
-                    x: 0, y: 0, pushX: 0, pushY: 0
-                });
-            }
+            var blob = document.createElement('div');
+            blob.className = 'dye-blob';
+            layer.appendChild(blob);
             // Behind the card's own in-flow content regardless of DOM
             // order (see the z-index: -1 rule), but inserted first anyway
             // so the source order matches the paint order for anyone
             // reading the markup later.
             host.insertBefore(layer, host.firstChild);
 
-            // Each blob's distance from the card edge breathes slowly back
-            // and forth across the band's thickness, on its own clock, so
-            // the whole band ripples instead of sitting as a rigid ring.
-            function bandOffset(blob, drift) {
-                return BAND_OFFSET + blob.jitter * BAND_JITTER * Math.sin(drift * 6 + blob.phase);
+            if (reduceMotion) {
+                blob.style.transform = 'translate(-50%, -50%)';
+                return;
             }
 
-            function layoutOnce() {
-                var rect = host.getBoundingClientRect();
-                blobs.forEach(function (blob) {
-                    var p = pointOnBorder(blob.t, rect.width, rect.height, bandOffset(blob, 0));
-                    blob.x = p.x;
-                    blob.y = p.y;
-                    blob.el.style.transform = 'translate(' + blob.x.toFixed(1) + 'px, ' + blob.y.toFixed(1) + 'px)';
-                });
-            }
-
-            layoutOnce();
-            if (reduceMotion) return;
-
-            var pointerX = null, pointerY = null, drift = 0;
+            var drift = Math.random() * Math.PI * 2;
 
             function tick() {
                 drift += DRIFT_SPEED;
-                var rect = host.getBoundingClientRect();
-                blobs.forEach(function (blob) {
-                    var home = pointOnBorder(blob.t + drift, rect.width, rect.height, bandOffset(blob, drift));
-                    var pushX = 0, pushY = 0;
-                    if (pointerX !== null) {
-                        var dx = home.x - pointerX;
-                        var dy = home.y - pointerY;
-                        var dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < PUSH_RADIUS) {
-                            // Squared falloff so the disturbance is felt
-                            // strongly right where the cursor is and fades
-                            // quickly away from it.
-                            var force = 1 - dist / PUSH_RADIUS;
-                            force *= force;
-                            var inv = dist > 0.01 ? 1 / dist : 0;
-                            var nxp = dx * inv, nyp = dy * inv;
-                            // Outward shove, the way fluid piles up ahead of
-                            // whatever is moving through it...
-                            pushX = nxp * force * PUSH_STRENGTH;
-                            pushY = nyp * force * PUSH_STRENGTH;
-                            // ...plus a sideways curl so it spins around the
-                            // point of contact rather than just bulging away
-                            // from it, the way stirring a finger through
-                            // liquid drags a little vortex behind it.
-                            pushX += -nyp * force * SWIRL_STRENGTH;
-                            pushY += nxp * force * SWIRL_STRENGTH;
-                        }
-                    }
-                    blob.pushX += (pushX - blob.pushX) * 0.15;
-                    blob.pushY += (pushY - blob.pushY) * 0.15;
-                    blob.x += (home.x - blob.x) * EASE;
-                    blob.y += (home.y - blob.y) * EASE;
-                    var tx = blob.x + blob.pushX;
-                    var ty = blob.y + blob.pushY;
-                    blob.el.style.transform = 'translate(' + tx.toFixed(1) + 'px, ' + ty.toFixed(1) + 'px)';
-                });
+                // Two slightly different phases on x and y so the glow
+                // traces a slow, lazy loop rather than a straight back-
+                // and-forth line.
+                var dx = Math.sin(drift) * ORBIT_X;
+                var dy = Math.cos(drift * 0.8) * ORBIT_Y;
+                blob.style.transform = 'translate(calc(-50% + ' + dx.toFixed(1) + 'px), calc(-50% + ' + dy.toFixed(1) + 'px))';
                 window.requestAnimationFrame(tick);
             }
             window.requestAnimationFrame(tick);
-
-            host.addEventListener('mousemove', function (e) {
-                var rect = host.getBoundingClientRect();
-                pointerX = e.clientX - rect.left;
-                pointerY = e.clientY - rect.top;
-            });
-            host.addEventListener('mouseleave', function () {
-                pointerX = null;
-                pointerY = null;
-            });
         });
     }
 
