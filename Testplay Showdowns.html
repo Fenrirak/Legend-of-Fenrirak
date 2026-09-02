@@ -12,8 +12,8 @@
   :root {
     --gold: #d4af37;
     --dark-bg: #121212;
-    --panel-bg: #1a1208;
-    --panel-border: #3a2a0a;
+    --panel-bg: #1a1a1a;
+    --panel-border: #333333;
     --text: #e8d5a0;
     --text-dim: #9a8560;
     --accent: #c4820a;
@@ -315,7 +315,7 @@
   /* ===== SETTINGS GEAR ===== */
   #settings-gear-btn {
     position: fixed;
-    top: 16px;
+    top: calc(var(--topbar-h, 58px) + 16px);
     right: 16px;
     z-index: 1500;
     width: 56px;
@@ -377,7 +377,7 @@
     transition: all 0.2s;
   }
   .class-card:hover { border-color: var(--gold); transform: translateY(-2px); }
-  .class-card.selected { border-color: var(--gold); background: #1e1800; }
+  .class-card.selected { border-color: var(--gold); background: #262626; }
   .class-card h3 {
     font-family: 'Cinzel', serif;
     color: var(--gold);
@@ -409,7 +409,7 @@
     font-size: 0.82em;
   }
   .weapon-card:hover { border-color: var(--gold); }
-  .weapon-card.selected { border-color: var(--gold); background: #1e1800; }
+  .weapon-card.selected { border-color: var(--gold); background: #262626; }
   .weapon-card h4 { font-family: 'Cinzel', serif; color: var(--accent); margin-bottom: 10px; font-size: 1em; text-align: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; }
   .weapon-card .wstat { color: var(--text-dim); margin: 2px 0; }
   .weapon-card .wc-attack-block { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed var(--panel-border); }
@@ -1778,7 +1778,7 @@ function buildStartTileScreen(){
   boardEl.id = 'start-tile-board';
   boardEl.style.display = 'grid';
   boardEl.style.gridTemplateColumns = `repeat(11, 58px)`;
-  boardEl.style.border = '2px solid #3a2a0a';
+  boardEl.style.border = '2px solid #333333';
   boardEl.style.background = '#c8bfa0';
   startTileBoardEl = boardEl;
   for(let row=8; row>=0; row--){
@@ -2197,7 +2197,7 @@ function tutorialSpotlight(elId, text, btnLabel){
     overlay.appendChild(hole);
     const boxWidth = 300;
     const box = document.createElement('div');
-    box.style.cssText = `position:absolute; width:${boxWidth}px; background:#1b140a; border:2px solid #d4af37; border-radius:10px; padding:16px; color:#f0e6cf; font-family:'Lato',sans-serif; z-index:100000; box-shadow:0 4px 24px rgba(0,0,0,0.6);`;
+    box.style.cssText = `position:absolute; width:${boxWidth}px; background:#1a1a1a; border:2px solid #d4af37; border-radius:10px; padding:16px; color:#f0e6cf; font-family:'Lato',sans-serif; z-index:100000; box-shadow:0 4px 24px rgba(0,0,0,0.6);`;
     box.innerHTML = `<div style="font-size:0.95em; line-height:1.55; margin-bottom:14px;">${text}</div>
       <button class="btn" id="tutorial-next-btn" style="width:100%;">${btnLabel||'Next'}</button>`;
     overlay.appendChild(box);
@@ -2241,7 +2241,7 @@ function tutorialModal(text, buttons){
   overlay.id = 'tutorial-overlay';
   overlay.style.cssText = 'position:fixed; inset:0; z-index:99999; pointer-events:auto; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center;';
   const box = document.createElement('div');
-  box.style.cssText = `width:320px; background:#1b140a; border:2px solid #d4af37; border-radius:10px; padding:20px; color:#f0e6cf; font-family:'Lato',sans-serif; box-shadow:0 4px 24px rgba(0,0,0,0.6); text-align:center;`;
+  box.style.cssText = `width:320px; background:#1a1a1a; border:2px solid #d4af37; border-radius:10px; padding:20px; color:#f0e6cf; font-family:'Lato',sans-serif; box-shadow:0 4px 24px rgba(0,0,0,0.6); text-align:center;`;
   box.innerHTML = `<div style="font-size:1em; line-height:1.55; margin-bottom:16px;">${text}</div>`;
   buttons.forEach(b=>{
     const btn = document.createElement('button');
