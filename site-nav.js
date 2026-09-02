@@ -516,10 +516,13 @@
 
         function update() {
             var vh = window.innerHeight;
-            /* Band is 1/6 of the screen tall, sitting low, and fully
-               resolved once the block's top reaches 1/4 of the screen
-               up from the bottom (i.e. 3/4 of the way down). */
-            var revealEnd = vh * 0.75;
+            /* Band is 1/6 of the screen tall, sitting right near the
+               bottom edge, and fully resolved once the block's top
+               reaches 1/10 of the screen up from the bottom (i.e. 9/10
+               of the way down) — text is basically lit just as it
+               clears the fold, with only a sliver of scrub room above
+               that so the scroll-to-reveal motion still reads. */
+            var revealEnd = vh * 0.90;
             var revealStart = revealEnd + vh / 6;
 
             entries.forEach(function (entry) {
