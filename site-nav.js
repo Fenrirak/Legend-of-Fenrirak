@@ -516,19 +516,20 @@
 
         function update() {
             var vh = window.innerHeight;
-            /* Band is 1/6 of the screen tall, sitting right near the
-               bottom edge, and fully resolved once the block's top
-               reaches 1/10 of the screen up from the bottom (i.e. 9/10
-               of the way down) — text is basically lit just as it
-               clears the fold, with only a sliver of scrub room above
-               that so the scroll-to-reveal motion still reads. */
-            var revealEnd = vh * 0.90;
+            /* Band is 1/6 of the screen tall, and fully resolved once
+               the block's TOP reaches the bottom 1/4 of the screen
+               (i.e. 3/4 of the way down). This is deliberately based
+               only on screen position, not the block's own height —
+               tying it to rect.height instead (as an earlier version
+               did) made tall blocks finish revealing while still up
+               around the middle of the screen, since a lot of scroll
+               distance passes between a tall block's top and bottom. */
+            var revealEnd = vh * 0.75;
             var revealStart = revealEnd + vh / 6;
 
             entries.forEach(function (entry) {
                 var rect = entry.el.getBoundingClientRect();
-                var span = (revealStart - revealEnd) + rect.height;
-                var progress = span > 0 ? (revealStart - rect.top) / span : 1;
+                var progress = (revealStart - rect.top) / (revealStart - revealEnd);
                 if (progress < 0) progress = 0;
                 else if (progress > 1) progress = 1;
 
