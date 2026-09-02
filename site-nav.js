@@ -516,8 +516,11 @@
 
         function update() {
             var vh = window.innerHeight;
-            var revealStart = vh * 0.90;
-            var revealEnd = vh * 0.80;
+            /* Band is 1/6 of the screen tall, sitting low, and fully
+               resolved once the block's top reaches 1/4 of the screen
+               up from the bottom (i.e. 3/4 of the way down). */
+            var revealEnd = vh * 0.75;
+            var revealStart = revealEnd + vh / 6;
 
             entries.forEach(function (entry) {
                 var rect = entry.el.getBoundingClientRect();
