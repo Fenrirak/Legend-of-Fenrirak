@@ -368,25 +368,28 @@
     .tilt-hover { transition: none !important; transform: none !important; }
 }
 
-/* ---- liquid border (always on) -----------------------------------------
-   Put .dye-hover on a card. A ring of blurred, high-contrast blobs
-   traces a line just outside the card's own edge and melts together the
-   way drops of milky dye do when they touch — the classic blur-then-
-   contrast "metaball" trick, which needs a filter on the whole layer
-   (not each blob) to actually fuse the shapes together. It drifts in a
-   slow current around the border on its own, and where the cursor
-   passes close by on the inside, that stretch of the ring bulges
-   outward and away, the way water piles up ahead of a hull and folds
-   back in behind it — see site-nav.js for the push. The layer sits at
-   z-index -1, so it always paints behind the card's own heading, copy
-   and button (an ordinary in-flow child always paints above a negative-
-   z-index absolute sibling in the same stacking context) — nothing here
-   can ever wash out the text the way a centred glow would. Tinted in
-   cool blues lightened toward white for a milky look, with --accent
-   still driving the base hue. site-nav.js creates the layer/blobs once
-   and moves them; under prefers-reduced-motion it places them once in
-   their resting ring and never moves them again, so the fused shape is
-   still there, just motionless. */
+/* ---- liquid fluid field (always on) -------------------------------------
+   Put .dye-hover on a card. A thick, drifting band of blurred, high-
+   contrast, rainbow-hued blobs wraps just outside the card's own edge
+   and melts together the way swirling dye does — the classic blur-
+   then-contrast "metaball" trick, which needs a filter on the whole
+   layer (not each blob) to actually fuse the shapes together. Each
+   blob also wanders slowly back and forth across the band's thickness
+   on its own clock, so the band breathes and curls instead of sitting
+   as a rigid ring. Where the cursor passes close by on the inside,
+   that stretch of fluid both bulges outward AND curls sideways around
+   the push — a little vortex, the way stirring a finger through real
+   liquid drags a swirl behind it — see site-nav.js for the push math.
+   The layer sits at z-index -1, so it always paints behind the card's
+   own heading, copy and button (an ordinary in-flow child always
+   paints above a negative-z-index absolute sibling in the same
+   stacking context) — nothing here can ever wash out the text the way
+   a centred glow would. Each blob gets its own hue from site-nav.js so
+   the fused band reads as a full spectrum rather than one flat tint.
+   site-nav.js creates the layer/blobs once and moves them; under
+   prefers-reduced-motion it places them once in their resting band and
+   never moves them again, so the fused shape is still there, just
+   motionless. */
 .dye-hover {
     position: relative;
     isolation: isolate;
@@ -395,9 +398,9 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    filter: blur(20px) contrast(15);
+    filter: blur(22px) contrast(16);
     mix-blend-mode: screen;
-    opacity: 0.9;
+    opacity: 0.95;
     z-index: -1;
 }
 .dye-hover .dye-blob {
@@ -407,10 +410,11 @@
        opaque or fully transparent, welding overlapping blobs together.
        A blob that's already fading to transparent (e.g. a radial-
        gradient) gives contrast almost nothing solid to grab, so it
-       reads as a faint smear instead of a fused liquid shape. Colour is
-       set per-blob in site-nav.js, picked from a small cool-blue
-       palette so the ring reads as a body of water rather than one
-       flat tint smeared around a circle. */
+       reads as a faint smear instead of a fused liquid shape. Colour
+       and size are set per-blob in site-nav.js (a full hue sweep plus
+       some size variety) so the fused edge reads as an organic, many-
+       coloured liquid rather than a row of identical tinted coins;
+       the width/height/margin below are just a fallback shape. */
     position: absolute;
     top: 0;
     left: 0;
