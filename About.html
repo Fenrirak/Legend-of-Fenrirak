@@ -45,22 +45,6 @@
             font-family: 'Comfortaa', sans-serif;
         }
 
-        /* Skip straight to content for keyboard & screen-reader users */
-        .skip-link {
-            position: absolute;
-            left: 12px;
-            top: -60px;
-            background: rgb(217, 163, 92);
-            color: #121212;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            text-decoration: none;
-            z-index: 999;
-            transition: top 0.2s ease;
-        }
-        .skip-link:focus { top: 12px; }
-
         .container {
             max-width: 980px;
             margin: 0 auto;
@@ -186,7 +170,7 @@
             border-radius: 16px;
             background: linear-gradient(180deg, #1a1a1a, #141414);
             border: 1px solid color-mix(in srgb, var(--c-showdowns) 45%, transparent);
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), 0 30px 60px -30px color-mix(in srgb, var(--c-showdowns) 55%, transparent);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02);
         }
         .highlight-card p { text-align: left; }
 
@@ -318,10 +302,6 @@
 
 <body>
 
-    <div class="ember-field" aria-hidden="true"></div>
-
-    <a class="skip-link" href="#overview">Skip to content</a>
-
     <div class="scroll-progress" aria-hidden="true"></div>
 
     <nav class="topbar" aria-label="Main">
@@ -402,9 +382,7 @@
                 </div>
                 <div class="chapter-media parallax" data-speed="0.12">
                     <figure class="pop-in">
-                        <div class="glow-hover" style="border-radius: 12px;">
-                            <img class="lightbox-trigger tilt-hover" src="Fenrirak.png" alt="Fenrirak, the ocean-blue dragon and final boss of The Thunder Dragon">
-                        </div>
+                        <img class="lightbox-trigger tilt-hover" src="Fenrirak.png" alt="Fenrirak, the ocean-blue dragon and final boss of The Thunder Dragon">
                         <figcaption>Fenrirak &mdash; the final boss</figcaption>
                     </figure>
                     <div class="media-strip">
@@ -495,7 +473,7 @@
                         will decide the fate of everything he knows.
                     </p>
                 </div>
-                <div class="chapter-media book-cover pop-in glow-hover" style="border-radius: 12px;">
+                <div class="chapter-media book-cover pop-in">
                     <img class="lightbox-trigger tilt-hover" src="Book Cover Reoutline.jpg" alt="Cover art for The Forgotten Adventure">
                 </div>
             </div>
@@ -537,9 +515,7 @@
                 <span class="badge pop-in">Subject to change</span>
             </div>
             <div class="spread-media timeline-figure pop-in">
-                <div class="glow-hover" style="border-radius: 12px;">
-                    <img class="lightbox-trigger tilt-hover" src="Timeline.png" alt="Timeline of Legend of Fenrirak's past and upcoming projects">
-                </div>
+                <img class="lightbox-trigger tilt-hover" src="Timeline.png" alt="Timeline of Legend of Fenrirak's past and upcoming projects">
             </div>
         </article>
 

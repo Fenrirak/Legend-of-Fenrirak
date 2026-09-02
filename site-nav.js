@@ -19,7 +19,7 @@
     // line isn't there, the browser is running a different site-nav.js
     // than the one you think it is (almost always a caching issue) —
     // nothing below matters until that's fixed first.
-    if (window.console) console.log('[site-nav.js] loaded — build 2026-09-02c');
+    if (window.console) console.log('[site-nav.js] loaded — build 2026-09-02d');
 
     var reduceMotion = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -286,20 +286,27 @@
         tiltEls.forEach(bindTilt);
     }
 
-    /* ---- liquid dye field (hover) ------------------------------------
+    /* ---- liquid field (always on) -------------------------------------
        Builds the .dye-layer and its .dye-blob children once per
-       .dye-hover element, then on every mousemove chains each blob
-       toward the one ahead of it (blob 0 chases the cursor, blob 1
-       chases blob 0's last position, and so on) so the trail stretches
-       out behind the pointer instead of every blob snapping to the same
-       spot. The blur+contrast fusing itself is pure CSS (see the .dye-
-       layer rule) — this just has to keep moving the blobs. */
+       .dye-hover element and keeps a chain of them moving toward a
+       single "lead" point (blob 0 chases the lead, blob 1 chases blob
+       0's last position, and so on, stretching the shape out like a
+       trail). Most of the time that lead point is a slow, quiet orbit
+       around the middle of the box — an idle drift so the liquid reads
+       as "always there" rather than dead — and while the cursor is
+       actually inside the box, the lead switches to following it
+       instead, so the liquid gets pulled along behind the pointer like
+       an object dragged through still water. The blur+contrast fusing
+       itself is pure CSS (see the .dye-layer rule); this just moves the
+       blobs. Under prefers-reduced-motion, blobs are placed once in a
+       resting arrangement and never move again — still visible, just
+       motionless. */
     function initDyeField() {
         var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
-        if (!hosts.length || reduceMotion) return;
+        if (!hosts.length) return;
 
         var BLOB_COUNT = 5;
-        var EASE = 0.35;
+        var EASE = 0.06;
 
         hosts.forEach(function (host) {
             var layer = document.createElement('div');
@@ -313,34 +320,50 @@
             }
             host.appendChild(layer);
 
-            var targetX = 0, targetY = 0, raf = null;
+            function place(rect, angleOffset) {
+                blobs.forEach(function (blob, i) {
+                    var angle = angleOffset + (i / BLOB_COUNT) * Math.PI * 2;
+                    blob.x = rect.width / 2 + Math.cos(angle) * rect.width * 0.16;
+                    blob.y = rect.height / 2 + Math.sin(angle) * rect.height * 0.14;
+                    blob.el.style.transform = 'translate(' + blob.x.toFixed(1) + 'px, ' + blob.y.toFixed(1) + 'px)';
+                });
+            }
+
+            place(host.getBoundingClientRect(), 0);
+            if (reduceMotion) return;
+
+            var pointerX = null, pointerY = null, t = 0;
 
             function tick() {
-                var leadX = targetX, leadY = targetY;
-                var settled = true;
+                t += 1;
+                var rect = host.getBoundingClientRect();
+                var leadX, leadY;
+                if (pointerX !== null) {
+                    leadX = pointerX;
+                    leadY = pointerY;
+                } else {
+                    leadX = rect.width / 2 + Math.cos(t * 0.006) * rect.width * 0.2;
+                    leadY = rect.height / 2 + Math.sin(t * 0.008) * rect.height * 0.16;
+                }
                 blobs.forEach(function (blob) {
                     blob.x += (leadX - blob.x) * EASE;
                     blob.y += (leadY - blob.y) * EASE;
-                    if (Math.abs(leadX - blob.x) > 0.3 || Math.abs(leadY - blob.y) > 0.3) settled = false;
                     blob.el.style.transform = 'translate(' + blob.x.toFixed(1) + 'px, ' + blob.y.toFixed(1) + 'px)';
                     leadX = blob.x;
                     leadY = blob.y;
                 });
-                raf = settled ? null : window.requestAnimationFrame(tick);
+                window.requestAnimationFrame(tick);
             }
+            window.requestAnimationFrame(tick);
 
             host.addEventListener('mousemove', function (e) {
                 var rect = host.getBoundingClientRect();
-                targetX = e.clientX - rect.left;
-                targetY = e.clientY - rect.top;
-                if (!raf) raf = window.requestAnimationFrame(tick);
+                pointerX = e.clientX - rect.left;
+                pointerY = e.clientY - rect.top;
             });
-
             host.addEventListener('mouseleave', function () {
-                if (raf) {
-                    window.cancelAnimationFrame(raf);
-                    raf = null;
-                }
+                pointerX = null;
+                pointerY = null;
             });
         });
     }

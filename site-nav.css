@@ -368,14 +368,20 @@
     .tilt-hover { transition: none !important; transform: none !important; }
 }
 
-/* ---- liquid dye field (hover) ---------------------------------------
-   Put .dye-hover on a card. A short trail of blurred, high-contrast
-   blobs follows the cursor around inside the box and melts together the
-   way two drops of dye do when they touch — the classic blur-then-
-   contrast "metaball" trick, which needs a filter on the whole layer
-   (not each blob) to actually fuse the shapes together. site-nav.js
-   creates the layer and its blobs once and just moves them; tinted with
-   whatever --accent the card already sets (falls back to house amber). */
+/* ---- liquid field (always on) -----------------------------------------
+   Put .dye-hover on a card. A handful of blurred, high-contrast blobs
+   sit inside the box and melt together the way drops of milky dye do
+   when they touch — the classic blur-then-contrast "metaball" trick,
+   which needs a filter on the whole layer (not each blob) to actually
+   fuse the shapes together. Unlike the other hover accents, this one is
+   meant to be visible all the time, standing in for a static glow: it
+   drifts on its own when the cursor's elsewhere, and gets pulled toward
+   the cursor when it passes through, the way an object trails through
+   still water. Tinted with whatever --accent the card already sets
+   (falls back to house amber), lightened toward white for a milky look.
+   site-nav.js creates the layer/blobs once and places them; under
+   prefers-reduced-motion it places them once and never moves them
+   again, so the fused shape is still there, just motionless. */
 .dye-hover {
     position: relative;
     isolation: isolate;
@@ -385,13 +391,9 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s ease;
     filter: blur(14px) contrast(24);
     mix-blend-mode: screen;
 }
-.dye-hover:hover .dye-layer,
-.dye-hover:focus-within .dye-layer { opacity: 1; }
 .dye-hover .dye-blob {
     /* Solid and fully opaque on purpose: the blur-then-contrast trick
        only fuses shapes that are solid to begin with — blur softens the
@@ -403,14 +405,11 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 90px;
-    height: 90px;
-    margin: -45px 0 0 -45px;
+    width: 120px;
+    height: 120px;
+    margin: -60px 0 0 -60px;
     border-radius: 50%;
-    background: var(--accent, rgb(217, 163, 92));
-}
-@media (prefers-reduced-motion: reduce) {
-    .dye-hover .dye-layer { display: none; }
+    background: color-mix(in srgb, var(--accent, rgb(217, 163, 92)) 55%, white 40%);
 }
 
 /* ---- ambient ember light ---------------------------------------------
