@@ -469,8 +469,8 @@
 
         function update() {
             var vh = window.innerHeight;
-            var revealStart = vh * 0.85;
-            var revealEnd = vh * 0.35;
+            var revealStart = vh * 0.90;
+            var revealEnd = vh * 0.80;
 
             entries.forEach(function (entry) {
                 var rect = entry.el.getBoundingClientRect();

@@ -113,6 +113,11 @@
         .crew-row.reverse .crew-grid { direction: rtl; }
         .crew-row.reverse .crew-grid > * { direction: ltr; }
 
+        /* Nathan's bio runs longer than his photo, so with align-items:
+           start above it sits pinned to the top with empty space below.
+           Center just his portrait against his text column instead. */
+        #nathan .portrait-frame { align-self: center; }
+
         .portrait-frame {
             position: relative;
             border-radius: 14px;
