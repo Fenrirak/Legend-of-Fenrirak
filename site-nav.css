@@ -400,10 +400,15 @@
     z-index: -1;
     border-radius: 58px;
     overflow: visible;
-    filter:
-        blur(20px)
-        drop-shadow(0 0 60px color-mix(in srgb, var(--accent, #4a82c7) 65%, transparent))
-        drop-shadow(0 0 26px color-mix(in srgb, var(--accent, #4a82c7) 85%, white 15%));
+    /* A single blur, not a blur-plus-two-drop-shadows stack. Every one
+       of these filters has to be recomputed from scratch each time the
+       gradient underneath repaints (see the note on .dye-blob below),
+       and drop-shadow is by far the priciest of the three — it renders
+       a whole separate blurred copy of the shape's alpha channel. Two
+       of them stacked on top of a moving gradient was the main source
+       of the lag; one blur, sized generously, gives most of the same
+       soft, wide glow for a fraction of the cost. */
+    filter: blur(26px);
 }
 .dye-hover .dye-blob {
     position: absolute;
@@ -411,6 +416,12 @@
     border-radius: inherit;
     box-sizing: border-box;
     padding: 34px;
+    /* This background repaints every frame (site-nav.js rotates
+       --dye-angle), and a changing background can't be handed off to
+       the compositor the way a transform or opacity change can — the
+       browser has to re-rasterize it, then re-run .dye-layer's filter
+       on the result, every single time. site-nav.js throttles how often
+       that happens instead of doing it on every animation frame. */
     background: conic-gradient(
         from var(--dye-angle, 0deg),
         color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 0deg,
@@ -424,7 +435,6 @@
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 1;
-    will-change: background;
 }
 
 /* ---- ambient ember light ---------------------------------------------

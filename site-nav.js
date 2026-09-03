@@ -291,17 +291,25 @@
        blob's ring shape and its bright crest both come from CSS (the
        conic-gradient plus the mask that carves out a band the shape of
        the card's own rounded rectangle); all this does is nudge the
-       gradient's --dye-angle custom property forward a tiny amount every
-       frame, which is what makes the bright crest crawl smoothly around
-       that band rather than sit still. Under prefers-reduced-motion the
-       ring is still inserted (so it's still visible) but --dye-angle is
-       left at its CSS default and never updated, so the crest holds at
-       one fixed spot instead of travelling. */
+       gradient's --dye-angle custom property forward a small amount on
+       a slow timer, which is what makes the bright crest crawl smoothly
+       around that band rather than sit still. Updating --dye-angle
+       forces the browser to repaint .dye-blob's gradient and re-run
+       .dye-layer's blur on the result (a changing background can't ride
+       the compositor the way a transform can), so this deliberately
+       does that on a ~90ms timer rather than every animation frame —
+       at this rotation speed the jump between steps is far too small
+       to see, but it cuts the repaint work to a small fraction of what
+       60fps would cost. Under prefers-reduced-motion the ring is still
+       inserted (so it's still visible) but --dye-angle is left at its
+       CSS default and never updated, so the crest holds at one fixed
+       spot instead of travelling. */
     function initDyeField() {
         var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
         if (!hosts.length) return;
 
         var DEGREES_PER_MS = 360 / 16000; // one slow, smooth lap every ~16s
+        var STEP_MS = 90;                 // how often --dye-angle actually updates
 
         hosts.forEach(function (host) {
             var layer = document.createElement('div');
@@ -317,17 +325,11 @@
             if (reduceMotion) return;
 
             var angle = Math.random() * 360; // each card starts its crest at a different spot
-            var lastTime = null;
 
-            function tick(now) {
-                if (lastTime !== null) {
-                    angle = (angle + (now - lastTime) * DEGREES_PER_MS) % 360;
-                }
-                lastTime = now;
+            window.setInterval(function () {
+                angle = (angle + STEP_MS * DEGREES_PER_MS) % 360;
                 blob.style.setProperty('--dye-angle', angle.toFixed(2) + 'deg');
-                window.requestAnimationFrame(tick);
-            }
-            window.requestAnimationFrame(tick);
+            }, STEP_MS);
         });
     }
 
