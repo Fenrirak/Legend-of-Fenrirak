@@ -368,57 +368,62 @@
     .tilt-hover { transition: none !important; transform: none !important; }
 }
 
-/* ---- soothing wave glow (always on) ---------------------------------------
-   Put .dye-hover on a card for a soft light that traces a thin band
-   just outside its edges, with one bright "crest" that travels slowly
-   and smoothly all the way around that band — like a single wave
-   circling the border rather than a light that just sits there. The
-   band itself is a conic-gradient (bright near one angle, transparent
-   everywhere else) masked down to a ring using the padding/content-box
-   XOR trick: .dye-blob is a fully solid box, its background painted
-   corner-to-corner, but the mask keeps only the padding-thick band
-   around its own edge and cuts the solid middle out entirely — so what
-   survives already has the card's own rounded-rectangle shape, not a
-   circle. site-nav.js rotates the gradient's start angle (the
-   --dye-angle custom property) a tiny bit every frame, which is what
-   makes the bright crest crawl around that band. The outer .dye-layer
-   then blurs the whole ring for a soft, unfocused glow rather than a
-   crisp line. Sits at z-index -1, so it always paints behind the
-   card's own heading, copy and button. Under prefers-reduced-motion
-   the ring is still drawn (so it's still visible) but --dye-angle is
-   never updated, so the crest holds at one fixed spot. */
+/* ---- grand wave glow (always on) ------------------------------------------
+   Put .dye-hover on a card for a wide, luminous band just outside its
+   edges, with one bright, hot "crest" that travels slowly and smoothly
+   all the way around that band — like a single wave circling the
+   border. The band itself is a conic-gradient (a dim base tint all the
+   way around, with one wide, much brighter hump near one angle) masked
+   down to a ring using the padding/content-box XOR trick: .dye-blob is
+   a fully solid box, its background painted corner-to-corner, but the
+   mask keeps only the padding-thick band around its own edge and cuts
+   the solid middle out entirely — so what survives already has the
+   card's own rounded-rectangle shape, not a circle. site-nav.js rotates
+   the gradient's start angle (the --dye-angle custom property, set
+   directly on .dye-blob) a tiny bit every frame, which is what makes
+   the crest crawl around the band. The outer .dye-layer then
+   blurs that ring and, on top of the blur, stacks two drop-shadows at
+   different reaches — this is what gives it a big, layered bloom
+   instead of a single soft edge, so it reads as grand rather than
+   understated. Sits at z-index -1, so it always paints behind the
+   card's own heading, copy and button. Under prefers-reduced-motion the
+   ring is still drawn (so it's still visible) but --dye-angle is never
+   updated, so the crest holds at one fixed spot. */
 .dye-hover {
     position: relative;
     isolation: isolate;
 }
 .dye-hover .dye-layer {
     position: absolute;
-    inset: -26px;
+    inset: -54px;
     pointer-events: none;
     z-index: -1;
-    border-radius: 34px;
+    border-radius: 58px;
     overflow: visible;
-    filter: blur(16px);
+    filter:
+        blur(20px)
+        drop-shadow(0 0 60px color-mix(in srgb, var(--accent, #4a82c7) 65%, transparent))
+        drop-shadow(0 0 26px color-mix(in srgb, var(--accent, #4a82c7) 85%, white 15%));
 }
 .dye-hover .dye-blob {
     position: absolute;
     inset: 0;
     border-radius: inherit;
     box-sizing: border-box;
-    padding: 20px;
+    padding: 34px;
     background: conic-gradient(
         from var(--dye-angle, 0deg),
-        transparent 0deg,
-        color-mix(in srgb, var(--accent, #4a82c7) 25%, transparent) 18deg,
-        color-mix(in srgb, var(--accent, #4a82c7) 95%, white 20%) 32deg,
-        color-mix(in srgb, var(--accent, #4a82c7) 25%, transparent) 46deg,
-        transparent 64deg,
-        transparent 360deg
+        color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 0deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 45%, transparent) 55deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 100%, white 45%) 90deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 45%, transparent) 125deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 180deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 360deg
     );
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    opacity: 0.85;
+    opacity: 1;
     will-change: background;
 }
 
