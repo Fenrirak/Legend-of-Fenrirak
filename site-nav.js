@@ -128,7 +128,7 @@
         function update() {
             var vh = window.innerHeight;
             var startY = vh * 0.92;
-            var endY = vh * 0.55;
+            var endY = vh * 0.50;
 
             groupEntries.forEach(function (g) {
                 // One rect read per GROUP, not per item — this is also
@@ -278,7 +278,7 @@
         if (reduceMotion || !tiltEls.length) return;
 
         function bindTilt(el) {
-            var maxDeg = 12;
+            var maxDeg = 9;
             var frame = null, rotX = 0, rotY = 0;
             function apply() {
                 el.style.transform = 'perspective(600px) rotateX(' + rotX.toFixed(2) +
