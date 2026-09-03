@@ -80,19 +80,26 @@
     /* ---- pop-in-as-you-scroll ------------------------------------------
        True scroll-scrubbed reveal: every ".pop-in" element's opacity and
        position are recalculated on every scroll frame, directly from how
-       far it has scrolled up through the viewport — not a fixed-duration
-       animation that gets triggered once and then plays on its own. Stop
-       scrolling halfway and it sits at exactly that halfway point; scroll
-       back up and it fades back down. It's driven by the scrollbar the
-       same way the word-by-word brightening on a page like Jesko Jets is.
+       far its GROUP (the whole chapter/topic it belongs to, e.g. one
+       game) has scrolled up through the viewport — not a fixed-duration
+       animation that gets triggered once and then plays on its own, and
+       not each item's own position either. Stop scrolling halfway and
+       everything sits at exactly that halfway point; scroll back up and
+       it fades back down together. It's driven by the scrollbar the same
+       way the word-by-word brightening on a page like Jesko Jets is.
 
-       Each item computes its OWN reveal window from its own position, so
-       this behaves correctly regardless of how tall a section is (a
-       10-image grid doesn't reveal its later images too early just
-       because the section started near the top of the screen). Items
-       that share a row get a small extra pixel offset per index, purely
-       so a row of images cascades left-to-right instead of popping in
-       all at once.
+       Reveal is computed from the GROUP's top, shared by every item in
+       it (plus a small per-item pixel offset purely so a row cascades
+       left-to-right instead of popping in all at once), rather than each
+       item's own top. A chapter is routinely taller than the viewport —
+       heading and intro copy at the top, a button and a row of photos
+       at the bottom — and item-by-item reveal meant the bottom images
+       only finished fading in once you'd scrolled well past the top of
+       the chapter, so by the time everything was visible the heading
+       had already scrolled away. Tying reveal to the group's own
+       entrance means the whole chapter finishes fading in shortly after
+       it appears, all together — further scrolling into a tall chapter
+       is then just reading it, not still waiting on it to render.
 
        No CSS class or rule ever hides this content — the only thing that
        ever sets its opacity is this function actually running. So if
@@ -102,43 +109,52 @@
         var groups = Array.prototype.slice.call(document.querySelectorAll('.pop-group'));
         if (!groups.length) return;
 
-        var entries = [];
-        groups.forEach(function (group) {
+        var groupEntries = groups.map(function (group) {
             var items = Array.prototype.slice.call(group.querySelectorAll('.pop-in'));
-            items.forEach(function (el, i) {
-                entries.push({ el: el, offset: i * 22 });
-            });
-        });
-        if (!entries.length) return;
+            return {
+                group: group,
+                items: items.map(function (el, i) { return { el: el, offset: i * 22 }; })
+            };
+        }).filter(function (g) { return g.items.length; });
+        if (!groupEntries.length) return;
 
         if (reduceMotion) {
-            entries.forEach(function (e) { e.el.style.opacity = 1; });
+            groupEntries.forEach(function (g) {
+                g.items.forEach(function (entry) { entry.el.style.opacity = 1; });
+            });
             return;
         }
 
         function update() {
             var vh = window.innerHeight;
             var startY = vh * 0.92;
-            var endY = vh * 0.52;
+            var endY = vh * 0.55;
 
-            entries.forEach(function (entry) {
-                var top = entry.el.getBoundingClientRect().top + entry.offset;
-                var progress = (startY - top) / (startY - endY);
-                if (progress < 0) progress = 0;
-                else if (progress > 1) progress = 1;
+            groupEntries.forEach(function (g) {
+                // One rect read per GROUP, not per item — this is also
+                // cheaper than the old item-by-item version once a
+                // chapter has more than a couple of images in it.
+                var groupTop = g.group.getBoundingClientRect().top;
 
-                if (progress >= 1) {
-                    /* Fully revealed: clear the inline styles rather than
-                       setting them to their "settled" values, so this
-                       element's own CSS (e.g. a :hover lift on a button)
-                       can take over again. An inline style always wins
-                       over a stylesheet rule, even one saying "none". */
-                    entry.el.style.opacity = '';
-                    entry.el.style.transform = '';
-                } else {
-                    entry.el.style.opacity = progress;
-                    entry.el.style.transform = 'translateY(' + (26 * (1 - progress)) + 'px)';
-                }
+                g.items.forEach(function (entry) {
+                    var top = groupTop + entry.offset;
+                    var progress = (startY - top) / (startY - endY);
+                    if (progress < 0) progress = 0;
+                    else if (progress > 1) progress = 1;
+
+                    if (progress >= 1) {
+                        /* Fully revealed: clear the inline styles rather than
+                           setting them to their "settled" values, so this
+                           element's own CSS (e.g. a :hover lift on a button)
+                           can take over again. An inline style always wins
+                           over a stylesheet rule, even one saying "none". */
+                        entry.el.style.opacity = '';
+                        entry.el.style.transform = '';
+                    } else {
+                        entry.el.style.opacity = progress;
+                        entry.el.style.transform = 'translateY(' + (26 * (1 - progress)) + 'px)';
+                    }
+                });
             });
         }
 
