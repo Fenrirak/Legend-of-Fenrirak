@@ -5968,7 +5968,7 @@ body {
           text: 'Roll a die. 1, 2 or 3: nothing happens. 4, 5 or 6: skip your next turn.' },
 
         { i: 24, key: 'aurora_crystal', name: 'Aurora Crystal',      row: 3, col: 8,
-          route: 1, action: 'heal', value: 100, optionalStop: true, next: 35,
+          route: 1, action: 'heal', value: 100, optionalStop: true, next: 36,
           text: 'Heal 100 HP. Optional stop.' },
 
         /* ---- Route 2: the long way, round the bottom of the board ------- */
@@ -5981,49 +5981,53 @@ body {
           route: 2, action: 'campfire', value: 15, optionalStop: true,
           text: 'Heal 15 HP. Cost: 1 flint. Optional stop.' },
 
-        { i: 27, key: 'snowbound_ridge', name: 'Snowbound Ridge',    row: 7, col: 11,
+        { i: 27, key: 'final_ember',  name: 'The Final Ember',       row: 6, col: 11,
+          route: 2, action: 'die_event', table: 'final_ember',
+          text: 'Roll a die. Even: move 1 square forward. Odd: heal 50 HP.' },
+
+        { i: 28, key: 'snowbound_ridge', name: 'Snowbound Ridge',    row: 7, col: 11,
           route: 2, action: 'battle', enemy: 'yeti', coins: 25,
           stop: true, text: 'Battle: the Yeti. STOP.' },
 
-        { i: 28, key: 'frostbite_abyss', name: 'Frostbite Abyss',    row: 7, col: 10,
+        { i: 29, key: 'frostbite_abyss', name: 'Frostbite Abyss',    row: 7, col: 10,
           route: 2, action: 'die_event', table: 'frostbite_abyss',
           text: 'Roll a die. 1-4: take 5 damage. 5 or 6: skip your next turn.' },
 
-        { i: 29, key: 'frostclaw_expanse', name: 'Frostclaw Expanse', row: 7, col: 9,
+        { i: 30, key: 'frostclaw_expanse', name: 'Frostclaw Expanse', row: 7, col: 9,
           route: 2, action: 'battle', enemy: 'polar_bear', coins: 15,
           text: 'Battle: the Polar Bear.' },
 
-        { i: 30, key: 'bandit_outpost', name: 'Bandit Outpost',      row: 7, col: 8,
+        { i: 31, key: 'bandit_outpost', name: 'Bandit Outpost',      row: 7, col: 8,
           route: 2, action: 'bandit_outpost',
           text: 'CHOOSE 1 — lose one of your equipped items, or lose 25 gold.' },
 
-        { i: 31, key: 'frozen_cemetery', name: 'Frozen Cemetery',    row: 7, col: 7,
+        { i: 32, key: 'frozen_cemetery', name: 'Frozen Cemetery',    row: 7, col: 7,
           route: 2, action: 'battle', enemy: 'frost_wraith', coins: 10, skill: 'knowledge',
           text: 'Battle: the Frost Wraith.' },
 
-        { i: 32, key: 'chest',        name: 'Chest',                 row: 7, col: 6,
+        { i: 33, key: 'chest',        name: 'Chest',                 row: 7, col: 6,
           route: 2, action: 'draw_special', count: 1,
           text: 'Draw 1 special equipment card.' },
 
-        { i: 33, key: 'campfire',     name: 'Campfire Logs',         row: 6, col: 6,
+        { i: 34, key: 'campfire',     name: 'Campfire Logs',         row: 6, col: 6,
           route: 2, action: 'campfire', value: 15, optionalStop: true,
           text: 'Heal 15 HP. Cost: 1 flint. Optional stop.' },
 
         // INTENTIONAL ROUTE RULE: Route 2 goes directly from the Merchant's
-        // Cosy Cabin to Fenrirak's Arena (index 36), bypassing the Frozen Gate.
-        // Do not change `next` to 35. This is different from Route 1 by design.
-        { i: 34, key: 'merchant_cabin', name: "Merchant's Cosy Cabin", row: 5, col: 6,
-          route: 2, action: 'merchant', optionalStop: true, next: 36,
+        // Cosy Cabin to Fenrirak's Arena (index 37), bypassing the Frozen Gate.
+        // Do not change `next` to 36. This is different from Route 1 by design.
+        { i: 35, key: 'merchant_cabin', name: "Merchant's Cosy Cabin", row: 5, col: 6,
+          route: 2, action: 'merchant', optionalStop: true, next: 37,
           text: 'Choose 1 Merchant food, and trade with the Merchant. Optional stop.' },
 
         /* ---- and back together ------------------------------------------ */
 
-        { i: 35, key: 'gate',         name: 'The Frozen Gate',       row: 3, col: 7,
+        { i: 36, key: 'gate',         name: 'The Frozen Gate',       row: 3, col: 7,
           action: 'gate', stop: true,
           text: 'The Frozen Gate. Discard one of each of the four Frost Gate Keys to pass into Fenrirak’s Arena. ' +
                 'Without all four keys, you are cast back to the Start. STOP.' },
 
-        { i: 36, key: 'arena',        name: "Fenrirak's Arena",      row: 2, col: 4,
+        { i: 37, key: 'arena',        name: "Fenrirak's Arena",      row: 2, col: 4,
           rowSpan: 3, colSpan: 3,
           action: 'battle', enemy: 'fenrirak', arena: true,
           text: 'The Ice Dragon waits. Defeat Fenrirak and the legend is yours.' }
@@ -6050,6 +6054,10 @@ body {
         frostbite_abyss: [
             { on: [1, 2, 3, 4], kind: 'damage', value: 5, text: 'The wind off the abyss takes 5 HP.' },
             { on: [5, 6], kind: 'skip', text: 'You lose your footing — skip your next turn.' }
+        ],
+        final_ember: [
+            { on: [2, 4, 6], kind: 'advance', value: 1, text: 'Even — the last flame guides you: move forward 1 square.' },
+            { on: [1, 3, 5], kind: 'heal', value: 50, text: 'Odd — the ember\'s warmth heals 50 HP.' }
         ]
     };
 
@@ -6062,8 +6070,8 @@ body {
     const DECOR = [];
 
     const START_INDEX = 0;
-    const ARENA_INDEX = 36;
-    const GATE_INDEX = 35;
+    const ARENA_INDEX = 37;
+    const GATE_INDEX = 36;
     const FORK_INDEX = 21;
     const ROUTE_HEADS = { 1: 22, 2: 25 };
     const KEY_FRAGMENTS_NEEDED = 4;
@@ -7116,6 +7124,10 @@ body {
             if (p.powerups.length) p.powerups.pop();
         } else if (row.kind === 'skip') {
             p.skipTurns = (p.skipTurns | 0) + 1;
+        } else if (row.kind === 'heal') {
+            p.hp = Math.min(p.maxHp, p.hp + row.value);
+        } else if (row.kind === 'advance') {
+            return walk(state, p, row.value || 1);
         }
         return ok();
     }
