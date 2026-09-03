@@ -368,36 +368,58 @@
     .tilt-hover { transition: none !important; transform: none !important; }
 }
 
-/* ---- soothing ambient glow (always on) -----------------------------------
-   Put .dye-hover on a card for a soft light that traces just outside
-   its edges rather than sitting over the middle — a box-shadow glow
-   (not a centred blob), so it reads as a halo hugging the card's own
-   shape, tinted from the card's own --accent. It mostly holds still;
-   every few seconds site-nav.js eases it toward a new, slightly
-   different size/reach/offset and holds there a while, so it "warbles"
-   now and then rather than drifting continuously. Sits at z-index -1,
-   so it always paints behind the card's own heading, copy and button.
-   Under prefers-reduced-motion it's set once, centred, and never
-   changes again. */
+/* ---- soothing wave glow (always on) ---------------------------------------
+   Put .dye-hover on a card for a soft light that traces a thin band
+   just outside its edges, with one bright "crest" that travels slowly
+   and smoothly all the way around that band — like a single wave
+   circling the border rather than a light that just sits there. The
+   band itself is a conic-gradient (bright near one angle, transparent
+   everywhere else) masked down to a ring using the padding/content-box
+   XOR trick: .dye-blob is a fully solid box, its background painted
+   corner-to-corner, but the mask keeps only the padding-thick band
+   around its own edge and cuts the solid middle out entirely — so what
+   survives already has the card's own rounded-rectangle shape, not a
+   circle. site-nav.js rotates the gradient's start angle (the
+   --dye-angle custom property) a tiny bit every frame, which is what
+   makes the bright crest crawl around that band. The outer .dye-layer
+   then blurs the whole ring for a soft, unfocused glow rather than a
+   crisp line. Sits at z-index -1, so it always paints behind the
+   card's own heading, copy and button. Under prefers-reduced-motion
+   the ring is still drawn (so it's still visible) but --dye-angle is
+   never updated, so the crest holds at one fixed spot. */
 .dye-hover {
     position: relative;
     isolation: isolate;
 }
 .dye-hover .dye-layer {
     position: absolute;
-    inset: 0;
+    inset: -26px;
     pointer-events: none;
     z-index: -1;
-    border-radius: inherit;
+    border-radius: 34px;
+    overflow: visible;
+    filter: blur(16px);
 }
 .dye-hover .dye-blob {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    box-shadow: 0 0 46px 14px color-mix(in srgb, var(--accent, #4a82c7) 55%, transparent);
-    opacity: 0.6;
-    filter: blur(6px);
-    will-change: box-shadow, opacity;
+    box-sizing: border-box;
+    padding: 20px;
+    background: conic-gradient(
+        from var(--dye-angle, 0deg),
+        transparent 0deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 25%, transparent) 18deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 95%, white 20%) 32deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 25%, transparent) 46deg,
+        transparent 64deg,
+        transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.85;
+    will-change: background;
 }
 
 /* ---- ambient ember light ---------------------------------------------

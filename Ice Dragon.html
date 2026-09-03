@@ -4433,6 +4433,32 @@ body {
         grid-template-rows: repeat(9, 104px) !important;
     }
 }
+
+/* ==== Final pass: even, tight-fitting squares, traced from the supplied
+   board reference ====
+   Every revision above this one landed on its own gap and its own column
+   basis, and the one that actually wins the cascade -- a flat 7px gap,
+   columns with a 78px floor -- sits far looser than the reference board,
+   whose cards sit almost flush against each other with only a hairline of
+   white between them. Nothing about the squares themselves changes here:
+   the 15x9 grid and every square's own grid-row/grid-column (set inline by
+   ui.js, straight off BOARD's row/col/rowSpan/colSpan) are untouched, so
+   the order and position of every square is exactly what it was. Only the
+   spacing does -- a small, uniform gap, and columns with no minimum of
+   their own so all fifteen always divide the row exactly evenly. */
+.board,
+.game-grid > div:first-child > .board {
+    gap: 3px !important;
+    padding: 10px !important;
+}
+.game-grid > div:first-child > .board {
+    grid-template-columns: repeat(15, minmax(0, 1fr)) !important;
+}
+.sq, .arena {
+    width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box;
+}
 </style>
 
 </head>

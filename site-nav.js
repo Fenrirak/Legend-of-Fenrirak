@@ -286,30 +286,22 @@
         tiltEls.forEach(bindTilt);
     }
 
-    /* ---- soothing ambient glow (always on) --------------------------------
+    /* ---- soothing wave glow (always on) ------------------------------------
        Builds one .dye-layer + .dye-blob pair per .dye-hover element. The
-       blob is a box-shadow halo hugging the card's own edges (see the
-       CSS), and rather than drifting continuously, it mostly just sits
-       there: every few seconds a new, slightly different target (how
-       far the glow reaches, how tight it hugs, a small offset) is
-       picked, and the current values ease toward it and hold — a slow
-       "warble" now and then rather than constant motion. Under
-       prefers-reduced-motion the halo is still inserted (so it's still
-       visible) but left at the CSS's own resting values and never
-       animated. */
+       blob's ring shape and its bright crest both come from CSS (the
+       conic-gradient plus the mask that carves out a band the shape of
+       the card's own rounded rectangle); all this does is nudge the
+       gradient's --dye-angle custom property forward a tiny amount every
+       frame, which is what makes the bright crest crawl smoothly around
+       that band rather than sit still. Under prefers-reduced-motion the
+       ring is still inserted (so it's still visible) but --dye-angle is
+       left at its CSS default and never updated, so the crest holds at
+       one fixed spot instead of travelling. */
     function initDyeField() {
         var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
         if (!hosts.length) return;
 
-        var EASE = 0.015;           // slow, soothing catch-up toward each new target
-        var MIN_HOLD = 2400;        // shortest pause before picking a new target (ms)
-        var MAX_HOLD = 5200;        // longest pause before picking a new target (ms)
-        var BLUR_BASE = 46, BLUR_RANGE = 22;     // box-shadow blur radius
-        var SPREAD_BASE = 14, SPREAD_RANGE = 10; // box-shadow spread
-        var OFFSET_RANGE = 10;                   // small x/y wander, px
-        var OPACITY_BASE = 0.6, OPACITY_RANGE = 0.18;
-
-        function rand(min, max) { return min + Math.random() * (max - min); }
+        var DEGREES_PER_MS = 360 / 16000; // one slow, smooth lap every ~16s
 
         hosts.forEach(function (host) {
             var layer = document.createElement('div');
@@ -324,29 +316,15 @@
             host.insertBefore(layer, host.firstChild);
             if (reduceMotion) return;
 
-            var current = { blur: BLUR_BASE, spread: SPREAD_BASE, x: 0, y: 0, opacity: OPACITY_BASE };
-            var target = { blur: BLUR_BASE, spread: SPREAD_BASE, x: 0, y: 0, opacity: OPACITY_BASE };
+            var angle = Math.random() * 360; // each card starts its crest at a different spot
+            var lastTime = null;
 
-            function pickTarget() {
-                target.blur = BLUR_BASE + rand(-BLUR_RANGE, BLUR_RANGE);
-                target.spread = SPREAD_BASE + rand(-SPREAD_RANGE, SPREAD_RANGE);
-                target.x = rand(-OFFSET_RANGE, OFFSET_RANGE);
-                target.y = rand(-OFFSET_RANGE, OFFSET_RANGE);
-                target.opacity = OPACITY_BASE + rand(-OPACITY_RANGE, OPACITY_RANGE);
-                window.setTimeout(pickTarget, rand(MIN_HOLD, MAX_HOLD));
-            }
-            window.setTimeout(pickTarget, rand(0, MAX_HOLD));
-
-            function tick() {
-                current.blur += (target.blur - current.blur) * EASE;
-                current.spread += (target.spread - current.spread) * EASE;
-                current.x += (target.x - current.x) * EASE;
-                current.y += (target.y - current.y) * EASE;
-                current.opacity += (target.opacity - current.opacity) * EASE;
-                blob.style.boxShadow = current.x.toFixed(1) + 'px ' + current.y.toFixed(1) + 'px '
-                    + current.blur.toFixed(1) + 'px ' + current.spread.toFixed(1)
-                    + 'px color-mix(in srgb, var(--accent, #4a82c7) 55%, transparent)';
-                blob.style.opacity = current.opacity.toFixed(2);
+            function tick(now) {
+                if (lastTime !== null) {
+                    angle = (angle + (now - lastTime) * DEGREES_PER_MS) % 360;
+                }
+                lastTime = now;
+                blob.style.setProperty('--dye-angle', angle.toFixed(2) + 'deg');
                 window.requestAnimationFrame(tick);
             }
             window.requestAnimationFrame(tick);
