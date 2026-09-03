@@ -3941,7 +3941,7 @@ body { overflow-x: hidden; }
 /* Give the ten-column Ice board enough horizontal room on computers. */
 @media (min-width: 1321px) {
     .wrap {
-        max-width: 1900px;
+        max-width: 1520px;
         padding-inline: 22px;
     }
     .game-grid {
@@ -4076,7 +4076,7 @@ body { overflow-x: hidden; }
 .arena .arena-sub { color: #6684aa !important; }
 
 @media (min-width: 1321px) {
-    .wrap { max-width: 1980px; }
+    .wrap { max-width: 1584px; }
     .game-grid { grid-template-columns: minmax(0, 1fr) 350px; }
 }
 @media (min-width: 1081px) and (max-width: 1320px) {
@@ -4135,9 +4135,9 @@ body {
 
 /* ==== Board layout recreated from the supplied physical board ==== */
 .board {
-    grid-template-columns: repeat(15, minmax(88px, 1fr)) !important;
+    grid-template-columns: repeat(12, minmax(88px, 1fr)) !important;
     grid-template-rows: repeat(8, 112px) !important;
-    min-width: 1500px;
+    min-width: 1200px;
     min-height: 0 !important;
     gap: 9px;
     padding: 16px;
@@ -4150,7 +4150,7 @@ body {
 .board .river, .board .river-bridge, .board .decor, .board .merchant-stall,
 .sq > svg, .sq .whirl, .arena .arena-disc { display: none !important; }
 @media (max-width: 1320px) {
-  .board { min-width: 1380px; grid-template-columns: repeat(15, minmax(82px, 1fr)) !important; grid-template-rows: repeat(8, 106px) !important; }
+  .board { min-width: 1104px; grid-template-columns: repeat(12, minmax(82px, 1fr)) !important; grid-template-rows: repeat(8, 106px) !important; }
   .sq { height: 106px; }
 }
 
@@ -4171,7 +4171,7 @@ body {
 .board {
     width: 100% !important;
     min-width: 0 !important;
-    grid-template-columns: repeat(15, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
     grid-template-rows: repeat(8, 118px) !important;
     gap: 7px !important;
     padding: 12px !important;
@@ -4202,14 +4202,14 @@ body {
 }
 @media (max-width: 1080px) {
   .game-grid > div:first-child { overflow-x: auto; }
-  .board { min-width: 1180px !important; }
+  .board { min-width: 944px !important; }
 }
 
 
 /* ==== Full-width board with landscape statistics below ==== */
 #screen-game > .wrap {
     width: 100%;
-    max-width: 1920px;
+    max-width: 1536px;
     padding-inline: clamp(18px, 2.2vw, 40px);
 }
 .game-grid {
@@ -4227,8 +4227,8 @@ body {
    only the board panel scrolls, never the statistics or the whole page. */
 .game-grid > div:first-child > .board {
     width: 100% !important;
-    min-width: 1425px !important;
-    grid-template-columns: repeat(15, minmax(82px, 1fr)) !important;
+    min-width: 1140px !important;
+    grid-template-columns: repeat(12, minmax(82px, 1fr)) !important;
     grid-template-rows: repeat(8, 126px) !important;
     gap: 9px !important;
     padding: 16px !important;
@@ -4313,10 +4313,10 @@ body {
 /* Inventory remains below the board and above the landscape dashboard. */
 .game-grid > div:first-child > .card { width: 100%; }
 
-@media (min-width: 1760px) {
+@media (min-width: 1408px) {
     .game-grid > div:first-child > .board {
         min-width: 0 !important;
-        grid-template-columns: repeat(15, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
     }
     .sq .sq-name { font-size: 12px !important; }
     .sq .sq-text { font-size: 9.7px !important; }
@@ -4335,12 +4335,12 @@ body {
 
 
 /* ==== Board proportions and positions traced from the supplied photograph ==== */
-#screen-game > .wrap { max-width: 2048px; padding-inline: clamp(20px, 2vw, 38px); }
+#screen-game > .wrap { max-width: 1638px; padding-inline: clamp(20px, 2vw, 38px); }
 .game-grid > div:first-child { overflow-x: auto !important; overflow-y: hidden !important; }
 .game-grid > div:first-child > .board {
     width: 100% !important;
-    min-width: 1390px !important;
-    grid-template-columns: repeat(15, minmax(78px, 1fr)) !important;
+    min-width: 1112px !important;
+    grid-template-columns: repeat(12, minmax(78px, 1fr)) !important;
     grid-template-rows: repeat(8, clamp(122px, 7.4vw, 148px)) !important;
     gap: clamp(7px, .55vw, 10px) !important;
     padding: clamp(12px, 1vw, 18px) !important;
@@ -4381,7 +4381,7 @@ body {
 /* Absolute guarantee: the map contains cards and live player pieces only. */
 .board .river, .board .river-bridge, .board .decor, .board .merchant-stall,
 .sq > svg, .sq .whirl, .arena .arena-disc { display: none !important; }
-@media (min-width: 1720px) {
+@media (min-width: 1376px) {
   .game-grid > div:first-child > .board { min-width: 0 !important; }
 }
 
@@ -4425,7 +4425,7 @@ body {
    minimum width from earlier revisions. Horizontal scrolling remains available,
    but the travel distance and row height are reduced for smaller screens. */
 @media (max-width: 1080px) {
-    .game-grid > div:first-child > .board { min-width: 1180px !important; }
+    .game-grid > div:first-child > .board { min-width: 944px !important; }
 }
 @media (max-width: 760px) {
     .game-grid > div:first-child > .board {
@@ -4452,7 +4452,7 @@ body {
     padding: 10px !important;
 }
 .game-grid > div:first-child > .board {
-    grid-template-columns: repeat(15, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
 }
 .sq, .arena {
     width: 100% !important;
