@@ -4526,88 +4526,103 @@ body {
 .sq.key-amethyst_harbour .sq-name,
 .sq.key-amethyst_harbour .sq-text { color: #2a1747; }
 .sq.key-amethyst_harbour .sq-name { border-bottom-color: rgba(42,23,71,.35); }
+/* the dock, a simple plank walkway reaching out over the water */
 .sq.key-amethyst_harbour::before {
     content: '';
     position: absolute;
-    left: -4%;
-    bottom: 8%;
-    width: 62%;
-    height: 15%;
+    left: -6%;
+    bottom: 10%;
+    width: 58%;
+    height: 13%;
     z-index: -1;
-    background: repeating-linear-gradient(90deg, #a97a4c 0 6px, #8a6035 6px 8px);
-    transform: rotate(-5deg);
+    background:
+        linear-gradient(0deg, rgba(0,0,0,.22) 0 15%, transparent 15%),
+        repeating-linear-gradient(90deg, #b98a56 0 7px, #97693c 7px 9px);
+    transform: rotate(-4deg);
     border-radius: 2px;
     box-shadow: 0 2px 3px rgba(0, 0, 0, .3);
 }
+/* a lantern post at the end of the dock, its glow the brightest thing
+   in the square */
 .sq.key-amethyst_harbour::after {
     content: '';
     position: absolute;
-    right: 8%;
-    bottom: 20%;
+    right: 20%;
+    bottom: 16%;
     width: 30%;
-    height: 30%;
+    height: 46%;
     z-index: -1;
-    background: linear-gradient(180deg, #4a2f65, #2c1a43);
-    clip-path: polygon(48% 0%, 52% 0%, 52% 52%, 88% 52%, 100% 100%, 0% 100%, 12% 52%, 48% 52%);
-    filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .3));
+    background:
+        radial-gradient(circle at 50% 16%, #fff2c4 0%, #ffcf6b 34%, rgba(255,207,107,.15) 55%, transparent 68%),
+        linear-gradient(180deg, #7a5230, #4a3220) center bottom / 12% 62% no-repeat;
+    filter: drop-shadow(0 0 6px rgba(255, 216, 130, .8));
 }
 
 /* ---- Glacial Sea: a rough, choppy, ice-flecked sea ---- */
 .sq.key-glacial_sea {
     background:
-        repeating-linear-gradient(18deg, rgba(255,255,255,.16) 0 2px, transparent 2px 9px),
-        repeating-linear-gradient(-12deg, rgba(255,255,255,.11) 0 2px, transparent 2px 13px),
-        radial-gradient(ellipse at 22% 84%, rgba(255,255,255,.20), transparent 42%),
-        linear-gradient(200deg, #a9d6ec 0%, #3f86b0 42%, #0f3854 100%) !important;
+        radial-gradient(ellipse 70% 40% at 30% 100%, rgba(255,255,255,.28), transparent 60%),
+        radial-gradient(ellipse 60% 30% at 78% 70%, rgba(255,255,255,.20), transparent 60%),
+        linear-gradient(200deg, #bfe2f2 0%, #4f95bd 46%, #0c3550 100%) !important;
     border-color: #0a2f45 !important;
     border-radius: 26px 10px 30px 8px / 16px 24px 10px 22px;
 }
 .sq.key-glacial_sea .sq-name,
 .sq.key-glacial_sea .sq-text { color: #06283e; }
 .sq.key-glacial_sea .sq-name { border-bottom-color: rgba(6,40,62,.35); }
+/* whitecap chevrons -- rows of little peaked wave crests, not stripes */
 .sq.key-glacial_sea::before {
     content: '';
     position: absolute;
-    left: 6%;
-    top: 14%;
-    width: 30%;
-    height: 20%;
+    left: 0; right: 0; top: 38%; bottom: 0;
+    z-index: -1;
+    background-image:
+        linear-gradient(135deg, transparent 40%, rgba(255,255,255,.9) 41% 44%, transparent 45%),
+        linear-gradient(45deg, transparent 40%, rgba(255,255,255,.9) 41% 44%, transparent 45%);
+    background-size: 30% 30%;
+    background-position: 0 0, 15% 0;
+    background-repeat: repeat;
+    opacity: .8;
+}
+/* one solid ice floe, drifting in the corner */
+.sq.key-glacial_sea::after {
+    content: '';
+    position: absolute;
+    left: 8%;
+    top: 10%;
+    width: 34%;
+    height: 24%;
     z-index: -1;
     background: linear-gradient(160deg, #f6fbff, #cbe4f2);
     clip-path: polygon(10% 32%, 32% 0%, 70% 6%, 100% 36%, 84% 92%, 38% 100%, 0% 68%);
     filter: drop-shadow(0 2px 2px rgba(10, 40, 60, .4));
 }
-.sq.key-glacial_sea::after {
-    content: '';
-    position: absolute;
-    right: 8%;
-    bottom: 10%;
-    width: 24%;
-    height: 16%;
-    z-index: -1;
-    background: linear-gradient(160deg, #f6fbff, #cbe4f2);
-    clip-path: polygon(6% 40%, 34% 0%, 78% 10%, 100% 48%, 80% 100%, 20% 92%);
-    filter: drop-shadow(0 2px 2px rgba(10, 40, 60, .4));
-}
 
-/* ---- Stalactite Cave / Stalagmite Cave: sharper, more dangerous icicle
-   fangs -- same footprint as before, just meaner points ---- */
+/* ---- Stalactite Cave / Stalagmite Cave: clean, sharp icicle fangs ---- */
 .sq.key-stalactite_cave::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 40%;
     z-index: -1;
-    background: linear-gradient(200deg, #eef8ff 0%, #9cc7e3 55%, #4a6a82 85%, #7a2f36 100%);
+    background: linear-gradient(200deg, #ffffff 0%, #cfe9f7 30%, #7fb2d4 70%, #3c6c8c 100%);
     clip-path: polygon(
         0% 0%, 100% 0%,
-        100% 35%, 92% 100%, 84% 40%,
-        76% 100%, 68% 38%,
-        60% 100%, 52% 36%,
-        44% 100%, 36% 40%,
-        28% 100%, 20% 38%,
-        12% 100%, 4% 42%, 0% 55%);
+        100% 30%, 91% 100%, 82% 34%,
+        73% 100%, 64% 32%,
+        55% 100%, 46% 30%,
+        37% 100%, 28% 34%,
+        19% 100%, 10% 32%, 0% 48%);
     filter: drop-shadow(0 2px 2px rgba(20, 60, 90, .4));
+}
+.sq.key-stalactite_cave::after {
+    content: '';
+    position: absolute;
+    top: 4%; left: 6%;
+    width: 30%; height: 14%;
+    z-index: -1;
+    background: linear-gradient(200deg, rgba(255,255,255,.9), transparent 80%);
+    clip-path: polygon(0% 0%, 100% 0%, 60% 100%, 20% 100%);
 }
 .sq.key-stalagmite_cave::before {
     content: '';
@@ -4615,21 +4630,31 @@ body {
     bottom: 0; left: 0; right: 0;
     height: 40%;
     z-index: -1;
-    background: linear-gradient(20deg, #eef8ff 0%, #9cc7e3 55%, #4a6a82 85%, #7a2f36 100%);
+    background: linear-gradient(20deg, #ffffff 0%, #cfe9f7 30%, #7fb2d4 70%, #3c6c8c 100%);
     clip-path: polygon(
         0% 100%, 100% 100%,
-        100% 65%, 92% 0%, 84% 60%,
-        76% 0%, 68% 62%,
-        60% 0%, 52% 64%,
-        44% 0%, 36% 60%,
-        28% 0%, 20% 62%,
-        12% 0%, 4% 58%, 0% 45%);
+        100% 70%, 91% 0%, 82% 66%,
+        73% 0%, 64% 68%,
+        55% 0%, 46% 70%,
+        37% 0%, 28% 66%,
+        19% 0%, 10% 68%, 0% 52%);
     filter: drop-shadow(0 -2px 2px rgba(20, 60, 90, .4));
 }
+.sq.key-stalagmite_cave::after {
+    content: '';
+    position: absolute;
+    bottom: 4%; left: 6%;
+    width: 30%; height: 14%;
+    z-index: -1;
+    background: linear-gradient(-20deg, rgba(255,255,255,.9), transparent 80%);
+    clip-path: polygon(0% 100%, 100% 100%, 60% 0%, 20% 0%);
+}
 
-/* ---- Cracked Ice: pale ice with hairline fractures through it ---- */
+/* ---- Cracked Ice: a spiderweb of fractures radiating from one point,
+   each crack a bright crystalline line with a dark hairline shadow
+   beside it so it reads as carved into the surface, not drawn on it ---- */
 .sq.key-cracked_ice {
-    background: linear-gradient(160deg, #eef8ff, #c3e6f7) !important;
+    background: radial-gradient(ellipse at 62% 38%, #ffffff 0%, #d7eef9 30%, #a9d6ec 100%) !important;
 }
 .sq.key-cracked_ice::before {
     content: '';
@@ -4637,83 +4662,120 @@ body {
     inset: 0;
     z-index: -1;
     background:
-        linear-gradient(38deg, transparent 47%, #6fb4dd 49% 50%, transparent 52%),
-        linear-gradient(-52deg, transparent 58%, #4d95c2 60% 61%, transparent 63%),
-        linear-gradient(82deg, transparent 28%, #6fb4dd 30% 31%, transparent 33%),
-        linear-gradient(-18deg, transparent 68%, #4d95c2 70% 71%, transparent 73%);
-    opacity: .85;
+        linear-gradient(10deg,  transparent 61%, #285f7c 62% 62.6%, #eaf6ff 62.6% 63.4%, transparent 64%),
+        linear-gradient(58deg,  transparent 61%, #285f7c 62% 62.6%, #eaf6ff 62.6% 63.4%, transparent 64%),
+        linear-gradient(-42deg, transparent 61%, #285f7c 62% 62.6%, #eaf6ff 62.6% 63.4%, transparent 64%),
+        linear-gradient(-96deg, transparent 61%, #285f7c 62% 62.6%, #eaf6ff 62.6% 63.4%, transparent 64%),
+        linear-gradient(146deg, transparent 61%, #285f7c 62% 62.6%, #eaf6ff 62.6% 63.4%, transparent 64%),
+        radial-gradient(circle at 62% 38%, #fff 0 3%, transparent 4%);
+    background-position: center;
+    transform-origin: 62% 38%;
 }
 
-/* ---- Frozen Cemetery: a pair of frost-crusted headstones ---- */
-.sq.key-frozen_cemetery::before,
+/* ---- Frozen Cemetery: two frosted headstones -- one rounded, one a
+   simple cross -- each casting real weight into the snow below it ---- */
+.sq.key-frozen_cemetery::before {
+    content: '';
+    position: absolute;
+    left: 12%;
+    bottom: 4%;
+    width: 24%;
+    height: 52%;
+    z-index: -1;
+    background:
+        linear-gradient(200deg, rgba(255,255,255,.7), transparent 35%),
+        linear-gradient(160deg, #eef1f5, #9aa6b3);
+    border: 1px solid #6d7885;
+    border-radius: 50% 50% 3px 3px;
+    box-shadow: 0 4px 3px -1px rgba(0,0,0,.35);
+    transform: rotate(-3deg);
+}
 .sq.key-frozen_cemetery::after {
     content: '';
     position: absolute;
-    bottom: 2px;
+    left: 48%;
+    bottom: 4%;
     width: 22%;
-    background: linear-gradient(160deg, #eef1f5, #b9c2cd);
-    border: 1px solid #8b96a3;
-    border-radius: 50% 50% 3px 3px;
+    height: 42%;
     z-index: -1;
-    filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, .28));
+    background:
+        linear-gradient(180deg, transparent 34%, #9aa6b3 34% 46%, transparent 46%),
+        linear-gradient(90deg, transparent 40%, #9aa6b3 40% 60%, transparent 60%);
+    box-shadow: 0 4px 3px -1px rgba(0,0,0,.3);
+    transform: rotate(4deg);
 }
-.sq.key-frozen_cemetery::before { left: 12%; height: 50%; }
-.sq.key-frozen_cemetery::after  { left: 42%; height: 38%; }
 
-/* ---- Bandit Outpost: a rough little camp -- a canvas tent and a
-   crackling campfire, instead of the tower it used to be ---- */
+/* ---- Bandit Outpost: a rough little camp -- a bold canvas tent with a
+   dark entrance flap, and a crackling campfire beside it ---- */
 .sq.key-bandit_outpost::before {
     content: '';
     position: absolute;
-    left: 8%;
+    left: 6%;
     bottom: 0;
-    width: 46%;
-    height: 62%;
+    width: 48%;
+    height: 66%;
     z-index: -1;
-    background: linear-gradient(160deg, #d9b087, #a1734b);
+    background:
+        linear-gradient(90deg, transparent 40%, rgba(30,18,8,.65) 42% 58%, transparent 60%),
+        linear-gradient(160deg, #e0b98d, #a1734b);
     clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-    box-shadow: inset 0 -16px 10px -8px rgba(60, 35, 15, .55);
-    filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .3));
+    filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .32));
 }
 .sq.key-bandit_outpost::after {
     content: '';
     position: absolute;
-    right: 10%;
+    right: 8%;
     bottom: 0;
-    width: 32%;
-    height: 42%;
+    width: 34%;
+    height: 46%;
     z-index: -1;
     background:
-        radial-gradient(circle at 50% 66%, #ffe9a8 0%, #ffa94d 32%, #c1501c 58%, transparent 74%),
-        linear-gradient(100deg, transparent 38%, #5b3b22 40% 48%, transparent 50%) bottom / 100% 26% no-repeat,
-        linear-gradient(76deg, transparent 38%, #5b3b22 40% 48%, transparent 50%) bottom / 100% 26% no-repeat;
-    filter: drop-shadow(0 0 5px rgba(255, 150, 60, .6));
+        radial-gradient(circle at 50% 62%, #fff0b8 0%, #ffa94d 30%, #c1501c 58%, transparent 75%),
+        linear-gradient(105deg, transparent 36%, #5b3b22 38% 46%, transparent 48%) bottom / 100% 30% no-repeat,
+        linear-gradient(72deg, transparent 36%, #5b3b22 38% 46%, transparent 48%) bottom / 100% 30% no-repeat;
+    filter: drop-shadow(0 0 6px rgba(255, 160, 70, .65));
 }
 
-/* ---- Aurora Crystal: a single glowing, light-purple crystal ---- */
+/* ---- Aurora Crystal: a single glowing, light-purple crystal with real
+   facets catching the light ---- */
 .sq.key-aurora_crystal::before {
     content: '';
     position: absolute;
     left: 50%;
     bottom: 4%;
-    width: 56%;
+    width: 54%;
     height: 78%;
     transform: translateX(-50%);
     z-index: -1;
-    background: linear-gradient(160deg, #f5ecff 0%, #dcc0f7 40%, #c39aec 72%, #a877dd 100%);
+    background:
+        linear-gradient(115deg, rgba(255,255,255,.65) 0 18%, transparent 20%),
+        linear-gradient(250deg, rgba(90,40,140,.30) 0 30%, transparent 32%),
+        linear-gradient(160deg, #f7effe 0%, #dcc0f7 40%, #c39aec 72%, #a877dd 100%);
     clip-path: polygon(50% 0%, 82% 26%, 100% 68%, 62% 100%, 18% 92%, 0% 42%);
-    filter: drop-shadow(0 0 7px rgba(196, 150, 240, .7));
+    filter: drop-shadow(0 0 8px rgba(196, 150, 240, .75));
+}
+.sq.key-aurora_crystal::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 8%;
+    width: 8px;
+    height: 8px;
+    transform: translateX(-50%);
+    z-index: -1;
+    background: radial-gradient(circle, #fff 0 30%, rgba(255,255,255,.4) 40%, transparent 70%);
 }
 
 /* ---- A little signpost at the Snowy Village fork, where the two routes
-   split ---- */
+   split -- the flag now points down toward the routes, not off the
+   edge of the board ---- */
 .sq.key-snowy_village::before {
     content: '';
     position: absolute;
-    right: 10%;
-    bottom: 0;
+    right: 16%;
+    bottom: 8%;
     width: 6%;
-    height: 58%;
+    height: 56%;
     z-index: -1;
     background: linear-gradient(180deg, #b58757, #7a5230);
     border-radius: 2px;
@@ -4721,14 +4783,16 @@ body {
 .sq.key-snowy_village::after {
     content: '';
     position: absolute;
-    right: 2%;
-    bottom: 36%;
+    right: 6%;
+    top: 14%;
     width: 30%;
     height: 13px;
     z-index: -1;
     background: linear-gradient(180deg, #d9ac6c, #8a6035);
     clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
     filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, .3));
+    transform: rotate(90deg);
+    transform-origin: right center;
 }
 
 /* ---- The Frozen Gate: a big, ominous ice archway that fills the whole
