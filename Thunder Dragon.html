@@ -4093,15 +4093,20 @@ body.modal-cover #board * {
                 { id: 'heavy_swing', name: 'Heavy Swing', damage: 60, energy: 5 }
             ],
             ability: {
-                id: 'strength_up',
-                name: 'Strength Up',
+                id: 'iron_body',
+                name: 'Iron Body',
                 // The only ability worth anything mid-fight, and the only one
-                // that makes sense there: Agile is a movement roll and an
-                // Illusion starts a battle, which is no use inside one. See
+                // that makes sense there: Agile Footwork is a movement roll and
+                // an Illusion starts a battle, which is no use inside one. See
                 // useAbility() in engine.js.
                 inBattle: true,
-                text: 'Roll a die. On an even number, increase your attack by 20 damage ' +
-                      'for 2 moves. May be used in the middle of a battle.'
+                // Which buff kind this ability stands up, so the bot (and
+                // anything else checking for "is it already up") knows what
+                // to look for without hard-coding an ability id.
+                buffKind: 'defence',
+                text: 'Roll a die. On an even number, increase your defence by 15 ' +
+                      'for two turns. Stacks with anything else that raises your ' +
+                      'defence. May be used in the middle of a battle.'
             },
             colour: '#b9bec7'
         },
@@ -4119,9 +4124,10 @@ body.modal-cover #board * {
                 { id: 'triple_threat', name: 'Triple Threat', damage: 55, energy: 5 }
             ],
             ability: {
-                id: 'agile',
-                name: 'Agile',
-                text: 'Roll a die. On an even number, add up to 2 to your movement roll.'
+                id: 'agile_footwork',
+                name: 'Agile Footwork',
+                text: 'Roll a die. On an even number, add up to 2 to your dice roll. ' +
+                      'Stacks with anything else that raises your dice roll.'
             },
             colour: '#d8a43f'
         },
@@ -4139,13 +4145,16 @@ body.modal-cover #board * {
                 { id: 'orb_of_light', name: 'Orb of Light', damage: 60, energy: 5 }
             ],
             ability: {
-                id: 'illusion',
-                name: 'Illusion',
-                // Written out below, once the swarm and the rules it is
-                // worked out from have both been declared. Quoting a number
-                // in a sentence written above the thing it comes from is how
-                // a card ends up lying about the game it is part of.
-                text: ''
+                id: 'runed_relic',
+                name: 'Runed Relic',
+                // Same shape as the Knight's Iron Body: a free call at the
+                // top of the turn, before the die, that stands up a buff for
+                // two turns. See useAbility() in engine.js.
+                inBattle: true,
+                buffKind: 'damage',
+                text: 'Roll a die. On an even number, increase your attack by 15 ' +
+                      'damage for two turns. Stacks with anything else that raises ' +
+                      'your attack damage. May be used in the middle of a battle.'
             },
             colour: '#5c8fc4'
         }
@@ -5247,20 +5256,6 @@ body.modal-cover #board * {
         steakRolls: [2, 4, 6]
     };
 
-    /* The Illusion card quotes the conjured swarm's health, which is the real
-       swarm's less what the rules take off it. Worked out here rather than
-       written into the sentence, so that changing the swarm changes the card
-       with it -- the card said 55 for a long time after the swarm stopped
-       having 75 health, which is exactly the sort of quiet lie a printed
-       number becomes. */
-    CLASSES.mage.ability.text =
-        'Roll a die. On an even number, conjure a Swarm of Bats and choose ' +
-        'another player to fight it. The conjured swarm hits for ' +
-        RULES.illusionDamageBoost + ' more and has ' + RULES.illusionHpDrop +
-        ' less health than a real one — ' +
-        Math.max(1, ENEMIES.swarm_of_bats.hp - RULES.illusionHpDrop) +
-        '. They lose their turn and receive only the coins.';
-
     global.LOF_DATA = {
         CLASSES, CLASS_ORDER, ENEMIES, ITEMS, TREASURE_POOL, CHEST_POOL,
         ITEM_DECK, POWERUPS, POWERUP_DECK,
@@ -5823,8 +5818,9 @@ body.modal-cover #board * {
             // The hunt is not thrown here. Nothing in this game rolls a die
             // on its own -- endTurn hands the player the die first and only
             // calls this once they have thrown it.
-            // Defence buffs last one turn.
-            p.buffs = (p.buffs || []).filter(b => b.kind !== 'defence');
+            // Defence buffs last as many of the wearer's own turns as they
+            // were given: one for an ordinary power-up, two for Iron Body.
+            consumeBuffs(p, 'defence');
             p.turnsTaken += 1;
             p.energy = R.startingEnergy;
         }
@@ -5969,7 +5965,7 @@ body.modal-cover #board * {
         const out = [];
         const armour = defOf(equippedArmour(p));
         if (armour && (armour.dice || armour.diceUpTo)) out.push(armour.name);
-        if (p.agileBonus) out.push('Agile');
+        if (p.agileBonus) out.push('Agile Footwork');
         if (buffTotal(p, 'dice')) out.push('a power-up');
         return out;
     }
@@ -6912,7 +6908,7 @@ body.modal-cover #board * {
                 log(state, p.name + ' will do ' + def.value + ' more damage on their next move.', 'item');
                 break;
             case 'defence':
-                addBuff(p, 'defence', def.value, 99, def.name);  // cleared at end of turn
+                addBuff(p, 'defence', def.value, 1, def.name);  // cleared at end of this turn
                 log(state, p.name + ' will take ' + def.value + ' less damage this turn.', 'item');
                 break;
             case 'dice':
@@ -7062,13 +7058,13 @@ body.modal-cover #board * {
     /* An ability is a free action: it costs you the cooldown and nothing
        else, so calling on one never uses up the go you were about to take.
 
-       Most of them only make sense between fights -- Agile is a movement roll
-       and an Illusion is a fight starting, which is no use inside one. The
-       one that does belong in a battle is marked `inBattle` on the class, and
-       it is allowed at the top of your turn in the fight, before you roll to
-       strike: the +20 is then on the blow you are about to throw. Waiting
-       until after the roll would let you see whether you had connected first,
-       which is not a decision anybody should be offered. */
+       Agile Footwork only makes sense between fights -- it is a movement
+       roll, which is no use inside one. Iron Body and Runed Relic
+       are marked `inBattle` on their classes, and are allowed at the top of
+       your turn in the fight, before you roll to strike: the bonus is then on
+       (or against) the blow about to be thrown. Waiting until after the roll
+       would let you see whether you had connected first, which is not a
+       decision anybody should be offered. */
     function useAbility(state, pid, payload) {
         const p = player(state, pid);
         if (!p) return fail('Unknown player.');
@@ -7101,13 +7097,16 @@ body.modal-cover #board * {
             return ok();
         }
 
-        if (cls.ability.id === 'agile') {
-            if (p.hasMoved) return fail('Use Agile before you move.');
+        if (cls.ability.id === 'agile_footwork') {
+            if (p.hasMoved) return fail('Use Agile Footwork before you move.');
             p.agileBonus = 2;
-            log(state, p.name + ' is agile — +2 to this movement roll.', 'item');
-        } else if (cls.ability.id === 'strength_up') {
-            addBuff(p, 'damage', 20, 2, cls.ability.name);
-            log(state, p.name + ' surges with strength — +20 damage for 2 moves.', 'item');
+            log(state, p.name + ' uses Agile Footwork — +2 to this dice roll.', 'item');
+        } else if (cls.ability.id === 'iron_body') {
+            addBuff(p, 'defence', 15, 2, cls.ability.name);
+            log(state, p.name + "'s Iron Body hardens them — +15 defence for 2 turns.", 'item');
+        } else if (cls.ability.id === 'runed_relic') {
+            addBuff(p, 'damage', 15, 2, cls.ability.name);
+            log(state, p.name + ' calls on the Runed Relic — +15 damage for 2 turns.', 'item');
         } else if (cls.ability.id === 'illusion') {
             const targetId = payload && payload.targetPlayerId;
             const enemyId = payload && payload.enemyId;
@@ -8170,12 +8169,14 @@ body.modal-cover #board * {
         if (b.phase === 'enemy_roll') return { action: 'enemyRoll', args: {} };
         if (b.phase === 'enemy_act') return { action: 'enemyStrike', args: {} };
 
-        // Strength Up, at the top of the turn, before the die. Only if there
-        // is not already a damage buff standing: a second one on top of the
-        // first would be the cooldown spent for nothing.
-        if (b.phase === 'roll' && D.CLASSES[p.cls].ability.inBattle &&
+        // Iron Body or Runed Relic, at the top of the turn, before
+        // the die. Only if there is not already a matching buff standing: a
+        // second one on top of the first would be the cooldown spent for
+        // nothing.
+        const inFightCls = D.CLASSES[p.cls];
+        if (b.phase === 'roll' && inFightCls.ability.inBattle &&
             state.turnNo - p.lastAbilityTurn >= D.RULES.abilityCooldownTurns &&
-            !(p.buffs || []).some(x => x.kind === 'damage')) {
+            !(p.buffs || []).some(x => x.kind === inFightCls.ability.buffKind)) {
             return { action: 'useAbility', args: {} };
         }
         // Part way through a run of swings: the turn was bought by the blow
@@ -8313,13 +8314,13 @@ body.modal-cover #board * {
         const cls = D.CLASSES[p.cls];
         if (state.turnNo - p.lastAbilityTurn < D.RULES.abilityCooldownTurns) return null;
 
-        if (cls.ability.id === 'agile') {
+        if (cls.ability.id === 'agile_footwork') {
             // The two spaces are an offer that can be declined after the fact,
-            // so there is never a reason to hold Agile back.
+            // so there is never a reason to hold Agile Footwork back.
             if (p.hasMoved) return null;
             return { action: 'useAbility', args: {} };
         }
-        if (cls.ability.id === 'strength_up') {
+        if (cls.ability.id === 'iron_body' || cls.ability.id === 'runed_relic') {
             return { action: 'useAbility', args: {} };
         }
         if (cls.ability.id === 'illusion') {
@@ -12453,7 +12454,7 @@ body.modal-cover #board * {
         buttons.push(btn('a-ability',
             cls.ability.name + (abilityReady ? '' : ' \u00b7 in ' + abilityWait(p)), '',
             !mine || blocked || !abilityReady ||
-            (cls.ability.id === 'agile' && p.hasMoved)));
+            (cls.ability.id === 'agile_footwork' && p.hasMoved)));
         buttons.push(btn('a-shop', 'Visit the Merchant', '', !mine || blocked));
         // Offering a trade is a turn action like any other. It used to be open
         // at all times, which read as an invitation and was not one: the panel
@@ -13276,12 +13277,12 @@ body.modal-cover #board * {
             }
         }
 
-        /* The one ability you may call on mid-fight -- the Knight's Strength
-           Up. Offered only at the top of your turn in the fight, before you
-           roll: the +20 then rides on the blow you are about to throw, rather
-           than being something you decide once you already know whether you
-           connected. It costs the cooldown and nothing else, so it does not
-           use up the swing. */
+        /* The ability you may call on mid-fight -- the Knight's Iron Body or
+           the Mage's Runed Relic. Offered only at the top of your turn in
+           the fight, before you roll: the bonus then rides on (or against)
+           the blow you are about to throw, rather than being something you
+           decide once you already know whether you connected. It costs the
+           cooldown and nothing else, so it does not use up the swing. */
         const inFightAbility = D.CLASSES[p.cls].ability;
         const canAbility = involved && myMove && !enemyPhase &&
                            b.phase === 'roll' && inFightAbility.inBattle;
