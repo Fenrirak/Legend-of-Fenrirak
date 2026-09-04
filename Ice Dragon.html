@@ -4467,13 +4467,12 @@ body {
    so nothing is ever covered up, while still allowing full-square colour
    washes on the two "water" squares. Nothing here touches game logic. */
 
-/* ---- Eagle's Ascent / Eagle's Descent: ONE mountain range shared across
-   both squares. Both cards point at the same wide SVG silhouette; Ascent
-   shows its left half and Descent shows its right half, so the peaks line
-   up across the gap and read as a single range. ---- */
+/* ---- Eagle's Ascent / Eagle's Descent: ONE single mountain shared
+   across both squares -- its peak sits right on the gap between them, so
+   Ascent shows the left slope and Descent shows the right slope. ---- */
 .sq.key-eagles_ascent,
 .sq.key-eagles_descent {
-    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20200%20100%27%3E%0A%3Cpolygon%20points%3D%270%2C100%2035%2C18%2072%2C100%27%20fill%3D%27%2363707f%27/%3E%0A%3Cpolygon%20points%3D%2735%2C18%2029%2C36%2041%2C36%27%20fill%3D%27%23eef4fb%27/%3E%0A%3Cpolygon%20points%3D%2738%2C100%2092%2C6%20148%2C100%27%20fill%3D%27%238894a8%27/%3E%0A%3Cpolygon%20points%3D%2792%2C6%2083%2C28%20101%2C28%27%20fill%3D%27%23ffffff%27/%3E%0A%3Cpolygon%20points%3D%27112%2C100%20165%2C22%20200%2C100%27%20fill%3D%27%23a7b4c8%27/%3E%0A%3Cpolygon%20points%3D%27165%2C22%20157%2C41%20173%2C41%27%20fill%3D%27%23eef4fb%27/%3E%0A%3C/svg%3E") !important;
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20200%20100%27%3E%0A%3Cpolygon%20points%3D%270%2C100%20100%2C10%20200%2C100%27%20fill%3D%27%238894a8%27/%3E%0A%3Cpolygon%20points%3D%27100%2C10%20100%2C100%20200%2C100%27%20fill%3D%27%235f6b80%27%20fill-opacity%3D%270.4%27/%3E%0A%3Cpolygon%20points%3D%27100%2C10%2084%2C38%20116%2C38%27%20fill%3D%27%23f4f8ff%27/%3E%0A%3Cpolygon%20points%3D%27100%2C10%20100%2C38%20116%2C38%27%20fill%3D%27%23c7d2e2%27%20fill-opacity%3D%270.6%27/%3E%0A%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-size: 200% 62% !important;
     background-position: left bottom !important;
@@ -4526,43 +4525,44 @@ body {
 .sq.key-amethyst_harbour .sq-name,
 .sq.key-amethyst_harbour .sq-text { color: #2a1747; }
 .sq.key-amethyst_harbour .sq-name { border-bottom-color: rgba(42,23,71,.35); }
-/* the dock, a simple plank walkway reaching out over the water */
+/* a grand stone quay with a little violet-roofed harbour house sitting
+   on it -- a proper port, not a plank dock */
 .sq.key-amethyst_harbour::before {
     content: '';
     position: absolute;
-    left: -6%;
-    bottom: 10%;
-    width: 58%;
-    height: 13%;
+    left: -4%;
+    bottom: 4%;
+    width: 66%;
+    height: 62%;
     z-index: -1;
     background:
-        linear-gradient(0deg, rgba(0,0,0,.22) 0 15%, transparent 15%),
-        repeating-linear-gradient(90deg, #b98a56 0 7px, #97693c 7px 9px);
-    transform: rotate(-4deg);
-    border-radius: 2px;
-    box-shadow: 0 2px 3px rgba(0, 0, 0, .3);
+        linear-gradient(200deg, transparent 56%, #7a3f6b 56% 66%, transparent 66%) top left / 46% 32% no-repeat,
+        linear-gradient(180deg, #d9b8ee, #9463c9) top left / 38% 40% no-repeat,
+        repeating-linear-gradient(90deg, #9299a8 0 13px, #6f7684 13px 15px) bottom / 100% 46% no-repeat,
+        linear-gradient(180deg, #c3c9d4, #9299a8) bottom / 100% 10% no-repeat;
+    filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .3));
 }
-/* a lantern post at the end of the dock, its glow the brightest thing
-   in the square */
+/* a lighthouse tower at the harbour mouth, its lamp lit */
 .sq.key-amethyst_harbour::after {
     content: '';
     position: absolute;
-    right: 20%;
-    bottom: 16%;
-    width: 30%;
-    height: 46%;
+    right: 8%;
+    bottom: 4%;
+    width: 18%;
+    height: 78%;
     z-index: -1;
     background:
-        radial-gradient(circle at 50% 16%, #fff2c4 0%, #ffcf6b 34%, rgba(255,207,107,.15) 55%, transparent 68%),
-        linear-gradient(180deg, #7a5230, #4a3220) center bottom / 12% 62% no-repeat;
-    filter: drop-shadow(0 0 6px rgba(255, 216, 130, .8));
+        radial-gradient(circle at 50% 14%, #fff2c4 0%, #ffcf6b 32%, transparent 58%) top / 100% 44% no-repeat,
+        repeating-linear-gradient(0deg, #eef1f5 0 6px, #c3c9d4 6px 10px) bottom / 100% 80% no-repeat;
+    clip-path: polygon(22% 100%, 32% 8%, 68% 8%, 78% 100%);
+    filter: drop-shadow(0 0 6px rgba(255, 216, 130, .75));
 }
 
-/* ---- Glacial Sea: a rough, choppy, ice-flecked sea ---- */
+/* ---- Glacial Sea: a rough, choppy sea with real rolling wave lines ---- */
 .sq.key-glacial_sea {
     background:
-        radial-gradient(ellipse 70% 40% at 30% 100%, rgba(255,255,255,.28), transparent 60%),
-        radial-gradient(ellipse 60% 30% at 78% 70%, rgba(255,255,255,.20), transparent 60%),
+        radial-gradient(ellipse 70% 40% at 30% 100%, rgba(255,255,255,.22), transparent 60%),
+        radial-gradient(ellipse 60% 30% at 78% 70%, rgba(255,255,255,.16), transparent 60%),
         linear-gradient(200deg, #bfe2f2 0%, #4f95bd 46%, #0c3550 100%) !important;
     border-color: #0a2f45 !important;
     border-radius: 26px 10px 30px 8px / 16px 24px 10px 22px;
@@ -4570,18 +4570,20 @@ body {
 .sq.key-glacial_sea .sq-name,
 .sq.key-glacial_sea .sq-text { color: #06283e; }
 .sq.key-glacial_sea .sq-name { border-bottom-color: rgba(6,40,62,.35); }
-/* whitecap chevrons -- rows of little peaked wave crests, not stripes */
+/* three rows of rolling wave-crest lines, each a touch different so the
+   water reads as choppy rather than a printed pattern */
 .sq.key-glacial_sea::before {
     content: '';
     position: absolute;
-    left: 0; right: 0; top: 38%; bottom: 0;
+    left: -10%; right: -10%; top: 30%; height: 62%;
     z-index: -1;
     background-image:
-        linear-gradient(135deg, transparent 40%, rgba(255,255,255,.9) 41% 44%, transparent 45%),
-        linear-gradient(45deg, transparent 40%, rgba(255,255,255,.9) 41% 44%, transparent 45%);
-    background-size: 30% 30%;
-    background-position: 0 0, 15% 0;
-    background-repeat: repeat;
+        url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%2030%27%3E%0A%3Cpath%20d%3D%27M0%2020%20Q%2012.5%208%2025%2020%20T%2050%2020%20T%2075%2020%20T%20100%2020%27%20stroke%3D%27white%27%20stroke-width%3D%274.5%27%20fill%3D%27none%27/%3E%0A%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%2030%27%3E%0A%3Cpath%20d%3D%27M0%2020%20Q%2012.5%208%2025%2020%20T%2050%2020%20T%2075%2020%20T%20100%2020%27%20stroke%3D%27white%27%20stroke-width%3D%274.5%27%20fill%3D%27none%27/%3E%0A%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%2030%27%3E%0A%3Cpath%20d%3D%27M0%2020%20Q%2012.5%208%2025%2020%20T%2050%2020%20T%2075%2020%20T%20100%2020%27%20stroke%3D%27white%27%20stroke-width%3D%274.5%27%20fill%3D%27none%27/%3E%0A%3C/svg%3E");
+    background-repeat: repeat-x, repeat-x, repeat-x;
+    background-size: 55% 34%, 70% 30%, 46% 26%;
+    background-position: 4% 0%, -8% 38%, 12% 74%;
     opacity: .8;
 }
 /* one solid ice floe, drifting in the corner */
@@ -4589,9 +4591,9 @@ body {
     content: '';
     position: absolute;
     left: 8%;
-    top: 10%;
+    top: 8%;
     width: 34%;
-    height: 24%;
+    height: 22%;
     z-index: -1;
     background: linear-gradient(160deg, #f6fbff, #cbe4f2);
     clip-path: polygon(10% 32%, 32% 0%, 70% 6%, 100% 36%, 84% 92%, 38% 100%, 0% 68%);
@@ -4672,98 +4674,89 @@ body {
     transform-origin: 62% 38%;
 }
 
-/* ---- Frozen Cemetery: two frosted headstones -- one rounded, one a
-   simple cross -- each casting real weight into the snow below it ---- */
+/* ---- Frozen Cemetery: a whole little field of small snow-crusted
+   gravestones, tiled across the bottom of the square ---- */
 .sq.key-frozen_cemetery::before {
     content: '';
     position: absolute;
-    left: 12%;
-    bottom: 4%;
-    width: 24%;
-    height: 52%;
+    left: -4%;
+    right: -4%;
+    bottom: 2%;
+    height: 62%;
     z-index: -1;
-    background:
-        linear-gradient(200deg, rgba(255,255,255,.7), transparent 35%),
-        linear-gradient(160deg, #eef1f5, #9aa6b3);
-    border: 1px solid #6d7885;
-    border-radius: 50% 50% 3px 3px;
-    box-shadow: 0 4px 3px -1px rgba(0,0,0,.35);
-    transform: rotate(-3deg);
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2060%2026%27%3E%0A%3Crect%20x%3D%272%27%20y%3D%2711%27%20width%3D%277%27%20height%3D%2715%27%20rx%3D%273.5%27%20fill%3D%27%23cfd6df%27%20stroke%3D%27%238b96a3%27%20stroke-width%3D%270.6%27/%3E%0A%3Crect%20x%3D%2715%27%20y%3D%277%27%20width%3D%276%27%20height%3D%2719%27%20rx%3D%273%27%20fill%3D%27%23b9c2cd%27%20stroke%3D%27%238b96a3%27%20stroke-width%3D%270.6%27/%3E%0A%3Crect%20x%3D%2727%27%20y%3D%2713%27%20width%3D%276%27%20height%3D%2713%27%20rx%3D%273%27%20fill%3D%27%23cfd6df%27%20stroke%3D%27%238b96a3%27%20stroke-width%3D%270.6%27/%3E%0A%3Crect%20x%3D%2739%27%20y%3D%279%27%20width%3D%276%27%20height%3D%2717%27%20rx%3D%273%27%20fill%3D%27%23b9c2cd%27%20stroke%3D%27%238b96a3%27%20stroke-width%3D%270.6%27/%3E%0A%3Crect%20x%3D%2751%27%20y%3D%2712%27%20width%3D%276%27%20height%3D%2714%27%20rx%3D%273%27%20fill%3D%27%23cfd6df%27%20stroke%3D%27%238b96a3%27%20stroke-width%3D%270.6%27/%3E%0A%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 45% 100%;
+    background-position: bottom left;
+    filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, .3));
 }
 .sq.key-frozen_cemetery::after {
     content: '';
     position: absolute;
-    left: 48%;
-    bottom: 4%;
-    width: 22%;
-    height: 42%;
-    z-index: -1;
-    background:
-        linear-gradient(180deg, transparent 34%, #9aa6b3 34% 46%, transparent 46%),
-        linear-gradient(90deg, transparent 40%, #9aa6b3 40% 60%, transparent 60%);
-    box-shadow: 0 4px 3px -1px rgba(0,0,0,.3);
-    transform: rotate(4deg);
+    left: -4%;
+    right: -4%;
+    bottom: -4%;
+    height: 20%;
+    z-index: -2;
+    background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(220,230,240,.5));
+    border-radius: 50%;
 }
 
-/* ---- Bandit Outpost: a rough little camp -- a bold canvas tent with a
-   dark entrance flap, and a crackling campfire beside it ---- */
-.sq.key-bandit_outpost::before {
-    content: '';
-    position: absolute;
-    left: 6%;
-    bottom: 0;
-    width: 48%;
-    height: 66%;
-    z-index: -1;
-    background:
-        linear-gradient(90deg, transparent 40%, rgba(30,18,8,.65) 42% 58%, transparent 60%),
-        linear-gradient(160deg, #e0b98d, #a1734b);
-    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-    filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .32));
-}
-.sq.key-bandit_outpost::after {
-    content: '';
-    position: absolute;
-    right: 8%;
-    bottom: 0;
-    width: 34%;
-    height: 46%;
-    z-index: -1;
-    background:
-        radial-gradient(circle at 50% 62%, #fff0b8 0%, #ffa94d 30%, #c1501c 58%, transparent 75%),
-        linear-gradient(105deg, transparent 36%, #5b3b22 38% 46%, transparent 48%) bottom / 100% 30% no-repeat,
-        linear-gradient(72deg, transparent 36%, #5b3b22 38% 46%, transparent 48%) bottom / 100% 30% no-repeat;
-    filter: drop-shadow(0 0 6px rgba(255, 160, 70, .65));
-}
+/* ---- Bandit Outpost: art removed at the user's request -- plain square ---- */
 
-/* ---- Aurora Crystal: a single glowing, light-purple crystal with real
-   facets catching the light ---- */
+/* ---- Aurora Crystal: a single glowing crystal planted into a little
+   mound of ground, breathing out a slow pulse of purple light ---- */
+@keyframes auroraPulse {
+    0%, 78%   { transform: translateX(-50%) scale(1);     filter: drop-shadow(0 0 6px rgba(196, 150, 240, .5)); }
+    86%       { transform: translateX(-50%) scale(1.09);  filter: drop-shadow(0 0 20px rgba(210, 170, 250, 1)); }
+    94%       { transform: translateX(-50%) scale(1.02);  filter: drop-shadow(0 0 10px rgba(196, 150, 240, .65)); }
+    100%      { transform: translateX(-50%) scale(1);     filter: drop-shadow(0 0 6px rgba(196, 150, 240, .5)); }
+}
 .sq.key-aurora_crystal::before {
     content: '';
     position: absolute;
     left: 50%;
-    bottom: 4%;
-    width: 54%;
-    height: 78%;
-    transform: translateX(-50%);
+    bottom: 14%;
+    width: 52%;
+    height: 70%;
+    transform-origin: bottom center;
     z-index: -1;
     background:
         linear-gradient(115deg, rgba(255,255,255,.65) 0 18%, transparent 20%),
         linear-gradient(250deg, rgba(90,40,140,.30) 0 30%, transparent 32%),
         linear-gradient(160deg, #f7effe 0%, #dcc0f7 40%, #c39aec 72%, #a877dd 100%);
     clip-path: polygon(50% 0%, 82% 26%, 100% 68%, 62% 100%, 18% 92%, 0% 42%);
-    filter: drop-shadow(0 0 8px rgba(196, 150, 240, .75));
+    animation: auroraPulse 6s ease-in-out infinite;
 }
 .sq.key-aurora_crystal::after {
     content: '';
     position: absolute;
     left: 50%;
-    top: 8%;
-    width: 8px;
-    height: 8px;
+    bottom: 6%;
+    width: 68%;
+    height: 20%;
+    transform: translateX(-50%);
+    z-index: -2;
+    background: radial-gradient(ellipse at 50% 30%, #e8f2ff 0%, #c9d6e6 55%, transparent 80%);
+    border-radius: 50%;
+}
+
+/* ---- Campfire Logs: a small pile of unlit firewood, stacked and ready
+   for the next traveller to light ---- */
+.sq.key-campfire::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 2%;
+    width: 60%;
+    height: 44%;
     transform: translateX(-50%);
     z-index: -1;
-    background: radial-gradient(circle, #fff 0 30%, rgba(255,255,255,.4) 40%, transparent 70%);
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%2070%27%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2760%27%20rx%3D%2734%27%20ry%3D%277%27%20fill%3D%27rgba%2830%2C20%2C10%2C0.28%29%27/%3E%0A%3Cline%20x1%3D%2716%27%20y1%3D%2758%27%20x2%3D%2768%27%20y2%3D%2718%27%20stroke%3D%27%236d4a28%27%20stroke-width%3D%2711%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cline%20x1%3D%2784%27%20y1%3D%2758%27%20x2%3D%2732%27%20y2%3D%2718%27%20stroke%3D%27%238a6035%27%20stroke-width%3D%2711%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cline%20x1%3D%2750%27%20y1%3D%2760%27%20x2%3D%2750%27%20y2%3D%2714%27%20stroke%3D%27%23a1734b%27%20stroke-width%3D%2710%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cline%20x1%3D%2716%27%20y1%3D%2758%27%20x2%3D%2768%27%20y2%3D%2718%27%20stroke%3D%27%237a5230%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%20stroke-dasharray%3D%273%206%27/%3E%0A%3Cline%20x1%3D%2784%27%20y1%3D%2758%27%20x2%3D%2732%27%20y2%3D%2718%27%20stroke%3D%27%235b3b22%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%20stroke-dasharray%3D%273%206%27/%3E%0A%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: bottom center;
+    filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, .25));
 }
 
 /* ---- A little signpost at the Snowy Village fork, where the two routes
