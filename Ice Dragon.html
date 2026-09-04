@@ -4467,18 +4467,22 @@ body {
    so nothing is ever covered up, while still allowing full-square colour
    washes on the two "water" squares. Nothing here touches game logic. */
 
-/* ---- Eagle's Ascent / Eagle's Descent: ONE single mountain shared
-   across both squares -- its peak sits right on the gap between them, so
-   Ascent shows the left slope and Descent shows the right slope. ---- */
-.sq.key-eagles_ascent,
-.sq.key-eagles_descent {
-    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20200%20100%27%3E%0A%3Cpolygon%20points%3D%270%2C100%20100%2C10%20200%2C100%27%20fill%3D%27%238894a8%27/%3E%0A%3Cpolygon%20points%3D%27100%2C10%20100%2C100%20200%2C100%27%20fill%3D%27%235f6b80%27%20fill-opacity%3D%270.4%27/%3E%0A%3Cpolygon%20points%3D%27100%2C10%2084%2C38%20116%2C38%27%20fill%3D%27%23f4f8ff%27/%3E%0A%3Cpolygon%20points%3D%27100%2C10%20100%2C38%20116%2C38%27%20fill%3D%27%23c7d2e2%27%20fill-opacity%3D%270.6%27/%3E%0A%3C/svg%3E") !important;
-    background-repeat: no-repeat !important;
-    background-size: 200% 62% !important;
-    background-position: left bottom !important;
-    filter: drop-shadow(1px 3px 2px rgba(20, 30, 50, .3));
+/* ---- Eagle's Ascent / Eagle's Descent: back to the original clip-path
+   mountain look, minus the small second peak that used to sit behind it
+   in each square. ---- */
+.sq.key-eagles_ascent::before,
+.sq.key-eagles_descent::before {
+    content: '';
+    position: absolute;
+    right: -8%;
+    bottom: -4%;
+    width: 72%;
+    height: 66%;
+    z-index: -1;
+    background: linear-gradient(200deg, #f5f9ff 0 20%, #c3cee1 20% 48%, #7b879e 48% 100%);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    filter: drop-shadow(1px 3px 2px rgba(20, 30, 50, .35));
 }
-.sq.key-eagles_descent { background-position: right bottom !important; }
 
 /* ---- Barbarian's Cave: a rocky outcrop shell with a dark entrance
    visible on its face, not just a plain arch ---- */
@@ -4742,15 +4746,15 @@ body {
 }
 
 /* ---- Campfire Logs: a small pile of unlit firewood, stacked and ready
-   for the next traveller to light ---- */
+   for the next traveller to light. Tucked into the upper-left so the
+   in-flow "Optional Stop" badge at the bottom-right never covers it. ---- */
 .sq.key-campfire::before {
     content: '';
     position: absolute;
-    left: 50%;
-    bottom: 2%;
-    width: 60%;
-    height: 44%;
-    transform: translateX(-50%);
+    left: 12%;
+    bottom: 26%;
+    width: 48%;
+    height: 34%;
     z-index: -1;
     background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%2070%27%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2760%27%20rx%3D%2734%27%20ry%3D%277%27%20fill%3D%27rgba%2830%2C20%2C10%2C0.28%29%27/%3E%0A%3Cline%20x1%3D%2716%27%20y1%3D%2758%27%20x2%3D%2768%27%20y2%3D%2718%27%20stroke%3D%27%236d4a28%27%20stroke-width%3D%2711%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cline%20x1%3D%2784%27%20y1%3D%2758%27%20x2%3D%2732%27%20y2%3D%2718%27%20stroke%3D%27%238a6035%27%20stroke-width%3D%2711%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cline%20x1%3D%2750%27%20y1%3D%2760%27%20x2%3D%2750%27%20y2%3D%2714%27%20stroke%3D%27%23a1734b%27%20stroke-width%3D%2710%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cline%20x1%3D%2716%27%20y1%3D%2758%27%20x2%3D%2768%27%20y2%3D%2718%27%20stroke%3D%27%237a5230%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%20stroke-dasharray%3D%273%206%27/%3E%0A%3Cline%20x1%3D%2784%27%20y1%3D%2758%27%20x2%3D%2732%27%20y2%3D%2718%27%20stroke%3D%27%235b3b22%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%20stroke-dasharray%3D%273%206%27/%3E%0A%3C/svg%3E");
     background-repeat: no-repeat;
