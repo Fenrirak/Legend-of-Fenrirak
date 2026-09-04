@@ -4467,81 +4467,99 @@ body {
    so nothing is ever covered up, while still allowing full-square colour
    washes on the two "water" squares. Nothing here touches game logic. */
 
-/* ---- Eagle's Ascent / Eagle's Descent: a little 3D mountain range ---- */
+/* ---- Eagle's Ascent / Eagle's Descent: ONE mountain range shared across
+   both squares. Both cards point at the same wide SVG silhouette; Ascent
+   shows its left half and Descent shows its right half, so the peaks line
+   up across the gap and read as a single range. ---- */
 .sq.key-eagles_ascent,
-.sq.key-eagles_descent { overflow: hidden; }
-.sq.key-eagles_ascent::after,
-.sq.key-eagles_descent::after {
-    content: '';
-    position: absolute;
-    left: -6%;
-    bottom: -4%;
-    width: 62%;
-    height: 52%;
-    z-index: -2;
-    background:
-        linear-gradient(200deg, #dde6f4 0 32%, #98a6bc 32% 100%);
-    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+.sq.key-eagles_descent {
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20200%20100%27%3E%0A%3Cpolygon%20points%3D%270%2C100%2035%2C18%2072%2C100%27%20fill%3D%27%2363707f%27/%3E%0A%3Cpolygon%20points%3D%2735%2C18%2029%2C36%2041%2C36%27%20fill%3D%27%23eef4fb%27/%3E%0A%3Cpolygon%20points%3D%2738%2C100%2092%2C6%20148%2C100%27%20fill%3D%27%238894a8%27/%3E%0A%3Cpolygon%20points%3D%2792%2C6%2083%2C28%20101%2C28%27%20fill%3D%27%23ffffff%27/%3E%0A%3Cpolygon%20points%3D%27112%2C100%20165%2C22%20200%2C100%27%20fill%3D%27%23a7b4c8%27/%3E%0A%3Cpolygon%20points%3D%27165%2C22%20157%2C41%20173%2C41%27%20fill%3D%27%23eef4fb%27/%3E%0A%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-size: 200% 62% !important;
+    background-position: left bottom !important;
+    filter: drop-shadow(1px 3px 2px rgba(20, 30, 50, .3));
 }
-.sq.key-eagles_ascent::before,
-.sq.key-eagles_descent::before {
-    content: '';
-    position: absolute;
-    right: -8%;
-    bottom: -4%;
-    width: 72%;
-    height: 66%;
-    z-index: -1;
-    background:
-        linear-gradient(200deg, #f5f9ff 0 20%, #c3cee1 20% 48%, #7b879e 48% 100%);
-    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-    filter: drop-shadow(1px 3px 2px rgba(20, 30, 50, .35));
-}
+.sq.key-eagles_descent { background-position: right bottom !important; }
 
-/* ---- Barbarian's Cave: a dark 3D cave mouth in the rock ---- */
+/* ---- Barbarian's Cave: a rocky outcrop shell with a dark entrance
+   visible on its face, not just a plain arch ---- */
 .sq.key-barbarians_cave::before {
     content: '';
     position: absolute;
     left: 50%;
-    bottom: -8%;
-    width: 78%;
-    height: 78%;
+    bottom: -6%;
+    width: 84%;
+    height: 82%;
     transform: translateX(-50%);
     z-index: -2;
-    background: linear-gradient(160deg, #a5907a, #6b5747);
-    border-radius: 50% 50% 8px 8px / 65% 65% 8px 8px;
+    background:
+        radial-gradient(circle at 28% 28%, rgba(255,255,255,.20) 0 7%, transparent 9%),
+        radial-gradient(circle at 66% 58%, rgba(0,0,0,.16) 0 9%, transparent 11%),
+        radial-gradient(circle at 60% 22%, rgba(255,255,255,.14) 0 5%, transparent 7%),
+        linear-gradient(160deg, #b8a688, #8a755a 55%, #5f4c38);
+    clip-path: polygon(8% 100%, 2% 62%, 14% 32%, 34% 10%, 60% 4%, 84% 16%,
+        98% 42%, 100% 74%, 90% 100%);
     filter: drop-shadow(1px 3px 2px rgba(0, 0, 0, .35));
 }
 .sq.key-barbarians_cave::after {
     content: '';
     position: absolute;
     left: 50%;
-    bottom: -10%;
-    width: 52%;
-    height: 60%;
+    bottom: 2%;
+    width: 44%;
+    height: 46%;
     transform: translateX(-50%);
     z-index: -1;
-    background: radial-gradient(ellipse at 50% 100%, #120d0b 0 45%, #34281f 45% 70%, transparent 72%);
-    border-radius: 50% 50% 6px 6px / 70% 70% 6px 6px;
+    background: radial-gradient(ellipse at 50% 100%, #0a0706 0 45%, #241c17 45% 68%, transparent 72%);
+    border-radius: 50% 50% 8px 8px / 70% 70% 8px 8px;
 }
 
-/* ---- Amethyst Harbour: a pretty little purple lake ---- */
+/* ---- Amethyst Harbour: a small purple harbour -- water, a wooden dock,
+   and a boat moored against it ---- */
 .sq.key-amethyst_harbour {
     background:
-        radial-gradient(ellipse at 34% 30%, rgba(255,255,255,.85) 0 6%, transparent 8%),
-        radial-gradient(ellipse at 42% 38%, #cba8f2 0%, #9a63d9 48%, #63339e 100%) !important;
+        radial-gradient(ellipse at 34% 26%, rgba(255,255,255,.8) 0 5%, transparent 7%),
+        radial-gradient(ellipse at 44% 34%, #d3b6f5 0%, #a06fdd 46%, #63339e 100%) !important;
     border-color: #542a86 !important;
     border-radius: 30px 10px 26px 12px / 20px 26px 12px 24px;
 }
 .sq.key-amethyst_harbour .sq-name,
 .sq.key-amethyst_harbour .sq-text { color: #2a1747; }
 .sq.key-amethyst_harbour .sq-name { border-bottom-color: rgba(42,23,71,.35); }
+.sq.key-amethyst_harbour::before {
+    content: '';
+    position: absolute;
+    left: -4%;
+    bottom: 8%;
+    width: 62%;
+    height: 15%;
+    z-index: -1;
+    background: repeating-linear-gradient(90deg, #a97a4c 0 6px, #8a6035 6px 8px);
+    transform: rotate(-5deg);
+    border-radius: 2px;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, .3);
+}
+.sq.key-amethyst_harbour::after {
+    content: '';
+    position: absolute;
+    right: 8%;
+    bottom: 20%;
+    width: 30%;
+    height: 30%;
+    z-index: -1;
+    background: linear-gradient(180deg, #4a2f65, #2c1a43);
+    clip-path: polygon(48% 0%, 52% 0%, 52% 52%, 88% 52%, 100% 100%, 0% 100%, 12% 52%, 48% 52%);
+    filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .3));
+}
 
-/* ---- Glacial Sea: a deep blue ocean swell, in the spirit of Midnight
-   Desert's solid colour-card treatment on the other board ---- */
+/* ---- Glacial Sea: a rough, choppy, ice-flecked sea ---- */
 .sq.key-glacial_sea {
-    background: linear-gradient(180deg, #cdeaff 0%, #58a8d9 42%, #14648f 100%) !important;
-    border-color: #0f4c6e !important;
+    background:
+        repeating-linear-gradient(18deg, rgba(255,255,255,.16) 0 2px, transparent 2px 9px),
+        repeating-linear-gradient(-12deg, rgba(255,255,255,.11) 0 2px, transparent 2px 13px),
+        radial-gradient(ellipse at 22% 84%, rgba(255,255,255,.20), transparent 42%),
+        linear-gradient(200deg, #a9d6ec 0%, #3f86b0 42%, #0f3854 100%) !important;
+    border-color: #0a2f45 !important;
     border-radius: 26px 10px 30px 8px / 16px 24px 10px 22px;
 }
 .sq.key-glacial_sea .sq-name,
@@ -4550,26 +4568,46 @@ body {
 .sq.key-glacial_sea::before {
     content: '';
     position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: 42%;
+    left: 6%;
+    top: 14%;
+    width: 30%;
+    height: 20%;
     z-index: -1;
-    background: repeating-linear-gradient(100deg,
-        rgba(255,255,255,.5) 0 3px, transparent 3px 15px);
-    opacity: .75;
+    background: linear-gradient(160deg, #f6fbff, #cbe4f2);
+    clip-path: polygon(10% 32%, 32% 0%, 70% 6%, 100% 36%, 84% 92%, 38% 100%, 0% 68%);
+    filter: drop-shadow(0 2px 2px rgba(10, 40, 60, .4));
+}
+.sq.key-glacial_sea::after {
+    content: '';
+    position: absolute;
+    right: 8%;
+    bottom: 10%;
+    width: 24%;
+    height: 16%;
+    z-index: -1;
+    background: linear-gradient(160deg, #f6fbff, #cbe4f2);
+    clip-path: polygon(6% 40%, 34% 0%, 78% 10%, 100% 48%, 80% 100%, 20% 92%);
+    filter: drop-shadow(0 2px 2px rgba(10, 40, 60, .4));
 }
 
-/* ---- Stalactite Cave / Stalagmite Cave: icy pointed spikes ---- */
+/* ---- Stalactite Cave / Stalagmite Cave: sharper, more dangerous icicle
+   fangs -- same footprint as before, just meaner points ---- */
 .sq.key-stalactite_cave::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 40%;
     z-index: -1;
-    background: linear-gradient(200deg, #eef8ff, #a7d3ec);
+    background: linear-gradient(200deg, #eef8ff 0%, #9cc7e3 55%, #4a6a82 85%, #7a2f36 100%);
     clip-path: polygon(
-        0% 0%, 100% 0%, 100% 42%, 88% 100%, 76% 46%, 64% 100%,
-        52% 42%, 40% 100%, 28% 44%, 16% 100%, 4% 46%, 0% 62%);
-    filter: drop-shadow(0 2px 2px rgba(20, 60, 90, .35));
+        0% 0%, 100% 0%,
+        100% 35%, 92% 100%, 84% 40%,
+        76% 100%, 68% 38%,
+        60% 100%, 52% 36%,
+        44% 100%, 36% 40%,
+        28% 100%, 20% 38%,
+        12% 100%, 4% 42%, 0% 55%);
+    filter: drop-shadow(0 2px 2px rgba(20, 60, 90, .4));
 }
 .sq.key-stalagmite_cave::before {
     content: '';
@@ -4577,11 +4615,16 @@ body {
     bottom: 0; left: 0; right: 0;
     height: 40%;
     z-index: -1;
-    background: linear-gradient(20deg, #eef8ff, #a7d3ec);
+    background: linear-gradient(20deg, #eef8ff 0%, #9cc7e3 55%, #4a6a82 85%, #7a2f36 100%);
     clip-path: polygon(
-        0% 100%, 100% 100%, 100% 58%, 88% 0%, 76% 54%, 64% 0%,
-        52% 58%, 40% 0%, 28% 56%, 16% 0%, 4% 54%, 0% 38%);
-    filter: drop-shadow(0 -2px 2px rgba(20, 60, 90, .35));
+        0% 100%, 100% 100%,
+        100% 65%, 92% 0%, 84% 60%,
+        76% 0%, 68% 62%,
+        60% 0%, 52% 64%,
+        44% 0%, 36% 60%,
+        28% 0%, 20% 62%,
+        12% 0%, 4% 58%, 0% 45%);
+    filter: drop-shadow(0 -2px 2px rgba(20, 60, 90, .4));
 }
 
 /* ---- Cracked Ice: pale ice with hairline fractures through it ---- */
@@ -4617,54 +4660,49 @@ body {
 .sq.key-frozen_cemetery::before { left: 12%; height: 50%; }
 .sq.key-frozen_cemetery::after  { left: 42%; height: 38%; }
 
-/* ---- Bandit Outpost: a rough wooden watchtower and palisade ---- */
+/* ---- Bandit Outpost: a rough little camp -- a canvas tent and a
+   crackling campfire, instead of the tower it used to be ---- */
 .sq.key-bandit_outpost::before {
     content: '';
     position: absolute;
-    right: 6%;
+    left: 8%;
     bottom: 0;
-    width: 34%;
+    width: 46%;
     height: 62%;
     z-index: -1;
-    background: linear-gradient(180deg, #cf9e5f, #8a6035);
-    clip-path: polygon(20% 100%, 20% 42%, 0% 42%, 50% 0%, 100% 42%, 80% 42%, 80% 100%);
-    filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .32));
+    background: linear-gradient(160deg, #d9b087, #a1734b);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    box-shadow: inset 0 -16px 10px -8px rgba(60, 35, 15, .55);
+    filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, .3));
 }
 .sq.key-bandit_outpost::after {
     content: '';
     position: absolute;
-    left: 6%;
+    right: 10%;
     bottom: 0;
-    width: 30%;
-    height: 40%;
-    z-index: -2;
-    background: repeating-linear-gradient(90deg, #8a6035 0 4px, #6d4a28 4px 8px);
-    clip-path: polygon(0% 100%, 0% 32%, 50% 0%, 100% 32%, 100% 100%);
+    width: 32%;
+    height: 42%;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 50% 66%, #ffe9a8 0%, #ffa94d 32%, #c1501c 58%, transparent 74%),
+        linear-gradient(100deg, transparent 38%, #5b3b22 40% 48%, transparent 50%) bottom / 100% 26% no-repeat,
+        linear-gradient(76deg, transparent 38%, #5b3b22 40% 48%, transparent 50%) bottom / 100% 26% no-repeat;
+    filter: drop-shadow(0 0 5px rgba(255, 150, 60, .6));
 }
 
-/* ---- Aurora Crystal: a faceted, glowing crystal cluster ---- */
+/* ---- Aurora Crystal: a single glowing, light-purple crystal ---- */
 .sq.key-aurora_crystal::before {
     content: '';
     position: absolute;
-    right: 6%;
-    bottom: 0;
-    width: 48%;
-    height: 72%;
+    left: 50%;
+    bottom: 4%;
+    width: 56%;
+    height: 78%;
+    transform: translateX(-50%);
     z-index: -1;
-    background: linear-gradient(160deg, #dcfbff 0%, #92dcec 40%, #5fb8d8 72%, #3f8fc0 100%);
-    clip-path: polygon(50% 0%, 80% 24%, 100% 68%, 60% 100%, 20% 90%, 0% 44%);
-    filter: drop-shadow(0 0 6px rgba(130, 224, 255, .7));
-}
-.sq.key-aurora_crystal::after {
-    content: '';
-    position: absolute;
-    left: 6%;
-    bottom: 0;
-    width: 28%;
-    height: 46%;
-    z-index: -2;
-    background: linear-gradient(160deg, #f6ddff, #bd93e6);
-    clip-path: polygon(50% 0%, 100% 55%, 70% 100%, 10% 90%, 0% 38%);
+    background: linear-gradient(160deg, #f5ecff 0%, #dcc0f7 40%, #c39aec 72%, #a877dd 100%);
+    clip-path: polygon(50% 0%, 82% 26%, 100% 68%, 62% 100%, 18% 92%, 0% 42%);
+    filter: drop-shadow(0 0 7px rgba(196, 150, 240, .7));
 }
 
 /* ---- A little signpost at the Snowy Village fork, where the two routes
@@ -4693,26 +4731,39 @@ body {
     filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, .3));
 }
 
-/* ---- The Frozen Gate: twin icy pillars framing a glowing archway ---- */
+/* ---- The Frozen Gate: a big, ominous ice archway that fills the whole
+   square. The card's own name/text are hidden here -- the player still
+   sees "The Frozen Gate" and its rules the moment they land on it (that
+   comes up in a modal), so nothing is lost by letting the image speak for
+   itself on the board. Player tokens stay visible. ---- */
 .sq.key-gate {
     background:
-        radial-gradient(ellipse 74% 46% at 50% 0%, rgba(170, 205, 255, .85), transparent 72%),
-        rgba(244, 248, 255, .97) !important;
+        radial-gradient(circle at 50% 56%, rgba(150, 225, 255, .95) 0 4%, rgba(120, 200, 255, .28) 4% 20%, transparent 32%),
+        radial-gradient(ellipse 90% 66% at 50% 22%, rgba(110, 180, 255, .55), transparent 74%),
+        linear-gradient(180deg, #0c1a28 0%, #142639 55%, #08121c 100%) !important;
+    border-color: #3a5a78 !important;
+    border-width: 2px !important;
 }
+.sq.key-gate .sq-name,
+.sq.key-gate .sq-text,
+.sq.key-gate .sq-badge { display: none !important; }
 .sq.key-gate::before,
 .sq.key-gate::after {
     content: '';
     position: absolute;
-    bottom: 0;
-    width: 13%;
-    height: 74%;
+    bottom: -2%;
+    width: 24%;
+    height: 96%;
     z-index: -1;
-    background: linear-gradient(180deg, #f4fbff, #a9c8e8);
-    border-radius: 3px 3px 0 0;
-    box-shadow: 0 0 7px rgba(140, 180, 220, .65);
+    background: linear-gradient(180deg, #eaf6ff 0%, #8fbcdd 55%, #35597a 100%);
+    clip-path: polygon(
+        0% 100%, 0% 26%, 14% 12%, 28% 22%, 42% 6%, 56% 20%,
+        70% 4%, 84% 18%, 100% 8%, 100% 100%);
+    box-shadow: 0 0 14px rgba(120, 190, 255, .75);
+    filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .5));
 }
-.sq.key-gate::before { left: 9%; }
-.sq.key-gate::after   { right: 9%; }
+.sq.key-gate::before { left: 2%; }
+.sq.key-gate::after   { right: 2%; transform: scaleX(-1); }
 </style>
 
 </head>
