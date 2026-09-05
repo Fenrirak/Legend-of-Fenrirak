@@ -1161,28 +1161,54 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     position: absolute;
     /* Pulled back towards the near bank, so the Gate and the causeway have
        clear water to stand on between the disc and the Fountain of Life. */
-    left: 27%; top: 50%;
+    left: 50%; top: 50%;
     transform: translate(-50%, -50%);
     width: min(82%, 340px);
     aspect-ratio: 1;
     border-radius: 50%;
     background:
         /* the lamp on the whole thing */
-        radial-gradient(circle at 34% 24%, rgba(255,255,255,.34), transparent 56%),
+        radial-gradient(circle at 34% 24%, rgba(255,255,255,.4), transparent 56%),
         /* the columns standing round the wall, seen from above */
         repeating-conic-gradient(from 3deg at 50% 50%,
-            rgba(72,66,90,.42) 0deg 1.5deg, transparent 1.5deg 7.2deg),
-        /* the stone of the wall itself */
-        radial-gradient(circle at 50% 50%, #c6c1d4 0 62%, #a49eb8 100%);
-    border: 3px solid #4f4a62;
+            rgba(60,84,108,.38) 0deg 1.5deg, transparent 1.5deg 7.2deg),
+        /* the stone of the wall itself, gone to pale glacial ice */
+        radial-gradient(circle at 50% 50%, #e4eff8 0 62%, #b7cfe2 100%);
+    border: 3px solid #557694;
     box-shadow:
-        /* the shadow it throws on the water, then the gold band round the
+        /* the shadow it throws on the snow, then the icy band round the
            top of the wall and the dark plinth it all stands on */
-        0 20px 42px -14px rgba(0,0,0,.9),
-        0 0 0 4px rgba(184,121,31,.65),
-        0 0 0 7px rgba(79,74,98,.9),
-        0 0 0 12px rgba(52,48,66,.45),
-        inset 0 0 34px rgba(64,58,84,.42);
+        0 20px 42px -14px rgba(0,0,0,.85),
+        0 0 0 4px rgba(120,190,255,.6),
+        0 0 0 7px rgba(60,84,108,.85),
+        0 0 0 12px rgba(40,58,76,.4),
+        inset 0 0 34px rgba(90,150,200,.38),
+        0 0 26px rgba(140,200,255,.3);
+    animation: arena-glow 5s ease-in-out infinite;
+}
+/* A slow breath of icy light round the wall -- the dragon's cold rather
+   than a torch. Handily overridden the instant someone actually steps
+   in to fight: .arena.lit below is the more specific selector, so its
+   static box-shadow always wins over this animation while it applies. */
+@keyframes arena-glow {
+    0%, 100% {
+        box-shadow:
+            0 20px 42px -14px rgba(0,0,0,.85),
+            0 0 0 4px rgba(120,190,255,.55),
+            0 0 0 7px rgba(60,84,108,.85),
+            0 0 0 12px rgba(40,58,76,.4),
+            inset 0 0 34px rgba(90,150,200,.35),
+            0 0 22px rgba(140,200,255,.22);
+    }
+    50% {
+        box-shadow:
+            0 20px 42px -14px rgba(0,0,0,.85),
+            0 0 0 4px rgba(160,220,255,.85),
+            0 0 0 7px rgba(60,84,108,.85),
+            0 0 0 12px rgba(40,58,76,.4),
+            inset 0 0 34px rgba(110,180,230,.5),
+            0 0 38px rgba(160,220,255,.42);
+    }
 }
 /* The seating: two courses of stone stepping down to the floor. */
 .arena .arena-disc::before {
@@ -1192,14 +1218,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     border-radius: 50%;
     background:
         repeating-conic-gradient(from 8deg at 50% 50%,
-            rgba(255,255,255,.42) 0deg 2.4deg, transparent 2.4deg 8.4deg),
-        radial-gradient(circle at 50% 50%, #b3aec0 0 100%);
+            rgba(255,255,255,.48) 0deg 2.4deg, transparent 2.4deg 8.4deg),
+        radial-gradient(circle at 50% 50%, #a8c2d8 0 100%);
     box-shadow:
-        inset 0 0 0 3px rgba(79,74,98,.75),
-        inset 0 0 0 12px rgba(198,193,212,.9),
-        inset 0 0 0 15px rgba(79,74,98,.55),
-        inset 0 0 0 26px rgba(168,162,186,.85),
-        inset 0 0 0 29px rgba(79,74,98,.5);
+        inset 0 0 0 3px rgba(60,84,108,.7),
+        inset 0 0 0 12px rgba(216,232,244,.9),
+        inset 0 0 0 15px rgba(60,84,108,.5),
+        inset 0 0 0 26px rgba(178,204,224,.85),
+        inset 0 0 0 29px rgba(60,84,108,.45);
     pointer-events: none;
 }
 /* The sand floor, raked in arcs, with the dragon's mark burnt into the
@@ -1210,23 +1236,25 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     inset: 19%;
     border-radius: 50%;
     background:
-        /* the mark: a ring with four spurs off it */
+        /* the mark: a ring with four spurs off it, frosted into the ice
+           rather than burnt into sand */
         conic-gradient(from 0deg at 50% 50%,
-            transparent 0deg 43deg, rgba(122,68,38,.26) 43deg 47deg,
-            transparent 47deg 133deg, rgba(122,68,38,.26) 133deg 137deg,
-            transparent 137deg 223deg, rgba(122,68,38,.26) 223deg 227deg,
-            transparent 227deg 313deg, rgba(122,68,38,.26) 313deg 317deg,
+            transparent 0deg 43deg, rgba(70,140,190,.32) 43deg 47deg,
+            transparent 47deg 133deg, rgba(70,140,190,.32) 133deg 137deg,
+            transparent 137deg 223deg, rgba(70,140,190,.32) 223deg 227deg,
+            transparent 227deg 313deg, rgba(70,140,190,.32) 313deg 317deg,
             transparent 317deg),
         radial-gradient(circle at 50% 50%,
-            transparent 0 32%, rgba(122,68,38,.28) 32% 35%, transparent 35%),
-        /* the rake, dragged round the floor */
+            transparent 0 32%, rgba(70,140,190,.34) 32% 35%, transparent 35%),
+        /* fine cracks in the ice, radiating round the floor in place of a
+           rake's furrows */
         repeating-conic-gradient(from 0deg at 50% 50%,
-            rgba(150,110,68,.13) 0deg 2.2deg, transparent 2.2deg 4.8deg),
-        radial-gradient(circle at 38% 30%, rgba(255,255,255,.20), transparent 60%),
-        radial-gradient(circle at 50% 50%, #ddc296 0 58%, #c7a678 100%);
+            rgba(120,170,205,.16) 0deg 2.2deg, transparent 2.2deg 4.8deg),
+        radial-gradient(circle at 38% 30%, rgba(255,255,255,.4), transparent 60%),
+        radial-gradient(circle at 50% 50%, #eef6fc 0 58%, #cfe3f2 100%);
     box-shadow:
-        inset 0 0 0 3px rgba(79,74,98,.6),
-        inset 0 8px 24px rgba(108,80,48,.4);
+        inset 0 0 0 3px rgba(60,84,108,.5),
+        inset 0 8px 24px rgba(70,110,140,.3);
     pointer-events: none;
 }
 .arena .arena-inner {
@@ -1234,7 +1262,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
     /* On the sand rather than over the wall: the disc is sized off the
        width and the arena's box is three rows tall, so a fraction of the
        box height put the writing above the card on a narrow board. */
-    left: 27%; top: 42%;
+    left: 50%; top: 42%;
     transform: translate(-50%, -50%);
     width: min(56%, 232px);
     text-align: center;
@@ -1250,14 +1278,14 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
        4cqw comes from; the cap is the disc's own cap doing the same sum. */
     font-size: max(8.5px, min(5.1cqw, 16px));
     line-height: 1.1;
-    color: #4a2a15;
+    color: #1f3b52;
     letter-spacing: 0;
     white-space: nowrap;
-    text-shadow: 0 1px 0 rgba(255,248,232,.55);
+    text-shadow: 0 1px 0 rgba(235,247,255,.65);
 }
 .arena .arena-sub {
     font-size: min(3cqw, 10px);
-    color: #7a4a28;
+    color: #3f6a86;
     letter-spacing: 0;
     white-space: nowrap;
     margin-top: 3px;
@@ -1265,7 +1293,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 /* Whoever is in the arena stands in the middle of the sand. */
 .arena .tokens {
     position: absolute;
-    left: 27%; top: 60%;
+    left: 50%; top: 60%;
     transform: translate(-50%, -50%);
     width: min(46%, 190px);
     display: flex; justify-content: center; flex-wrap: wrap;
@@ -4825,6 +4853,382 @@ body {
 }
 .sq.key-gate::before { left: 2%; }
 .sq.key-gate::after   { right: 2%; transform: scaleX(-1); }
+
+/* ==== The rest of the named squares, dressed to match ==================
+   Same technique as the block above: small CSS-only illustrations tucked
+   behind the name/text/badge (z-index -1/-2 inside .sq, which is already
+   position:relative), so nothing on the card is ever covered up. ==== */
+
+/* ---- Chest: shared across every Chest square on the board -- a small
+   ice-banded travel chest, tucked in the lower corner the way Campfire
+   Logs' woodpile is. ---- */
+.sq.key-chest::before {
+    content: '';
+    position: absolute;
+    left: 10%;
+    bottom: 8%;
+    width: 46%;
+    height: 40%;
+    z-index: -1;
+    background:
+        /* the frost-blue gem set in the lock */
+        radial-gradient(circle at 50% 42%, #eaf8ff 0 10%, #7fc4e8 10% 26%, transparent 30%)
+            top / 100% 100% no-repeat,
+        /* the lid, domed */
+        linear-gradient(180deg, #9a6c3f 0%, #7a5230 100%) top / 100% 46% no-repeat,
+        /* the body */
+        linear-gradient(180deg, #8a5f36 0%, #6d4826 100%) bottom / 100% 62% no-repeat;
+    border-radius: 40% 40% 4px 4px / 60% 60% 4px 4px;
+    box-shadow:
+        inset 0 0 0 2px rgba(40, 26, 14, .5),
+        0 3px 4px rgba(0, 0, 0, .35);
+    filter: drop-shadow(1px 2px 2px rgba(20, 40, 60, .3));
+}
+.sq.key-chest::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    bottom: 27%;
+    width: 46%;
+    height: 6%;
+    z-index: -1;
+    background: linear-gradient(180deg, #cfe4f0, #7fa8c4);
+    border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgba(40, 26, 14, .4);
+}
+
+/* ---- Frozen Plateau: a wide, flat-topped shelf of layered ice, seen
+   face-on -- the ground itself rising in a step. ---- */
+.sq.key-frozen_plateau::before {
+    content: '';
+    position: absolute;
+    left: -6%;
+    right: -6%;
+    bottom: -4%;
+    height: 58%;
+    z-index: -1;
+    background: linear-gradient(200deg, #eef6fc 0%, #bcdbee 55%, #7fa8c4 100%);
+    clip-path: polygon(0% 100%, 0% 46%, 22% 46%, 30% 18%, 68% 18%, 76% 46%,
+        100% 46%, 100% 100%);
+    filter: drop-shadow(0 2px 2px rgba(20, 50, 75, .3));
+}
+.sq.key-frozen_plateau::after {
+    content: '';
+    position: absolute;
+    left: 18%;
+    bottom: 42%;
+    width: 54%;
+    height: 10%;
+    z-index: -1;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent);
+}
+
+/* ---- Ice Tomb Cavern: a dark, ice-framed hollow in the rock -- and
+   something with a cold glow still watching from inside it. ---- */
+.sq.key-ice_tomb_cavern::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -6%;
+    width: 78%;
+    height: 84%;
+    transform: translateX(-50%);
+    z-index: -2;
+    background:
+        radial-gradient(ellipse 60% 55% at 50% 60%, #060c14 0 55%, transparent 58%),
+        linear-gradient(160deg, #d7ecf7, #9cc3dc 55%, #6f97b4);
+    clip-path: polygon(4% 100%, 0% 56%, 16% 24%, 40% 6%, 60% 6%, 84% 24%,
+        100% 56%, 96% 100%);
+    filter: drop-shadow(1px 3px 2px rgba(10, 25, 40, .4));
+}
+.sq.key-ice_tomb_cavern::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 30%;
+    width: 20%;
+    height: 10%;
+    transform: translateX(-50%);
+    z-index: -1;
+    background: radial-gradient(ellipse, #bfefff 0%, #6fc4ea 40%, transparent 75%);
+    border-radius: 50%;
+    animation: gate-flicker 3.4s ease-in-out infinite;
+}
+
+/* ---- Frostwell Sanctuary: a small font of ice-blue water, glowing
+   gently from inside the basin it rests in -- a healer's spring. ---- */
+.sq.key-frostwell_sanctuary::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 10%;
+    width: 56%;
+    height: 22%;
+    transform: translateX(-50%);
+    z-index: -1;
+    background: radial-gradient(ellipse at 50% 40%, #f4fbff, #cfe9f7 60%, #9cc3dc 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 2px 4px rgba(40, 90, 120, .3);
+}
+.sq.key-frostwell_sanctuary::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 16%;
+    width: 30%;
+    height: 40%;
+    transform: translateX(-50%);
+    transform-origin: bottom center;
+    z-index: -1;
+    background: radial-gradient(ellipse at 50% 100%, rgba(190,240,255,.85), transparent 75%);
+    animation: auroraPulse 4.5s ease-in-out infinite;
+}
+
+/* ---- Frozen Tundra: open, wind-scoured snow, with the curve of a
+   mammoth's tusk breaking the surface. ---- */
+.sq.key-frozen_tundra::before {
+    content: '';
+    position: absolute;
+    left: -6%;
+    right: -6%;
+    bottom: -6%;
+    height: 34%;
+    z-index: -1;
+    background: linear-gradient(180deg, #f4faff, #d3e8f4);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+.sq.key-frozen_tundra::after {
+    content: '';
+    position: absolute;
+    right: 14%;
+    bottom: 14%;
+    width: 30%;
+    height: 46%;
+    z-index: -1;
+    background: linear-gradient(200deg, #fffdf4, #e8dcc0);
+    clip-path: polygon(70% 100%, 100% 70%, 82% 20%, 58% 0%, 46% 18%, 62% 30%, 50% 60%);
+    filter: drop-shadow(1px 2px 1px rgba(60, 60, 40, .3));
+}
+
+/* ---- Frostbite Abyss: a crack in the ice opening onto nothing, a cold
+   light coming up out of the dark. ---- */
+.sq.key-frostbite_abyss {
+    background: linear-gradient(200deg, #f4d5ce 0%, #efc4bb 100%) !important;
+}
+.sq.key-frostbite_abyss::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(90deg, transparent 46%, #0c1520 49% 51%, transparent 54%);
+    clip-path: polygon(
+        52% 0%, 58% 16%, 50% 30%, 60% 46%, 48% 62%,
+        56% 80%, 46% 100%, 40% 100%, 50% 80%, 42% 62%,
+        54% 46%, 44% 30%, 52% 16%, 46% 0%);
+}
+.sq.key-frostbite_abyss::after {
+    content: '';
+    position: absolute;
+    left: 30%;
+    right: 30%;
+    top: 30%;
+    bottom: 30%;
+    z-index: -1;
+    background: radial-gradient(ellipse, rgba(140,210,255,.75), transparent 70%);
+    animation: gate-flicker 4.2s ease-in-out infinite;
+}
+
+/* ---- Frostclaw Expanse: pale snowfield, gouged by three claw marks. ---- */
+.sq.key-frostclaw_expanse::before {
+    content: '';
+    position: absolute;
+    left: -6%;
+    right: -6%;
+    bottom: -6%;
+    height: 60%;
+    z-index: -1;
+    background: linear-gradient(200deg, #fbfdff, #dcedf7);
+}
+.sq.key-frostclaw_expanse::after {
+    content: '';
+    position: absolute;
+    left: 24%;
+    bottom: 18%;
+    width: 52%;
+    height: 42%;
+    z-index: -1;
+    background:
+        linear-gradient(70deg, transparent 44%, rgba(120,160,190,.55) 46% 50%, transparent 52%),
+        linear-gradient(70deg, transparent 60%, rgba(120,160,190,.55) 62% 66%, transparent 68%),
+        linear-gradient(70deg, transparent 76%, rgba(120,160,190,.55) 78% 82%, transparent 84%);
+}
+
+/* ---- Snowbound Ridge: a jagged line of snowy peaks, sharper and more
+   broken than Eagle's Ascent/Descent's single clean triangle. ---- */
+.sq.key-snowbound_ridge::before {
+    content: '';
+    position: absolute;
+    left: -8%;
+    right: -8%;
+    bottom: -6%;
+    height: 66%;
+    z-index: -1;
+    background: linear-gradient(195deg, #eef6fc 0%, #b9d6e8 55%, #6f97b4 100%);
+    clip-path: polygon(0% 100%, 0% 60%, 14% 30%, 24% 48%, 36% 10%, 48% 40%,
+        58% 18%, 70% 46%, 82% 22%, 92% 52%, 100% 34%, 100% 100%);
+    filter: drop-shadow(0 2px 2px rgba(20, 50, 75, .35));
+}
+
+/* ---- The Final Ember: a lit twin of Campfire Logs' unlit woodpile --
+   the same sticks, glowing now, in the same tucked-away spot. ---- */
+.sq.key-final_ember::before {
+    content: '';
+    position: absolute;
+    left: 12%;
+    bottom: 26%;
+    width: 48%;
+    height: 34%;
+    z-index: -1;
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%2070%27%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2760%27%20rx%3D%2734%27%20ry%3D%277%27%20fill%3D%27rgba%2830%2C20%2C10%2C0.28%29%27/%3E%0A%3Cline%20x1%3D%2716%27%20y1%3D%2758%27%20x2%3D%2768%27%20y2%3D%2718%27%20stroke%3D%27%236d4a28%27%20stroke-width%3D%2711%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cline%20x1%3D%2784%27%20y1%3D%2758%27%20x2%3D%2732%27%20y2%3D%2718%27%20stroke%3D%27%238a6035%27%20stroke-width%3D%2711%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cline%20x1%3D%2750%27%20y1%3D%2760%27%20x2%3D%2750%27%20y2%3D%2714%27%20stroke%3D%27%23a1734b%27%20stroke-width%3D%2710%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: bottom center;
+    filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, .25));
+}
+.sq.key-final_ember::after {
+    content: '';
+    position: absolute;
+    left: 24%;
+    bottom: 30%;
+    width: 24%;
+    height: 18%;
+    z-index: -1;
+    background: radial-gradient(ellipse, #ffcf6b 0%, #e8641f 55%, transparent 78%);
+    animation: ember-glow 3.4s ease-in-out infinite;
+}
+
+/* ---- Merchant's Cosy Cabin: a small snow-roofed cabin with a warm,
+   lit window -- the one warm colour on this whole board. ---- */
+.sq.key-merchant_cabin::before {
+    content: '';
+    position: absolute;
+    right: 6%;
+    top: 30%;
+    width: 40%;
+    height: 40%;
+    z-index: -2;
+    background: linear-gradient(180deg, #a3623d, #7a4526);
+    border-radius: 2px;
+}
+.sq.key-merchant_cabin::after {
+    content: '';
+    position: absolute;
+    right: 3%;
+    top: 12%;
+    width: 46%;
+    height: 26%;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 50% 55%, #ffdb8a 0 16%, transparent 22%) 50% 50% / 100% 100% no-repeat,
+        linear-gradient(180deg, #f4faff, #cfe4f0);
+    clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+    filter: drop-shadow(1px 2px 2px rgba(20, 40, 60, .3));
+}
+
+/* ---- Start: a light scuff of footprints heading off into the snow --
+   tucked low so the players' own tokens standing here are never covered. ---- */
+.sq.key-start::before {
+    content: '';
+    position: absolute;
+    left: 8%;
+    bottom: 6%;
+    width: 40%;
+    height: 20%;
+    z-index: -1;
+    opacity: .5;
+    background:
+        radial-gradient(ellipse 30% 55% at 20% 70%, #b9d6e8 0 60%, transparent 62%),
+        radial-gradient(ellipse 30% 55% at 45% 40%, #b9d6e8 0 60%, transparent 62%),
+        radial-gradient(ellipse 30% 55% at 70% 15%, #b9d6e8 0 60%, transparent 62%);
+}
+
+/* ==== A gentle twinkle on the new decor's frost and crystal ==== */
+.decor .fx-twinkle circle { animation: ice-twinkle 2.6s ease-in-out infinite; }
+.decor .fx-twinkle circle:nth-child(2) { animation-delay: -.9s; animation-duration: 3.1s; }
+.decor .fx-twinkle circle:nth-child(3) { animation-delay: -1.7s; animation-duration: 2.2s; }
+@keyframes ice-twinkle {
+    0%, 100% { opacity: .25; transform: scale(.7); }
+    50%      { opacity: 1;   transform: scale(1.15); }
+}
+
+/* ==== Board ambience: a frostier backdrop, a slow aurora overhead, and a
+   light snow drifting across the whole scene. Both new layers sit on the
+   board itself (already position:relative), one behind everything at
+   z-index 0 (so it only shows through the gaps and the empty snowfield --
+   every square's card is nearly opaque and simply sits over it) and one
+   well above everything at z-index 10 (so the snow reads as weather
+   happening in front of the board, not as part of it). Both are
+   pointer-events:none and cost nothing to click through. ==== */
+.board {
+    background:
+        radial-gradient(ellipse 60% 50% at 0% 0%, rgba(255,255,255,.9), transparent 62%),
+        radial-gradient(ellipse 60% 50% at 100% 100%, rgba(255,255,255,.9), transparent 62%),
+        radial-gradient(ellipse 90% 70% at 50% 100%, rgba(196,220,244,.55), transparent 72%),
+        linear-gradient(160deg, #eef5fc 0%, #dfedf9 45%, #cfe3f5 100%) !important;
+    box-shadow:
+        inset 0 0 0 5px rgba(164,194,244,.18),
+        0 18px 44px rgba(0,0,0,.28),
+        0 0 46px rgba(164,194,244,.32) !important;
+}
+.board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 70% 40% at 20% 0%, rgba(150,255,220,.20), transparent 60%),
+        radial-gradient(ellipse 60% 35% at 60% 4%, rgba(160,190,255,.22), transparent 62%),
+        radial-gradient(ellipse 55% 30% at 85% 0%, rgba(210,160,255,.16), transparent 60%);
+    mix-blend-mode: screen;
+    animation: board-aurora 16s ease-in-out infinite alternate;
+}
+@keyframes board-aurora {
+    0%   { opacity: .6; transform: translateX(-2%); }
+    50%  { opacity: 1;  transform: translateX(2%); }
+    100% { opacity: .6; transform: translateX(-1%); }
+}
+.board::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    opacity: .55;
+    background-image:
+        radial-gradient(circle at 10% 10%, rgba(255,255,255,.95) 0 2px, transparent 2px),
+        radial-gradient(circle at 40% 30%, rgba(255,255,255,.8) 0 1.6px, transparent 1.6px),
+        radial-gradient(circle at 70% 15%, rgba(255,255,255,.9) 0 1.8px, transparent 1.8px),
+        radial-gradient(circle at 85% 45%, rgba(255,255,255,.7) 0 1.4px, transparent 1.4px),
+        radial-gradient(circle at 25% 60%, rgba(255,255,255,.85) 0 1.7px, transparent 1.7px),
+        radial-gradient(circle at 55% 75%, rgba(255,255,255,.75) 0 1.5px, transparent 1.5px),
+        radial-gradient(circle at 92% 85%, rgba(255,255,255,.9) 0 2px, transparent 2px),
+        radial-gradient(circle at 15% 90%, rgba(255,255,255,.65) 0 1.3px, transparent 1.3px);
+    background-repeat: repeat;
+    background-size: 220px 220px;
+    animation: board-snow 14s linear infinite;
+}
+@keyframes board-snow {
+    from { background-position: 0 0; }
+    to   { background-position: 40px 220px; }
+}
+
+/* ==== Bring the scenery and the arena's disc back, now that both are
+   dressed for an ice board -- this sits last in the stylesheet, so it
+   wins the cascade over every earlier "hide the scenery" pass above
+   without having to go back and find each one. ==== */
+.board .decor { display: flex !important; }
+.arena .arena-disc { display: block !important; }
 </style>
 
 </head>
@@ -6427,13 +6831,46 @@ body {
         ]
     };
 
-    // No scenery on this board -- see NOTES-ICE.md. The Thunder Dragon's
-    // pines/ruins/village/fountain/desert/forest/keep/hideout/pot/bush set
-    // was autumn-and-stone dressing for that board; it never fit an ice
-    // board even before the coordinates were wrong (they were carried
-    // over from the old, broken board layout). Left empty rather than
-    // guessing at snow-themed replacements nobody asked for.
-    const DECOR = [];
+    // Ice Dragon's own scenery, dressing the open snowfield inside the
+    // loop of squares: snow-capped pines, ice spires, drifts, frost
+    // boulders, a couple of cairns marking the way, and one snowman built
+    // by whoever came through before you. Coordinates are grid cells
+    // (row/col, 0-indexed) that no square or the arena already occupies --
+    // see BOARD above for what is taken. Deliberately not one per empty
+    // cell: dotted about at different sizes with a bit of nudge/drop on
+    // each, the same way the old Thunder Dragon set was, so it reads as
+    // scattered rather than planted to a string.
+    const DECOR = [
+        { kind: 'ice_pine',     row: 1, col: 1,  size: .8,  nudge: -8,  drop: 4  },
+        { kind: 'frost_rock',   row: 1, col: 3,  size: .65, nudge: 6,   drop: -4 },
+        { kind: 'ice_spire',    row: 1, col: 5,  size: .85, nudge: 0,   drop: 6  },
+        { kind: 'snowman',      row: 1, col: 7,  size: .62, nudge: -4,  drop: 10 },
+        { kind: 'ice_pine',     row: 1, col: 9,  size: .75, nudge: 10,  drop: -2 },
+
+        { kind: 'snowdrift',    row: 2, col: 2,  size: .7,  nudge: 0,   drop: 10 },
+        { kind: 'frost_rock',   row: 2, col: 8,  size: .6,  nudge: -6,  drop: 4  },
+        { kind: 'ice_pine',     row: 2, col: 10, size: .7,  nudge: 8,   drop: 0  },
+
+        { kind: 'ice_spire',    row: 3, col: 2,  size: .7,  nudge: 0,   drop: 0  },
+
+        { kind: 'frozen_cairn', row: 4, col: 2,  size: .65, nudge: 0,   drop: 6  },
+        { kind: 'snowdrift',    row: 4, col: 8,  size: .65, nudge: -4,  drop: 0  },
+        { kind: 'ice_pine',     row: 4, col: 9,  size: .7,  nudge: 6,   drop: 4  },
+
+        { kind: 'ice_pine',     row: 5, col: 1,  size: .75, nudge: -6,  drop: 2  },
+        { kind: 'frost_rock',   row: 5, col: 3,  size: .6,  nudge: 4,   drop: -4 },
+        { kind: 'snowdrift',    row: 5, col: 4,  size: .6,  nudge: 0,   drop: 6  },
+        { kind: 'ice_spire',    row: 5, col: 8,  size: .8,  nudge: 0,   drop: 0  },
+        { kind: 'frozen_cairn', row: 5, col: 10, size: .6,  nudge: 6,   drop: 4  },
+
+        { kind: 'snowman',      row: 6, col: 2,  size: .6,  nudge: 0,   drop: 4  },
+        { kind: 'ice_pine',     row: 6, col: 4,  size: .75, nudge: -4,  drop: 0  },
+        { kind: 'frost_rock',   row: 6, col: 8,  size: .65, nudge: 4,   drop: 6  },
+        { kind: 'ice_pine',     row: 6, col: 9,  size: .7,  nudge: -6,  drop: -2 },
+
+        { kind: 'ice_pine',     row: 7, col: 2,  size: .7,  nudge: 0,   drop: 4  },
+        { kind: 'snowdrift',    row: 7, col: 4,  size: .65, nudge: 6,   drop: 0  }
+    ];
 
     const START_INDEX = 0;
     const ARENA_INDEX = 37;
@@ -13236,7 +13673,127 @@ body {
             '<g fill="#a3623d" stroke="#7a4526" stroke-width="2">' +
             '<path d="M6 78l14-34 20-8 16 18 10-6 12 22-8 12z"/>' +
             '<path d="M76 80l10-30 18-10 22 16 8 26z"/>' +
-            '</g></svg>'
+            '</g></svg>',
+
+        /* ---- Ice Dragon's own set: snow, ice and cold stone for the
+           open ground inside the loop of squares. ---- */
+
+        // A snow-capped spruce: three stacked tiers of dark evergreen, each
+        // rimmed along its top edge with a scallop of fresh snow, over a
+        // short brown trunk. The same idea as Thunder Dragon's canopy tree,
+        // redrawn for a board where the trees are half snow.
+        ice_pine:
+            '<svg viewBox="0 0 100 132" aria-hidden="true">' +
+            '<ellipse cx="50" cy="122" rx="30" ry="7" fill="#7fa0c4" opacity=".35"/>' +
+            '<rect x="45" y="96" width="10" height="24" fill="#5c4429"/>' +
+            '<g stroke="#183a2c" stroke-width="1.6" stroke-linejoin="round">' +
+            '<path d="M50 30 78 70H22z" fill="#254f3c"/>' +
+            '<path d="M50 52 82 94H18z" fill="#2c5c46"/>' +
+            '<path d="M50 74 88 118H12z" fill="#356b52"/>' +
+            '</g>' +
+            '<g fill="#eef6fb">' +
+            '<path d="M50 30c5 6 9 12 11 18-7-3-15-3-22 0 2-6 6-12 11-18z"/>' +
+            '<path d="M50 52c7 7 12 15 15 24-9-4-21-4-30 0 3-9 8-17 15-24z"/>' +
+            '<path d="M50 74c9 9 15 19 19 30-11-5-27-5-38 0 4-11 10-21 19-30z"/>' +
+            '</g>' +
+            '<g class="fx-twinkle" fill="#ffffff">' +
+            '<circle cx="34" cy="60" r="1.6"/><circle cx="66" cy="82" r="1.4"/>' +
+            '<circle cx="50" cy="40" r="1.3"/>' +
+            '</g>' +
+            '</svg>',
+
+        // A cluster of ice spires, straight up out of a low snow mound --
+        // translucent, and lit from somewhere inside.
+        ice_spire:
+            '<svg viewBox="0 0 120 150" aria-hidden="true">' +
+            '<ellipse cx="60" cy="140" rx="46" ry="10" fill="#7fa0c4" opacity=".35"/>' +
+            '<ellipse cx="60" cy="136" rx="34" ry="8" fill="#eef6fb"/>' +
+            '<g stroke="#7fb2d4" stroke-width="1.6" stroke-linejoin="round">' +
+            '<path d="M60 20 74 92 46 92z" fill="#cfe9f7" opacity=".92"/>' +
+            '<path d="M32 50 44 120 18 120z" fill="#a9d6ec" opacity=".9"/>' +
+            '<path d="M90 44 100 122 76 122z" fill="#bfe1f2" opacity=".9"/>' +
+            '</g>' +
+            '<g fill="#ffffff" opacity=".8">' +
+            '<path d="M60 20 66 60 60 56z"/>' +
+            '<path d="M32 50 37 82 32 78z"/>' +
+            '<path d="M90 44 94 76 90 72z"/>' +
+            '</g>' +
+            '<g class="fx-twinkle" fill="#eaffff">' +
+            '<circle cx="60" cy="46" r="2.2"/><circle cx="34" cy="76" r="1.8"/>' +
+            '<circle cx="92" cy="70" r="1.8"/>' +
+            '</g>' +
+            '</svg>',
+
+        // A drift of snow banked by the wind: a rounded mound with a cold
+        // shadow under its lip and a few glints where the crust catches
+        // the light.
+        snowdrift:
+            '<svg viewBox="0 0 120 68" aria-hidden="true">' +
+            '<ellipse cx="60" cy="60" rx="56" ry="8" fill="#7fa0c4" opacity=".25"/>' +
+            '<path d="M4 56C4 30 30 14 60 14s56 16 56 42z" fill="#f4faff"/>' +
+            '<path d="M4 56C4 34 26 20 52 18c-10 6-18 18-18 32 0 2 0 4 .5 6z" ' +
+            'fill="#dcedf7" opacity=".8"/>' +
+            '<path d="M14 50c8-4 18-6 28-6" stroke="#cfe4f0" stroke-width="2" ' +
+            'fill="none" opacity=".7"/>' +
+            '<g class="fx-twinkle" fill="#ffffff">' +
+            '<circle cx="40" cy="30" r="1.5"/><circle cx="78" cy="34" r="1.3"/>' +
+            '<circle cx="60" cy="22" r="1.2"/>' +
+            '</g>' +
+            '</svg>',
+
+        // Ice-crusted boulders -- the same cardboard-rock shape as Thunder
+        // Dragon's rocks, colder stone under a cap of frost.
+        frost_rock:
+            '<svg viewBox="0 0 140 90" aria-hidden="true">' +
+            '<ellipse cx="70" cy="82" rx="60" ry="8" fill="#7fa0c4" opacity=".3"/>' +
+            '<g stroke="#4a5c6e" stroke-width="2">' +
+            '<path d="M6 78l14-34 20-8 16 18 10-6 12 22-8 12z" fill="#7c8ea1"/>' +
+            '<path d="M76 80l10-30 18-10 22 16 8 26z" fill="#8a9cae"/>' +
+            '</g>' +
+            '<g fill="#eef6fb" opacity=".92">' +
+            '<path d="M20 44l20-8 8 8c-8 0-20 2-28 6z"/>' +
+            '<path d="M94 40l18-10 10 10c-8-1-20 2-28 6z"/>' +
+            '</g>' +
+            '<g class="fx-twinkle" fill="#ffffff">' +
+            '<circle cx="30" cy="56" r="1.4"/><circle cx="100" cy="52" r="1.3"/>' +
+            '</g>' +
+            '</svg>',
+
+        // A little snowman, built by whoever came through before you.
+        snowman:
+            '<svg viewBox="0 0 90 132" aria-hidden="true">' +
+            '<ellipse cx="45" cy="124" rx="30" ry="7" fill="#7fa0c4" opacity=".3"/>' +
+            '<circle cx="45" cy="96" r="30" fill="#f4faff" stroke="#cfe4f0" stroke-width="2"/>' +
+            '<circle cx="45" cy="52" r="22" fill="#f8fcff" stroke="#cfe4f0" stroke-width="2"/>' +
+            '<g stroke="#4a4a52" stroke-width="3" stroke-linecap="round">' +
+            '<path d="M23 50 4 38M67 50 86 40"/>' +
+            '</g>' +
+            '<path d="M45 52 62 56 45 60z" fill="#e8862c"/>' +
+            '<g fill="#2c2c34">' +
+            '<circle cx="37" cy="46" r="2.4"/><circle cx="53" cy="46" r="2.4"/>' +
+            '<circle cx="34" cy="90" r="2.6"/><circle cx="45" cy="86" r="2.6"/>' +
+            '<circle cx="56" cy="90" r="2.6"/>' +
+            '</g>' +
+            '<path d="M28 66c10 5 24 5 34 0" stroke="#b3282f" stroke-width="6" ' +
+            'fill="none" stroke-linecap="round"/>' +
+            '</svg>',
+
+        // A little cairn of flat stones, capped with snow -- someone
+        // marking the way through.
+        frozen_cairn:
+            '<svg viewBox="0 0 70 100" aria-hidden="true">' +
+            '<ellipse cx="35" cy="92" rx="28" ry="6" fill="#7fa0c4" opacity=".3"/>' +
+            '<g stroke="#5f5972" stroke-width="2" stroke-linejoin="round">' +
+            '<ellipse cx="35" cy="82" rx="26" ry="10" fill="#8f89a3"/>' +
+            '<ellipse cx="35" cy="60" rx="19" ry="8" fill="#a29ab0"/>' +
+            '<ellipse cx="35" cy="40" rx="12" ry="6" fill="#b3aec0"/>' +
+            '</g>' +
+            '<g fill="#f4faff" opacity=".9">' +
+            '<path d="M11 78c8-4 40-4 48 0-4 4-44 4-48 0z"/>' +
+            '<path d="M18 56c6-3 26-3 34 0-4 3-30 3-34 0z"/>' +
+            '<path d="M25 36c4-2 16-2 20 0-3 2-17 2-20 0z"/>' +
+            '</g>' +
+            '</svg>'
     };
     // Ice Dragon's DECOR calls this scenery "pine"; the art is the same tree.
     SCENERY_ART.pine = SCENERY_ART.tree;
