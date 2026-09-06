@@ -6902,6 +6902,10 @@ body {
         illusionDamageBoost: 10,
         illusionHpDrop: 20,
         startingEnergy: 1,
+        // Every monster attack that connects deals at least this much damage,
+        // even if defence would otherwise reduce it to 0. (Does not apply to
+        // attacks that are fully voided/warded off, which remain 0.)
+        enemyMinDamage: 5,
         // The campfire: a flint buys the fire, and the fire is worth 15 HP.
         campfireCost: 1,
         // Kept for the food chip in the interface.
@@ -8442,8 +8446,9 @@ body {
         b.lastRoll = null;
     }
 
-    function damagePlayer(state, target, raw) {
-        const dealt = Math.max(0, raw - totalDefence(state, target));
+    function damagePlayer(state, target, raw, minDamage) {
+        let dealt = Math.max(0, raw - totalDefence(state, target));
+        if (minDamage && dealt < minDamage) dealt = minDamage;
         if (dealt) target.hp = Math.max(0, target.hp - dealt);
         return dealt;
     }
@@ -8542,7 +8547,8 @@ body {
             (bb.hp / bb.maxHp) <= (p.hp / p.maxHp);
 
         if (hitBarb) {
-            const dealt = Math.max(0, raw - barbarianDefence(state));
+            let dealt = Math.max(0, raw - barbarianDefence(state));
+            if (!incoming.voided && dealt < R.enemyMinDamage) dealt = R.enemyMinDamage;
             bb.hp = Math.max(0, bb.hp - dealt);
             if (move.spend) b.enemyEnergy = Math.max(0, b.enemyEnergy - move.spend);
             else if (move.energy > R.startingEnergy) b.enemyEnergy = R.startingEnergy;
@@ -8569,7 +8575,7 @@ body {
             raw += e.passive.extraDamageUnlessWarm;
         }
 
-        const dealt = damagePlayer(state, p, raw);
+        const dealt = damagePlayer(state, p, raw, incoming.voided ? 0 : R.enemyMinDamage);
         if (move.spend) b.enemyEnergy = Math.max(0, b.enemyEnergy - move.spend);
         else if (move.energy > R.startingEnergy) b.enemyEnergy = R.startingEnergy;
         else b.enemyEnergy += 1;
@@ -9851,7 +9857,7 @@ body {
             const afford = e.moves.filter(m => b.enemyEnergy >= m.energy);
             const move = (afford.length ? afford : e.moves)
                 .slice().sort((x, y) => y.damage - x.damage)[0];
-            return Math.max(0, move.damage - E.totalDefence(state, p));
+            return Math.max(D.RULES.enemyMinDamage || 0, move.damage - E.totalDefence(state, p));
         }
         const other = E.player(state, b.aId === p.id ? b.bId : b.aId);
         if (!other) return 0;

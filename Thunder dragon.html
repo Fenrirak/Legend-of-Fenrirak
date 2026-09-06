@@ -5249,6 +5249,9 @@ body.modal-cover #board * {
         // the swarm's health raises the illusion's with it.
         illusionHpDrop: 20,
         startingEnergy: 1,
+        // Every monster attack that connects deals at least this much damage,
+        // even if defence would otherwise reduce it to 0.
+        enemyMinDamage: 5,
         rawSteakHeal: 5,
         searedSteakHeal: 10,
         foodPoisoningLoss: 15,
@@ -6636,8 +6639,9 @@ body.modal-cover #board * {
        instead of their health, coin for point.
        -------------------------------------------------------------------- */
 
-    function damagePlayer(state, target, raw) {
-        const dealt = Math.max(0, raw - totalDefence(state, target));
+    function damagePlayer(state, target, raw, minDamage) {
+        let dealt = Math.max(0, raw - totalDefence(state, target));
+        if (minDamage && dealt < minDamage) dealt = minDamage;
         if (!dealt) return 0;
 
         /* The Gold Forged Armour Set: the hit comes out of the purse instead
@@ -6749,7 +6753,7 @@ body.modal-cover #board * {
 
         const usable = e.moves.filter(m => b.enemyEnergy >= m.energy);
         const move = usable.sort((x, y) => y.damage - x.damage)[0] || e.moves[0];
-        const dealt = damagePlayer(state, p, move.damage + (b.spite || 0));
+        const dealt = damagePlayer(state, p, move.damage + (b.spite || 0), R.enemyMinDamage);
         // A monster pays for a heavy move the same way a player does.
         if (move.energy > R.startingEnergy) b.enemyEnergy = R.startingEnergy;
         else b.enemyEnergy += 1;
@@ -8093,7 +8097,7 @@ body.modal-cover #board * {
             const afford = e.moves.filter(m => b.enemyEnergy >= m.energy);
             const move = (afford.length ? afford : e.moves)
                 .slice().sort((x, y) => y.damage - x.damage)[0];
-            return Math.max(0, move.damage - E.totalDefence(state, p));
+            return Math.max(D.RULES.enemyMinDamage || 0, move.damage - E.totalDefence(state, p));
         }
         const other = E.player(state, b.aId === p.id ? b.bId : b.aId);
         if (!other) return 0;
