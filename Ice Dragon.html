@@ -5557,9 +5557,11 @@ body {
             moves: [
                 {
                     id: 'orb_of_light', name: 'Orb of Light', damage: 15, energy: 1,
-                    blind: 1,
-                    text: 'The opponent has to roll a die to attack next turn. On a 1 or 2 ' +
-                          'they do no damage (all other effects still apply). On a 3-6 they hit.'
+                    roll: { odd: 15, even: 20 }, blind: 1,
+                    text: 'Roll a die. Odd: 15 more damage. Even: 20 more damage. The ' +
+                          'opponent then has to roll a die to attack next turn — on a 1 ' +
+                          'or 2 they do no damage (all other effects still apply). On a ' +
+                          '3-6 they hit.'
                 },
                 {
                     id: 'orb_of_power', name: 'Orb of Power', damage: 65, energy: 5, spend: 3,
@@ -6251,7 +6253,7 @@ body {
         },
         staff_of_power: {
             id: 'staff_of_power', name: 'Staff of Power', kind: 'weapon', subtype: 'magic',
-            attack: 40, text: 'Do 40 extra damage.'
+            attack: 45, text: 'Do 45 extra damage.'
         },
         pendant_of_protection: {
             id: 'pendant_of_protection', name: 'Pendant of Protection', kind: 'armour',
@@ -6342,24 +6344,24 @@ body {
         },
         celestial_staff: {
             id: 'celestial_staff', name: 'Celestial Staff', kind: 'weapon',
-            subtype: 'magic', attack: 45, healPerMove: 5, harbour: true,
-            text: 'Do 45 extra damage. Heal 5 HP.'
+            subtype: 'magic', attack: 50, healPerMove: 5, harbour: true,
+            text: 'Do 50 extra damage. Heal 5 HP.'
         },
         fenriraks_scales_tunic: {
             id: 'fenriraks_scales_tunic', name: "Fenrirak's Scales Tunic",
-            kind: 'armour', subtype: 'any', defence: 30, attack: 5, healOnAttack: 5,
+            kind: 'armour', subtype: 'mage', defence: 30, attack: 5, healOnAttack: 5,
             harbour: true,
             text: 'Take 30 less damage. Do 5 extra damage. Heal 5 HP every time you attack.'
         },
         tungsten_armour: {
             id: 'tungsten_armour', name: 'Tungsten Armour', kind: 'armour',
-            subtype: 'any', defence: 45, diceMinus: 2, noFreeze: true, harbour: true,
+            subtype: 'knight', defence: 45, diceMinus: 2, noFreeze: true, harbour: true,
             text: 'Take 45 less damage. Minus 2 to your movement roll. ' +
                   'Cannot get frozen by enemies.'
         },
         steel_plated_fur_coat: {
             id: 'steel_plated_fur_coat', name: 'Steel Plated Fur Coat', kind: 'armour',
-            subtype: 'any', defence: 45, dice: 2, noFreeze: true, harbour: true,
+            subtype: 'archer', defence: 45, dice: 2, noFreeze: true, harbour: true,
             text: 'Take 45 less damage. Add up to 2 to your movement roll. ' +
                   'Cannot get frozen by enemies.'
         },

@@ -4090,7 +4090,7 @@ body.modal-cover #board * {
             starterArmour: 'rusted_armour',
             moves: [
                 { id: 'light_swing', name: 'Light Swing', damage: 10, energy: 1 },
-                { id: 'heavy_swing', name: 'Heavy Swing', damage: 60, energy: 5 }
+                { id: 'heavy_swing', name: 'Heavy Swing', damage: 55, energy: 5 }
             ],
             ability: {
                 id: 'iron_body',
@@ -4121,7 +4121,7 @@ body.modal-cover #board * {
             starterArmour: 'ripped_chest_plate',
             moves: [
                 { id: 'strike', name: 'Strike', damage: 15, energy: 1 },
-                { id: 'triple_threat', name: 'Triple Threat', damage: 55, energy: 5 }
+                { id: 'triple_threat', name: 'Triple Threat', damage: 60, energy: 5 }
             ],
             ability: {
                 id: 'agile_footwork',
@@ -4142,7 +4142,7 @@ body.modal-cover #board * {
             starterArmour: 'old_rag_armour',
             moves: [
                 { id: 'orb_of_power', name: 'Orb of Power', damage: 20, energy: 1 },
-                { id: 'orb_of_light', name: 'Orb of Light', damage: 60, energy: 5 }
+                { id: 'orb_of_light', name: 'Orb of Light', damage: 65, energy: 5 }
             ],
             ability: {
                 id: 'runed_relic',
@@ -4850,8 +4850,8 @@ body.modal-cover #board * {
         dark_iron_armour: {
             id: 'dark_iron_armour', name: 'Dark Iron Armour',
             kind: 'armour', subtype: 'knight', treasure: true, keep: 'knight',
-            defence: 30, firstStrikePvp: true,
-            text: 'Take 30 less damage. You will always attack first in a PvP battle.'
+            defence: 35, firstStrikePvp: true,
+            text: 'Take 35 less damage. You will always attack first in a PvP battle.'
         },
         dragon_scale_armour: {
             // The id is the old name and stays that way: it is written into
@@ -4859,12 +4859,12 @@ body.modal-cover #board * {
             // a thing on the card is not the same as renaming it underneath.
             id: 'dragon_scale_armour', name: "Fenrirak's Scale Tunic",
             kind: 'armour', subtype: 'archer', treasure: true, keep: 'archer',
-            defence: 35, fenrirakMovesPvp: true,
+            defence: 30, fenrirakMovesPvp: true,
             // Which of Fenrirak's three it lends. Thunder is left out: at 1
             // energy it was the one you could always afford, so the tunic was
             // in effect a free 75-damage blow every battle turn.
             fenrirakMoveIds: ['electrocute', 'discharge'],
-            text: 'Take 35 less damage. You may use Fenrirak’s Electrocute or ' +
+            text: 'Take 30 less damage. You may use Fenrirak’s Electrocute or ' +
                   'Discharge in a PvP battle (requires the same amount of energy ' +
                   'as Fenrirak).'
         },
