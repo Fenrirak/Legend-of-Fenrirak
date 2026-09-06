@@ -94,10 +94,7 @@
 }
 
 .topbar .nav-links a:hover,
-.topbar .nav-trigger:hover {
-    color: #e8e4dc;
-}
-
+.topbar .nav-trigger:hover { color: #e8e4dc; }
 .topbar .nav-links a:hover svg,
 .topbar .nav-trigger:hover svg { opacity: 1; }
 
@@ -155,10 +152,7 @@
     font-size: 13px;
 }
 
-.topbar .nav-menu a:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
+.topbar .nav-menu a:hover { background-color: rgba(255, 255, 255, 0.05); }
 .topbar .nav-menu a.active {
     border-bottom: none;
     border-left-color: rgba(217, 163, 92, 0.85);
@@ -1685,9 +1679,7 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 body.holding .modal-back[data-key="battle"] .modal button,
 body.holding .modal-back[data-key="battle"] .modal input,
 body.holding .modal-back[data-key="pending"] .modal button,
-body.holding .modal-back[data-key="pending"] .modal input {
-    pointer-events: none;
-}
+body.holding .modal-back[data-key="pending"] .modal input { pointer-events: none; }
 body.holding .modal-back[data-key="battle"] .modal .btn,
 body.holding .modal-back[data-key="battle"] .modal .move,
 body.holding .modal-back[data-key="pending"] .modal .btn {
@@ -1701,7 +1693,6 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
    press of it would be read as an answer to whatever question came next. It is
    dimmed and taken out of reach for that beat, exactly as the fight panel is,
    and comes back the instant the board is quiet. */
-
 
 .modal-back {
     position: fixed; inset: 0; z-index: 900;
@@ -2306,7 +2297,6 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     box-shadow: inset 0 -8px 20px rgba(0, 0, 0, 0.45);
 }
 
-
 /* ---- the die ----------------------------------------------------------
    It is thrown onto the game rather than shown in a window of its own. A
    real cube -- six faces on it, not one picture of a face -- pitched in
@@ -2458,9 +2448,7 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
 /* The number is in and it rolls the last of the way to a stop. This picks
    up exactly where the throw left off -- both ends are the same share of
    `--tx` -- so handing over from one to the other does not move it. */
-.dice-die.rolling {
-    animation: dice-roll-out .6s cubic-bezier(.17, .72, .28, 1) both;
-}
+.dice-die.rolling { animation: dice-roll-out .6s cubic-bezier(.17, .72, .28, 1) both; }
 @keyframes dice-roll-out {
     from { transform: translate3d(calc(var(--tx, -700px) * .045), 0, 0)
                       scale3d(1, 1, 1); }
@@ -2493,14 +2481,11 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
    so the number is arrived at, not snapped to. The .6s below is only what
    shows if that duration is never set: ui.js always overrides it with the
    real figure, long on a quick reply and short on a slow one. */
-.dice-cube.settled {
-    animation: dice-settle .6s cubic-bezier(.22, .9, .3, 1) both;
-}
+.dice-cube.settled { animation: dice-settle .6s cubic-bezier(.22, .9, .3, 1) both; }
 @keyframes dice-settle {
     from { transform: rotateX(var(--rx0, 0deg)) rotateY(var(--ry0, 0deg)); }
     to   { transform: rotateX(var(--rx, 0deg))  rotateY(var(--ry, 0deg)); }
 }
-
 
 /* ---- energy in a battle -----------------------------------------------
    Energy is what pays for the big attack, so both sides show it as a row of
@@ -2654,7 +2639,6 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     display: block; height: 100%;
     background: linear-gradient(90deg, #8c2f28, #d2635a);
 }
-
 
 /* ---- the finish of a fight ---------------------------------------------
    Filled into the panel the fight was fought in, and held for a beat before
@@ -2844,10 +2828,7 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
    ---------------------------------------------------------------------- */
 
 body.modal-cover #board,
-body.modal-cover #board * {
-    animation-play-state: paused;
-}
-
+body.modal-cover #board * { animation-play-state: paused; }
 /* ---- the merchant's stall --------------------------------------------- */
 
 .shop-section-note { font-size: 13px; color: #9a9a9a; margin: 0 0 10px; }
@@ -2881,7 +2862,6 @@ body.modal-cover #board * {
     color: var(--gold-bright, #e4c14a);
 }
 .shop-item.not-yours .paper { opacity: .58; }
-
 
 /* ---- turned away at the Gate ------------------------------------------
    The board goes white, a bolt comes down the middle of it and the name of
@@ -3007,9 +2987,7 @@ body.modal-cover #board * {
     gap: 16px;
     transform: scale(.9);
 }
-.turn-announce.on .turn-announce-card {
-    animation: turn-announce-pop 2.6s cubic-bezier(.2, .8, .2, 1) forwards;
-}
+.turn-announce.on .turn-announce-card { animation: turn-announce-pop 2.6s cubic-bezier(.2, .8, .2, 1) forwards; }
 @keyframes turn-announce-pop {
     0%   { transform: scale(.88); }
     14%  { transform: scale(1); }
@@ -3099,9 +3077,7 @@ body.modal-cover #board * {
     box-shadow: 0 22px 54px -16px rgba(0, 0, 0, .9);
     transform: translateY(10px) scale(.96);
 }
-.roll-call.on .roll-call-card {
-    animation: roll-call-rise 1.15s cubic-bezier(.2, .85, .25, 1) forwards;
-}
+.roll-call.on .roll-call-card { animation: roll-call-rise 1.15s cubic-bezier(.2, .85, .25, 1) forwards; }
 @keyframes roll-call-rise {
     0%   { transform: translateY(12px) scale(.94); }
     18%  { transform: translateY(0)    scale(1); }
@@ -3160,9 +3136,7 @@ body.modal-cover #board * {
     transform: scaleX(0);
     transform-origin: left center;
 }
-.roll-call.on .roll-call-wind > i {
-    animation: roll-call-wind 1.15s cubic-bezier(.35, 0, .5, 1) forwards;
-}
+.roll-call.on .roll-call-wind > i { animation: roll-call-wind 1.15s cubic-bezier(.35, 0, .5, 1) forwards; }
 @keyframes roll-call-wind {
     0%   { transform: scaleX(0); }
     88%  { transform: scaleX(1); }
@@ -3393,10 +3367,7 @@ body.modal-cover #board * {
     background-color: rgba(46, 10, 10, .72);
 }
 .landing.danger .landing-n { color: #ff9d9d; }
-.landing.danger.on {
-    box-shadow: 0 0 0 2px rgba(190,40,40,.4), 0 0 18px -2px var(--crimson);
-}
-
+.landing.danger.on { box-shadow: 0 0 0 2px rgba(190,40,40,.4), 0 0 18px -2px var(--crimson); }
 /* The arena is a disc rather than a card, so the mark sits inside it. */
 .arena .landing { right: 12px; bottom: 12px; }
 
@@ -3483,7 +3454,6 @@ body.modal-cover #board * {
     background: rgba(217,163,92,.16);
     border: 1px solid rgba(217,163,92,.4);
 }
-
 
 /* ---- Single Player runs the width of the two above it ------------------ */
 
@@ -4520,10 +4490,7 @@ body.modal-cover #board * {
 
     // Percent-encode the lot, including apostrophes, so the URI survives
     // being written straight into an HTML attribute.
-    function artUri(svg) {
-        return 'data:image/svg+xml,' + encodeURIComponent(svg).replace(/'/g, '%27');
-    }
-
+    function artUri(svg) { return 'data:image/svg+xml,' + encodeURIComponent(svg).replace(/'/g, '%27'); }
     CLASSES.knight.art = artUri(CHARACTER_ART.knight);
     CLASSES.archer.art = artUri(CHARACTER_ART.archer);
     CLASSES.mage.art   = artUri(CHARACTER_ART.mage);
@@ -5165,7 +5132,6 @@ body.modal-cover #board * {
           text: 'The Thunder Dragon waits. Defeat Fenrirak and the legend is yours.' }
     ];
 
-
     // Scenery, not a square you can land on — fills the gap beside the arena.
     const DECOR = [
         // kind          where               how big (fraction of the cell)
@@ -5358,36 +5324,18 @@ body.modal-cover #board * {
         if (state.log.length > 120) state.log.splice(0, state.log.length - 120);
     }
 
-    function player(state, pid) {
-        return state.players.find(p => p.id === pid) || null;
-    }
-
-    function square(i) {
-        return D.BOARD[Math.max(0, Math.min(D.BOARD.length - 1, i))];
-    }
-
-    function ownedItem(p, itemUid) {
-        return p.inventory.find(it => it.uid === itemUid) || null;
-    }
-
-    function equippedWeapon(p) {
-        return p.weaponUid ? ownedItem(p, p.weaponUid) : null;
-    }
-
-    function equippedArmour(p) {
-        return p.armourUid ? ownedItem(p, p.armourUid) : null;
-    }
-
+    function player(state, pid) { return state.players.find(p => p.id === pid) || null; }
+    function square(i) { return D.BOARD[Math.max(0, Math.min(D.BOARD.length - 1, i))]; }
+    function ownedItem(p, itemUid) { return p.inventory.find(it => it.uid === itemUid) || null; }
+    function equippedWeapon(p) { return p.weaponUid ? ownedItem(p, p.weaponUid) : null; }
+    function equippedArmour(p) { return p.armourUid ? ownedItem(p, p.armourUid) : null; }
     function defOf(inst) { return inst ? D.ITEMS[inst.id] : null; }
 
     /* ------------------------------------------------------------------ */
     /* Derived stats                                                       */
     /* ------------------------------------------------------------------ */
 
-    function buffTotal(p, kind) {
-        return (p.buffs || []).reduce((n, b) => n + (b.kind === kind ? b.value : 0), 0);
-    }
-
+    function buffTotal(p, kind) { return (p.buffs || []).reduce((n, b) => n + (b.kind === kind ? b.value : 0), 0); }
     /* ---- the two sums --------------------------------------------------
        What a blow comes to is a short piece of arithmetic, and the panel that
        asks you to choose a move now shows that arithmetic rather than only its
@@ -5400,10 +5348,7 @@ body.modal-cover #board * {
        arrived at.
        ------------------------------------------------------------------- */
 
-    function sum(parts) {
-        return parts.reduce((n, x) => n + x.value, 0);
-    }
-
+    function sum(parts) { return parts.reduce((n, x) => n + x.value, 0); }
     function buffParts(p, kind, fallback) {
         return (p.buffs || [])
             .filter(b => b.kind === kind && b.value)
@@ -5420,10 +5365,7 @@ body.modal-cover #board * {
         return out.concat(buffParts(p, 'defence', 'a power-up'));
     }
 
-    function totalDefence(state, p) {
-        return sum(defenceParts(state, p));
-    }
-
+    function totalDefence(state, p) { return sum(defenceParts(state, p)); }
     // Attack bonus added to any move that already deals damage.
     function attackParts(p) {
         const weapon = defOf(equippedWeapon(p));
@@ -5434,10 +5376,7 @@ body.modal-cover #board * {
         return out.concat(buffParts(p, 'damage', 'a power-up'));
     }
 
-    function totalAttackBonus(p) {
-        return sum(attackParts(p));
-    }
-
+    function totalAttackBonus(p) { return sum(attackParts(p)); }
     // Modifier applied to every dice roll this player makes. This is the
     // most it can be: every bonus in the game is an "up to", so the player
     // is asked how much of it they actually want once the die is down.
@@ -5553,9 +5492,7 @@ body.modal-cover #board * {
     function drawPowerup(state, p, count) {
         const drawn = [];
         for (let n = 0; n < count; n++) {
-            if (!state.decks.powerup.length) {
-                state.decks.powerup = shuffle(D.POWERUP_DECK.slice());
-            }
+            if (!state.decks.powerup.length) { state.decks.powerup = shuffle(D.POWERUP_DECK.slice()); }
             const id = state.decks.powerup.shift();
             p.powerups.push({ uid: uid('pu'), id: id });
             drawn.push(D.POWERUPS[id].name);
@@ -5670,12 +5607,8 @@ body.modal-cover #board * {
             const gone = state.players[idx];
             state.players.splice(idx, 1);
             log(state, gone.name + ' left the room.', 'muted');
-            if (state.hostId === pid && state.players.length) {
-                state.hostId = state.players[0].id;
-            }
-        } else {
-            state.players[idx].connected = false;
-        }
+            if (state.hostId === pid && state.players.length) { state.hostId = state.players[0].id; }
+        } else { state.players[idx].connected = false; }
         return ok();
     }
 
@@ -5687,9 +5620,7 @@ body.modal-cover #board * {
 
         if (clsId) {
             const taken = state.players.filter(x => x.cls === clsId && x.id !== pid).length;
-            if (taken >= R.maxPerClass) {
-                return fail('There are already two ' + D.CLASSES[clsId].name + 's.');
-            }
+            if (taken >= R.maxPerClass) { return fail('There are already two ' + D.CLASSES[clsId].name + 's.'); }
         }
         p.cls = clsId;
         p.ready = !!clsId;
@@ -5845,10 +5776,7 @@ body.modal-cover #board * {
        engine's own check, the heartbeat that calls it, and the number counting
        down on the screen), so the clock the player is watching is the clock
        they are actually being held to. */
-    function turnLimit(state) {
-        return state && state.battle ? R.battleTimeoutMs : R.turnTimeoutMs;
-    }
-
+    function turnLimit(state) { return state && state.battle ? R.battleTimeoutMs : R.turnTimeoutMs; }
     function checkTimeout(state, now) {
         if (state.phase !== 'playing') return false;
         if (state.paused) return false;        // the clock stops with everything else
@@ -6158,9 +6086,7 @@ body.modal-cover #board * {
                         type: 'pot', playerId: p.id,
                         prompt: 'You may cook as many raw steaks as you like.'
                     };
-                } else {
-                    log(state, 'No raw steak to cook.', 'muted');
-                }
+                } else { log(state, 'No raw steak to cook.', 'muted'); }
                 return ok();
 
             case 'chest':
@@ -6608,9 +6534,7 @@ body.modal-cover #board * {
             p.energy = R.startingEnergy;
             log(state, p.name + ' spent the charge — energy back to ' +
                        R.startingEnergy + '.', 'muted');
-        } else {
-            p.energy += 1;
-        }
+        } else { p.energy += 1; }
         consumeBuffs(p, 'damage');
 
         const weaponInst = equippedWeapon(p);
@@ -6618,9 +6542,7 @@ body.modal-cover #board * {
         if (weapon && weapon.healPerMove) {
             const before = p.hp;
             p.hp = Math.min(p.maxHp, p.hp + weapon.healPerMove);
-            if (p.hp > before) {
-                log(state, 'The ' + weapon.name + ' knits ' + (p.hp - before) + ' HP back.', 'heal');
-            }
+            if (p.hp > before) { log(state, 'The ' + weapon.name + ' knits ' + (p.hp - before) + ' HP back.', 'heal'); }
         }
         if (weaponInst && weaponInst.uses !== null && weaponInst.uses !== undefined) {
             weaponInst.uses -= 1;
@@ -6831,10 +6753,7 @@ body.modal-cover #board * {
                 p.chestKeys += sq.chestKey;
                 log(state, p.name + ' recovers a chest key.', 'item');
             }
-        } else {
-            log(state, 'It was only an illusion — no key or chest key is left behind.', 'muted');
-        }
-
+        } else { log(state, 'It was only an illusion — no key or chest key is left behind.', 'muted'); }
         const wasIllusion = b.illusion;
         noteBattleEnd(state, b, asPlayer(p), asEnemy(b.enemyId));
         state.battle = null;
@@ -6888,10 +6807,7 @@ body.modal-cover #board * {
            question still open. So the winner finishes their go the ordinary
            way, by ending it. */
         const cur = currentPlayer(state);
-        if (cur && cur.id === winner.id && winner.pos === fought) {
-            return resolveSquare(state, winner, square(fought));
-        }
-
+        if (cur && cur.id === winner.id && winner.pos === fought) { return resolveSquare(state, winner, square(fought)); }
         // Otherwise the mover is done: either they lost, or they were never
         // the one moving.
         return advanceTurn(state);
@@ -6979,10 +6895,7 @@ body.modal-cover #board * {
         // die, and there is no throwing one on top of a square you are still
         // stood on deciding about.
         if (state.paused) return { ok: false, error: 'The game is paused.', silent: true };
-        if (state.pending && state.pending.playerId === pid) {
-            return fail('Resolve the square first.');
-        }
-
+        if (state.pending && state.pending.playerId === pid) { return fail('Resolve the square first.'); }
         if (type === 'cooked') {
             if (p.steaks.cooked < 1) return fail('No seared steak.');
             p.steaks.cooked -= 1;
@@ -7011,9 +6924,7 @@ body.modal-cover #board * {
         const p = player(state, pid);
         if (!p) return fail('Unknown player.');
         if (!isMyTurn(state, pid)) return fail('It is not your turn.');
-        if (!state.pending || state.pending.type !== 'pot' || state.pending.playerId !== pid) {
-            return fail('You are not standing at a pot.');
-        }
+        if (!state.pending || state.pending.type !== 'pot' || state.pending.playerId !== pid) { return fail('You are not standing at a pot.'); }
         const n = Math.max(0, Math.min(count, p.steaks.raw));
         p.steaks.raw -= n;
         p.steaks.cooked += n;
@@ -7032,20 +6943,13 @@ body.modal-cover #board * {
         const def = D.ITEMS[inst.id];
         const cls = D.CLASSES[p.cls];
 
-        if (def.kind === 'weapon' && def.subtype !== cls.weaponType) {
-            return fail('A ' + cls.name + ' cannot wield that.');
-        }
-        if (def.kind === 'armour' && def.subtype !== 'any' && def.subtype !== cls.armourType) {
-            return fail('That armour is not made for a ' + cls.name + '.');
-        }
-
+        if (def.kind === 'weapon' && def.subtype !== cls.weaponType) { return fail('A ' + cls.name + ' cannot wield that.'); }
+        if (def.kind === 'armour' && def.subtype !== 'any' && def.subtype !== cls.armourType) { return fail('That armour is not made for a ' + cls.name + '.'); }
         // One weapon change and one armour change a turn, counted separately:
         // swapping a sword does not use up the swap you were saving for armour.
         const slot = def.kind === 'weapon' ? 'weapon' : 'armour';
         const spent = slot === 'weapon' ? (p.weaponSwaps | 0) : (p.armourSwaps | 0);
-        if (spent >= R.equipChangesPerTurn) {
-            return fail('You have already changed your ' + slot + ' this turn.');
-        }
+        if (spent >= R.equipChangesPerTurn) { return fail('You have already changed your ' + slot + ' this turn.'); }
         // Re-equipping what you are already wearing is not a change.
         const already = slot === 'weapon' ? p.weaponUid : p.armourUid;
         if (already !== inst.uid) {
@@ -7076,18 +6980,13 @@ body.modal-cover #board * {
         const b = state.battle;
 
         if (b) {
-            if (!cls.ability.inBattle) {
-                return fail(cls.ability.name + ' is no use in the middle of a fight.');
-            }
+            if (!cls.ability.inBattle) { return fail(cls.ability.name + ' is no use in the middle of a fight.'); }
             if (battleActorId(state) !== pid) return fail('Wait for your turn in the fight.');
             if (b.phase !== 'roll') {
                 return fail('Call on ' + cls.ability.name +
                             ' at the start of your turn, before you roll to strike.');
             }
-        } else if (!isMyTurn(state, pid)) {
-            return fail('Abilities can only be used on your turn.');
-        }
-
+        } else if (!isMyTurn(state, pid)) { return fail('Abilities can only be used on your turn.'); }
         if (state.turnNo - p.lastAbilityTurn < R.abilityCooldownTurns) {
             return fail('You may only use an ability once every ' +
                         R.abilityCooldownTurns + ' turns.');
@@ -7116,9 +7015,7 @@ body.modal-cover #board * {
             const enemyId = payload && payload.enemyId;
             const target = player(state, targetId);
             if (!target || target.id === pid) return fail('Choose another player.');
-            if (!D.ENEMIES[enemyId] || D.ENEMIES[enemyId].noIllusion) {
-                return fail('That enemy cannot be conjured.');
-            }
+            if (!D.ENEMIES[enemyId] || D.ENEMIES[enemyId].noIllusion) { return fail('That enemy cannot be conjured.'); }
             target.pendingIllusion = enemyId;
             log(state, p.name + ' conjures an illusion of ' + D.foeName(D.ENEMIES[enemyId]) +
                        ' to ambush ' + target.name + '!', 'system');
@@ -7323,9 +7220,7 @@ body.modal-cover #board * {
         if (!isMyTurn(state, fromId)) return fail('You can only offer a trade on your turn.');
         if (state.battle) return fail('Finish the battle first.');
         if (state.pending) return fail('Resolve the square first.');
-        if (state.trades.some(t => t.fromId === fromId && t.status === 'open')) {
-            return fail('You already have an offer waiting.');
-        }
+        if (state.trades.some(t => t.fromId === fromId && t.status === 'open')) { return fail('You already have an offer waiting.'); }
         const t = {
             id: uid('tr'), fromId: fromId, toId: toId,
             give: normaliseBundle(give), want: normaliseBundle(want),
@@ -7671,10 +7566,7 @@ body.modal-cover #board * {
 
     function itemDef(inst) { return inst ? D.ITEMS[inst.id] : null; }
 
-    function fragmentCount(p) {
-        return Array.isArray(p.fragments) ? p.fragments.length : (p.keyFragments | 0);
-    }
-
+    function fragmentCount(p) { return Array.isArray(p.fragments) ? p.fragments.length : (p.keyFragments | 0); }
     function needsFragment(p, which) {
         if (!which) return false;
         return Array.isArray(p.fragments)
@@ -7778,10 +7670,7 @@ body.modal-cover #board * {
 
     // What the charge stands at after a swing: spent by a heavy move, built
     // up by a light one.
-    function spend(energy, cost) {
-        return cost > D.RULES.startingEnergy ? D.RULES.startingEnergy : energy + 1;
-    }
-
+    function spend(energy, cost) { return cost > D.RULES.startingEnergy ? D.RULES.startingEnergy : energy + 1; }
     // Walk a fight forward blow by blow and see who runs out of health first.
     // Only a 1 or 2 on the die is a miss now, so two swings in three land and
     // a swing counts for two-thirds of its damage; energy climbs by one each
@@ -7842,10 +7731,7 @@ body.modal-cover #board * {
                                asMonster(D.ENEMIES[enemyId])));
     }
 
-    function pvpOdds(state, p, other) {
-        return oddsOf(fightOut(asFighter(state, p), asFighter(state, other)));
-    }
-
+    function pvpOdds(state, p, other) { return oddsOf(fightOut(asFighter(state, p), asFighter(state, other))); }
     /* ------------------------------------------------------------------ */
     /* Reading the board                                                   */
     /*                                                                     */
@@ -7936,10 +7822,7 @@ body.modal-cover #board * {
         if (!sq) return 0;
 
         // A spring is not a destination -- it throws you two further on.
-        if (sq.action === 'spring' && (depth || 0) < 3) {
-            return 2 + walkValue(state, p, pos, sq.value, (depth || 0) + 1);
-        }
-
+        if (sq.action === 'spring' && (depth || 0) < 3) { return 2 + walkValue(state, p, pos, sq.value, (depth || 0) + 1); }
         let v = pos * 1.5 + squareValue(state, p, pos);
 
         // Overshooting the last fragment you still need: everything ahead is
@@ -8000,10 +7883,7 @@ body.modal-cover #board * {
         })).filter(c => c.def);
     }
 
-    function heldCards(p) {
-        return cardsOf(p, 'potions').concat(cardsOf(p, 'powerups'));
-    }
-
+    function heldCards(p) { return cardsOf(p, 'potions').concat(cardsOf(p, 'powerups')); }
     function useCard(card) {
         return {
             action: card.list === 'potions' ? 'usePotion' : 'usePowerup',
@@ -8479,9 +8359,7 @@ body.modal-cover #board * {
         if (offer) return tradeStep(state, p, offer);
 
         const b = state.battle;
-        if (b) {
-            return E.battleActorId(state) === pid ? battleStep(state, p, b) : null;
-        }
+        if (b) { return E.battleActorId(state) === pid ? battleStep(state, p, b) : null; }
         if (state.pending) {
             return state.pending.playerId === pid
                 ? pendingStep(state, p, state.pending) : null;
@@ -8574,10 +8452,7 @@ body.modal-cover #board * {
         mage:   { id: 'bot_mage',   name: 'Ilyana' }
     };
 
-    function isBotId(id) {
-        return id === BOTS.knight.id || id === BOTS.archer.id || id === BOTS.mage.id;
-    }
-
+    function isBotId(id) { return id === BOTS.knight.id || id === BOTS.archer.id || id === BOTS.mage.id; }
     // Called after anything that happens in the lobby. You pick first; the
     // moment you have a class, the other two are filled in behind you, and if
     // you change your mind they move out of your way.
@@ -8591,9 +8466,7 @@ body.modal-cover #board * {
         state.players.slice().forEach(p => {
             if (!isBotId(p.id)) return;
             const wanted = BOTS[p.cls] && BOTS[p.cls].id === p.id;
-            if (!mine || !wanted || p.cls === mine) {
-                state.players = state.players.filter(x => x.id !== p.id);
-            }
+            if (!mine || !wanted || p.cls === mine) { state.players = state.players.filter(x => x.id !== p.id); }
         });
 
         if (!mine) return;
@@ -8685,9 +8558,7 @@ body.modal-cover #board * {
             const p = order[i];
             if (!p || !isBotId(p.id)) continue;
             let job = null;
-            try { job = global.LOF_BOT.decide(state, p.id); } catch (e) {
-                job = fallback(p);
-            }
+            try { job = global.LOF_BOT.decide(state, p.id); } catch (e) { job = fallback(p); }
             if (job) return { pid: p.id, action: job.action, args: job.args || {} };
         }
         return null;
@@ -8857,10 +8728,7 @@ body.modal-cover #board * {
         return Promise.resolve(CODE);
     }
 
-    function joinRoom() {
-        return Promise.reject(new Error('A single-player game has no room to join.'));
-    }
-
+    function joinRoom() { return Promise.reject(new Error('A single-player game has no room to join.')); }
     function roomExists() { return Promise.resolve(!!state); }
 
     function act(code, action, args) {
@@ -8966,10 +8834,7 @@ body.modal-cover #board * {
        itself, which would throw away whatever had been chosen in it. */
     let overlay = null;        // { key, draw }
 
-    function closeOverlay() {
-        overlay = null;
-    }
-
+    function closeOverlay() { overlay = null; }
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
@@ -8991,10 +8856,7 @@ body.modal-cover #board * {
         notice._t = setTimeout(() => n.classList.remove('show'), 5200);
     }
 
-    function showScreen(id) {
-        $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
-    }
-
+    function showScreen(id) { $$('.screen').forEach(s => s.classList.toggle('active', s.id === id)); }
     /* ------------------------------------------------------------------ */
     /* The die                                                             */
     /*                                                                     */
@@ -9058,9 +8920,7 @@ body.modal-cover #board * {
             stage.className = 'dice-stage';
             stage.setAttribute('aria-hidden', 'true');
             let faces = '';
-            for (let n = 1; n <= 6; n++) {
-                faces += '<span class="dice-side s' + n + '">' + pipsHtml(n) + '</span>';
-            }
+            for (let n = 1; n <= 6; n++) { faces += '<span class="dice-side s' + n + '">' + pipsHtml(n) + '</span>'; }
             stage.innerHTML = '<div class="dice-die"><div class="dice-cube">' +
                               faces + '</div></div>';
             document.body.appendChild(stage);
@@ -9251,9 +9111,7 @@ body.modal-cover #board * {
             queuedT.push(setTimeout(() => {
                 queuedT.shift();
                 queued = Math.max(0, queued - 1);
-                if (!inFlight && !queued) {
-                    while (idleQueue.length) idleQueue.shift()();
-                }
+                if (!inFlight && !queued) { while (idleQueue.length) idleQueue.shift()(); }
             }, 12000));
         }
 
@@ -9550,9 +9408,7 @@ body.modal-cover #board * {
                 pump();
                 // Only once the last of them is down, and only if the die
                 // that just went up did not put another one in the queue.
-                if (!showing && !queue.length) {
-                    while (waiting.length) waiting.shift()();
-                }
+                if (!showing && !queue.length) { while (waiting.length) waiting.shift()(); }
             }
         }
 
@@ -9804,9 +9660,7 @@ body.modal-cover #board * {
            fixed, so the question has to be asked again each time rather than
            answered once. */
         function whenTableClear(fn) {
-            if (!DICE.onScreen() && !ROLL_CALL.busy() && !BATTLE_END.busy()) {
-                fn(); return;
-            }
+            if (!DICE.onScreen() && !ROLL_CALL.busy() && !BATTLE_END.busy()) { fn(); return; }
             setTimeout(() => whenTableClear(fn), 140);
         }
 
@@ -9937,9 +9791,7 @@ body.modal-cover #board * {
     function pipsHtml(n) {
         const on = PIP_LAYOUT[n] || [];
         let out = '';
-        for (let i = 1; i <= 9; i++) {
-            out += '<i' + (on.indexOf(i) >= 0 ? ' class="on"' : '') + '></i>';
-        }
+        for (let i = 1; i <= 9; i++) { out += '<i' + (on.indexOf(i) >= 0 ? ' class="on"' : '') + '></i>'; }
         return out;
     }
 
@@ -10074,9 +9926,7 @@ body.modal-cover #board * {
                anyway. What is waiting is usually the monster's next move, and
                a monster that never moves is a fight nobody can finish. */
             while (waiting.length &&
-                   (!busyNow() || Date.now() - waiting[0].at > HOLD_GIVE_UP_MS)) {
-                waiting.shift().fn();
-            }
+                   (!busyNow() || Date.now() - waiting[0].at > HOLD_GIVE_UP_MS)) { waiting.shift().fn(); }
             if (waiting.length && !poll) poll = setTimeout(pump, 120);
         }
 
@@ -10132,22 +9982,13 @@ body.modal-cover #board * {
         return false;
     }
 
-    function tableSettled() {
-        return !busy && !HOLD.busy() && !DICE.busy() && !walksRunning();
-    }
-
+    function tableSettled() { return !busy && !HOLD.busy() && !DICE.busy() && !walksRunning(); }
     let heldSince = 0;
 
-    function holdOverdue() {
-        return heldSince > 0 && Date.now() - heldSince > HOLD_GIVE_UP_MS;
-    }
-
+    function holdOverdue() { return heldSince > 0 && Date.now() - heldSince > HOLD_GIVE_UP_MS; }
     // Held: busy, and not yet so long that waiting has become the problem.
     // This, and not `tableSettled`, is what the screen and the buttons obey.
-    function tableHeld() {
-        return !tableSettled() && !holdOverdue();
-    }
-
+    function tableHeld() { return !tableSettled() && !holdOverdue(); }
     function markHolding() {
         if (tableSettled()) heldSince = 0;
         else if (!heldSince) heldSince = Date.now();
@@ -10267,9 +10108,7 @@ body.modal-cover #board * {
             } catch (err) {
                 NET = SOLO;
                 notice(err.message || 'Could not create a room.');
-            } finally {
-                $('#btn-create').disabled = false;
-            }
+            } finally { $('#btn-create').disabled = false; }
         });
 
         // The rules, before you have committed to anything.
@@ -10288,9 +10127,7 @@ body.modal-cover #board * {
                 enterRoom(await SOLO.createRoom(name));
             } catch (err) {
                 notice(err.message || 'Could not start a game.');
-            } finally {
-                $('#btn-solo').disabled = false;
-            }
+            } finally { $('#btn-solo').disabled = false; }
         });
 
         $('#btn-resume').addEventListener('click', async () => {
@@ -10304,9 +10141,7 @@ body.modal-cover #board * {
             } catch (err) {
                 $('#btn-resume').style.display = 'none';
                 notice(err.message || 'There is no game to carry on.');
-            } finally {
-                $('#btn-resume').disabled = false;
-            }
+            } finally { $('#btn-resume').disabled = false; }
         });
 
         $('#btn-join').addEventListener('click', joinFromInput);
@@ -10336,9 +10171,7 @@ body.modal-cover #board * {
         } catch (err) {
             NET = SOLO;
             notice(err.message || 'Could not join that room.');
-        } finally {
-            $('#btn-join').disabled = false;
-        }
+        } finally { $('#btn-join').disabled = false; }
     }
 
     /* Out of the room and back to the front page.
@@ -10563,7 +10396,6 @@ body.modal-cover #board * {
     /* ------------------------------------------------------------------ */
     /* Lobby                                                               */
     /* ------------------------------------------------------------------ */
-
 
     /* ------------------------------------------------------------------ */
     /* Enemy pictures                                                      */
@@ -10845,7 +10677,6 @@ body.modal-cover #board * {
             '<path d="M36 50l-7-4 6 10zM35 64l-8-3 7 10zM36 76l-8-2 7 9z"/></g>'
     };
 
-
     // A monster's picture at whatever size the caller wants.
     function enemyPic(enemy, px) {
         const size = px || 96;
@@ -10981,9 +10812,7 @@ body.modal-cover #board * {
                 navigator.clipboard.writeText(link)
                     .then(() => notice('Invite link copied.'))
                     .catch(() => notice(link));
-            } else {
-                notice(link);
-            }
+            } else { notice(link); }
         });
         $('#btn-leave-lobby').addEventListener('click', leaveRoom);
     }
@@ -11269,9 +11098,7 @@ body.modal-cover #board * {
                     // the rest of the game.
                     delete walkTimers[p.id];
                     shownPos[p.id] = p.pos;
-                } else {
-                    shownPos[p.id] = path[step];
-                }
+                } else { shownPos[p.id] = path[step]; }
                 renderBoard();
             }, 210);
         });
@@ -12405,10 +12232,7 @@ body.modal-cover #board * {
        your own turns whatever the size of the table. Asked in three places
        now (the side panel, the battle panel and the line under the button),
        so it is worked out in one. */
-    function abilityIsReady(p) {
-        return abilityWait(p) === 0;
-    }
-
+    function abilityIsReady(p) { return abilityWait(p) === 0; }
     function abilityWait(p) {
         const due = (p.lastAbilityTurn | 0) + D.RULES.abilityCooldownTurns;
         return Math.max(0, due - (S.turnNo | 0));
@@ -12970,7 +12794,6 @@ body.modal-cover #board * {
         });
     }
 
-
     function closeModal() {
         $('#modal-back').classList.remove('show', 'dock');
         document.body.classList.remove('modal-cover');
@@ -13099,10 +12922,7 @@ body.modal-cover #board * {
         const b = S && S.battle;
         return (b && b.kind === 'pve' && b.enemyId === 'fenrirak') ? 1 : 2;
     }
-    function missRule() {
-        return missesUpTo() === 1 ? 'Only a 1 misses.' : 'Only a 1 or 2 misses.';
-    }
-
+    function missRule() { return missesUpTo() === 1 ? 'Only a 1 misses.' : 'Only a 1 or 2 misses.'; }
     /* The finish, drawn into the panel the fight was fought in.
 
        Both sides are shown, because who lost is half of what happened: the
@@ -13111,9 +12931,7 @@ body.modal-cover #board * {
        says so in the crimson the death lines in the log are written in. */
     function battleFaceHtml(side, big) {
         const n = big ? 104 : 66;
-        if (side.enemyId && D.ENEMIES[side.enemyId]) {
-            return enemyPic(D.ENEMIES[side.enemyId], n);
-        }
+        if (side.enemyId && D.ENEMIES[side.enemyId]) { return enemyPic(D.ENEMIES[side.enemyId], n); }
         if (side.cls && D.CLASSES[side.cls]) {
             return '<img src="' + esc(D.CLASSES[side.cls].art) + '" alt="' +
                    esc(side.name) + '">';
@@ -13517,10 +13335,7 @@ body.modal-cover #board * {
 
     // Just the marks. Re-marking wipes and redraws, and must not forget
     // which question they were drawn for while it does.
-    function wipeLandings() {
-        $$('.board .landing').forEach(el => el.remove());
-    }
-
+    function wipeLandings() { $$('.board .landing').forEach(el => el.remove()); }
     // The marks, and the question they belonged to.
     function clearLandings() {
         wipeLandings();
@@ -14033,10 +13848,7 @@ body.modal-cover #board * {
 
     /* ---- merchant ---- */
 
-    function article(word) {
-        return /^[aeiou]/i.test(word || '') ? 'an' : 'a';
-    }
-
+    function article(word) { return /^[aeiou]/i.test(word || '') ? 'an' : 'a'; }
     function renderMerchant() {
         const p = me();
         const cls = D.CLASSES[p.cls];
@@ -14225,10 +14037,7 @@ body.modal-cover #board * {
        an offer built on one is refused. It used to be quietly half-honoured --
        the fragment stayed put and the payment went through anyway -- so the
        slot that cannot be traded is now plainly marked as such. */
-    function fragsOf(p) {
-        return E.fragmentsOf ? E.fragmentsOf(p) : (p.fragments || []);
-    }
-
+    function fragsOf(p) { return E.fragmentsOf ? E.fragmentsOf(p) : (p.fragments || []); }
     function fragPickHtml(owner, taker, prefix, mine) {
         const held = fragsOf(owner);
         const already = fragsOf(taker);
@@ -14364,9 +14173,7 @@ body.modal-cover #board * {
         if (b.fragments && b.fragments.length) {
             b.fragments.forEach(n => bits.push(chip('Key fragment ' + n +
                 (fragmentPlace(n) ? ' <b>' + esc(fragmentPlace(n)) + '</b>' : ''))));
-        } else if (b.keyFragments) {
-            bits.push(chip(b.keyFragments + ' key fragment'));
-        }
+        } else if (b.keyFragments) { bits.push(chip(b.keyFragments + ' key fragment')); }
         if (b.chestKeys) bits.push(chip(b.chestKeys + ' chest key'));
 
         const cards = [];
@@ -14501,9 +14308,7 @@ body.modal-cover #board * {
                     NET = SOLO;
                     notice(err.message || 'Could not rejoin that room.');
                 });
-        } else {
-            notice('Enter a name, then press Join to enter room ' + room + '.');
-        }
+        } else { notice('Enter a name, then press Join to enter room ' + room + '.'); }
     }
 
     boot();
@@ -14560,14 +14365,8 @@ function localId() {
     return id;
 }
 
-function localName() {
-    return localStorage.getItem('lof_name') || '';
-}
-
-function setLocalName(n) {
-    localStorage.setItem('lof_name', n);
-}
-
+function localName() { return localStorage.getItem('lof_name') || ''; }
+function setLocalName(n) { localStorage.setItem('lof_name', n); }
 const PID = localId();
 
 /* ---------------------------------------------------------------------- */
@@ -14616,9 +14415,7 @@ function seatSecret(code) {
 
 function hex(bytes) {
     let out = '';
-    for (let i = 0; i < bytes.length; i++) {
-        out += (bytes[i] < 16 ? '0' : '') + bytes[i].toString(16);
-    }
+    for (let i = 0; i < bytes.length; i++) { out += (bytes[i] < 16 ? '0' : '') + bytes[i].toString(16); }
     return out;
 }
 
@@ -14644,9 +14441,7 @@ async function seatHash(code) {
     if (typeof crypto !== 'undefined' && crypto.subtle) {
         const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
         out = hex(new Uint8Array(buf));
-    } else {
-        out = weakHash(msg);
-    }
+    } else { out = weakHash(msg); }
     seatCache[code] = out;
     return out;
 }
@@ -14676,10 +14471,7 @@ const ACTIONS = E.ACTIONS;
 /* Room lifecycle                                                          */
 /* ---------------------------------------------------------------------- */
 
-function roomRef(code) {
-    return doc(db, 'games', code.toUpperCase());
-}
-
+function roomRef(code) { return doc(db, 'games', code.toUpperCase()); }
 // Firestore rejects undefined; strip it before every write.
 function clean(value) {
     if (Array.isArray(value)) return value.map(clean);
@@ -14795,10 +14587,7 @@ function subscribe(code, onState, onError) {
         (err) => onError && onError(err));
 }
 
-async function closeRoom(code) {
-    await deleteDoc(roomRef(code));
-}
-
+async function closeRoom(code) { await deleteDoc(roomRef(code)); }
 window.LOF_NET = {
     PID, localName, setLocalName,
     createRoom, joinRoom, roomExists, act, subscribe, closeRoom
@@ -14868,10 +14657,7 @@ window.dispatchEvent(new Event('lof-net-ready'));
         var bar = document.querySelector('.topbar');
         if (!bar) return;
 
-        function measure() {
-            document.documentElement.style.setProperty('--topbar-h', bar.offsetHeight + 'px');
-        }
-
+        function measure() { document.documentElement.style.setProperty('--topbar-h', bar.offsetHeight + 'px'); }
         measure();
         window.addEventListener('resize', measure);
         if (window.ResizeObserver) new ResizeObserver(measure).observe(bar);
@@ -14960,9 +14746,7 @@ window.dispatchEvent(new Event('lof-net-ready'));
         var btn = document.querySelector('.back-to-top');
         if (!btn) return;
 
-        function onScroll() {
-            btn.classList.toggle('visible', window.scrollY > 500);
-        }
+        function onScroll() { btn.classList.toggle('visible', window.scrollY > 500); }
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
 
