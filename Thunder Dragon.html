@@ -4052,7 +4052,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         knight: {
             id: 'knight',
             name: 'Knight',
-            hp: 100,
+            hp: 90,
             defence: 15,
             weaponType: 'sword',
             armourType: 'knight',
@@ -6655,8 +6655,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         return ok();
     }
 
-    // Let the blow land. Which attack is not a choice -- the monster always
-    // uses the hardest one it has the energy for.
+    // Let the blow land. Which attack it reaches for is worked out below.
     function enemyStrike(state, pid) {
         const b = state.battle;
         if (!b || b.kind !== 'pve') return fail('There is no monster.');
@@ -6665,16 +6664,59 @@ body.modal-cover #board * { animation-play-state: paused; }
         return runEnemyTurn(state);
     }
 
-    // The monster has already rolled its hit; this lands it. It always uses
-    // the hardest attack it has the energy for.
+    /* An ordinary monster only has two moves -- a light one at 1 energy and
+       a heavy one at 5 -- so "the hardest one affordable" is already the
+       only sensible choice for it: there is no middle rung to weigh up.
+
+       Fenrirak has three: Thunder (75 for 1), Electrocute (85 for 3) and
+       Discharge (175 for 8). Spending a heavy move resets the energy count
+       straight back down to 1 (see below), so cashing it in on Electrocute
+       the moment 3 energy is on hand is exactly what stood between him and
+       ever reaching Discharge at all -- three energy always arrives first,
+       and every time it does, "hardest affordable" spends it. So the
+       choice a boss actually has to make -- the one an ordinary monster
+       doesn't -- is whether a bigger attack sitting within reach is worth
+       cashing in now, or worth holding out for something bigger still.
+
+       Two rules cover it: never overkill (a blow that already finishes the
+       fight is as good as a bigger one that also would, so take the
+       cheapest one that does the job and save the rest), and otherwise
+       build toward the real payoff with the efficient attack -- Thunder
+       does 75 of Fenrirak's 175-damage Discharge for a mere 1 of its 8
+       energy -- rather than spending early on Electrocute, which is worse
+       value per point of energy than either of the moves either side of
+       it. */
+    function chooseEnemyMove(state, b, e, p) {
+        const usable = e.moves.filter(m => b.enemyEnergy >= m.energy);
+        const affordable = usable.length ? usable : [e.moves[0]];
+        if (e.moves.length <= 2) {
+            return affordable.slice().sort((x, y) => y.damage - x.damage)[0];
+        }
+
+        const spite = b.spite || 0;
+        const defence = totalDefence(state, p);
+        const dealt = m => Math.max(R.enemyMinDamage, m.damage + spite - defence);
+
+        const lethal = affordable.filter(m => dealt(m) >= p.hp)
+            .sort((x, y) => x.energy - y.energy);
+        if (lethal.length) return lethal[0];
+
+        const strongest = e.moves.slice().sort((x, y) => y.damage - x.damage)[0];
+        const cheapest = e.moves.slice().sort((x, y) => x.energy - y.energy)[0];
+        if (strongest.energy > b.enemyEnergy && affordable.indexOf(cheapest) >= 0) {
+            return cheapest;
+        }
+        return affordable.slice().sort((x, y) => y.damage - x.damage)[0];
+    }
+
+    // The monster has already rolled its hit; this lands it.
     function runEnemyTurn(state) {
         const b = state.battle;
         if (!b || b.kind !== 'pve' || b.turn !== 'b') return ok();
         const e = D.ENEMIES[b.enemyId];
         const p = player(state, b.aId);
 
-        const usable = e.moves.filter(m => b.enemyEnergy >= m.energy);
-        const move = usable.sort((x, y) => y.damage - x.damage)[0] || e.moves[0];
+        const move = chooseEnemyMove(state, b, e, p);
         const dealt = damagePlayer(state, p, move.damage + (b.spite || 0), R.enemyMinDamage);
         // A monster pays for a heavy move the same way a player does.
         if (move.energy > R.startingEnergy) b.enemyEnergy = R.startingEnergy;
@@ -7947,12 +7989,19 @@ body.modal-cover #board * { animation-play-state: paused; }
         }
 
         // Then a potion, but only out of money that is doing nothing else.
+        // Each list is the pick in order of preference, with the cheaper
+        // version of the same thing straight after it as the fallback when
+        // the good one is out of reach -- so a bot with modest spare coins
+        // still buys something instead of walking past the whole stall.
         const spare = p.coins - 20;
         if (spare > 0) {
             const hurt = p.hp < p.maxHp * 0.6;
             const wanted = hurt
                 ? ['super_health_up', 'health_up', 'low_health_up']
-                : ['super_strength_up', 'strength_up', 'defence_up'];
+                : ['super_strength_up', 'strength_up', 'low_strength_up',
+                   'defence_up', 'low_defence_up',
+                   'speed_up', 'low_speed_up',
+                   'energy_up', 'low_energy_up'];
             for (let i = 0; i < wanted.length; i++) {
                 const id = wanted[i];
                 const row = D.MERCHANT_POTIONS[id];
@@ -8283,11 +8332,19 @@ body.modal-cover #board * { animation-play-state: paused; }
             if (ability) return ability;
         }
 
-        // 5. Move. The die is thrown blind; the bonus is answered afterwards,
+        // 5. A speed card only helps the movement roll it is used ahead of,
+        //    so play one now, before the die goes down, rather than let it
+        //    sit in hand unused.
+        if (!p.hasMoved) {
+            const speed = bestOf(p, 'dice');
+            if (speed) return useCard(speed);
+        }
+
+        // 6. Move. The die is thrown blind; the bonus is answered afterwards,
         //    once the number is known.
         if (!p.hasMoved && p.pos < D.ARENA_INDEX) return { action: 'rollMove', args: {} };
 
-        // 6. Nothing left but the hunt that ends a turn.
+        // 7. Nothing left but the hunt that ends a turn.
         return { action: 'endTurn', args: {} };
     }
 
