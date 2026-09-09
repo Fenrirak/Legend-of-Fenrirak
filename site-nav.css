@@ -194,6 +194,70 @@
     .topbar .nav-menu a span { display: inline; }
 }
 
+/* ---- "Support the Creators" button ------------------------------------
+   One shared solid gold-yellow rectangular button, used two ways: a
+   compact size in the topbar (beside the Games button) and a bigger
+   block CTA (add the .block modifier) at the bottom of every page. Same
+   fill, font and hover on both, so they read as one button wherever
+   they appear. */
+.support-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: Allegro, serif;
+    font-weight: 700;
+    text-decoration: none;
+    color: #121212;
+    background: #e8b64d;
+    border: 1px solid #c99a3a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.support-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: #121212;
+    fill: none;
+    stroke-width: 1.9;
+    flex-shrink: 0;
+}
+.support-btn:hover {
+    background: #f2c565;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(232, 182, 77, 0.35);
+}
+
+/* Compact size, sits in the nav row to the right of the Games button. */
+.topbar .nav-links a.support-btn {
+    padding: 8px 16px;
+    margin-left: 4px;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+}
+@media (max-width: 760px) {
+    .topbar .nav-links a.support-btn > span { display: none; }
+    .topbar .nav-links a.support-btn {
+        padding: 9px 11px;
+        margin-left: 2px;
+    }
+    .topbar .nav-links a.support-btn svg { width: 17px; height: 17px; }
+}
+
+/* Full-size block CTA, sized to match the site's existing button footprint. */
+.support-btn.block {
+    margin: 10px auto;
+    padding: 15px;
+    width: 80%;
+    max-width: 320px;
+    font-size: 18px;
+}
+.support-btn.block svg { width: 18px; height: 18px; }
+@media (max-width: 600px) {
+    .support-btn.block { width: 90%; font-size: 17px; }
+}
+
 /* =========================================================================
    SHARED SCROLL-EXPERIENCE COMPONENTS
    Used by the longer, scrolling story-style pages (About, Creators).

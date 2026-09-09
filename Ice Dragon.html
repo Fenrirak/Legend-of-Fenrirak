@@ -208,6 +208,70 @@
     .topbar .nav-menu a span { display: inline; }
 }
 
+/* ---- "Support the Creators" button ------------------------------------
+   One shared solid gold-yellow rectangular button, used two ways: a
+   compact size in the topbar (beside the Games button) and a bigger
+   block CTA (add the .block modifier) at the bottom of every page. Same
+   fill, font and hover on both, so they read as one button wherever
+   they appear. */
+.support-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: Allegro, serif;
+    font-weight: 700;
+    text-decoration: none;
+    color: #121212;
+    background: #e8b64d;
+    border: 1px solid #c99a3a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.support-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: #121212;
+    fill: none;
+    stroke-width: 1.9;
+    flex-shrink: 0;
+}
+.support-btn:hover {
+    background: #f2c565;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(232, 182, 77, 0.35);
+}
+
+/* Compact size, sits in the nav row to the right of the Games button. */
+.topbar .nav-links a.support-btn {
+    padding: 8px 16px;
+    margin-left: 4px;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+}
+@media (max-width: 760px) {
+    .topbar .nav-links a.support-btn > span { display: none; }
+    .topbar .nav-links a.support-btn {
+        padding: 9px 11px;
+        margin-left: 2px;
+    }
+    .topbar .nav-links a.support-btn svg { width: 17px; height: 17px; }
+}
+
+/* Full-size block CTA, sized to match the site's existing button footprint. */
+.support-btn.block {
+    margin: 10px auto;
+    padding: 15px;
+    width: 80%;
+    max-width: 320px;
+    font-size: 18px;
+}
+.support-btn.block svg { width: 18px; height: 18px; }
+@media (max-width: 600px) {
+    .support-btn.block { width: 90%; font-size: 17px; }
+}
+
 /* =========================================================================
    SHARED SCROLL-EXPERIENCE COMPONENTS
    Used by the longer, scrolling story-style pages (About, Creators).
@@ -4095,7 +4159,7 @@ body { overflow-x: hidden; }
 /* Keep the arena functional but remove its illustrated disc/sprite treatment. */
 .arena {
     background: rgba(244,248,255,.97) !important;
-    border: none !important;
+    border: 2px solid #7f9fc9 !important;
     border-radius: 7px !important;
     box-shadow: none !important;
 }
@@ -4775,35 +4839,16 @@ body {
 
 /* ---- Aurora Crystal: a single glowing crystal planted into a little
    mound of ground. The crystal itself stays put -- it no longer scales
-   or shifts -- and sends off one warbling ring of purple aurora-light
-   at a time, which wobbles as it grows and fades before the next one
-   starts, rather than several rings sitting on screen together. ---- */
+   or shifts -- and instead breathes out slow rings of purple light,
+   like a little aurora rippling off it. ---- */
 @keyframes auroraGlow {
     0%, 100% { filter: drop-shadow(0 0 6px rgba(196, 150, 240, .5)); }
     50%      { filter: drop-shadow(0 0 16px rgba(210, 170, 250, .9)); }
 }
-@keyframes auroraWave {
-    0% {
-        transform: translateX(-50%) scale(.4);
-        opacity: .95;
-        border-radius: 46% 54% 52% 48% / 56% 44% 58% 42%;
-    }
-    22% {
-        border-radius: 55% 45% 42% 58% / 44% 60% 40% 56%;
-    }
-    46% {
-        transform: translateX(-50%) scale(1);
-        opacity: .6;
-        border-radius: 42% 58% 60% 40% / 58% 40% 56% 44%;
-    }
-    72% {
-        border-radius: 58% 42% 44% 56% / 42% 56% 46% 54%;
-    }
-    100% {
-        transform: translateX(-50%) scale(1.7);
-        opacity: 0;
-        border-radius: 50%;
-    }
+@keyframes auroraRings {
+    0%   { opacity: .85; }
+    50%  { opacity: .35; }
+    100% { opacity: .85; }
 }
 .sq.key-aurora_crystal::before {
     content: '';
@@ -4821,21 +4866,25 @@ body {
     clip-path: polygon(50% 0%, 82% 26%, 100% 68%, 62% 100%, 18% 92%, 0% 42%);
     animation: auroraGlow 4.5s ease-in-out infinite;
 }
-/* one warbling ring of aurora-light, growing and fading outward from the
-   crystal, then looping back to start again -- never more than one wave
-   visible at once */
+/* the ground mound plus three concentric rings of purple aurora-light,
+   rippling outward from the crystal without ever moving it */
 .sq.key-aurora_crystal::after {
     content: '';
     position: absolute;
     left: 50%;
-    bottom: 16%;
-    width: 46%;
-    height: 46%;
-    transform-origin: center;
+    bottom: -6%;
+    width: 100%;
+    height: 100%;
+    transform: translateX(-50%);
     z-index: -2;
-    background: radial-gradient(circle, transparent 50%, rgba(168,119,221,.7) 60% 68%, transparent 80%);
-    animation: auroraWave 3.2s ease-out infinite;
+    background:
+        radial-gradient(ellipse 34% 10% at 50% 52%, #e8f2ff 0%, #c9d6e6 70%, transparent 100%),
+        radial-gradient(ellipse 30% 42% at 50% 46%, transparent 62%, rgba(168,119,221,.55) 66% 70%, transparent 75%),
+        radial-gradient(ellipse 46% 60% at 50% 46%, transparent 68%, rgba(168,119,221,.38) 71% 75%, transparent 80%),
+        radial-gradient(ellipse 62% 78% at 50% 46%, transparent 74%, rgba(168,119,221,.22) 77% 81%, transparent 86%);
+    animation: auroraRings 4.5s ease-in-out infinite;
 }
+
 /* ---- Campfire Logs: a small pile of unlit firewood, stacked and ready
    for the next traveller to light. Centred horizontally in the square. ---- */
 .sq.key-campfire::before {
@@ -4923,22 +4972,18 @@ body {
         100% 56%, 96% 100%);
     filter: drop-shadow(1px 3px 2px rgba(10, 25, 40, .5));
 }
-/* the outline of an ice golem, standing in the dark of the cave mouth,
-   flashing in and out of the shadow rather than a plain glowing shape */
 .sq.key-ice_tomb_cavern::after {
     content: '';
     position: absolute;
     left: 50%;
-    bottom: 12%;
-    width: 22%;
-    height: 40%;
+    bottom: 30%;
+    width: 30%;
+    height: 9%;
     transform: translateX(-50%);
     z-index: -1;
-    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2060%20100%27%3E%20%3Cg%20fill%3D%27none%27%20stroke%3D%27%23bfefff%27%20stroke-width%3D%273%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%3E%20%3Crect%20x%3D%2720%27%20y%3D%274%27%20width%3D%2720%27%20height%3D%2718%27%20rx%3D%273%27/%3E%20%3Crect%20x%3D%2726%27%20y%3D%2720%27%20width%3D%278%27%20height%3D%277%27/%3E%20%3Crect%20x%3D%2710%27%20y%3D%2727%27%20width%3D%2740%27%20height%3D%2738%27%20rx%3D%274%27/%3E%20%3Crect%20x%3D%270%27%20y%3D%2729%27%20width%3D%2710%27%20height%3D%2734%27%20rx%3D%273%27/%3E%20%3Crect%20x%3D%2750%27%20y%3D%2729%27%20width%3D%2710%27%20height%3D%2734%27%20rx%3D%273%27/%3E%20%3Crect%20x%3D%2714%27%20y%3D%2765%27%20width%3D%2714%27%20height%3D%2731%27%20rx%3D%273%27/%3E%20%3Crect%20x%3D%2732%27%20y%3D%2765%27%20width%3D%2714%27%20height%3D%2731%27%20rx%3D%273%27/%3E%20%3C/g%3E%20%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: bottom center;
-    filter: drop-shadow(0 0 5px rgba(191, 239, 255, .85));
+    background:
+        radial-gradient(circle at 32% 50%, #bfefff 0%, #6fc4ea 45%, transparent 72%),
+        radial-gradient(circle at 68% 50%, #bfefff 0%, #6fc4ea 45%, transparent 72%);
     animation: gate-flicker 3.4s ease-in-out infinite;
 }
 
@@ -5035,7 +5080,45 @@ body {
     animation: ember-glow 3.4s ease-in-out infinite;
 }
 
-/* ---- Merchant's Cosy Cabin: image removed at the user's request -- plain square ---- */
+/* ---- Merchant's Cosy Cabin: pushed over to the edge of the square (out
+   of the way of the name/text) and rebuilt as an actual log cabin --
+   stacked horizontal timbers and a plank door under the snow roof, with
+   a warm, lit window -- the one warm colour on this whole board. ---- */
+.sq.key-merchant_cabin::before {
+    content: '';
+    position: absolute;
+    right: -8%;
+    top: 34%;
+    width: 40%;
+    height: 40%;
+    z-index: -2;
+    background:
+        /* a plank door, off to one side of the wall */
+        linear-gradient(180deg, #5c3a20 0%, #3f2814 100%) left / 24% 82% no-repeat,
+        /* the log wall itself: stacked horizontal timbers, each with a
+           highlight along its top edge so it reads as round logs rather
+           than flat siding */
+        repeating-linear-gradient(180deg,
+            #b1734a 0 7px, #8a4f30 7px 8px, #a3623d 8px 15px, #6d4020 15px 16px)
+            right / 100% 100% no-repeat;
+    border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgba(35, 20, 10, .4);
+    filter: drop-shadow(1px 2px 2px rgba(20, 40, 60, .3));
+}
+.sq.key-merchant_cabin::after {
+    content: '';
+    position: absolute;
+    right: -11%;
+    top: 15%;
+    width: 46%;
+    height: 26%;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 50% 55%, #ffdb8a 0 16%, transparent 22%) 50% 50% / 100% 100% no-repeat,
+        linear-gradient(180deg, #f4faff, #cfe4f0);
+    clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+    filter: drop-shadow(1px 2px 2px rgba(20, 40, 60, .3));
+}
 
 /* ---- Start: a light scuff of footprints heading off into the snow --
    tucked low so the players' own tokens standing here are never covered. ---- */
@@ -5176,6 +5259,10 @@ body {
                     </a>
                 </div>
             </div>
+            <a href="https://buymeacoffee.com/29world" target="_blank" class="support-btn">
+                <svg viewBox="0 0 24 24"><path d="M17 8h1.5a3.5 3.5 0 0 1 0 7H17"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg>
+                <span>Support</span>
+            </a>
         </div>
     </nav>
 
@@ -5361,6 +5448,13 @@ body {
     <!-- ================= MODAL ================= -->
     <div class="modal-back" id="modal-back">
         <div class="modal" id="modal"></div>
+    </div>
+
+    <div style="display:flex; justify-content:center; padding: 18px 0 34px;">
+        <a href="https://buymeacoffee.com/29world" target="_blank" class="support-btn block">
+            <svg viewBox="0 0 24 24"><path d="M17 8h1.5a3.5 3.5 0 0 1 0 7H17"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg>
+            <span>Support the Creators</span>
+        </a>
     </div>
 
     <script>
