@@ -70,6 +70,27 @@
             margin-top: 50px;
         }
 
+        .explore-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 10px auto;
+        }
+
+        .explore-row .section {
+            margin: 0;
+        }
+
+        .support-gap {
+            margin-top: 40px;
+        }
+
+        /* Remove the hover glow on the Support button for this page only */
+        .support-btn:hover {
+            box-shadow: none;
+        }
+
 
     @media (max-width:600px){h1{font-size:28px;margin-top:40px;}img{width:90%;height:auto;}p{font-size:16px;padding:0 15px;} .section{width:90%;font-size:20px;}}
 </style>
@@ -138,26 +159,32 @@
            class="section">
             Complete the Feedback Form!
         </a>
-        <br><br>
 
-        <a href="Testplay Showdowns.html" class="section">
-            Play Again!
-        </a>
-        <br><br>    
-            
-        <a href="index.html" class="section">
-            Back to Home Page
-        </a>
+        <div class="explore-row">
+            <a href="index.html" class="section">
+                Back to Home Page
+            </a>
+        </div>
 
-        <a href="About.html" class="section">
-            About Legend of Fenrirak
-        </a>
+        <div class="explore-row">
+            <a href="Creators.html" class="section">
+                Meet the Creators!
+            </a>
+            <a href="Testplay Showdowns.html" class="section">
+                Play Again!
+            </a>
+        </div>
 
-        <a href="Creators.html" class="section">
-            Meet the Creators!
-        </a>
+        <div class="explore-row">
+            <a href="Thunder Dragon.html" class="section">
+                The Thunder Dragon
+            </a>
+            <a href="Ice Dragon.html" class="section">
+                The Ice Dragon
+            </a>
+        </div>
 
-        <a href="https://buymeacoffee.com/29world" target="_blank" class="support-btn block">
+        <a href="https://buymeacoffee.com/29world" target="_blank" class="support-btn block support-gap">
             <svg viewBox="0 0 24 24"><path d="M17 8h1.5a3.5 3.5 0 0 1 0 7H17"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg>
             <span>Support the Creators</span>
         </a>

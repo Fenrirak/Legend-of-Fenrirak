@@ -446,24 +446,26 @@
     min-width: 280px;
     background: var(--panel-bg);
     border-right: 1px solid var(--panel-border);
-    padding: 16px;
+    padding: 10px;
     height: 650px;
     overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     flex-shrink: 0;
   }
   .stat-title {
     font-family: 'Cinzel', serif;
-    font-size: 1.1em;
+    font-size: 1em;
     color: var(--gold);
     text-align: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   .stat-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 6px 0;
-    font-size: 0.88em;
+    margin: 3px 0;
+    font-size: 0.8em;
   }
   .stat-label { color: var(--text-dim); }
   .stat-value { color: var(--text); font-weight: 700; }
@@ -706,30 +708,32 @@
     min-width: 240px;
     background: var(--panel-bg);
     border-left: 1px solid var(--panel-border);
-    padding: 16px;
+    padding: 10px;
     height: 650px;
     overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     flex-shrink: 0;
   }
   .enemy-card {
     background: #111;
     border: 1px solid var(--panel-border);
     border-radius: 6px;
-    padding: 10px;
-    margin-bottom: 12px;
-    font-size: 0.82em;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+    font-size: 0.74em;
   }
   .enemy-card h4 {
     font-family: 'Cinzel', serif;
     color: var(--accent);
-    margin-bottom: 6px;
-    font-size: 0.9em;
+    margin-bottom: 3px;
+    font-size: 0.82em;
   }
   .health-bar-bg {
     background: #333;
     border-radius: 3px;
-    height: 8px;
-    margin-top: 4px;
+    height: 5px;
+    margin-top: 3px;
     overflow: hidden;
   }
   .health-bar-fill {
@@ -1001,8 +1005,7 @@
   }
   #ai-thinking.active { display: block; }
 
-  #stat-panel::-webkit-scrollbar, #right-panel::-webkit-scrollbar { width: 4px; }
-  #stat-panel::-webkit-scrollbar-thumb, #right-panel::-webkit-scrollbar-thumb { background: #333; }
+  #stat-panel::-webkit-scrollbar, #right-panel::-webkit-scrollbar { width: 0; display: none; }
 
   .log-sep { border: none; border-top: 1px solid #222; margin: 6px 0; }
 
@@ -1103,10 +1106,6 @@
                 </a>
             </div>
         </div>
-        <a href="https://buymeacoffee.com/29world" target="_blank" class="support-btn">
-            <svg viewBox="0 0 24 24"><path d="M17 8h1.5a3.5 3.5 0 0 1 0 7H17"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg>
-            <span>Support</span>
-        </a>
     </div>
 </nav>
 
@@ -1360,13 +1359,6 @@
 
 <div id="outcome-overlay"><div id="outcome-word"></div></div>
 <div id="ai-thinking">Computer is thinking...</div>
-
-<div style="display:flex; justify-content:center; padding: 18px 0 34px;">
-    <a href="https://buymeacoffee.com/29world" target="_blank" class="support-btn block">
-        <svg viewBox="0 0 24 24"><path d="M17 8h1.5a3.5 3.5 0 0 1 0 7H17"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg>
-        <span>Support the Creators</span>
-    </a>
-</div>
 
 <script>
 const WEAPONS = {
