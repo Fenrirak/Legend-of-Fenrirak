@@ -5197,7 +5197,7 @@ body {
    without having to go back and find each one. ==== */
 .board .decor { display: flex !important; }
 .arena .arena-disc { display: block !important; }
-</style>
+    </style>
 
 </head>
 
@@ -12382,8 +12382,10 @@ body {
        face -- rather than the fully rendered look the classes get. The
        Barbarian is the one exception: he is a real class with real art
        already, so his enemy portrait borrows it directly rather than
-       drawing him twice. Fenrirak and the Hawk have no photo yet and
-       fall back to the crest badge (initials on a tinted circle) below.
+       drawing him twice. Every enemy below -- Fenrirak and the Hawk
+       included -- now has its own drawing in ENEMY_ART; the crest badge
+       (initials on a tinted circle) is only ever seen if a future enemy
+       is added here without art of its own.
        ------------------------------------------------------------------ */
 
     const OUT = 'stroke="#20180f" stroke-width="2.6" stroke-linejoin="round" ' +
