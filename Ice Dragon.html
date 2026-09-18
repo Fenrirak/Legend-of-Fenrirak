@@ -577,6 +577,22 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .home-hero p { max-width: 620px; margin: 10px auto 0; color: #b9b9b9; font-size: 16px; }
 
+/* Loud on purpose -- this sits right under the title, the very first thing
+   anyone sees, because that's the honest place to say the game isn't
+   finished and to ask for the feedback that will finish it. */
+.wip-banner {
+    max-width: 620px;
+    margin: 16px auto 0;
+    padding: 12px 18px;
+    border: 1px solid rgba(217, 163, 92, .55);
+    border-radius: 10px;
+    background: rgba(217, 163, 92, .12);
+    color: #f0d9b5;
+    font-size: 14.5px;
+    line-height: 1.5;
+}
+.wip-banner a { color: var(--gold-bright); text-decoration: underline; }
+
 .home-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
@@ -5199,6 +5215,13 @@ body {
         <div class="wrap">
             <div class="home-hero">
                 <h1>The Ice Dragon</h1>
+                <div class="wip-banner">
+                    <b>This game is still a work in progress</b> — it isn't the most
+                    fun it can be just yet. If you play it, we'd love your feedback
+                    on what to improve:
+                    <a href="https://forms.gle/24zLuzzWdpTPHzBa7" target="_blank" rel="noopener">
+                        tell us here</a>.
+                </div>
                 <p>
                     The full board game, online, for 2 to 6 players — or on your own
                     against two computer players. Pick a Knight, an Archer or a Mage,
@@ -16136,6 +16159,9 @@ body {
                 ? 'The Ice Dragon falls to you. The legend is yours.'
                 : 'The Ice Dragon falls to another. Try again.') + '</p>' +
             '<div class="modal-actions" style="justify-content:center">' +
+            '<a class="btn" style="display:inline-block;text-decoration:none" ' +
+                'href="https://forms.gle/24zLuzzWdpTPHzBa7" target="_blank" ' +
+                'rel="noopener">Send us feedback</a>' +
             '<button class="btn primary" id="over-home">Back to the start</button></div>' +
             '</div>';
         bind('over-home', () => {
