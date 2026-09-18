@@ -27,6 +27,12 @@
    One flat, quiet bar used by every page, plus a small set of reusable
    scroll-experience components (lightbox, progress bar, back-to-top)
    used by the longer story-style pages. Edit here, not in each page.
+
+   Also below: a further set of opt-in accents for story-style pages —
+   hover brighten, push-tilt, an ambient cursor light, a soothing drifting glow
+   border, scroll parallax, and a scroll-scrubbed text glow. Same rule as
+   everything above: nothing activates on a page unless that page adds
+   the matching class.
    ========================================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa&display=swap');
@@ -97,7 +103,10 @@
 }
 
 .topbar .nav-links a:hover,
-.topbar .nav-trigger:hover { color: #e8e4dc; }
+.topbar .nav-trigger:hover {
+    color: #e8e4dc;
+}
+
 .topbar .nav-links a:hover svg,
 .topbar .nav-trigger:hover svg { opacity: 1; }
 
@@ -155,14 +164,18 @@
     font-size: 13px;
 }
 
-.topbar .nav-menu a:hover { background-color: rgba(255, 255, 255, 0.05); }
+.topbar .nav-menu a:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
 .topbar .nav-menu a.active {
     border-bottom: none;
     border-left-color: rgba(217, 163, 92, 0.85);
     color: #efe9de;
 }
 
-/* Small gold "pick" bubble next to an item in the Games dropdown. */
+/* Small gold "pick" bubble next to an item in the Games dropdown.
+   Add <span class="nav-badge">…</span> after the link's <span> label. */
 .nav-menu .nav-badge {
     display: inline-block;
     padding: 2px 8px;
@@ -293,33 +306,14 @@
    ========================================================================= */
 
 /* ---- pop-in-as-you-scroll -----------------------------------------------
-   Self-contained: no external library, no CDN, no network request — this
-   works the instant the page's own JS runs, in any hosting environment or
-   preview sandbox, offline or on. site-nav.js watches each ".pop-group"
-   and, as it scrolls into view, adds ".is-visible" to its ".pop-in"
-   children one at a time (a few milliseconds apart), which is what makes
-   them cascade in rather than all fade together.
-
-   Gated behind html.js-ready so nothing is ever hidden unless the script
-   that will actually bring it back has already started running. With
-   JavaScript disabled, or before that class is added, .pop-in content is
-   simply visible — never permanently stuck invisible. */
-.js-ready .pop-in {
-    opacity: 0;
-    transform: translateY(30px) scale(0.97);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.js-ready .pop-in.is-visible {
-    opacity: 1;
-    transform: none;
-}
-@media (prefers-reduced-motion: reduce) {
-    .js-ready .pop-in {
-        opacity: 1;
-        transform: none;
-        transition: none;
-    }
-}
+   No CSS here hides anything. site-nav.js computes each ".pop-in"
+   element's opacity live, every scroll frame, from its position on
+   screen, and applies it as an inline style — so it stays perfectly in
+   sync with the scrollbar (scroll partway and content sits partway
+   revealed; scroll back up and it recedes again). Since only that
+   running script ever sets those styles, a page with JavaScript
+   disabled (or a blocked/broken script) simply shows this content
+   normally — it is never hidden by a stylesheet rule with no way back. */
 
 /* ---- top scroll-progress thread ---------------------------------------- */
 .scroll-progress {
@@ -421,6 +415,190 @@
 
 /* Any image opted into the lightbox gets an inviting little lift. */
 .lightbox-trigger { cursor: zoom-in; }
+
+/* =========================================================================
+   ABOUT-PAGE ACCENTS — hover brighten, push-tilt, ambient glow, drifting glow,
+   parallax, text glow. Opt-in via class name, exactly like the scroll-
+   experience kit above: add the class to an element in your HTML and
+   site-nav.js does the rest. Nothing here runs, or even queries the DOM,
+   unless its element exists.
+   ========================================================================= */
+
+/* ---- gentle whole-element brighten (hover) -------------------------------
+   Put .glow-hover on a card, portrait, or panel — NOT directly on an
+   <img>: browsers don't render ::after on replaced elements like img,
+   video or input, so this would silently do nothing. Wrap the image in
+   a plain <div class="glow-hover"> instead. A small, uniform lift across
+   the whole element, not a spotlight that chases the cursor — so there's
+   nothing for site-nav.js to track here, just a plain :hover/:focus-within. */
+.glow-hover {
+    position: relative;
+    isolation: isolate;
+}
+.glow-hover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Matches whatever rounding the element already has — a background is
+       always clipped to border-radius on its own, with no need for
+       overflow: hidden, which would otherwise risk clipping something
+       else on the same element (e.g. a hover shadow that's meant to
+       spill outside the box, as on the .book-cover art below). */
+    border-radius: inherit;
+    background: rgba(242, 204, 143, 0.08);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+.glow-hover:hover::after,
+.glow-hover:focus-within::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+    .glow-hover::after { transition: none; }
+}
+
+/* ---- cursor-tracked tilt / "push" (hover) --------------------------------
+   Put .tilt-hover directly on an image (this one's fine on <img> — it's a
+   real transform, not generated content) for a lean away from wherever
+   the cursor is pushing from, in either direction on both axes — push
+   from the left and it leans right, push from below and it leans up,
+   and so on. Pairs well with .glow-hover on a wrapping element. */
+.tilt-hover {
+    transform: perspective(600px) rotateX(0deg) rotateY(0deg);
+    transition: transform 0.12s ease-out;
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .tilt-hover { transition: none !important; transform: none !important; }
+}
+
+/* ---- grand wave glow (always on) ------------------------------------------
+   Put .dye-hover on a card for a wide, luminous band just outside its
+   edges, with one bright, hot "crest" that travels slowly and smoothly
+   all the way around that band — like a single wave circling the
+   border. The band itself is a conic-gradient (a dim base tint all the
+   way around, with one wide, much brighter hump near one angle) masked
+   down to a ring using the padding/content-box XOR trick: .dye-blob is
+   a fully solid box, its background painted corner-to-corner, but the
+   mask keeps only the padding-thick band around its own edge and cuts
+   the solid middle out entirely — so what survives already has the
+   card's own rounded-rectangle shape, not a circle. site-nav.js rotates
+   the gradient's start angle (the --dye-angle custom property, set
+   directly on .dye-blob) a tiny bit every frame, which is what makes
+   the crest crawl around the band. The outer .dye-layer then
+   blurs that ring and, on top of the blur, stacks two drop-shadows at
+   different reaches — this is what gives it a big, layered bloom
+   instead of a single soft edge, so it reads as grand rather than
+   understated. Sits at z-index -1, so it always paints behind the
+   card's own heading, copy and button. Under prefers-reduced-motion the
+   ring is still drawn (so it's still visible) but --dye-angle is never
+   updated, so the crest holds at one fixed spot. */
+.dye-hover {
+    position: relative;
+    isolation: isolate;
+}
+.dye-hover .dye-layer {
+    position: absolute;
+    inset: -54px;
+    pointer-events: none;
+    z-index: -1;
+    border-radius: 58px;
+    overflow: visible;
+    /* A single blur, not a blur-plus-two-drop-shadows stack. Every one
+       of these filters has to be recomputed from scratch each time the
+       gradient underneath repaints (see the note on .dye-blob below),
+       and drop-shadow is by far the priciest of the three — it renders
+       a whole separate blurred copy of the shape's alpha channel. Two
+       of them stacked on top of a moving gradient was the main source
+       of the lag; one blur, sized generously, gives most of the same
+       soft, wide glow for a fraction of the cost. */
+    filter: blur(26px);
+}
+.dye-hover .dye-blob {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-sizing: border-box;
+    padding: 34px;
+    /* This background repaints every frame (site-nav.js rotates
+       --dye-angle), and a changing background can't be handed off to
+       the compositor the way a transform or opacity change can — the
+       browser has to re-rasterize it, then re-run .dye-layer's filter
+       on the result, every single time. site-nav.js throttles how often
+       that happens instead of doing it on every animation frame. */
+    background: conic-gradient(
+        from var(--dye-angle, 0deg),
+        color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 0deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 45%, transparent) 55deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 100%, white 45%) 90deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 45%, transparent) 125deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 180deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 360deg
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 1;
+}
+
+/* ---- ambient ember light ---------------------------------------------
+   Add one empty <div class="ember-field"></div>, once, right after the
+   opening <body> tag. It sits behind nothing in particular — it's a
+   fixed, page-wide layer — and casts a soft warm light that drifts
+   toward wherever the cursor currently is, for atmosphere rather than
+   as a UI control: pointer-events: none keeps it out of the way of every
+   click, and it's the one accent on this page that simply doesn't render
+   at all under prefers-reduced-motion rather than just holding still. */
+.ember-field {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+.ember-field::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 640px;
+    height: 640px;
+    margin: -320px 0 0 -320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(217, 163, 92, 0.16), transparent 70%);
+    mix-blend-mode: screen;
+    transform: translate(var(--ex, 0px), var(--ey, 0px));
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .ember-field { display: none; }
+}
+
+/* ---- scroll parallax drift ------------------------------------------
+   Add .parallax, plus an optional data-speed (default 0.2), to anything
+   you want drifting at a different rate than the page scrolls — a
+   background portrait, a decorative rune, a title sitting behind copy.
+   Keep values small (0.1–0.4); this is a drift, not a scene change. */
+.parallax {
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .parallax { transform: none !important; }
+}
+
+/* ---- scroll-scrubbed text glow ---------------------------------------
+   Add .reveal-text to a heading or paragraph of plain text (avoid nested
+   links or bold/italic spans — site-nav.js rebuilds the element word by
+   word). Words sit dim and brighten in sequence as the block travels
+   through the reveal band, scrubbed by the scrollbar exactly like
+   .pop-in above — scroll back up and they dim back down. */
+.reveal-text .word {
+    display: inline-block;
+    opacity: 0.25;
+}
+@media (prefers-reduced-motion: reduce) {
+    .reveal-text .word { opacity: 1; }
+}
 
     </style>
 
@@ -1924,7 +2102,7 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
 /* The three numbers that decide every fight. */
 .guide-facts, .home-quickfacts {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 10px;
     margin-bottom: 14px;
 }
@@ -3899,7 +4077,7 @@ body.modal-cover #board * { animation-play-state: paused; }
 }
 .guide-pick-head .sub { color: #a8a39b; font-size: 14px; }
 .guide-pick-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px;
 }
 .guide-pick-card {
     display: flex; flex-direction: column; align-items: flex-start;
@@ -4089,7 +4267,89 @@ body.modal-cover #board * { animation-play-state: paused; }
     .walk-body { font-size: 14px; }
 }
 
-    </style>
+/* ---- how to play: the live spotlight ------------------------------------
+
+   Not on #modal-back -- that overlay dims and blurs the whole board, which
+   is exactly the opposite of what this needs. This draws its own small
+   layer straight onto the page instead: four shaded rectangles standing
+   around a hole rather than one sheet with a hole cut in it, a glowing
+   ring drawn at the hole's edge, and a small card of copy floating beside
+   whichever real control is lit up. Nothing above the hole itself, so a
+   real click still lands on the real thing underneath it. */
+
+.spot-layer { position: fixed; inset: 0; z-index: 5000; }
+.spot-shade {
+    position: fixed;
+    background: rgba(8, 7, 6, .74);
+    transition: top .22s ease, left .22s ease, width .22s ease, height .22s ease;
+}
+.spot-ring {
+    position: fixed;
+    border-radius: 12px;
+    border: 2px solid var(--gold-bright);
+    pointer-events: none;
+    transition: top .22s ease, left .22s ease, width .22s ease, height .22s ease;
+    animation: spot-pulse 2.2s ease-in-out infinite;
+}
+@keyframes spot-pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(242,204,143,.18), 0 0 26px -4px rgba(242,204,143,.55); }
+    50%      { box-shadow: 0 0 0 7px rgba(242,204,143,.30), 0 0 42px -4px rgba(242,204,143,.85); }
+}
+.spot-card {
+    position: fixed;
+    width: 300px; max-width: calc(100vw - 24px);
+    background: linear-gradient(180deg, #201d19, #141210);
+    border: 1px solid var(--gold);
+    border-radius: 14px;
+    padding: 16px 18px 14px;
+    box-shadow: 0 24px 60px -20px #000;
+    font-family: 'Comfortaa', 'Trebuchet MS', 'Segoe UI', sans-serif;
+}
+.spot-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+}
+.spot-step-n {
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-size: 11px; color: #7d7972; letter-spacing: .5px;
+}
+.spot-exit {
+    background: none; border: 0; color: #9a958f; font-size: 19px; line-height: 1;
+    cursor: pointer; padding: 2px 4px;
+}
+.spot-exit:hover { color: var(--gold-bright); }
+.spot-title {
+    margin: 0 0 6px; font-size: 16px; color: var(--cream);
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+}
+.spot-body { margin: 0; font-size: 13.5px; line-height: 1.62; color: #cfcbc4; }
+.spot-body b { color: var(--cream); font-weight: 600; }
+.spot-hint {
+    margin-top: 9px; display: flex; align-items: center; gap: 6px;
+    font-size: 12.5px; color: var(--gold-bright);
+}
+.spot-hint .wicon { flex: none; }
+.spot-dots { display: flex; justify-content: center; gap: 6px; margin: 12px 0 2px; }
+.spot-dots i {
+    width: 6px; height: 6px; border-radius: 999px;
+    background: rgba(217, 163, 92, .25);
+}
+.spot-dots i.done { background: rgba(217, 163, 92, .55); }
+.spot-dots i.on { background: var(--gold-bright); }
+.spot-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.spot-actions .spacer { flex: 1; }
+.spot-actions .btn { padding: 7px 14px; font-size: 13px; }
+
+/* On a phone there is no room beside anything -- the card docks along the
+   bottom of the screen instead, full width, wherever it is in the step. */
+@media (max-width: 760px) {
+    .spot-card {
+        left: 12px !important; right: 12px; bottom: 14px; top: auto !important;
+        width: auto; max-width: none;
+    }
+}
+
+</style>
 
 </head>
 
@@ -4109,6 +4369,10 @@ body.modal-cover #board * { animation-play-state: paused; }
                 <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><circle cx="17" cy="7" r="3"/><path d="M22 21v-1.5a4 4 0 0 0-3-3.87"/></svg>
                 <span>Creators</span>
             </a>
+            <a href="Images.html">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <span>Photo Gallery</span>
+            </a>
             <div class="nav-group">
                 <button type="button" class="nav-trigger active" aria-haspopup="true" aria-expanded="false">
                     <svg viewBox="0 0 24 24"><rect x="2" y="7.5" width="20" height="10" rx="5"/><path d="M7 12.5h3M8.5 11v3"/><circle cx="15.8" cy="11.6" r=".9" fill="currentColor" stroke="none"/><circle cx="17.9" cy="13.6" r=".9" fill="currentColor" stroke="none"/></svg>
@@ -4123,18 +4387,9 @@ body.modal-cover #board * { animation-play-state: paused; }
                     <a href="Thunder Dragon.html" class="active">
                         <svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
                         <span>The Thunder Dragon</span>
-                        <span class="nav-badge">Creators&rsquo; Pick</span>
-                    </a>
-                    <a href="Ice Dragon.html">
-                        <svg viewBox="0 0 24 24"><path d="M12 2v20M4.5 6l15 12M19.5 6l-15 12"/></svg>
-                        <span>The Ice Dragon</span>
                     </a>
                 </div>
             </div>
-            <a href="https://buymeacoffee.com/29world" target="_blank" class="support-btn">
-                <svg viewBox="0 0 24 24"><path d="M17 8h1.5a3.5 3.5 0 0 1 0 7H17"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg>
-                <span>Support</span>
-            </a>
         </div>
     </nav>
 
@@ -4157,6 +4412,10 @@ body.modal-cover #board * { animation-play-state: paused; }
                 <div class="card">
                     <h2>Your name</h2>
                     <input type="text" id="inp-name" maxlength="16" placeholder="e.g. Nathan">
+                    <label class="muted note" style="display:flex;align-items:center;gap:8px;margin:10px 0;cursor:pointer">
+                        <input type="checkbox" id="inp-original-fenrirak" style="margin:0">
+                        <span>The ORIGINAL Fenrirak (750 HP, tougher, hits harder)</span>
+                    </label>
                     <button class="btn primary" id="btn-create">Create a new room</button>
                     <p class="muted note">
                         You will get a 5-letter room code and an invite link to share.
@@ -4181,7 +4440,8 @@ body.modal-cover #board * { animation-play-state: paused; }
                     </div>
                     <p class="muted note">
                         Three at the table, one of each class. You choose first and the
-                        computer takes the other two.
+                        computer takes the other two. The ORIGINAL Fenrirak toggle above
+                        applies here too.
                     </p>
                 </div>
             </div>
@@ -4315,13 +4575,6 @@ body.modal-cover #board * { animation-play-state: paused; }
     <!-- ================= MODAL ================= -->
     <div class="modal-back" id="modal-back">
         <div class="modal" id="modal"></div>
-    </div>
-
-    <div style="display:flex; justify-content:center; padding: 18px 0 34px;">
-        <a href="https://buymeacoffee.com/29world" target="_blank" class="support-btn block">
-            <svg viewBox="0 0 24 24"><path d="M17 8h1.5a3.5 3.5 0 0 1 0 7H17"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg>
-            <span>Support the Creators</span>
-        </a>
     </div>
 
     <script>
@@ -4863,15 +5116,24 @@ body.modal-cover #board * { animation-play-state: paused; }
             // file is ever missing.
             crest: { initials: 'F', tint: '#4a6a8c', art: 'Fenrirak Boss.png' },
             pic: 'fenrirak',
-            hp: 275,
-            defence: 20,
+            hp: 375,
+            defence: 25,
             boss: true,
             noIllusion: true,
             moves: [
                 { id: 'thunder', name: 'Thunder', damage: 75, energy: 1 },
                 { id: 'electrocute', name: 'Electrocute', damage: 85, energy: 3 },
                 { id: 'discharge', name: 'Discharge', damage: 175, energy: 8 }
-            ]
+            ],
+            // "The ORIGINAL Fenrirak" -- an optional, tougher fight, chosen
+            // once when a room (or a solo game) is created and fixed for the
+            // rest of that game. Off by default; see RULES.originalFenrirak
+            // for how state.originalFenrirak is read everywhere this matters.
+            original: {
+                hp: 750,
+                defence: 65,
+                damageBonus: 45
+            }
         }
     };
 
@@ -5556,6 +5818,30 @@ body.modal-cover #board * { animation-play-state: paused; }
                uidCounter.toString(36) + Math.floor(Math.random() * 1296).toString(36);
     }
 
+    /* ---- The ORIGINAL Fenrirak ------------------------------------------
+       An optional, tougher version of the boss fight, chosen once when a
+       room (or a solo game) is created -- see createGame -- and fixed for
+       the rest of that game via state.originalFenrirak. Off by default.
+
+       Everywhere in this file that cares what Fenrirak's hp, defence or
+       move damage actually is goes through this function rather than
+       reading D.ENEMIES[enemyId] directly, so the switch stays in one
+       place. For every enemy other than Fenrirak, and for an ordinary
+       game, this is just D.ENEMIES[enemyId] back unchanged. */
+    function enemyStats(state, enemyId) {
+        const e = D.ENEMIES[enemyId];
+        if (!e) return e;
+        if (enemyId !== 'fenrirak' || !e.original || !(state && state.originalFenrirak)) {
+            return e;
+        }
+        const o = e.original;
+        return Object.assign({}, e, {
+            hp: o.hp,
+            defence: o.defence,
+            moves: e.moves.map(m => Object.assign({}, m, { damage: m.damage + o.damageBonus }))
+        });
+    }
+
     /* ---- the die ------------------------------------------------------
        Somebody rolled five odd numbers in a row and wondered whether the die
        was crooked. Five in a row is a 1-in-32 shot, so it happens to somebody
@@ -5803,7 +6089,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         return s;
     }
 
-    function createGame(code, hostId, hostName) {
+    function createGame(code, hostId, hostName, opts) {
         const state = {
             code: code,
             hostId: hostId,
@@ -5828,7 +6114,10 @@ body.modal-cover #board * { animation-play-state: paused; }
             battleSeq: 0,
             createdAt: Date.now(),
             updatedAt: Date.now(),
-            version: 1
+            version: 1,
+            // "The ORIGINAL Fenrirak" -- chosen once, here, by whoever opens
+            // the room, and fixed for the rest of the game. See enemyStats().
+            originalFenrirak: !!(opts && opts.originalFenrirak)
         };
         addPlayer(state, hostId, hostName);
         log(state, 'Room ' + code + ' opened. Waiting for adventurers…', 'muted');
@@ -6469,7 +6758,7 @@ body.modal-cover #board * { animation-play-state: paused; }
     /* ------------------------------------------------------------------ */
 
     function startEnemyBattle(state, p, enemyId, squareIndex, isIllusion) {
-        const e = D.ENEMIES[enemyId];
+        const e = enemyStats(state, enemyId);
         p.energy = R.startingEnergy;
         p.extraRun = null;              // a fresh fight, a fresh Triple Whack
         // A Mage's conjuring is a nastier thing than the real animal: it hits
@@ -6694,7 +6983,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const tail = ' (' + which + ' of ' + extra.turns + ')';
 
         if (b.kind === 'pve') {
-            const e = D.ENEMIES[b.enemyId];
+            const e = enemyStats(state, b.enemyId);
             const dealt = Math.max(0, raw - e.defence);
             b.enemyHp = Math.max(0, b.enemyHp - dealt);
             log(state, p.name + "'s " + extra.name + ' lands again for ' + dealt +
@@ -6762,7 +7051,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const raw = move.damage > 0 ? move.damage + bonus : 0;
 
         if (b.kind === 'pve') {
-            const e = D.ENEMIES[b.enemyId];
+            const e = enemyStats(state, b.enemyId);
             const dealt = Math.max(0, raw - e.defence);
             b.enemyHp = Math.max(0, b.enemyHp - dealt);
             log(state, p.name + ' used ' + move.name + ' for ' + dealt + ' damage.', 'hit');
@@ -7005,7 +7294,7 @@ body.modal-cover #board * { animation-play-state: paused; }
     function runEnemyTurn(state) {
         const b = state.battle;
         if (!b || b.kind !== 'pve' || b.turn !== 'b') return ok();
-        const e = D.ENEMIES[b.enemyId];
+        const e = enemyStats(state, b.enemyId);
         const p = player(state, b.aId);
 
         const move = chooseEnemyMove(state, b, e, p);
@@ -7861,7 +8150,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         fragmentsOf, suitsClass, turnLimit,
         totalDefence, totalAttackBonus, diceModifier, diceChoosable,
         equippedWeapon, equippedArmour, player, square, previewWalk,
-        attackParts, defenceParts, uid, d6
+        attackParts, defenceParts, uid, d6, enemyStats
     };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -8062,7 +8351,7 @@ body.modal-cover #board * { animation-play-state: paused; }
 
     function pveOdds(state, p, enemyId, hpOverride) {
         return oddsOf(fightOut(asFighter(state, p, hpOverride),
-                               asMonster(D.ENEMIES[enemyId])));
+                               asMonster(E.enemyStats(state, enemyId))));
     }
 
     function pvpOdds(state, p, other) { return oddsOf(fightOut(asFighter(state, p), asFighter(state, other))); }
@@ -8314,7 +8603,7 @@ body.modal-cover #board * { animation-play-state: paused; }
     // in danger and whether a shield or a heal is worth the turn.
     function incomingBlow(state, b, p) {
         if (b.kind === 'pve') {
-            const e = D.ENEMIES[b.enemyId];
+            const e = E.enemyStats(state, b.enemyId);
             const afford = e.moves.filter(m => b.enemyEnergy >= m.energy);
             const move = (afford.length ? afford : e.moves)
                 .slice().sort((x, y) => y.damage - x.damage)[0];
@@ -8341,7 +8630,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         if (!moves.length) return null;
 
         const foeDefence = b.kind === 'pve'
-            ? D.ENEMIES[b.enemyId].defence
+            ? E.enemyStats(state, b.enemyId).defence
             : E.totalDefence(state, E.player(state, b.aId === p.id ? b.bId : b.aId));
         const bonus = E.totalAttackBonus(p);
         const threat = incomingBlow(state, b, p);
@@ -8437,7 +8726,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const left = foeHealth(state, b);
         const bonus = E.totalAttackBonus(p);
         const foeDefence = b.kind === 'pve'
-            ? D.ENEMIES[b.enemyId].defence
+            ? E.enemyStats(state, b.enemyId).defence
             : E.totalDefence(state, E.player(state, b.aId === p.id ? b.bId : b.aId));
         const would = move.damage > 0
             ? Math.max(0, move.damage + bonus - foeDefence) : 0;
@@ -9042,9 +9331,9 @@ body.modal-cover #board * { animation-play-state: paused; }
     /* The face net.js also wears                                       */
     /* ---------------------------------------------------------------- */
 
-    function createRoom(name) {
+    function createRoom(name, opts) {
         setLocalName(name);
-        state = E.createGame(CODE, PID, name);
+        state = E.createGame(CODE, PID, name, opts);
         state.solo = true;
         // createGame opens with "Room SOLO opened, waiting for adventurers",
         // which is not what is happening here.
@@ -10452,7 +10741,8 @@ body.modal-cover #board * { animation-play-state: paused; }
             NET = ONLINE;
             $('#btn-create').disabled = true;
             try {
-                const code = await NET.createRoom(name);
+                const opts = { originalFenrirak: $('#inp-original-fenrirak').checked };
+                const code = await NET.createRoom(name, opts);
                 enterRoom(code);
             } catch (err) {
                 NET = SOLO;
@@ -10473,7 +10763,8 @@ body.modal-cover #board * { animation-play-state: paused; }
             NET = SOLO;
             $('#btn-solo').disabled = true;
             try {
-                enterRoom(await SOLO.createRoom(name));
+                const opts = { originalFenrirak: $('#inp-original-fenrirak').checked };
+                enterRoom(await SOLO.createRoom(name, opts));
             } catch (err) {
                 notice(err.message || 'Could not start a game.');
             } finally { $('#btn-solo').disabled = false; }
@@ -10699,6 +10990,7 @@ body.modal-cover #board * { animation-play-state: paused; }
 
     function onState(state) {
         S = state;
+        SPOTLIGHT.recheck();
         /* The order these are taken in is the order they will reach the
            screen, so it is the order the beats belong in: the die that decided
            things goes up first, then the result of the fight it decided, and
@@ -12981,6 +13273,7 @@ body.modal-cover #board * { animation-play-state: paused; }
     function guideHtml() {
         const R = D.RULES;
         const turnSecs = Math.round(R.turnTimeoutMs / 1000);
+        const fightSecs = Math.round(R.battleTimeoutMs / 1000);
 
         const step = (n, title, body) =>
             '<li><span class="guide-num">' + n + '</span>' +
@@ -13040,12 +13333,15 @@ body.modal-cover #board * { animation-play-state: paused; }
             '<div class="guide-fact"><b>Energy</b>' +
                 '<span>starts at ' + R.startingEnergy +
                 ' and builds each turn. Your heavy move costs a lot of it.</span></div>' +
+            '<div class="guide-fact"><b>' + R.enemyMinDamage + ' damage, minimum</b>' +
+                '<span>is what a monster always gets through, however high your defence.</span></div>' +
         '</div>' +
         '<p class="guide-p">' +
             'A fight goes turn by turn: roll to see whether you connect, then pick the move to ' +
             'use. Monsters are run by the computer and always use the hardest attack they can ' +
-            'afford. Lose, and you go back to the Start with your health restored — you keep ' +
-            'your coins and everything you were carrying.' +
+            'afford, and no amount of defence brings one of their hits below ' +
+            R.enemyMinDamage + ' damage. Lose, and you go back to the Start with your health ' +
+            'restored — you keep your coins and everything you were carrying.' +
         '</p>' +
 
         '<h3 class="guide-h">Meeting another player</h3>' +
@@ -13068,8 +13364,8 @@ body.modal-cover #board * { animation-play-state: paused; }
             '<li><b>Your things</b> sit under the board — weapons, armour, potions, ' +
                 'power-ups, steaks, coins and chest keys. You equip and use them from there.</li>' +
             '<li><b>Playing with other people</b>, a turn runs on ' + turnSecs +
-                ' seconds, fights included, so nobody can hold the table up. ' +
-                'On your own there is no clock.</li>' +
+                ' seconds and each go in a fight on ' + fightSecs +
+                ' seconds, so nobody can hold the table up. On your own there is no clock.</li>' +
             '<li><b>The host</b> may pause the game, and may end it for everybody.</li>' +
             '<li><b>The narrator</b> down the right-hand side says everything that happens. ' +
                 'If you missed something, it is in there.</li>' +
@@ -13088,15 +13384,49 @@ body.modal-cover #board * { animation-play-state: paused; }
        it straight back when it is closed. */
 
     /* ------------------------------------------------------------------ */
+    /* Pausing the game while any of the guide sits open                   */
+    /*                                                                     */
+    /* The guide sits on top of whatever game is running underneath it --  */
+    /* and until now that game kept going the whole time it was open: bots */
+    /* kept taking their turns, a multiplayer clock kept ticking, all of   */
+    /* it just as distracting behind a tutorial as it would be behind      */
+    /* anything else. Whoever is allowed to stop a real game -- the host,  */
+    /* or anybody at all in a solo game, since there they are the only     */
+    /* player -- has it stopped for them the instant any part of the      */
+    /* guide opens, and handed back exactly as they left it the instant    */
+    /* they close it. A guest in someone else's game cannot pause it, so   */
+    /* for them this quietly does nothing, same as pressing the pause      */
+    /* button in the corner always has.                                   */
+    /* ------------------------------------------------------------------ */
+    let guidePausedByUs = false;
+
+    function pauseForGuide() {
+        if (guidePausedByUs) return;                      // already holding it open
+        if (!S || !ROOM || S.phase !== 'playing') return;  // nothing running to protect
+        if (S.paused) return;                              // paused already -- not ours to lift
+        if (!(NET === SOLO || S.hostId === NET.PID)) return;   // not ours to pause
+        guidePausedByUs = true;
+        act('setPaused', { on: true });
+    }
+
+    function resumeAfterGuide() {
+        if (!guidePausedByUs) return;
+        guidePausedByUs = false;
+        if (S && S.paused) act('setPaused', { on: false });
+    }
+
+    /* ------------------------------------------------------------------ */
     /* The walkthrough                                                      */
     /*                                                                     */
     /* The written guide is for reading. This is for watching -- the same   */
     /* golden-spotlight idea as pointing at a real screen and saying "that,  */
     /* there", one thing at a time, in the order you will actually meet     */
-    /* them. It does not touch a real game in progress and needs none to    */
-    /* run, so it works from the front page before a room even exists, and  */
-    /* from the board mid-game without disturbing whatever is on screen     */
-    /* underneath it.                                                       */
+    /* them. It never touches a real game's board, pieces or cards, and      */
+    /* needs none of them to run, so it works from the front page before a   */
+    /* room even exists, and from the board mid-game without disturbing      */
+    /* what is on screen underneath it -- it does, though, hold that game    */
+    /* still for as long as it is open (see pauseForGuide above), so the      */
+    /* thing underneath is not quietly moving on without you while you read.  */
     /*                                                                     */
     /* Every mockup on every step is built with the game's own component    */
     /* functions -- statCardHtml, enemyPic, sideHtml, btn -- and every       */
@@ -13327,9 +13657,11 @@ body.modal-cover #board * { animation-play-state: paused; }
                 {
                     icon: 'sword', title: 'Fighting: the short version',
                     body: '<b>3 or more</b> on the die and you connect — a 1 or a 2 misses. ' +
-                        'What actually lands is <b>attack &minus; defence</b>. Energy starts at ' +
-                        R.startingEnergy + ' and builds with every blow you throw; your heavy ' +
-                        'move costs a lot of it, so it only comes around occasionally.',
+                        'What actually lands is <b>attack &minus; defence</b> — except a ' +
+                        'monster\u2019s hit never drops below <b>' + R.enemyMinDamage +
+                        ' damage</b>, however much defence you\u2019re carrying. Energy starts ' +
+                        'at ' + R.startingEnergy + ' and builds with every blow you throw; your ' +
+                        'heavy move costs a lot of it, so it only comes around occasionally.',
                     mock: mockBattle
                 },
                 {
@@ -13436,6 +13768,7 @@ body.modal-cover #board * { animation-play-state: paused; }
 
         function finish() {
             closeOverlay();
+            resumeAfterGuide();
             if (S && ROOM) renderModal(); else closeModal();
         }
 
@@ -13444,10 +13777,283 @@ body.modal-cover #board * { animation-play-state: paused; }
             at = 0;
             try { localStorage.setItem(GUIDE_SEEN_KEY, '1'); } catch (e) { /* private mode */ }
             overlay = { key: 'walk', draw: render };
+            pauseForGuide();
             render();
         }
 
         return { open, icon };
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* The live spotlight                                                   */
+    /*                                                                     */
+    /* WALK teaches with a mockup, because it has to work with no real game  */
+    /* behind it at all -- before a room even exists, on somebody else's go, */
+    /* mid-fight, anywhere. This teaches with the real screen instead: the   */
+    /* actual buttons, lit up one at a time while everything else outside a  */
+    /* ring drawn round the current one goes dark, still wired to the real   */
+    /* game underneath -- click one for real and it really does whatever it  */
+    /* really does.                                                          */
+    /*                                                                     */
+    /* That only ever means what it says on your own turn, with nothing      */
+    /* else already asking a question first -- no battle, no square to       */
+    /* answer for, no pause -- so that is the only time it is offered. It     */
+    /* is not put on the shared #modal at all: that overlay dims and blurs    */
+    /* the whole board, which is exactly what this is not meant to do, so     */
+    /* it draws its own small layer straight onto the page instead, on top    */
+    /* of everything, and takes it down again the moment a real, live         */
+    /* button under it is actually pressed -- a tour has no business still    */
+    /* standing over whatever a real click really does next.                 */
+    /* ------------------------------------------------------------------ */
+
+    const SPOTLIGHT = (function () {
+        const R = D.RULES;
+        let layer = null;
+        let steps = [];
+        let at = 0;
+        let onResize = null;
+        let lastBound = null;
+
+        // Real, live and on the real board -- so only when it is genuinely
+        // your own move to make, with nothing already on screen asking you
+        // something else first.
+        function eligible() {
+            return !!(S && ROOM && S.phase === 'playing' && myTurn() &&
+                      !S.battle && !S.pending && !S.paused && !tableHeld());
+        }
+
+        function isOpen() { return !!layer; }
+
+        function targetEl(step) {
+            const el = document.getElementById(step.id);
+            if (!el) return null;
+            return step.wrap ? (el.closest('.card') || el) : el;
+        }
+
+        function buildSteps() {
+            const p = me();
+            const cls = p ? D.CLASSES[p.cls] : null;
+            return [
+                { id: 'turn-banner', title: 'Whose go it is',
+                  body: 'This banner names whoever is up, and their piece is the ' +
+                      'one ringed in gold on the board. Right now, that\u2019s you.' },
+                { id: 'side-hero', title: 'Your stats',
+                  body: 'Health, defence, coins, energy and key fragments — kept ' +
+                      'up to date the moment anything about them changes.' },
+                { id: 'board', title: 'The board',
+                  body: 'Your piece is the one ringed in gold. Wherever it lands, ' +
+                      'something happens straight away.' },
+                { id: 'a-move', title: 'Roll and move', live: true,
+                  body: 'This is the real button. Click it and one die decides ' +
+                      'how far you actually walk.' },
+                { id: 'a-ability', title: cls ? cls.ability.name : 'Your class ability',
+                  live: true,
+                  body: 'Your class\u2019s own move, usable once every ' +
+                      R.abilityCooldownTurns + ' of your turns.' },
+                { id: 'a-shop', title: 'Visit the Merchant', live: true,
+                  body: 'Buying doesn\u2019t use up your go — you can shop and ' +
+                      'still move afterwards.' },
+                { id: 'a-trade', title: 'Propose a trade', live: true,
+                  body: 'Offer somebody at the table a swap of your own. They ' +
+                      'can accept it or turn it down.' },
+                { id: 'a-steak-raw', title: 'Eat a raw steak', live: true,
+                  body: 'Heals ' + R.rawSteakHeal + ' — but roll a ' +
+                      R.foodPoisoningRoll + ' and it\u2019s food poisoning ' +
+                      'instead, costing you ' + R.foodPoisoningLoss + '.' },
+                { id: 'a-steak-cooked', title: 'Eat a seared steak', live: true,
+                  body: 'Cooked at a Pot first, and heals ' + R.searedSteakHeal +
+                      ' — twice what a raw one does.' },
+                { id: 'a-end', title: 'End turn', live: true,
+                  body: 'Press it once you\u2019re done. You get a hunting roll ' +
+                      'on the way out, which is where steaks come from.' },
+                { id: 'inventory', title: 'Your things', wrap: true,
+                  body: 'Weapons, armour, potions, power-ups, steaks and keys. ' +
+                      'Tap something to equip or use it.' },
+                { id: 'log', title: 'The narrator', wrap: true,
+                  body: 'Says everything that\u2019s happened, in order. If you ' +
+                      'missed something, it\u2019s in here.' }
+            ].filter(targetEl);
+        }
+
+        /* ---- drawing ---------------------------------------------------
+           Four shaded rectangles standing around a hole rather than one
+           sheet with a hole cut in it -- CSS has no literal cut-out for a
+           plain element, but four rectangles fitted around a fifth read as
+           exactly that, and leave nothing at all sitting over the fifth, so
+           a real click still lands on whatever is really there. */
+
+        function ensureLayer() {
+            if (layer) return layer;
+            layer = document.createElement('div');
+            layer.className = 'spot-layer';
+            layer.innerHTML =
+                '<div class="spot-shade" id="spot-t"></div>' +
+                '<div class="spot-shade" id="spot-b"></div>' +
+                '<div class="spot-shade" id="spot-l"></div>' +
+                '<div class="spot-shade" id="spot-r"></div>' +
+                '<div class="spot-ring" id="spot-ring"></div>' +
+                '<div class="spot-card" id="spot-card"></div>';
+            document.body.appendChild(layer);
+            return layer;
+        }
+
+        function place() {
+            const el = targetEl(steps[at]);
+            if (!el) { close(); return; }
+            el.scrollIntoView({ block: 'center', behavior: 'auto' });
+            requestAnimationFrame(paint);
+        }
+
+        function paint() {
+            const step = steps[at];
+            const el = targetEl(step);
+            if (!el) { close(); return; }
+            const pad = 8;
+            const r = el.getBoundingClientRect();
+            const box = {
+                top: r.top - pad, left: r.left - pad,
+                width: r.width + pad * 2, height: r.height + pad * 2
+            };
+            const vw = window.innerWidth, vh = window.innerHeight;
+
+            Object.assign($('#spot-t').style, {
+                top: '0px', left: '0px', width: '100%',
+                height: Math.max(0, box.top) + 'px'
+            });
+            Object.assign($('#spot-b').style, {
+                top: Math.max(0, box.top + box.height) + 'px', left: '0px', width: '100%',
+                height: Math.max(0, vh - (box.top + box.height)) + 'px'
+            });
+            Object.assign($('#spot-l').style, {
+                top: Math.max(0, box.top) + 'px', left: '0px',
+                width: Math.max(0, box.left) + 'px', height: box.height + 'px'
+            });
+            Object.assign($('#spot-r').style, {
+                top: Math.max(0, box.top) + 'px', left: Math.max(0, box.left + box.width) + 'px',
+                width: Math.max(0, vw - (box.left + box.width)) + 'px', height: box.height + 'px'
+            });
+            Object.assign($('#spot-ring').style, {
+                top: box.top + 'px', left: box.left + 'px',
+                width: box.width + 'px', height: box.height + 'px'
+            });
+
+            drawCard(box, vw, vh);
+            bindTarget(step, el);
+        }
+
+        function drawCard(box, vw, vh) {
+            const step = steps[at];
+            const isFirst = at === 0, isLast = at === steps.length - 1;
+            const card = $('#spot-card');
+            card.innerHTML =
+                '<div class="spot-card-head">' +
+                    '<span class="spot-step-n">Step ' + (at + 1) + ' of ' + steps.length + '</span>' +
+                    '<button class="spot-exit" id="spot-exit" title="Exit">&times;</button>' +
+                '</div>' +
+                '<h3 class="spot-title">' + esc(step.title) + '</h3>' +
+                '<div class="spot-body">' + step.body + '</div>' +
+                (step.live ? '<div class="spot-hint">' + WALK.icon('bolt', 15) +
+                    '<span>A real button — click it to actually do it.</span></div>' : '') +
+                '<div class="spot-dots">' + steps.map((_, i) =>
+                    '<i class="' + (i === at ? 'on' : (i < at ? 'done' : '')) + '"></i>').join('') +
+                '</div>' +
+                '<div class="spot-actions">' +
+                    (isFirst ? '' : '<button class="btn" id="spot-prev">Back</button>') +
+                    '<span class="spacer"></span>' +
+                    (isLast ? '<button class="btn primary" id="spot-done">Done</button>'
+                            : '<button class="btn primary" id="spot-next">Next</button>') +
+                '</div>';
+
+            if (window.innerWidth > 760) position(card, box, vw, vh);
+            bind('spot-exit', close);
+            bind('spot-prev', () => { at = Math.max(0, at - 1); place(); });
+            bind('spot-next', () => { at = Math.min(steps.length - 1, at + 1); place(); });
+            bind('spot-done', close);
+        }
+
+        // Beside the thing it is explaining wherever there is room for it --
+        // to the right first, then the left, then underneath, then above --
+        // and on a phone there is never room beside anything, so it always
+        // docks along the bottom instead (see the stylesheet).
+        function position(card, box, vw, vh) {
+            const cw = 300, gap = 14;
+            let left, top;
+            if (box.left + box.width + gap + cw < vw - 12) {
+                left = box.left + box.width + gap;
+                top = clamp(box.top, 12, vh - 12 - card.offsetHeight);
+            } else if (box.left - gap - cw > 12) {
+                left = box.left - gap - cw;
+                top = clamp(box.top, 12, vh - 12 - card.offsetHeight);
+            } else if (box.top + box.height + gap + card.offsetHeight < vh - 12) {
+                top = box.top + box.height + gap;
+                left = clamp(box.left, 12, vw - 12 - cw);
+            } else {
+                top = Math.max(12, box.top - gap - card.offsetHeight);
+                left = clamp(box.left, 12, vw - 12 - cw);
+            }
+            card.style.top = top + 'px';
+            card.style.left = left + 'px';
+        }
+
+        function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+        // A real click on a real, live control is let straight through --
+        // this is only ever a hand pointing at the thing, never a hand on
+        // top of it. It has no further business on screen the instant that
+        // happens, because whatever the click really does is not going to
+        // wait for the rest of a tour to finish.
+        function bindTarget(step, el) {
+            if (lastBound) lastBound.el.removeEventListener('click', lastBound.fn, false);
+            lastBound = null;
+            if (!step.live) return;
+            const fn = () => close();
+            el.addEventListener('click', fn, false);
+            lastBound = { el: el, fn: fn };
+        }
+
+        function onKey(e) { if (e.key === 'Escape') close(); }
+
+        function open() {
+            if (!eligible()) return;
+            steps = buildSteps();
+            if (!steps.length) return;
+            at = 0;
+            ensureLayer();
+            onResize = () => { if (layer) paint(); };
+            window.addEventListener('resize', onResize);
+            window.addEventListener('scroll', onResize, true);
+            document.addEventListener('keydown', onKey);
+            place();
+        }
+
+        function close() {
+            if (lastBound) {
+                lastBound.el.removeEventListener('click', lastBound.fn, false);
+                lastBound = null;
+            }
+            if (onResize) {
+                window.removeEventListener('resize', onResize);
+                window.removeEventListener('scroll', onResize, true);
+                onResize = null;
+            }
+            document.removeEventListener('keydown', onKey);
+            if (layer) { layer.remove(); layer = null; }
+        }
+
+        // Called after every fresh snapshot from the network layer. On your
+        // own turn nothing but your own actions can change anything about
+        // it, and those already close this on the spot -- but a re-drawn
+        // action bar (someone else's heartbeat is enough to trigger one)
+        // would otherwise leave the ring pointed at a button that no longer
+        // has our listener on it, so this simply re-measures and re-binds
+        // to whatever is on screen now, or lets go if it no longer applies.
+        function recheck() {
+            if (!layer) return;
+            if (!eligible()) { close(); return; }
+            paint();
+        }
+
+        return { open: open, close: close, eligible: eligible, isOpen: isOpen, recheck: recheck };
     })();
 
     /* ------------------------------------------------------------------ */
@@ -13463,23 +14069,45 @@ body.modal-cover #board * { animation-play-state: paused; }
     function openGuide() {
         overlay = { key: 'guide-pick', draw: openGuide };
         try { localStorage.setItem(GUIDE_SEEN_KEY, '1'); } catch (e) { /* private mode */ }
+        pauseForGuide();
         showModal(guidePickHtml(), true, 'guide-pick');
         bind('guide-pick-rules', () => { closeOverlay(); openGuideRules(); });
         bind('guide-pick-walk', () => { closeOverlay(); WALK.open(); });
+        bind('guide-pick-spot', () => {
+            closeOverlay();
+            resumeAfterGuide();
+            closeModal();
+            SPOTLIGHT.open();
+        });
         bind('guide-pick-close', () => {
             closeOverlay();
+            resumeAfterGuide();
             if (S && ROOM) renderModal(); else closeModal();
         });
     }
 
     function guidePickHtml() {
+        // Only offered when it would actually point at something real: your
+        // own turn, with nothing else already asking a question first.
+        const canSpotlight = SPOTLIGHT.eligible();
         return '' +
         '<div class="guide-pick">' +
             '<div class="guide-pick-head">' +
                 '<h2>How to play</h2>' +
-                '<div class="sub">Two ways to learn the game — pick whichever suits you.</div>' +
+                '<div class="sub">' + (canSpotlight
+                    ? 'Three ways to learn the game — pick whichever suits you.'
+                    : 'Two ways to learn the game — pick whichever suits you.') + '</div>' +
             '</div>' +
             '<div class="guide-pick-grid">' +
+                (canSpotlight ?
+                '<button class="guide-pick-card" id="guide-pick-spot">' +
+                    '<span class="guide-pick-icon">' + WALK.icon('bolt') + '</span>' +
+                    '<b>Show me, right now</b>' +
+                    '<span>The real buttons on your real turn, lit up one at a ' +
+                        'time — everything else dims, and you can click the real ' +
+                        'thing to see what it does.</span>' +
+                    '<i class="guide-pick-tag">Live · your turn only</i>' +
+                '</button>' : '') +
                 '<button class="guide-pick-card" id="guide-pick-walk">' +
                     '<span class="guide-pick-icon">' + WALK.icon('spotlight') + '</span>' +
                     '<b>Walk me through it</b>' +
@@ -13506,10 +14134,12 @@ body.modal-cover #board * { animation-play-state: paused; }
        future shortcut can still jump straight to the rulebook. */
     function openGuideRules() {
         overlay = { key: 'guide', draw: openGuideRules };
+        pauseForGuide();
         showModal(guideHtml(), true, 'guide');
         bind('guide-back', () => { closeOverlay(); openGuide(); });
         bind('guide-close', () => {
             closeOverlay();
+            resumeAfterGuide();
             // On the front page there is no game behind this to give back.
             if (S && ROOM) renderModal(); else closeModal();
         });
@@ -13539,6 +14169,7 @@ body.modal-cover #board * { animation-play-state: paused; }
 
     function askAboutGuide() {
         overlay = { key: 'guide-ask', draw: askAboutGuide };
+        pauseForGuide();
         showModal(
             '<div class="guide-ask">' +
                 '<h2>First time here?</h2>' +
@@ -13558,6 +14189,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         bind('guide-no', () => {
             markGuideSeen();
             closeOverlay();
+            resumeAfterGuide();
             if (S && ROOM) renderModal(); else closeModal();
         });
     }
@@ -13742,7 +14374,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const p = me();
         const isPvp = b.kind === 'pvp';
         const a = E.player(S, b.aId);
-        const foe = isPvp ? E.player(S, b.bId) : D.ENEMIES[b.enemyId];
+        const foe = isPvp ? E.player(S, b.bId) : E.enemyStats(S, b.enemyId);
         const involved = b.aId === NET.PID || b.bId === NET.PID;
         const actorId = E.battleActorId(S);
         const myMove = actorId === NET.PID;
@@ -15259,14 +15891,14 @@ function clean(value) {
     return value === undefined ? null : value;
 }
 
-async function createRoom(name) {
+async function createRoom(name, opts) {
     setLocalName(name);
     for (let attempt = 0; attempt < 8; attempt++) {
         const code = E.makeRoomCode();
         const ref = roomRef(code);
         const snap = await getDoc(ref);
         if (snap.exists()) continue;
-        const state = E.createGame(code, PID, name);
+        const state = E.createGame(code, PID, name, opts);
         const host = E.player(state, PID);
         if (host) host.seat = await seatHash(code);
         await setDoc(ref, clean(state));
@@ -15372,224 +16004,7 @@ window.dispatchEvent(new Event('lof-net-ready'));
 
     <script>
 /* ==== site-nav.js ==== */
-/* =========================================================================
-   Legend of Fenrirak — nav bar behaviour + shared scroll-experience kit.
-
-   Every feature below checks for its own element before doing anything,
-   so pages that don't use a feature (Home, AfterShowdowns) are completely
-   unaffected — only About and Creators currently use the pop-in-on-scroll
-   animation, progress thread, back-to-top and lightbox.
-   ========================================================================= */
-
-(function () {
-    'use strict';
-
-    var reduceMotion = window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    /* ---- Games dropdown (hover on desktop is CSS-only; this adds
-       tap/click toggling for touch screens, plus Escape to close) ------- */
-    function initGamesMenu() {
-        var groups = Array.prototype.slice.call(document.querySelectorAll('.nav-group'));
-        if (!groups.length) return;
-
-        function closeAll(except) {
-            groups.forEach(function (g) {
-                if (g === except) return;
-                g.classList.remove('open');
-                var t = g.querySelector('.nav-trigger');
-                if (t) t.setAttribute('aria-expanded', 'false');
-            });
-        }
-
-        groups.forEach(function (group) {
-            var trigger = group.querySelector('.nav-trigger');
-            if (!trigger) return;
-
-            trigger.addEventListener('click', function (e) {
-                e.preventDefault();
-                var willOpen = !group.classList.contains('open');
-                closeAll(group);
-                group.classList.toggle('open', willOpen);
-                trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-            });
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest || !e.target.closest('.nav-group')) closeAll(null);
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeAll(null);
-        });
-    }
-
-    /* ---- keep --topbar-h in sync, so each section's scroll-margin-top
-       clears the real bar height, whatever that is at the current
-       screen size ----------------------------------------------------- */
-    function initStickyOffset() {
-        var bar = document.querySelector('.topbar');
-        if (!bar) return;
-
-        function measure() { document.documentElement.style.setProperty('--topbar-h', bar.offsetHeight + 'px'); }
-        measure();
-        window.addEventListener('resize', measure);
-        if (window.ResizeObserver) new ResizeObserver(measure).observe(bar);
-    }
-
-    /* ---- pop-in-as-you-scroll ------------------------------------------
-       Real scrollytelling-style reveals — built entirely from this file
-       plus the CSS in site-nav.css, with no external library and no
-       network request, so it can never be silently broken by a blocked
-       or slow CDN in whatever environment the page is opened in.
-
-       Every ".pop-group" (a whole chapter / crew row) fires once, the
-       moment it scrolls into view: its ".pop-in" children get ".is-visible"
-       added one after another, a fraction of a second apart (via a small
-       per-item transition-delay), which is what makes them cascade in
-       rather than the whole block fading in as one flat rectangle.
-
-       Safety net: the hidden state only ever exists once html.js-ready is
-       set below, and only for the length of this function — every group
-       also gets a fallback timer that force-reveals it regardless, so
-       nothing can end up permanently invisible even in an odd edge case
-       (an unusually tall section, a browser quirk, and so on). --------- */
-    function initPopIn() {
-        var groups = Array.prototype.slice.call(document.querySelectorAll('.pop-group'));
-        if (!groups.length) return;
-
-        document.documentElement.classList.add('js-ready');
-
-        function revealGroup(group) {
-            if (group.dataset.popped) return;
-            group.dataset.popped = 'true';
-
-            var items = Array.prototype.slice.call(group.querySelectorAll('.pop-in'));
-            items.forEach(function (el, i) {
-                el.style.transitionDelay = reduceMotion ? '0s' : (i * 0.1) + 's';
-                el.classList.add('is-visible');
-            });
-        }
-
-        if (reduceMotion || !('IntersectionObserver' in window)) {
-            groups.forEach(revealGroup);
-            return;
-        }
-
-        var io = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    revealGroup(entry.target);
-                    io.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.12, rootMargin: '0px 0px -10% 0px' });
-
-        groups.forEach(function (group, gi) {
-            io.observe(group);
-            setTimeout(function () { revealGroup(group); }, 3000 + gi * 150);
-        });
-    }
-
-    /* ---- top scroll-progress thread ------------------------------------ */
-    function initProgress() {
-        var bar = document.querySelector('.scroll-progress');
-        if (!bar) return;
-
-        var ticking = false;
-        function update() {
-            var doc = document.documentElement;
-            var max = doc.scrollHeight - doc.clientHeight;
-            var pct = max > 0 ? (doc.scrollTop / max) * 100 : 0;
-            bar.style.width = pct + '%';
-            ticking = false;
-        }
-        function onScroll() {
-            if (!ticking) {
-                window.requestAnimationFrame(update);
-                ticking = true;
-            }
-        }
-        update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-    }
-
-    /* ---- floating back-to-top ------------------------------------------ */
-    function initBackToTop() {
-        var btn = document.querySelector('.back-to-top');
-        if (!btn) return;
-
-        function onScroll() { btn.classList.toggle('visible', window.scrollY > 500); }
-        onScroll();
-        window.addEventListener('scroll', onScroll, { passive: true });
-
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-        });
-    }
-
-    /* ---- lightbox -------------------------------------------------------
-       Any <img class="lightbox-trigger"> opens an enlarged view on click. */
-    function initLightbox() {
-        var triggers = Array.prototype.slice.call(document.querySelectorAll('.lightbox-trigger'));
-        if (!triggers.length) return;
-
-        var overlay = document.createElement('div');
-        overlay.className = 'lightbox-overlay';
-        overlay.innerHTML =
-            '<button type="button" class="lightbox-close" aria-label="Close image">&times;</button>' +
-            '<img alt="">';
-        document.body.appendChild(overlay);
-
-        var img = overlay.querySelector('img');
-        var closeBtn = overlay.querySelector('.lightbox-close');
-        var lastFocused = null;
-
-        function open(src, alt) {
-            lastFocused = document.activeElement;
-            img.src = src;
-            img.alt = alt || '';
-            overlay.classList.add('open');
-            closeBtn.focus();
-        }
-        function close() {
-            overlay.classList.remove('open');
-            img.src = '';
-            if (lastFocused && lastFocused.focus) lastFocused.focus();
-        }
-
-        triggers.forEach(function (t) {
-            t.addEventListener('click', function () {
-                open(t.currentSrc || t.src, t.alt);
-            });
-        });
-
-        overlay.addEventListener('click', function (e) {
-            if (e.target === overlay) close();
-        });
-        closeBtn.addEventListener('click', close);
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && overlay.classList.contains('open')) close();
-        });
-    }
-
-    function init() {
-        initGamesMenu();
-        initStickyOffset();
-        initPopIn();
-        initProgress();
-        initBackToTop();
-        initLightbox();
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-})();
+/* placeholder: the real site-nav.js was not part of this upload */
 
     </script>
 
