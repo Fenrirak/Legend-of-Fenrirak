@@ -5493,12 +5493,6 @@ body.modal-cover #board * { animation-play-state: paused; }
         maxPlayers: 6,
         maxPerClass: 2,
         turnTimeoutMs: 90000,          // auto-skip after 90 seconds of inactivity
-        /* A battle turn is a shorter clock than a whole go. The turn clock is
-           already restarted at every handover in a fight -- each exchange gets
-           its own -- and 90 seconds apiece is a long time to sit watching
-           somebody else decide which way to swing. There is also less to
-           decide: no shop, no trade, no reading the board. */
-        battleTimeoutMs: 60000,
         startingCoins: 0,
         // One weapon change and one armour change per turn, counted separately.
         equipChangesPerTurn: 1,
@@ -6069,12 +6063,12 @@ body.modal-cover #board * { animation-play-state: paused; }
     }
 
     /* How long the player whose go it is has, before the clock takes it off
-       them. A fight runs on a shorter one -- see battleTimeoutMs. Kept here
-       rather than worked out at each of the three places that need it (the
-       engine's own check, the heartbeat that calls it, and the number counting
-       down on the screen), so the clock the player is watching is the clock
-       they are actually being held to. */
-    function turnLimit(state) { return state && state.battle ? R.battleTimeoutMs : R.turnTimeoutMs; }
+       them -- battle included, on the same clock as the rest of the turn.
+       Kept here rather than worked out at each of the three places that need
+       it (the engine's own check, the heartbeat that calls it, and the number
+       counting down on the screen), so the clock the player is watching is
+       the clock they are actually being held to. */
+    function turnLimit(state) { return R.turnTimeoutMs; }
     function checkTimeout(state, now) {
         if (state.phase !== 'playing') return false;
         if (state.paused) return false;        // the clock stops with everything else
@@ -12987,7 +12981,6 @@ body.modal-cover #board * { animation-play-state: paused; }
     function guideHtml() {
         const R = D.RULES;
         const turnSecs = Math.round(R.turnTimeoutMs / 1000);
-        const fightSecs = Math.round(R.battleTimeoutMs / 1000);
 
         const step = (n, title, body) =>
             '<li><span class="guide-num">' + n + '</span>' +
@@ -13075,8 +13068,8 @@ body.modal-cover #board * { animation-play-state: paused; }
             '<li><b>Your things</b> sit under the board — weapons, armour, potions, ' +
                 'power-ups, steaks, coins and chest keys. You equip and use them from there.</li>' +
             '<li><b>Playing with other people</b>, a turn runs on ' + turnSecs +
-                ' seconds and each go in a fight on ' + fightSecs +
-                ' seconds, so nobody can hold the table up. On your own there is no clock.</li>' +
+                ' seconds, fights included, so nobody can hold the table up. ' +
+                'On your own there is no clock.</li>' +
             '<li><b>The host</b> may pause the game, and may end it for everybody.</li>' +
             '<li><b>The narrator</b> down the right-hand side says everything that happens. ' +
                 'If you missed something, it is in there.</li>' +
