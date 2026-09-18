@@ -680,6 +680,14 @@ h3 { font-size: 17px; }
 
 .muted { color: #9a9a9a; }
 
+.note-link {
+    color: var(--gold-bright);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--gold);
+    cursor: pointer;
+}
+.note-link:hover { color: var(--gold); border-bottom-style: solid; }
+
 /* ---- the rules, in something you can actually read ---------------------
    The whole page is set in Cutive Mono, which is the game's voice: a
    typewriter, a rulebook run off on one. It carries a heading and a card's
@@ -4412,11 +4420,10 @@ body.modal-cover #board * { animation-play-state: paused; }
                 <div class="card">
                     <h2>Your name</h2>
                     <input type="text" id="inp-name" maxlength="16" placeholder="e.g. Nathan">
-                    <label class="muted note" style="display:flex;align-items:center;gap:8px;margin:10px 0;cursor:pointer">
-                        <input type="checkbox" id="inp-original-fenrirak" style="margin:0">
-                        <span>The ORIGINAL Fenrirak (750 HP, tougher, hits harder)</span>
-                    </label>
                     <button class="btn primary" id="btn-create">Create a new room</button>
+                    <p class="muted note">
+                        <a href="#" id="btn-fenrirak-mode" class="note-link">Fight settings</a>
+                    </p>
                     <p class="muted note">
                         You will get a 5-letter room code and an invite link to share.
                         <span id="online-note"></span>
@@ -9430,9 +9437,7 @@ body.modal-cover #board * { animation-play-state: paused; }
 })(typeof window !== 'undefined' ? window : globalThis);
 
     </script>
-    <script>
-/* ==== game/ui.js ==== */
-/* =========================================================================
+    <script>/* =========================================================================
    Legend of Fenrirak™, The Thunder Dragon — Online Version
    ui.js — rendering and input.
    ========================================================================= */
@@ -10725,6 +10730,59 @@ body.modal-cover #board * { animation-play-state: paused; }
     /* Home screen                                                         */
     /* ------------------------------------------------------------------ */
 
+    // Set once here, before a room exists, by whoever is about to create
+    // one -- see openFenrirakMode below.
+    let wantOriginalFenrirak = false;
+
+    // Keeps the link on the home screen honest about which mode is
+    // currently chosen, so leaving it set to Original and coming back
+    // later does not look like it reset to Classic.
+    function fenrirakModeChosen() {
+        const el = $('#btn-fenrirak-mode');
+        if (el) el.textContent = wantOriginalFenrirak
+            ? 'Fight settings — The ORIGINAL Fenrirak'
+            : 'Fight settings — Classic Fenrirak';
+    }
+
+    // A small popup, not a checkbox nobody reads the label of. Explains
+    // exactly what changes before it is turned on, since 750 HP and a much
+    // harder-hitting boss is not something to switch on by accident.
+    function openFenrirakMode() {
+        const e = D.ENEMIES.fenrirak;
+        const o = e.original;
+        overlay = { key: 'fenrirak-mode', draw: openFenrirakMode };
+        showModal(
+            '<div class="guide-ask">' +
+                '<h2>Fenrirak\u2019s Arena</h2>' +
+                '<div class="sub">' +
+                    'By default Fenrirak has <b>' + e.hp + ' HP</b> and <b>' + e.defence +
+                    ' defence</b>. <b>The ORIGINAL Fenrirak</b> is a tougher fight: ' +
+                    '<b>' + o.hp + ' HP</b>, <b>' + o.defence + ' defence</b>, and every one ' +
+                    'of his moves hits <b>' + o.damageBonus + ' harder</b>. It is settled once, ' +
+                    'when the room is created, and holds for the rest of that game.' +
+                '</div>' +
+                '<div class="modal-actions">' +
+                    '<button class="btn' + (wantOriginalFenrirak ? ' primary' : '') +
+                        '" id="fenrirak-mode-on">The ORIGINAL Fenrirak</button>' +
+                    '<button class="btn' + (wantOriginalFenrirak ? '' : ' primary') +
+                        '" id="fenrirak-mode-off">Classic Fenrirak</button>' +
+                '</div>' +
+            '</div>', true, 'fenrirak-mode');
+
+        bind('fenrirak-mode-on', () => {
+            wantOriginalFenrirak = true;
+            fenrirakModeChosen();
+            closeOverlay();
+            closeModal();
+        });
+        bind('fenrirak-mode-off', () => {
+            wantOriginalFenrirak = false;
+            fenrirakModeChosen();
+            closeOverlay();
+            closeModal();
+        });
+    }
+
     function initHome() {
         $('#inp-name').value = NET.localName();
 
@@ -10734,6 +10792,18 @@ body.modal-cover #board * { animation-play-state: paused; }
         $('#btn-join').disabled = !ONLINE;
         if (!ONLINE) $('#online-note').textContent = 'Connecting…';
 
+        // The ORIGINAL Fenrirak -- decided by whoever is about to create the
+        // room (or start a solo game), so it has to be settled before either
+        // button is pressed. A checkbox sitting in the middle of the form
+        // said nothing about what it actually did; this opens a small popup
+        // instead that explains the change, and remembers the answer here
+        // for whichever button gets pressed next.
+        fenrirakModeChosen();
+        $('#btn-fenrirak-mode').addEventListener('click', (e) => {
+            e.preventDefault();
+            openFenrirakMode();
+        });
+
         $('#btn-create').addEventListener('click', async () => {
             const name = $('#inp-name').value.trim();
             if (!name) return notice('Please enter a name first.');
@@ -10741,7 +10811,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             NET = ONLINE;
             $('#btn-create').disabled = true;
             try {
-                const opts = { originalFenrirak: $('#inp-original-fenrirak').checked };
+                const opts = { originalFenrirak: wantOriginalFenrirak };
                 const code = await NET.createRoom(name, opts);
                 enterRoom(code);
             } catch (err) {
@@ -10763,7 +10833,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             NET = SOLO;
             $('#btn-solo').disabled = true;
             try {
-                const opts = { originalFenrirak: $('#inp-original-fenrirak').checked };
+                const opts = { originalFenrirak: wantOriginalFenrirak };
                 enterRoom(await SOLO.createRoom(name, opts));
             } catch (err) {
                 notice(err.message || 'Could not start a game.');
@@ -15722,8 +15792,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         window.addEventListener('lof-net-ready', onlineReady, { once: true });
     }
 })();
-
-    </script>
+</script>
     <script type="module">
 /* ==== game/net.js ==== */
 /* =========================================================================
