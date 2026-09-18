@@ -152,27 +152,20 @@
 }
 
 /* Small gold "pick" bubble next to an item in the Games dropdown.
-   Add <span class="nav-badge">…</span> after the link's <span> label.
-   A brighter gradient, a thin bright rim, and a soft gold glow make it
-   pop against the dark menu instead of reading as a flat tag. */
+   Add <span class="nav-badge">…</span> after the link's <span> label. */
 .nav-menu .nav-badge {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 2px 8px;
     font-family: Allegro, serif;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.3px;
     text-transform: uppercase;
-    line-height: 1.6;
-    color: #3a2705;
-    background: linear-gradient(180deg, #ffe08a, #e8b64d 65%, #d9a53a);
-    border: 1px solid rgba(255, 233, 175, 0.9);
+    line-height: 1.5;
+    color: #241a03;
+    background: #d2a236;
     border-radius: 999px;
     white-space: nowrap;
-    box-shadow:
-        0 0 10px rgba(232, 182, 77, 0.65),
-        0 2px 5px rgba(0, 0, 0, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* ---- narrow screens --------------------------------------------------- */
