@@ -13486,10 +13486,15 @@ body.modal-cover #board * { animation-play-state: paused; }
 
         // Real, live and on the real board -- so only when it is genuinely
         // your own move to make, with nothing already on screen asking you
-        // something else first.
+        // something else first. A pause is normally exactly that kind of
+        // something -- except when it is the guide's own doing: opening
+        // "How to play" quietly pauses a game you can pause (see
+        // pauseForGuide), purely so nothing moves on behind the menu, and
+        // that self-imposed pause is not a reason for the menu to then
+        // tell you the tour is unavailable.
         function eligible() {
             return !!(S && ROOM && S.phase === 'playing' && myTurn() &&
-                      !S.battle && !S.pending && !S.paused && !tableHeld());
+                      !S.battle && !S.pending && (!S.paused || guidePausedByUs) && !tableHeld());
         }
 
         function isOpen() { return !!layer || waiting; }
