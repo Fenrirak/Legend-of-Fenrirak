@@ -10987,6 +10987,7 @@ body.modal-cover #board * { animation-play-state: paused; }
     function onState(state) {
         S = state;
         SPOTLIGHT.recheck();
+        healOrphanedGuidePause();
         /* The order these are taken in is the order they will reach the
            screen, so it is the order the beats belong in: the die that decided
            things goes up first, then the result of the fight it decided, and
@@ -13393,21 +13394,54 @@ body.modal-cover #board * { animation-play-state: paused; }
     /* they close it. A guest in someone else's game cannot pause it, so   */
     /* for them this quietly does nothing, same as pressing the pause      */
     /* button in the corner always has.                                   */
+    /*                                                                     */
+    /* Whether the pause on the table right now is ours to lift again is   */
+    /* kept in localStorage rather than a plain variable, on purpose: a    */
+    /* variable forgets the instant the tab is closed or reloaded, and a   */
+    /* reload is exactly the moment this most needs to still remember --   */
+    /* otherwise a guide closed by walking away from the page rather than  */
+    /* by pressing anything in it leaves the game sitting paused with      */
+    /* nothing left open that still intends to unpause it. The first fresh */
+    /* snapshot after a reload heals exactly that: if the mark says the    */
+    /* pause was ours, and nothing of the guide is actually open to still  */
+    /* own it, it is lifted right there rather than left to rot.           */
     /* ------------------------------------------------------------------ */
-    let guidePausedByUs = false;
+    const GUIDE_PAUSE_KEY = 'lof_guide_paused';
+
+    function weHeldPause() {
+        try { return localStorage.getItem(GUIDE_PAUSE_KEY) === '1'; } catch (e) { return false; }
+    }
+    function setWeHeldPause(on) {
+        try {
+            if (on) localStorage.setItem(GUIDE_PAUSE_KEY, '1');
+            else localStorage.removeItem(GUIDE_PAUSE_KEY);
+        } catch (e) { /* private mode -- nothing survives a reload here anyway */ }
+    }
 
     function pauseForGuide() {
-        if (guidePausedByUs) return;                      // already holding it open
-        if (!S || !ROOM || S.phase !== 'playing') return;  // nothing running to protect
-        if (S.paused) return;                              // paused already -- not ours to lift
-        if (!(NET === SOLO || S.hostId === NET.PID)) return;   // not ours to pause
-        guidePausedByUs = true;
+        if (weHeldPause()) return;                          // already holding it open
+        if (!S || !ROOM || S.phase !== 'playing') return;    // nothing running to protect
+        if (S.paused) return;                                // paused already -- not ours to lift
+        if (!(NET === SOLO || S.hostId === NET.PID)) return;     // not ours to pause
+        setWeHeldPause(true);
         act('setPaused', { on: true });
     }
 
     function resumeAfterGuide() {
-        if (!guidePausedByUs) return;
-        guidePausedByUs = false;
+        if (!weHeldPause()) return;
+        setWeHeldPause(false);
+        if (S && S.paused) act('setPaused', { on: false });
+    }
+
+    // Called on every fresh snapshot (see onState). Only ever does anything
+    // at all in the one situation described above -- an orphaned mark with
+    // no guide left open to match it -- so on every ordinary turn, for
+    // every player who has never even opened "How to play", this is one
+    // cheap localStorage read that finds nothing and stops.
+    function healOrphanedGuidePause() {
+        if (!weHeldPause()) return;
+        if (overlay) return;               // the guide really is still open right now
+        setWeHeldPause(false);
         if (S && S.paused) act('setPaused', { on: false });
     }
 
@@ -13494,7 +13528,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         // tell you the tour is unavailable.
         function eligible() {
             return !!(S && ROOM && S.phase === 'playing' && myTurn() &&
-                      !S.battle && !S.pending && (!S.paused || guidePausedByUs) && !tableHeld());
+                      !S.battle && !S.pending && (!S.paused || weHeldPause()) && !tableHeld());
         }
 
         function isOpen() { return !!layer || waiting; }
