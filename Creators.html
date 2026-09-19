@@ -133,36 +133,37 @@
             padding: 5px;
             background: linear-gradient(160deg, var(--accent, rgb(217,163,92)), transparent 60%);
         }
-        .jason-portrait-wrap { position: relative; }
+        .jason-portrait-wrap { position: relative; display: flex; align-items: flex-start; gap: 14px; }
+        .jason-portrait-wrap .portrait-frame { flex: 0 0 220px; }
+        /* Reserve extra width in Jason's row so the note has real room
+           beside the photo instead of overflowing into the page margin. */
+        @media (min-width: 701px) {
+            #jason .crew-grid { grid-template-columns: 374px 1fr; }
+        }
         .candy-note {
             font-family: 'Gochi Hand', cursive;
             font-size: 20px;
             line-height: 1.15;
-            color: var(--accent, #fff);
-            margin: 0 0 6px 4px;
+            color: #fff;
+            flex: 0 0 140px;
+            margin-top: 68px;
+            text-align: right;
             transform: rotate(-2deg);
         }
         .candy-arrow {
             position: absolute;
-            top: -38px;
-            left: 55px;
-            width: 40px;
-            height: 46px;
+            top: 84px;
+            left: 130px;
+            width: 150px;
+            height: 35px;
             pointer-events: none;
             z-index: 2;
             overflow: visible;
         }
         .candy-arrow path {
-            stroke: var(--accent, #fff);
+            stroke: #fff;
             stroke-width: 2.5;
             fill: none;
-        }
-        @media (max-width: 640px) {
-            .candy-note {
-                text-align: center;
-                margin: 0 0 8px;
-            }
-            .candy-arrow { display: none; }
         }
 
         .portrait-frame img {
@@ -297,6 +298,14 @@
             .portrait-frame { max-width: 220px; }
             .name-row { justify-content: center; }
             .favourite-class { justify-content: center; }
+
+            .jason-portrait-wrap { display: block; }
+            .candy-note {
+                flex: none;
+                margin: 0 0 8px;
+                text-align: center;
+            }
+            .candy-arrow { display: none; }
 
             .section { width: 100%; max-width: 320px; }
         }
@@ -529,9 +538,9 @@
             <div class="crew-grid">
                 <div class="jason-portrait-wrap">
                     <div class="candy-note">THAT IS CANDY STICK, NOT A CIGARETTE</div>
+                    <svg class="candy-arrow" viewBox="0 0 150 35" preserveAspectRatio="none"><path d="M10 16 Q 75 4 140 22 M140 22 L128 24 M140 22 L131 14"/></svg>
                     <div class="portrait-frame glow-hover tilt-hover">
                         <img src="Jason.png" alt="Jason">
-                        <svg class="candy-arrow" viewBox="0 0 40 46"><path d="M2 2 Q 15 20 22 42 M22 42 L12 36 M22 42 L18 28"/></svg>
                     </div>
                 </div>
                 <div class="crew-text">
