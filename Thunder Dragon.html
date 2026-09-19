@@ -4136,144 +4136,22 @@ body.modal-cover #board * { animation-play-state: paused; }
     .guide-pick-grid { grid-template-columns: 1fr; }
 }
 
-/* ---- how to play: the walkthrough --------------------------------------
-
-   The spotlight tour. One step fills the modal at a time -- a badge, a
-   short line of copy, and a small reproduction of the real panel it is
-   describing, built from the exact same functions the game itself calls to
-   draw that panel. Progress is a row of dots rather than a percentage,
-   because "step 4 of 13" matters less than "getting there" does. */
-
-#modal-back[data-key="walk"] .modal { max-width: 560px; }
-.walk { font-family: 'Comfortaa', 'Trebuchet MS', 'Segoe UI', sans-serif; }
-.walk-head {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 2px;
+/* The walk-through card when it is not currently on offer -- shown rather
+   than hidden, so a player learns it exists and what would turn it on,
+   instead of a menu that mysteriously has one fewer option on it. */
+.guide-pick-card:disabled,
+.guide-pick-card.disabled {
+    cursor: not-allowed;
+    opacity: .5;
 }
-.walk-head .guide-back-link { margin-bottom: 0; }
-.walk-step-n {
-    font-family: 'Cutive Mono', 'Courier New', monospace;
-    font-size: 11.5px;
-    color: #7d7972;
-    letter-spacing: .5px;
+.guide-pick-card:disabled:hover,
+.guide-pick-card.disabled:hover {
+    border-color: var(--panel-edge);
+    transform: none;
+    box-shadow: none;
 }
-.walk-badge {
-    width: 52px; height: 52px;
-    display: flex; align-items: center; justify-content: center;
-    margin: 6px auto 4px;
-    border-radius: 999px;
-    background: radial-gradient(circle at 35% 30%, rgba(242,204,143,.22), rgba(217,163,92,.06));
-    border: 1px solid var(--panel-edge);
-    color: var(--gold-bright);
-}
-.walk-title {
-    text-align: center;
-    font-family: 'Cutive Mono', 'Courier New', monospace;
-    font-size: 19px;
-    letter-spacing: .3px;
-    margin: 0 0 8px;
-}
-.walk-body {
-    text-align: center;
-    color: #cfcbc4;
-    font-size: 14.5px;
-    line-height: 1.68;
-    max-width: 440px;
-    margin: 0 auto 18px;
-}
-.walk-body b { color: var(--cream); font-weight: 600; }
-
-/* The stage: a dark inset well the mockup sits inside, with a soft gold
-   spotlight glow breathing behind it so it reads as "the thing being shown
-   to you" rather than another block of the page. Nothing inside it is
-   interactive -- every button and tab in a mockup is disabled -- so a
-   stray click can never be mistaken for having pressed something real. */
-.walk-stage {
-    position: relative;
-    padding: 20px 16px 16px;
-    border-radius: 14px;
-    background: radial-gradient(ellipse at 50% 0%, rgba(217,163,92,.10), transparent 65%),
-                linear-gradient(180deg, #161412, #100e0c);
-    border: 1px solid rgba(217, 163, 92, .35);
-    box-shadow: 0 0 0 1px rgba(0,0,0,.4) inset, 0 0 32px -12px rgba(217,163,92,.35);
-    margin-bottom: 16px;
-    overflow: hidden;
-}
-.walk-stage::before {
-    content: '';
-    position: absolute; inset: 0;
-    pointer-events: none;
-    border-radius: 14px;
-    box-shadow: 0 0 0 9999px transparent;
-    animation: walk-pulse 2.6s ease-in-out infinite;
-}
-@keyframes walk-pulse {
-    0%, 100% { box-shadow: inset 0 0 24px rgba(217,163,92,.08); }
-    50%      { box-shadow: inset 0 0 40px rgba(217,163,92,.20); }
-}
-.w-mock { pointer-events: none; user-select: none; }
-.w-mock .btn { cursor: default; }
-.w-mock .move { cursor: default; }
-.w-mock.w-mock-hero { max-width: 320px; margin: 0 auto; }
-.w-mock.w-mock-actions .actions { justify-content: center; }
-.w-mock .btn.w-hit {
-    border-color: var(--gold-bright);
-    box-shadow: 0 0 0 3px rgba(242, 204, 143, .28), 0 0 18px -4px rgba(242,204,143,.6);
-    color: var(--gold-bright);
-}
-.w-mock-die { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.w-mock-battle .battle-top { max-width: 440px; margin: 0 auto; }
-.w-mock-battle h3 { text-align: left; font-size: 14px; }
-.w-mock-inv .inv-tabs { justify-content: center; flex-wrap: wrap; }
-.w-inv-row { display: flex; justify-content: center; margin-top: 10px; }
-.w-inv-row .paper { width: 160px; }
-
-/* A compact legend strip standing in for the board itself -- the real
-   board is hand-drawn SVG scenery and does not shrink well, so the
-   walkthrough shows the same seven square kinds as plain coloured chips,
-   in the same colours the real board paints them. */
-.w-mock-board {
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
-}
-.w-sq {
-    width: 30px; height: 30px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,.12);
-    display: inline-block;
-}
-.w-sq.kind-start  { background: rgba(244, 230, 176, .62); border-width: 2px; }
-.w-sq.kind-plain  { background: rgba(255,255,255,.07); }
-.w-sq.kind-battle { background: rgba(226, 186, 166, .34); }
-.w-sq.kind-chest  { background: rgba(242, 226, 178, .38); }
-.w-sq.kind-heal   { background: rgba(212, 232, 206, .40); }
-.w-sq.kind-gate   { background: rgba(154, 122, 216, .38); }
-.w-sq.kind-arena  { background: rgba(226, 122, 108, .42); }
 
 .wicon { display: block; }
-
-.w-dots {
-    display: flex; justify-content: center; gap: 7px;
-    margin-bottom: 4px;
-}
-.w-dots i {
-    width: 7px; height: 7px; border-radius: 999px;
-    background: rgba(217, 163, 92, .25);
-    cursor: pointer;
-    transition: background .15s ease, transform .15s ease;
-}
-.w-dots i:hover { background: rgba(217, 163, 92, .55); }
-.w-dots i.done { background: rgba(217, 163, 92, .55); }
-.w-dots i.on {
-    background: var(--gold-bright);
-    transform: scale(1.35);
-}
-.walk-actions { align-items: center; }
-.walk-spacer { flex: 1; }
-
-@media (max-width: 560px) {
-    .walk-title { font-size: 17px; }
-    .walk-body { font-size: 14px; }
-}
 
 /* ---- how to play: the live spotlight ------------------------------------
 
@@ -4357,7 +4235,48 @@ body.modal-cover #board * { animation-play-state: paused; }
     }
 }
 
-</style>
+/* The quiet little marker shown while a real press is working itself out --
+   a battle, the Merchant, a die in the air. The main spot-layer is gone
+   completely at this point (nothing of it may sit over whatever that press
+   opened), so this is the only sign the tour is still there and not simply
+   abandoned. Fixed, small, out of the way, and never in the path of a
+   click -- it has nothing to say yes to. */
+.spot-wait-badge {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translate(-50%, 12px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: calc(100vw - 24px);
+    padding: 10px 10px 10px 16px;
+    background: linear-gradient(180deg, #201d19, #141210);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    box-shadow: 0 16px 40px -16px #000;
+    font-family: 'Comfortaa', 'Trebuchet MS', 'Segoe UI', sans-serif;
+    font-size: 13px;
+    color: var(--gold-bright);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+}
+.spot-wait-badge.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
+}
+.spot-wait-badge span { line-height: 1.4; }
+.spot-wait-badge button {
+    flex: none;
+    background: none; border: 0; color: #9a958f; font-size: 18px; line-height: 1;
+    cursor: pointer; padding: 2px 4px;
+}
+.spot-wait-badge button:hover { color: var(--gold-bright); }
+
+    </style>
 
 </head>
 
@@ -9442,7 +9361,9 @@ body.modal-cover #board * { animation-play-state: paused; }
 })(typeof window !== 'undefined' ? window : globalThis);
 
     </script>
-    <script>/* =========================================================================
+    <script>
+/* ==== game/ui.js ==== */
+/* =========================================================================
    Legend of Fenrirak™, The Thunder Dragon — Online Version
    ui.js — rendering and input.
    ========================================================================= */
@@ -13491,394 +13412,66 @@ body.modal-cover #board * { animation-play-state: paused; }
     }
 
     /* ------------------------------------------------------------------ */
-    /* The walkthrough                                                      */
+    /* Icons for the "How to play" doors                                   */
     /*                                                                     */
-    /* The written guide is for reading. This is for watching -- the same   */
-    /* golden-spotlight idea as pointing at a real screen and saying "that,  */
-    /* there", one thing at a time, in the order you will actually meet     */
-    /* them. It never touches a real game's board, pieces or cards, and      */
-    /* needs none of them to run, so it works from the front page before a   */
-    /* room even exists, and from the board mid-game without disturbing      */
-    /* what is on screen underneath it -- it does, though, hold that game    */
-    /* still for as long as it is open (see pauseForGuide above), so the      */
-    /* thing underneath is not quietly moving on without you while you read.  */
-    /*                                                                     */
-    /* Every mockup on every step is built with the game's own component    */
-    /* functions -- statCardHtml, enemyPic, sideHtml, btn -- and every       */
-    /* number in the copy is read off D, exactly as the written guide is.    */
-    /* A screenshot that quotes its own numbers by hand is a screenshot      */
-    /* that quietly goes wrong the day somebody tunes a figure in data.js;   */
-    /* this one cannot, because it never wrote one down to begin with.       */
+    /* Small inline glyphs, drawn once and reused -- nothing here is a      */
+    /* file, so nothing here can fail to load. Each is a plain stroke-only  */
+    /* svg in the same gold the rest of the game is cut from, sized to sit  */
+    /* inside a button, a card or a step badge.                             */
     /* ------------------------------------------------------------------ */
 
-    const WALK = (function () {
-        const R = D.RULES;
-        let steps = [];
-        let at = 0;
+    function guideIcon(name, px) {
+        const s = px || 22;
+        const body = {
+            spotlight:
+                '<circle cx="12" cy="12" r="5.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3' +
+                'M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>',
+            scroll:
+                '<path d="M6 4h10a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>' +
+                '<path d="M6 4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2"/><path d="M8 8h6M8 11h6M8 14h4"/>',
+            bolt: '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>'
+        }[name] || '';
+        return '<svg class="wicon" width="' + s + '" height="' + s +
+            '" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+            'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+            body + '</svg>';
+    }
 
-        /* ---- small inline icons, drawn once and reused ------------------
-           Nothing here is a file, so nothing here can fail to load. Each is
-           a plain stroke-only glyph in the same gold the rest of the game
-           is cut from, sized to sit inside a button or a step badge. */
-        function icon(name, px) {
-            const s = px || 22;
-            const body = {
-                spotlight:
-                    '<circle cx="12" cy="12" r="5.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3' +
-                    'M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>',
-                scroll:
-                    '<path d="M6 4h10a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>' +
-                    '<path d="M6 4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2"/><path d="M8 8h6M8 11h6M8 14h4"/>',
-                die: '<rect x="3" y="3" width="18" height="18" rx="4"/>' +
-                    '<circle cx="8" cy="8" r="1.4" fill="currentColor"/>' +
-                    '<circle cx="16" cy="16" r="1.4" fill="currentColor"/>' +
-                    '<circle cx="12" cy="12" r="1.4" fill="currentColor"/>' +
-                    '<circle cx="8" cy="16" r="1.4" fill="currentColor"/>' +
-                    '<circle cx="16" cy="8" r="1.4" fill="currentColor"/>',
-                sword: '<path d="M14.5 3.5 20.5 9.5 11 19l-4-1-1-4z"/><path d="M3 21l4.5-4.5"/>' +
-                    '<path d="M12.5 5.5l3 3"/>',
-                map: '<path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2z"/><path d="M9 3v16M15 5v16"/>',
-                bag: '<path d="M7 8V6a5 5 0 0 1 10 0v2"/>' +
-                    '<rect x="4" y="8" width="16" height="13" rx="2"/><path d="M4 13h16"/>',
-                coin: '<circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v.01M12 15v.01"/>',
-                bolt: '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
-                trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/>' +
-                    '<path d="M7 5H4a3 3 0 0 0 3 5M17 5h3a3 3 0 0 1-3 5"/>' +
-                    '<path d="M12 14v3M9 21h6M9.5 17.5h5l.5 3.5H9l.5-3.5z"/>',
-                key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l2 2M14 9l2 2"/>',
-                shield: '<path d="M12 3l7 3v6c0 5-3.5 7.6-7 9-3.5-1.4-7-4-7-9V6l7-3z"/>',
-                meat: '<path d="M8 15c-3-3-2-8 2-10 3-2 7-1 8 2 1 2 0 4-2 5" />' +
-                    '<path d="M9 14l-3.5 3.5a2 2 0 1 0 3 3L12 17" />' +
-                    '<circle cx="14" cy="9" r="1" fill="currentColor"/>',
-                users: '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/>' +
-                    '<circle cx="17.5" cy="9" r="2.6"/><path d="M15 13.3a5 5 0 0 1 6 4.9"/>',
-                flag: '<path d="M6 3v18"/><path d="M6 4h11l-2.5 4L17 12H6"/>'
-            }[name] || '';
-            return '<svg class="wicon" width="' + s + '" height="' + s +
-                '" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-                'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
-                body + '</svg>';
-        }
-
-        /* ---- little standalone mockups -----------------------------------
-           Reproductions of real panels, built with the same component
-           functions the game itself calls, so nothing here can quietly
-           drift out of sync with what is actually on screen. They are not
-           live and press nothing -- WALK never touches game state -- but
-           they are drawn from it, which is the part that matters. */
-
-        function mockActions(highlightId) {
-            const rows = [
-                ['w-move', 'Roll & move', 'primary'],
-                ['w-ability', (D.CLASSES.knight.ability.name), ''],
-                ['w-shop', 'Visit the Merchant', ''],
-                ['w-trade', 'Propose a trade', ''],
-                ['w-steak', 'Eat seared steak', ''],
-                ['w-end', 'End turn', '']
-            ];
-            return '<div class="w-mock w-mock-actions">' +
-                '<div class="actions">' + rows.map(r =>
-                    '<button class="btn ' + r[2] + (r[0] === highlightId ? ' w-hit' : '') +
-                    '" disabled>' + esc(r[1]) + '</button>').join('') +
-                '</div></div>';
-        }
-
-        function mockHero() {
-            const c = D.CLASSES.knight;
-            return '<div class="w-mock w-mock-hero">' +
-                '<div class="me-top">' +
-                    '<div class="me-portrait" style="background-image:url(\'' +
-                        esc(c.art) + '\')"></div>' +
-                    '<div class="me-id"><div class="me-name">You</div>' +
-                        '<div class="me-where">' + esc(c.name) + ' &middot; On Start</div></div>' +
-                '</div>' +
-                '<div class="me-hp"><div class="bar hp"><i style="width:78%"></i></div>' +
-                    '<div class="barlabel"><span>' + Math.round(c.hp * .78) + ' / ' + c.hp +
-                    ' HP</span><span>Defence ' + c.defence + '</span></div></div>' +
-                '<div class="me-stats">' +
-                    '<div><span>Coins</span><b>24</b></div>' +
-                    '<div><span>Energy</span><b>3</b></div>' +
-                    '<div><span>Attack</span><b>+5</b></div>' +
-                    '<div><span>Chest keys</span><b>1</b></div>' +
-                    '<div class="wide"><span>Key fragments</span><span class="frag-row">' +
-                        [1, 2, 3].map(i => '<span class="frag' + (i === 1 ? ' have' : '') +
-                            '"></span>').join('') + '<b style="margin-left:4px">1/' +
-                        D.KEY_FRAGMENTS_NEEDED + '</b></span></div>' +
-                '</div></div>';
-        }
-
-        function mockDie(n) {
-            return '<div class="w-mock w-mock-die"><div class="die">' + pipsHtml(n) +
-                '</div><div class="muted" style="text-align:center;font-size:13px">' +
-                (n > missesUpTo() ? 'A hit!' : 'A miss.') + '</div></div>';
-        }
-
-        function mockBattle() {
-            // A real, non-placeholder fight — not the very first key in
-            // ENEMIES, which is a stand-in until its own card is written.
-            const enemyId = D.ENEMIES.seraphina ? 'seraphina' : Object.keys(D.ENEMIES)[0];
-            const foe = D.ENEMIES[enemyId];
-            const c = D.CLASSES.knight;
-            return '<div class="w-mock w-mock-battle">' +
-                '<div class="battle-top">' +
-                    sideHtml('<img src="' + esc(c.art) + '" alt="You">',
-                        Math.round(c.hp * .8), c.hp, 'You', 'hp', 'w-a', 3) +
-                    '<div class="battle-vs">VS</div>' +
-                    sideHtml(enemyPic(foe, 96), Math.round((foe.hp || 90) * .6),
-                        foe.hp || 90, foe.name, 'enemy', 'w-b', 2) +
-                '</div>' +
-                '<h3 style="margin-top:14px">Choose your attack</h3>' +
-                '<div class="moves">' + c.moves.map(m =>
-                    '<button class="move" disabled>' +
-                        '<div class="mname">' + esc(m.name) + '</div>' +
-                        '<div class="mmeta">' + m.damage + ' damage &middot; needs ' +
-                            m.energy + ' energy</div>' +
-                    '</button>').join('') + '</div>' +
-            '</div>';
-        }
-
-        function mockSquares() {
-            return '<div class="w-mock">' + guideSquareLegend() + '</div>';
-        }
-
-        function mockClasses() {
-            return '<div class="w-mock">' + guideClasses() + '</div>';
-        }
-
-        function mockInventory() {
-            const tabs = ['Weapons', 'Armour', 'Potions', 'Power-ups', 'Food'];
-            const weapon = D.ITEMS[D.CLASSES.knight.starterWeapon];
-            return '<div class="w-mock w-mock-inv">' +
-                '<div class="inv-tabs">' + tabs.map((t, i) =>
-                    '<button class="btn small' + (i === 0 ? ' primary' : '') +
-                    '" disabled>' + t + '</button>').join('') + '</div>' +
-                '<div class="w-inv-row">' +
-                    paperCardHtml('stat', weapon ? weapon.name : 'Weapon',
-                        'Equipped', 'Tap to unequip') +
-                '</div></div>';
-        }
-
-        function mockMerchant() {
-            // One potion and one piece of gear, read straight off the
-            // Merchant's own stock lists so the mockup can never carry a
-            // price or a name the stall itself does not. Potions are looked
-            // up in POWERUPS (what a potion card actually is), gear in
-            // ITEMS -- the same two tables renderMerchant() itself reads.
-            const potionId = Object.keys(D.MERCHANT_POTIONS || {})[0];
-            const potionRow = potionId ? D.MERCHANT_POTIONS[potionId] : null;
-            const potionItem = potionId ? D.POWERUPS[potionId] : null;
-            const gearId = (D.MERCHANT_GEAR || [])[0];
-            const gearItem = gearId ? D.ITEMS[gearId] : null;
-            const rows = [
-                potionItem && { name: potionItem.name, text: potionItem.text,
-                    price: potionRow ? potionRow.price : null },
-                gearItem && { name: gearItem.name, text: gearItem.text, price: gearItem.price }
-            ].filter(Boolean);
-            return '<div class="w-mock">' +
-                '<div class="item-grid">' + rows.map(it =>
-                    '<div class="item">' + paperCardHtml('pink', it.name, it.text || '',
-                        it.price != null ? '$' + it.price : '') +
-                    '<button class="btn small" disabled>Buy</button></div>').join('') +
-                '</div></div>';
-        }
-
-        function mockBoard() {
-            const kinds = [
-                ['start', 'Start'], ['plain', 'Cards & events'], ['battle', 'A monster'],
-                ['chest', 'Chest'], ['heal', 'Healing'], ['gate', 'The Gate'], ['arena', 'Arena']
-            ];
-            return '<div class="w-mock w-mock-board">' +
-                kinds.map(k => '<span class="w-sq kind-' + k[0] + '" title="' + esc(k[1]) +
-                    '"></span>').join('') +
-            '</div>';
-        }
-
-        /* ---- the step list -----------------------------------------------
-           Order mirrors the shape of a real game: arrive, look around, take
-           a turn, land on things, fight, meet somebody, gear up, shop, win.
-           Each step is { icon, title, body, mock } -- mock is a function so
-           it is only ever built the moment it is shown. */
-        function buildSteps() {
-            return [
-                {
-                    icon: 'flag', title: 'What you are trying to do',
-                    body: 'Walk the board and beat monsters until you hold all <b>' +
-                        D.KEY_FRAGMENTS_NEEDED + ' key fragments</b>. Those open <b>the Gate</b>. ' +
-                        'Through the Gate is the arena, and in the arena is <b>Fenrirak</b>. ' +
-                        'Beat him and the table has won.',
-                    mock: mockBoard
-                },
-                {
-                    icon: 'users', title: 'Your stats, always on screen',
-                    body: 'This card follows you everywhere — your health, your defence, ' +
-                        'your coins, your energy, your key fragments, and what square you\u2019re ' +
-                        'standing on. Everyone\u2019s is open; nothing at this table is secret.',
-                    mock: mockHero
-                },
-                {
-                    icon: 'die', title: 'Roll and move',
-                    body: 'On your turn, press <b>Roll &amp; move</b>. One die, and you walk ' +
-                        'that many squares. Some gear lets you add to the roll — you\u2019re asked ' +
-                        'once the die has landed, and you may always add nothing.',
-                    mock: () => mockDie(4)
-                },
-                {
-                    icon: 'map', title: 'Wherever you land, something happens',
-                    body: 'Every square does something the moment you stop on it — draw a ' +
-                        'card, fight a monster, heal up, open a chest, or simply read what it ' +
-                        'says. A panel comes up and asks you anything it needs to know.',
-                    mock: mockSquares
-                },
-                {
-                    icon: 'sword', title: 'Fighting: the short version',
-                    body: '<b>3 or more</b> on the die and you connect — a 1 or a 2 misses. ' +
-                        'What actually lands is <b>attack &minus; defence</b> — except a ' +
-                        'monster\u2019s hit never drops below <b>' + R.enemyMinDamage +
-                        ' damage</b>, however much defence you\u2019re carrying. Energy starts ' +
-                        'at ' + R.startingEnergy + ' and builds with every blow you throw; your ' +
-                        'heavy move costs a lot of it, so it only comes around occasionally.',
-                    mock: mockBattle
-                },
-                {
-                    icon: 'shield', title: 'Choosing your attack',
-                    body: 'Once you\u2019ve rolled to connect, pick a move. Each button shows the ' +
-                        'damage and the energy it costs, so you always know what you can ' +
-                        'actually afford before you commit to it.',
-                    mock: mockBattle
-                },
-                {
-                    icon: 'users', title: 'Land on another player',
-                    body: 'Stop on a square somebody is already standing on and you <b>have to ' +
-                        'fight them</b> — it isn\u2019t optional. Win and you take some of their ' +
-                        'coins, and you still get whatever the square itself was going to give you.',
-                    mock: mockBattle
-                },
-                {
-                    icon: 'bag', title: 'Your things',
-                    body: 'Everything you\u2019re carrying — weapons, armour, potions, power-ups, ' +
-                        'steaks, chest keys — lives here, sorted into tabs. Tap something to ' +
-                        'equip it or use it. You may change one weapon and one armour every turn.',
-                    mock: mockInventory
-                },
-                {
-                    icon: 'coin', title: 'The Merchant',
-                    body: 'Available on your own turn, any turn — buying doesn\u2019t use up your ' +
-                        'go, so you can shop and still move afterwards. Browse what\u2019s in ' +
-                        'stock and spend your coins on gear and potions.',
-                    mock: mockMerchant
-                },
-                {
-                    icon: 'meat', title: 'Eating and healing',
-                    body: 'You may eat on <b>anybody\u2019s</b> turn, not just your own. A seared ' +
-                        'steak heals ' + R.searedSteakHeal + '. A raw one heals ' + R.rawSteakHeal +
-                        ' — but roll a ' + R.foodPoisoningRoll + ' and it\u2019s food poisoning ' +
-                        'instead, costing you ' + R.foodPoisoningLoss + ' health.',
-                    mock: () => mockActions('w-steak')
-                },
-                {
-                    icon: 'bolt', title: 'Your class ability',
-                    body: 'Each class has a signature move, usable once every ' +
-                        R.abilityCooldownTurns + ' of your own turns. The button tells you how ' +
-                        'long is left if it isn\u2019t ready yet, so you\u2019re never guessing.',
-                    mock: () => mockActions('w-ability')
-                },
-                {
-                    icon: 'shield', title: 'The three classes',
-                    body: 'Everybody plays the whole game — you just differ in what you can ' +
-                        'take and what you hit for. Pick whichever suits how you like to play.',
-                    mock: mockClasses
-                },
-                {
-                    icon: 'trophy', title: 'Ending your turn',
-                    body: 'Press <b>End turn</b> when you\u2019re done — moving, shopping, ' +
-                        'trading, using your ability. You get a hunting roll on the way out, ' +
-                        'which is where steaks come from. Lose a fight and you\u2019re sent back ' +
-                        'to the Start with your health restored — you keep your coins and gear.',
-                    mock: () => mockActions('w-end')
-                }
-            ];
-        }
-
-        function progressHtml() {
-            return '<div class="w-dots">' + steps.map((_, i) =>
-                '<i class="' + (i === at ? 'on' : (i < at ? 'done' : '')) +
-                '" data-dot="' + i + '"></i>').join('') + '</div>';
-        }
-
-        function panelHtml() {
-            const s = steps[at];
-            const isFirst = at === 0, isLast = at === steps.length - 1;
-            return '' +
-            '<div class="walk">' +
-                '<div class="walk-head">' +
-                    '<button class="guide-back-link" id="walk-back-pick" ' +
-                        'title="Back to How to play">&larr; How to play</button>' +
-                    '<span class="walk-step-n">Step ' + (at + 1) + ' of ' + steps.length + '</span>' +
-                '</div>' +
-                '<div class="walk-badge">' + icon(s.icon, 26) + '</div>' +
-                '<h2 class="walk-title">' + esc(s.title) + '</h2>' +
-                '<div class="walk-body">' + s.body + '</div>' +
-                '<div class="walk-stage">' + s.mock() + '</div>' +
-                progressHtml() +
-                '<div class="modal-actions walk-actions">' +
-                    (isFirst ? '' : '<button class="btn" id="walk-prev">Back</button>') +
-                    '<span class="walk-spacer"></span>' +
-                    (isLast
-                        ? '<button class="btn primary" id="walk-done">Start playing</button>'
-                        : '<button class="btn primary" id="walk-next">Next</button>') +
-                '</div>' +
-            '</div>';
-        }
-
-        function render() {
-            showModal(panelHtml(), true, 'walk');
-            bind('walk-prev', () => { at = Math.max(0, at - 1); render(); });
-            bind('walk-next', () => { at = Math.min(steps.length - 1, at + 1); render(); });
-            bind('walk-done', finish);
-            bind('walk-back-pick', () => { closeOverlay(); openGuide(); });
-            $$('#modal .w-dots i').forEach(el => el.addEventListener('click', () => {
-                at = +el.dataset.dot; render();
-            }));
-        }
-
-        function finish() {
-            closeOverlay();
-            resumeAfterGuide();
-            if (S && ROOM) renderModal(); else closeModal();
-        }
-
-        function open() {
-            steps = buildSteps();
-            at = 0;
-            try { localStorage.setItem(GUIDE_SEEN_KEY, '1'); } catch (e) { /* private mode */ }
-            overlay = { key: 'walk', draw: render };
-            pauseForGuide();
-            render();
-        }
-
-        return { open, icon };
-    })();
 
     /* ------------------------------------------------------------------ */
-    /* The live spotlight                                                   */
+    /* The live spotlight -- "Walk me through it"                          */
     /*                                                                     */
-    /* WALK teaches with a mockup, because it has to work with no real game  */
-    /* behind it at all -- before a room even exists, on somebody else's go, */
-    /* mid-fight, anywhere. This teaches with the real screen instead: the   */
-    /* actual buttons, lit up one at a time while everything else outside a  */
-    /* ring drawn round the current one goes dark, still wired to the real   */
-    /* game underneath -- click one for real and it really does whatever it  */
-    /* really does.                                                          */
+    /* This is the whole of the walkthrough now. There used to be a second */
+    /* version that worked from a mockup -- built so it could run before a */
+    /* room even existed -- but a screenshot of a button is not the button, */
+    /* and being told "this is what Roll & move looks like" every time is a */
+    /* poor stand-in for actually pressing it. So the mockup is gone, and    */
+    /* this is the only door: the real screen, the real buttons, lit up one  */
+    /* at a time while everything else outside a ring drawn round the        */
+    /* current one goes dark, still wired to the real game underneath --     */
+    /* click one for real and it really does whatever it really does.        */
     /*                                                                     */
-    /* That only ever means what it says on your own turn, with nothing      */
-    /* else already asking a question first -- no battle, no square to       */
-    /* answer for, no pause -- so that is the only time it is offered. It     */
-    /* is not put on the shared #modal at all: that overlay dims and blurs    */
-    /* the whole board, which is exactly what this is not meant to do, so     */
-    /* it draws its own small layer straight onto the page instead, on top    */
-    /* of everything, and takes it down again the moment a real, live         */
-    /* button under it is actually pressed -- a tour has no business still    */
-    /* standing over whatever a real click really does next.                 */
+    /* That only ever means something on your own turn, with nothing else    */
+    /* already asking a question first -- no battle, no square to answer     */
+    /* for, no pause -- so that is the only time it is offered. It is not     */
+    /* put on the shared #modal at all: that overlay dims and blurs the      */
+    /* whole board, which is exactly what this is not meant to do, so it     */
+    /* draws its own small layer straight onto the page instead, on top of   */
+    /* everything.                                                          */
+    /*                                                                     */
+    /* Pressing a real, live button does not end the tour any more. It      */
+    /* steps out of the way -- fully, so nothing it draws can sit over a     */
+    /* battle panel, a chest, the Merchant, or whatever else that button     */
+    /* really opens -- and waits for the table to go quiet again before      */
+    /* picking the tour back up on the next thing. "Quiet" is the same       */
+    /* thing the action bar itself waits on: no battle, no pending square,   */
+    /* no pause, nothing still animating, and the shared modal closed --      */
+    /* which covers a network action resolving (a roll, an ability, a        */
+    /* steak) exactly as well as it covers a merchant or trade panel the     */
+    /* player simply has to close by hand. Ending your own turn is the one   */
+    /* press that does not come back to the tour -- there is nothing left    */
+    /* on your turn to point at once it is somebody else's -- so that is     */
+    /* also where the step order puts it: last.                             */
     /* ------------------------------------------------------------------ */
 
     const SPOTLIGHT = (function () {
@@ -13887,7 +13480,9 @@ body.modal-cover #board * { animation-play-state: paused; }
         let steps = [];
         let at = 0;
         let onResize = null;
-        let lastBound = null;
+        let waiting = false;
+        let pollTimer = null;
+        let badge = null;
 
         // Real, live and on the real board -- so only when it is genuinely
         // your own move to make, with nothing already on screen asking you
@@ -13897,7 +13492,7 @@ body.modal-cover #board * { animation-play-state: paused; }
                       !S.battle && !S.pending && !S.paused && !tableHeld());
         }
 
-        function isOpen() { return !!layer; }
+        function isOpen() { return !!layer || waiting; }
 
         function targetEl(step) {
             const el = document.getElementById(step.id);
@@ -13905,6 +13500,11 @@ body.modal-cover #board * { animation-play-state: paused; }
             return step.wrap ? (el.closest('.card') || el) : el;
         }
 
+        /* ---- the step list -----------------------------------------------
+           The three things always on screen come first, then your own
+           things and the log, then every button in the order you would
+           actually reach for it in a turn -- ending on End turn, because
+           pressing that one is the only press that does not come back. */
         function buildSteps() {
             const p = me();
             const cls = p ? D.CLASSES[p.cls] : null;
@@ -13918,9 +13518,15 @@ body.modal-cover #board * { animation-play-state: paused; }
                 { id: 'board', title: 'The board',
                   body: 'Your piece is the one ringed in gold. Wherever it lands, ' +
                       'something happens straight away.' },
+                { id: 'inventory', title: 'Your things', wrap: true,
+                  body: 'Weapons, armour, potions, power-ups, steaks and keys. ' +
+                      'Tap something to equip or use it.' },
+                { id: 'log', title: 'The narrator', wrap: true,
+                  body: 'Says everything that\u2019s happened, in order. If you ' +
+                      'missed something, it\u2019s in here.' },
                 { id: 'a-move', title: 'Roll and move', live: true,
-                  body: 'This is the real button. Click it and one die decides ' +
-                      'how far you actually walk.' },
+                  body: 'Press it for real. One die decides how far you ' +
+                      'actually walk.' },
                 { id: 'a-ability', title: cls ? cls.ability.name : 'Your class ability',
                   live: true,
                   body: 'Your class\u2019s own move, usable once every ' +
@@ -13931,6 +13537,9 @@ body.modal-cover #board * { animation-play-state: paused; }
                 { id: 'a-trade', title: 'Propose a trade', live: true,
                   body: 'Offer somebody at the table a swap of your own. They ' +
                       'can accept it or turn it down.' },
+                { id: 'a-coinpay', title: 'Pay in coins instead', live: true,
+                  body: 'Some armour lets you spend coins to soften a hit. ' +
+                      'This flips whether you\u2019re asked about it.' },
                 { id: 'a-steak-raw', title: 'Eat a raw steak', live: true,
                   body: 'Heals ' + R.rawSteakHeal + ' — but roll a ' +
                       R.foodPoisoningRoll + ' and it\u2019s food poisoning ' +
@@ -13939,14 +13548,10 @@ body.modal-cover #board * { animation-play-state: paused; }
                   body: 'Cooked at a Pot first, and heals ' + R.searedSteakHeal +
                       ' — twice what a raw one does.' },
                 { id: 'a-end', title: 'End turn', live: true,
-                  body: 'Press it once you\u2019re done. You get a hunting roll ' +
-                      'on the way out, which is where steaks come from.' },
-                { id: 'inventory', title: 'Your things', wrap: true,
-                  body: 'Weapons, armour, potions, power-ups, steaks and keys. ' +
-                      'Tap something to equip or use it.' },
-                { id: 'log', title: 'The narrator', wrap: true,
-                  body: 'Says everything that\u2019s happened, in order. If you ' +
-                      'missed something, it\u2019s in here.' }
+                  body: 'Press it once you\u2019re done. You get a hunting ' +
+                      'roll on the way out, which is where steaks come from. ' +
+                      'This is the last stop — the tour only ever runs on ' +
+                      'your own turn, and this is what gives it up.' }
             ].filter(targetEl);
         }
 
@@ -13972,9 +13577,13 @@ body.modal-cover #board * { animation-play-state: paused; }
             return layer;
         }
 
+        // Skips forward over any step whose element is not on screen right
+        // now (a steak you no longer have, an armour you took off) rather
+        // than simply giving up the moment one is missing.
         function place() {
+            while (at < steps.length && !targetEl(steps[at])) at++;
+            if (at >= steps.length) { close(); return; }
             const el = targetEl(steps[at]);
-            if (!el) { close(); return; }
             el.scrollIntoView({ block: 'center', behavior: 'auto' });
             requestAnimationFrame(paint);
         }
@@ -13982,7 +13591,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         function paint() {
             const step = steps[at];
             const el = targetEl(step);
-            if (!el) { close(); return; }
+            if (!el) { place(); return; }
             const pad = 8;
             const r = el.getBoundingClientRect();
             const box = {
@@ -14013,13 +13622,13 @@ body.modal-cover #board * { animation-play-state: paused; }
             });
 
             drawCard(box, vw, vh);
-            bindTarget(step, el);
         }
 
         function drawCard(box, vw, vh) {
             const step = steps[at];
             const isFirst = at === 0, isLast = at === steps.length - 1;
             const card = $('#spot-card');
+            const fwdLabel = step.live ? 'Skip for now' : (isLast ? 'Done' : 'Next');
             card.innerHTML =
                 '<div class="spot-card-head">' +
                     '<span class="spot-step-n">Step ' + (at + 1) + ' of ' + steps.length + '</span>' +
@@ -14027,23 +13636,27 @@ body.modal-cover #board * { animation-play-state: paused; }
                 '</div>' +
                 '<h3 class="spot-title">' + esc(step.title) + '</h3>' +
                 '<div class="spot-body">' + step.body + '</div>' +
-                (step.live ? '<div class="spot-hint">' + WALK.icon('bolt', 15) +
-                    '<span>A real button — click it to actually do it.</span></div>' : '') +
+                (step.live ? '<div class="spot-hint">' + guideIcon('bolt', 15) +
+                    '<span>A real button — press it for real. The tour carries ' +
+                    'on the moment you\u2019ve seen what it does.</span></div>' : '') +
                 '<div class="spot-dots">' + steps.map((_, i) =>
                     '<i class="' + (i === at ? 'on' : (i < at ? 'done' : '')) + '"></i>').join('') +
                 '</div>' +
                 '<div class="spot-actions">' +
                     (isFirst ? '' : '<button class="btn" id="spot-prev">Back</button>') +
                     '<span class="spacer"></span>' +
-                    (isLast ? '<button class="btn primary" id="spot-done">Done</button>'
-                            : '<button class="btn primary" id="spot-next">Next</button>') +
+                    '<button class="btn' + (step.live ? ' small' : ' primary') +
+                        '" id="spot-fwd">' + esc(fwdLabel) + '</button>' +
                 '</div>';
 
             if (window.innerWidth > 760) position(card, box, vw, vh);
             bind('spot-exit', close);
             bind('spot-prev', () => { at = Math.max(0, at - 1); place(); });
-            bind('spot-next', () => { at = Math.min(steps.length - 1, at + 1); place(); });
-            bind('spot-done', close);
+            bind('spot-fwd', () => {
+                if (isLast) { close(); return; }
+                at = Math.min(steps.length - 1, at + 1);
+                place();
+            });
         }
 
         // Beside the thing it is explaining wherever there is room for it --
@@ -14074,55 +13687,130 @@ body.modal-cover #board * { animation-play-state: paused; }
 
         // A real click on a real, live control is let straight through --
         // this is only ever a hand pointing at the thing, never a hand on
-        // top of it. It has no further business on screen the instant that
-        // happens, because whatever the click really does is not going to
-        // wait for the rest of a tour to finish.
-        function bindTarget(step, el) {
-            if (lastBound) lastBound.el.removeEventListener('click', lastBound.fn, false);
-            lastBound = null;
-            if (!step.live) return;
-            const fn = () => close();
-            el.addEventListener('click', fn, false);
-            lastBound = { el: el, fn: fn };
+        // top of it. Delegated on the document rather than attached to the
+        // element paint() last saw: the action bar is rebuilt (new nodes,
+        // same ids) on every fresh snapshot, including ones that are just
+        // somebody else's heartbeat, so a listener parked on one specific
+        // node would go stale the moment that happened to land between a
+        // step lighting up and the player actually pressing it. Looking the
+        // element up fresh, by id, at the moment of the click sidesteps that
+        // entirely -- it has no way to be stale.
+        function onDocClick(e) {
+            if (waiting) return;
+            const step = steps[at];
+            if (!step || !step.live) return;
+            const el = document.getElementById(step.id);
+            if (el && (el === e.target || el.contains(e.target))) beginWait();
         }
 
+        // Nothing left standing over the screen while a real press works
+        // itself out -- a battle panel, the Merchant, a trade offer, a die
+        // in the air. The tour is not gone, only quiet, and it says so.
+        function beginWait() {
+            waiting = true;
+            stopVisual();
+            showBadge();
+            clearTimeout(pollTimer);
+            pollTimer = setTimeout(pollForResume, 350);
+        }
+
+        // The same "is the table free to act" question the action bar itself
+        // asks -- no battle, no pending square, no pause, nothing still
+        // animating, and the shared modal (Merchant, trade, purse) closed.
+        function screenClear() {
+            const mb = $('#modal-back');
+            const modalShowing = !!(mb && mb.classList.contains('show'));
+            return !modalShowing && !S.battle && !S.pending && !S.paused && !tableHeld();
+        }
+
+        function pollForResume() {
+            if (!waiting) return;
+            // The turn moved on (End turn was the press), or the game did --
+            // there is nothing left on this turn for the tour to stand over,
+            // so it lets go rather than waiting for a turn that is not
+            // coming back any time soon.
+            if (!S || !ROOM || S.phase !== 'playing' || !myTurn()) { close(); return; }
+            if (!screenClear()) { pollTimer = setTimeout(pollForResume, 350); return; }
+            waiting = false;
+            hideBadge();
+            at += 1;
+            startVisual();
+        }
+
+        function showBadge() {
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.className = 'spot-wait-badge';
+                badge.innerHTML = '<span>Go ahead — the tour will carry on once ' +
+                    'that\u2019s settled.</span>' +
+                    '<button id="spot-wait-exit" title="End the tour">&times;</button>';
+                document.body.appendChild(badge);
+                bind('spot-wait-exit', close);
+            }
+            requestAnimationFrame(() => badge && badge.classList.add('show'));
+        }
+
+        function hideBadge() { if (badge) badge.classList.remove('show'); }
+
         function onKey(e) { if (e.key === 'Escape') close(); }
+
+        function startVisual() {
+            ensureLayer();
+            onResize = () => { if (layer) paint(); };
+            window.addEventListener('resize', onResize);
+            window.addEventListener('scroll', onResize, true);
+            place();
+        }
+
+        function stopVisual() {
+            if (onResize) {
+                window.removeEventListener('resize', onResize);
+                window.removeEventListener('scroll', onResize, true);
+                onResize = null;
+            }
+            if (layer) { layer.remove(); layer = null; }
+        }
 
         function open() {
             if (!eligible()) return;
             steps = buildSteps();
             if (!steps.length) return;
             at = 0;
-            ensureLayer();
-            onResize = () => { if (layer) paint(); };
-            window.addEventListener('resize', onResize);
-            window.addEventListener('scroll', onResize, true);
+            waiting = false;
             document.addEventListener('keydown', onKey);
-            place();
+            document.addEventListener('click', onDocClick, true);
+            startVisual();
         }
 
         function close() {
-            if (lastBound) {
-                lastBound.el.removeEventListener('click', lastBound.fn, false);
-                lastBound = null;
-            }
-            if (onResize) {
-                window.removeEventListener('resize', onResize);
-                window.removeEventListener('scroll', onResize, true);
-                onResize = null;
-            }
+            clearTimeout(pollTimer);
+            pollTimer = null;
+            waiting = false;
             document.removeEventListener('keydown', onKey);
-            if (layer) { layer.remove(); layer = null; }
+            document.removeEventListener('click', onDocClick, true);
+            stopVisual();
+            if (badge) { badge.remove(); badge = null; }
         }
 
-        // Called after every fresh snapshot from the network layer. On your
-        // own turn nothing but your own actions can change anything about
-        // it, and those already close this on the spot -- but a re-drawn
+        // Called after every fresh snapshot from the network layer.
+        //
+        // Mid-wait, this is the fast path: a network action (a roll, an
+        // ability, a steak) lands its new state here well before the next
+        // poll tick would have noticed, so recheck() tries a resume
+        // straight away. A merchant or trade panel never changes the state
+        // at all just by being open, so the slower poll timer in beginWait()
+        // is what actually notices those closing -- this is only ever the
+        // early win for the other kind of press.
+        //
+        // Not mid-wait, this is what it always did: on your own turn nothing
+        // but your own actions can change anything about it, and those now
+        // go through beginWait() instead of landing here -- but a re-drawn
         // action bar (someone else's heartbeat is enough to trigger one)
         // would otherwise leave the ring pointed at a button that no longer
-        // has our listener on it, so this simply re-measures and re-binds
-        // to whatever is on screen now, or lets go if it no longer applies.
+        // has our listener on it, so this simply re-measures and re-binds to
+        // whatever is on screen now, or lets go if it no longer applies.
         function recheck() {
+            if (waiting) { pollForResume(); return; }
             if (!layer) return;
             if (!eligible()) { close(); return; }
             paint();
@@ -14135,10 +13823,13 @@ body.modal-cover #board * { animation-play-state: paused; }
     /* How to play — the front door                                        */
     /*                                                                     */
     /* Two very different things used to share one name. The written rules  */
-    /* are for reading; the walkthrough is for watching, one thing at a     */
-    /* time, pointed at the actual buttons you are about to press. Neither  */
-    /* is the better version of the other, so "How to play" now opens onto  */
-    /* a choice between them instead of picking one on your behalf.         */
+    /* are for reading, any time. The walkthrough used to be for watching   */
+    /* -- a mockup, so it could run before a room even existed -- but it is */
+    /* now for doing: the real screen, lit up one thing at a time, only on  */
+    /* your own turn. "How to play" opens onto a choice between the two     */
+    /* rather than picking one on your behalf; the walkthrough's card just   */
+    /* says so and sits there disabled when your turn is not the thing      */
+    /* currently under way.                                                 */
     /* ------------------------------------------------------------------ */
 
     function openGuide() {
@@ -14147,8 +13838,8 @@ body.modal-cover #board * { animation-play-state: paused; }
         pauseForGuide();
         showModal(guidePickHtml(), true, 'guide-pick');
         bind('guide-pick-rules', () => { closeOverlay(); openGuideRules(); });
-        bind('guide-pick-walk', () => { closeOverlay(); WALK.open(); });
-        bind('guide-pick-spot', () => {
+        bind('guide-pick-walk', () => {
+            if (!SPOTLIGHT.eligible()) return;     // disabled; nothing to do
             closeOverlay();
             resumeAfterGuide();
             closeModal();
@@ -14162,36 +13853,32 @@ body.modal-cover #board * { animation-play-state: paused; }
     }
 
     function guidePickHtml() {
-        // Only offered when it would actually point at something real: your
-        // own turn, with nothing else already asking a question first.
+        // Real and live, so only offered when it would actually point at
+        // something: your own turn, with nothing else already asking a
+        // question first. Shown either way -- disabled and explaining why,
+        // rather than simply missing, when it is not currently on offer.
         const canSpotlight = SPOTLIGHT.eligible();
         return '' +
         '<div class="guide-pick">' +
             '<div class="guide-pick-head">' +
                 '<h2>How to play</h2>' +
-                '<div class="sub">' + (canSpotlight
-                    ? 'Three ways to learn the game — pick whichever suits you.'
-                    : 'Two ways to learn the game — pick whichever suits you.') + '</div>' +
+                '<div class="sub">Two ways to learn the game — pick whichever ' +
+                    'suits you.</div>' +
             '</div>' +
             '<div class="guide-pick-grid">' +
-                (canSpotlight ?
-                '<button class="guide-pick-card" id="guide-pick-spot">' +
-                    '<span class="guide-pick-icon">' + WALK.icon('bolt') + '</span>' +
-                    '<b>Show me, right now</b>' +
-                    '<span>The real buttons on your real turn, lit up one at a ' +
-                        'time — everything else dims, and you can click the real ' +
-                        'thing to see what it does.</span>' +
-                    '<i class="guide-pick-tag">Live · your turn only</i>' +
-                '</button>' : '') +
-                '<button class="guide-pick-card" id="guide-pick-walk">' +
-                    '<span class="guide-pick-icon">' + WALK.icon('spotlight') + '</span>' +
+                '<button class="guide-pick-card' + (canSpotlight ? '' : ' disabled') +
+                    '" id="guide-pick-walk"' + (canSpotlight ? '' : ' disabled aria-disabled="true"') + '>' +
+                    '<span class="guide-pick-icon">' + guideIcon('spotlight') + '</span>' +
                     '<b>Walk me through it</b>' +
-                    '<span>A guided, step-by-step tour of the screen — your stats, ' +
-                        'your actions, a fight, the Merchant — one thing lit up at a time.</span>' +
-                    '<i class="guide-pick-tag">Computer guidance · ~2 minutes</i>' +
+                    '<span>The real buttons on your real turn, lit up one at a ' +
+                        'time — everything else dims. Press the real thing and ' +
+                        'see what it does before the tour moves on.</span>' +
+                    '<i class="guide-pick-tag">' + (canSpotlight
+                        ? 'Live · press each button for real'
+                        : 'Available on your own turn') + '</i>' +
                 '</button>' +
                 '<button class="guide-pick-card" id="guide-pick-rules">' +
-                    '<span class="guide-pick-icon">' + WALK.icon('scroll') + '</span>' +
+                    '<span class="guide-pick-icon">' + guideIcon('scroll') + '</span>' +
                     '<b>Read the rules</b>' +
                     '<span>The whole rulebook on one page — the goal, every square, ' +
                         'how fighting is scored, and what each class can do.</span>' +
@@ -14249,8 +13936,9 @@ body.modal-cover #board * { animation-play-state: paused; }
             '<div class="guide-ask">' +
                 '<h2>First time here?</h2>' +
                 '<div class="sub">There is a short walkthrough that lights up ' +
-                    'what everything on screen does, one thing at a time. It takes ' +
-                    'about two minutes, and you can open it again whenever you like ' +
+                    'what everything on screen does, one thing at a time, using ' +
+                    'your own turn to show you the real buttons. It takes about ' +
+                    'two minutes, and you can open it again whenever you like ' +
                     'from <b>How to play</b> beside your actions.</div>' +
                 '<div class="modal-actions">' +
                     '<button class="btn primary" id="guide-yes">Show me how to play</button>' +
@@ -14260,7 +13948,22 @@ body.modal-cover #board * { animation-play-state: paused; }
 
         // Either answer settles it for good -- being asked twice is the thing
         // this is meant to avoid.
-        bind('guide-yes', () => { markGuideSeen(); WALK.open(); });
+        bind('guide-yes', () => {
+            markGuideSeen();
+            // This is usually the very first board a player sees -- often
+            // still "roll for turn order", before anybody's turn proper has
+            // started -- so the live tour is not always on offer yet. Straight
+            // in when it is; otherwise the picker, open on the door that
+            // explains why and the rules in the meantime.
+            if (SPOTLIGHT.eligible()) {
+                closeOverlay();
+                resumeAfterGuide();
+                closeModal();
+                SPOTLIGHT.open();
+            } else {
+                openGuide();
+            }
+        });
         bind('guide-no', () => {
             markGuideSeen();
             closeOverlay();
@@ -15797,7 +15500,8 @@ body.modal-cover #board * { animation-play-state: paused; }
         window.addEventListener('lof-net-ready', onlineReady, { once: true });
     }
 })();
-</script>
+
+    </script>
     <script type="module">
 /* ==== game/net.js ==== */
 /* =========================================================================
@@ -16078,7 +15782,401 @@ window.dispatchEvent(new Event('lof-net-ready'));
 
     <script>
 /* ==== site-nav.js ==== */
-/* placeholder: the real site-nav.js was not part of this upload */
+/* =========================================================================
+   Legend of Fenrirak — shared site navigation & scroll-experience kit.
+   site-nav.js
+
+   This file itself was lost; site-nav.css was not. It turned out to
+   document almost everything this needed to do -- property names
+   (--dye-angle, --ex/--ey), the markup each accent expects, even the
+   reasoning behind throttling the dye rotation -- closely enough to
+   rebuild against as a spec rather than a guess. Every section below is
+   independent and checks for its own element(s) before doing anything
+   else, so a page that only carries the plain nav bar (Home, the games
+   themselves) pays for none of the About/Creators accents, and a typo'd
+   class name simply leaves that one section inert rather than breaking
+   the rest of the page.
+   ========================================================================= */
+
+(function () {
+    'use strict';
+
+    const reduceMotion = !!(window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    /* ------------------------------------------------------------------ */
+    /* One shared scroll ticker                                            */
+    /*                                                                     */
+    /* Several sections below need to know about every scroll event, and a */
+    /* handful of separate listeners each running their own                */
+    /* requestAnimationFrame would mean redundant reads of the same         */
+    /* scroll position several times over. This collects them into one,    */
+    /* declared first so every section after it can register with it.      */
+    /* ------------------------------------------------------------------ */
+    const tickers = [];
+    let ticking = false;
+    function onScrollTick(fn) { tickers.push(fn); }
+    function runTickers() {
+        tickers.forEach(function (fn) { fn(); });
+        ticking = false;
+    }
+    function requestTick() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(runTickers);
+    }
+    window.addEventListener('scroll', requestTick, { passive: true });
+    window.addEventListener('resize', requestTick);
+
+    /* ------------------------------------------------------------------ */
+    /* Games dropdown                                                       */
+    /*                                                                     */
+    /* Hovering already opens it wherever hovering means something --      */
+    /* that's plain CSS (:hover) and needs nothing from here. This only     */
+    /* has to cover the two things CSS can't: a tap on a touch screen, and  */
+    /* keeping aria-expanded honest for anyone using a keyboard or a        */
+    /* screen reader. :focus-within already shows the menu on focus, so     */
+    /* this just tracks .open (the tap case) and the attribute alongside    */
+    /* it, and closes on an outside click, a menu link being followed, or   */
+    /* Escape.                                                              */
+    /* ------------------------------------------------------------------ */
+    (function navDropdown() {
+        const groups = Array.prototype.slice.call(document.querySelectorAll('.nav-group'));
+        if (!groups.length) return;
+
+        function closeAll() {
+            groups.forEach(function (g) {
+                g.classList.remove('open');
+                const t = g.querySelector('.nav-trigger');
+                if (t) t.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        groups.forEach(function (group) {
+            const trigger = group.querySelector('.nav-trigger');
+            if (!trigger) return;
+            trigger.setAttribute('aria-expanded', 'false');
+
+            trigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const willOpen = !group.classList.contains('open');
+                closeAll();
+                if (willOpen) {
+                    group.classList.add('open');
+                    trigger.setAttribute('aria-expanded', 'true');
+                }
+            });
+
+            group.querySelectorAll('.nav-menu a').forEach(function (a) {
+                a.addEventListener('click', closeAll);
+            });
+        });
+
+        document.addEventListener('click', closeAll);
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeAll();
+        });
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* Top scroll-progress thread                                          */
+    /* ------------------------------------------------------------------ */
+    (function scrollProgress() {
+        const bar = document.querySelector('.scroll-progress');
+        if (!bar) return;
+
+        function update() {
+            const doc = document.documentElement;
+            const scrollable = doc.scrollHeight - doc.clientHeight;
+            const y = window.scrollY || doc.scrollTop || 0;
+            bar.style.width = (scrollable > 0 ? Math.min(100, (y / scrollable) * 100) : 0) + '%';
+        }
+
+        onScrollTick(update);
+        update();
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* Floating back-to-top                                                */
+    /* ------------------------------------------------------------------ */
+    (function backToTop() {
+        const btn = document.querySelector('.back-to-top');
+        if (!btn) return;
+        const THRESHOLD = 480;
+
+        function update() {
+            btn.classList.toggle('visible', (window.scrollY || 0) > THRESHOLD);
+        }
+
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+        });
+
+        onScrollTick(update);
+        update();
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* Lightbox                                                             */
+    /*                                                                     */
+    /* One shared overlay for the whole page, built the first time it's    */
+    /* needed rather than hand-written into every page that wants it -- a  */
+    /* page opts in purely by putting .lightbox-trigger on an image.        */
+    /* ------------------------------------------------------------------ */
+    (function lightbox() {
+        const triggers = document.querySelectorAll('.lightbox-trigger');
+        if (!triggers.length) return;
+
+        let overlay = document.querySelector('.lightbox-overlay');
+        let img, closeBtn;
+        if (overlay) {
+            img = overlay.querySelector('img');
+            closeBtn = overlay.querySelector('.lightbox-close');
+        } else {
+            overlay = document.createElement('div');
+            overlay.className = 'lightbox-overlay';
+            img = document.createElement('img');
+            img.alt = '';
+            closeBtn = document.createElement('button');
+            closeBtn.className = 'lightbox-close';
+            closeBtn.type = 'button';
+            closeBtn.setAttribute('aria-label', 'Close');
+            closeBtn.textContent = '\u00D7';
+            overlay.appendChild(img);
+            overlay.appendChild(closeBtn);
+            document.body.appendChild(overlay);
+        }
+
+        function open(src, alt) {
+            img.src = src;
+            img.alt = alt || '';
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function close() {
+            overlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        triggers.forEach(function (t) {
+            t.addEventListener('click', function () {
+                // A trigger can point at a bigger version of itself via
+                // data-full (a thumbnail opening onto the full picture)
+                // without that data attribute, the image's own src is
+                // what opens.
+                const full = t.getAttribute('data-full') || t.src || t.getAttribute('href');
+                if (full) open(full, t.alt || '');
+            });
+        });
+        closeBtn.addEventListener('click', close);
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) close();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+        });
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* pop-in-as-you-scroll                                                 */
+    /*                                                                     */
+    /* No class ever gets toggled here -- opacity is set directly, as a    */
+    /* live number recomputed from where the element actually sits on      */
+    /* screen right now, so it always matches the scrollbar exactly        */
+    /* instead of playing a fixed-length transition once and then          */
+    /* drifting out of sync with it.                                       */
+    /* ------------------------------------------------------------------ */
+    (function popIn() {
+        const els = document.querySelectorAll('.pop-in');
+        if (!els.length) return;
+        if (reduceMotion) { els.forEach(function (el) { el.style.opacity = '1'; }); return; }
+
+        function update() {
+            const vh = window.innerHeight;
+            els.forEach(function (el) {
+                const r = el.getBoundingClientRect();
+                // Dim below 88% of the viewport, fully in by 55% of it --
+                // a band comfortably above the fold rather than the very
+                // bottom edge, so it never sits invisible on a short page.
+                const bottom = vh * 0.88;
+                const top = vh * 0.55;
+                const t = (bottom - r.top) / (bottom - top);
+                el.style.opacity = String(Math.max(0, Math.min(1, t)));
+            });
+        }
+
+        onScrollTick(update);
+        update();
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* scroll-scrubbed text glow (.reveal-text)                             */
+    /*                                                                     */
+    /* Split once into one <span class="word"> per word, then scrubbed      */
+    /* exactly like .pop-in above -- each word's own position decides its   */
+    /* own opacity, so the sequence reads left-to-right, line-by-line,      */
+    /* purely because that is the order the words already sit in.           */
+    /* ------------------------------------------------------------------ */
+    (function revealText() {
+        const blocks = document.querySelectorAll('.reveal-text');
+        if (!blocks.length) return;
+
+        const words = [];
+        blocks.forEach(function (block) {
+            if (block.dataset.revealSplit) return;
+            block.dataset.revealSplit = '1';
+            const text = block.textContent;
+            block.textContent = '';
+            text.split(/(\s+)/).forEach(function (piece) {
+                if (piece.trim() === '') { block.appendChild(document.createTextNode(piece)); return; }
+                const span = document.createElement('span');
+                span.className = 'word';
+                span.textContent = piece;
+                block.appendChild(span);
+                words.push(span);
+            });
+        });
+        if (!words.length) return;
+        if (reduceMotion) { words.forEach(function (w) { w.style.opacity = '1'; }); return; }
+
+        function update() {
+            const vh = window.innerHeight;
+            const bottom = vh * 0.88;
+            const top = vh * 0.4;
+            words.forEach(function (w) {
+                const r = w.getBoundingClientRect();
+                const t = (bottom - r.top) / (bottom - top);
+                w.style.opacity = String(0.25 + Math.max(0, Math.min(1, t)) * 0.75);
+            });
+        }
+
+        onScrollTick(update);
+        update();
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* scroll parallax drift (.parallax, optional data-speed)               */
+    /* ------------------------------------------------------------------ */
+    (function parallax() {
+        const els = document.querySelectorAll('.parallax');
+        if (!els.length || reduceMotion) return;
+
+        function update() {
+            const vh = window.innerHeight;
+            els.forEach(function (el) {
+                const speed = parseFloat(el.getAttribute('data-speed')) || 0.2;
+                const r = el.getBoundingClientRect();
+                const center = r.top + r.height / 2;
+                const offset = (center - vh / 2) * speed;
+                el.style.transform = 'translateY(' + offset.toFixed(1) + 'px)';
+            });
+        }
+
+        onScrollTick(update);
+        update();
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* cursor-tracked tilt / "push" (.tilt-hover)                           */
+    /*                                                                     */
+    /* Per-element, and only while the cursor is actually over that        */
+    /* element -- a lean away from whichever side the cursor is pushing    */
+    /* from, on both axes at once.                                         */
+    /* ------------------------------------------------------------------ */
+    (function tiltHover() {
+        if (reduceMotion) return;
+        const els = document.querySelectorAll('.tilt-hover');
+        if (!els.length) return;
+        const MAX_DEG = 10;
+
+        els.forEach(function (el) {
+            el.addEventListener('mousemove', function (e) {
+                const r = el.getBoundingClientRect();
+                const px = (e.clientX - r.left) / r.width;   // 0..1 across the element
+                const py = (e.clientY - r.top) / r.height;   // 0..1 down the element
+                // A push from the left (px near 0) leans the element right
+                // (positive rotateY); a push from below (py near 1) leans
+                // it up (positive rotateX).
+                const rotY = (px - 0.5) * 2 * MAX_DEG;
+                const rotX = (0.5 - py) * 2 * MAX_DEG;
+                el.style.transform =
+                    'perspective(600px) rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+            });
+            el.addEventListener('mouseleave', function () {
+                el.style.transform = 'perspective(600px) rotateX(0deg) rotateY(0deg)';
+            });
+        });
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* grand wave glow (.dye-hover)                                         */
+    /*                                                                     */
+    /* .dye-layer/.dye-blob are built here rather than hand-written per     */
+    /* card -- a page opts in with nothing but the one class. --dye-angle   */
+    /* is stepped on a timer rather than every animation frame: the         */
+    /* background it drives has to be fully repainted and re-blurred on     */
+    /* every change (see the stylesheet), so this is the throttle that      */
+    /* comment describes. Reduced motion draws the ring once, at a fixed    */
+    /* angle, and never steps it again.                                     */
+    /* ------------------------------------------------------------------ */
+    (function dyeHover() {
+        const els = document.querySelectorAll('.dye-hover');
+        if (!els.length) return;
+
+        const blobs = [];
+        els.forEach(function (el) {
+            let layer = el.querySelector('.dye-layer');
+            if (!layer) {
+                layer = document.createElement('div');
+                layer.className = 'dye-layer';
+                const blob = document.createElement('div');
+                blob.className = 'dye-blob';
+                layer.appendChild(blob);
+                el.insertBefore(layer, el.firstChild);
+            }
+            const blob = layer.querySelector('.dye-blob');
+            if (blob) blobs.push(blob);
+        });
+        if (!blobs.length || reduceMotion) return;
+
+        let angle = 0;
+        setInterval(function () {
+            angle = (angle + 2) % 360;
+            blobs.forEach(function (b) { b.style.setProperty('--dye-angle', angle + 'deg'); });
+        }, 90);
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* ambient ember light (.ember-field)                                   */
+    /*                                                                     */
+    /* A single page-wide field, drifting its glow toward wherever the     */
+    /* cursor currently is. Reduced motion is already handled entirely in   */
+    /* CSS (the field simply doesn't render), so there is nothing to guard  */
+    /* here beyond not bothering to track the cursor for nothing.           */
+    /* ------------------------------------------------------------------ */
+    (function emberField() {
+        const field = document.querySelector('.ember-field');
+        if (!field || reduceMotion) return;
+
+        let raf = null;
+        let tx = 0, ty = 0;
+        document.addEventListener('mousemove', function (e) {
+            // Drift toward the cursor's offset from the centre of the
+            // viewport, damped well short of a 1:1 follow -- an ambient
+            // pull, not a spotlight glued to the pointer.
+            tx = (e.clientX - window.innerWidth / 2) * 0.15;
+            ty = (e.clientY - window.innerHeight / 2) * 0.15;
+            if (raf) return;
+            raf = requestAnimationFrame(function () {
+                field.style.setProperty('--ex', tx.toFixed(1) + 'px');
+                field.style.setProperty('--ey', ty.toFixed(1) + 'px');
+                raf = null;
+            });
+        }, { passive: true });
+    })();
+
+})();
 
     </script>
 
