@@ -133,42 +133,36 @@
             padding: 5px;
             background: linear-gradient(160deg, var(--accent, rgb(217,163,92)), transparent 60%);
         }
+        .jason-portrait-wrap { position: relative; }
         .candy-note {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            width: 130px;
             font-family: 'Gochi Hand', cursive;
-            font-size: 19px;
-            line-height: 1.05;
-            color: #fff;
-            transform: rotate(-3deg);
+            font-size: 20px;
+            line-height: 1.15;
+            color: var(--accent, #fff);
+            margin: 0 0 6px 4px;
+            transform: rotate(-2deg);
+        }
+        .candy-arrow {
+            position: absolute;
+            top: -38px;
+            left: 55px;
+            width: 40px;
+            height: 46px;
             pointer-events: none;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.9);
             z-index: 2;
+            overflow: visible;
         }
-        .candy-note svg {
-            width: 45px;
-            height: 55px;
-            display: block;
-            margin: 2px 0 0 55px;
-            transform: rotate(15deg);
-        }
-        .candy-note svg path {
-            stroke: #fff;
+        .candy-arrow path {
+            stroke: var(--accent, #fff);
             stroke-width: 2.5;
             fill: none;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.9));
         }
         @media (max-width: 640px) {
             .candy-note {
-                position: static;
-                width: auto;
-                transform: none;
-                margin-top: 10px;
                 text-align: center;
+                margin: 0 0 8px;
             }
-            .candy-note svg { display: none; }
+            .candy-arrow { display: none; }
         }
 
         .portrait-frame img {
@@ -533,11 +527,11 @@
         <!-- JASON -->
         <article class="crew-row pop-group" id="jason" style="--accent: var(--p-jason)">
             <div class="crew-grid">
-                <div class="portrait-frame glow-hover tilt-hover">
-                    <img src="Jason.png" alt="Jason">
-                    <div class="candy-note">
-                        THAT IS CANDY STICK, NOT A CIGARETTE
-                        <svg viewBox="0 0 60 70"><path d="M5 5 Q 20 40 35 65 M35 65 L22 58 M35 65 L30 48"/></svg>
+                <div class="jason-portrait-wrap">
+                    <div class="candy-note">THAT IS CANDY STICK, NOT A CIGARETTE</div>
+                    <div class="portrait-frame glow-hover tilt-hover">
+                        <img src="Jason.png" alt="Jason">
+                        <svg class="candy-arrow" viewBox="0 0 40 46"><path d="M2 2 Q 15 20 22 42 M22 42 L12 36 M22 42 L18 28"/></svg>
                     </div>
                 </div>
                 <div class="crew-text">
