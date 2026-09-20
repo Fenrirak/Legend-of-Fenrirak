@@ -13520,16 +13520,32 @@ body.modal-cover #board * { animation-play-state: paused; }
 
         // Real, live and on the real board -- so only when it is genuinely
         // your own move to make, with nothing already on screen asking you
-        // something else first. A pause is normally exactly that kind of
-        // something -- except when it is the guide's own doing: opening
-        // "How to play" quietly pauses a game you can pause (see
-        // pauseForGuide), purely so nothing moves on behind the menu, and
-        // that self-imposed pause is not a reason for the menu to then
-        // tell you the tour is unavailable.
-        function eligible() {
-            return !!(S && ROOM && S.phase === 'playing' && myTurn() &&
-                      !S.battle && !S.pending && (!S.paused || weHeldPause()) && !tableHeld());
+        // something else first. Checked in a fixed order and named rather
+        // than folded into one yes/no: a reason that can be read off the
+        // screen is a reason that can be reported and fixed, where a plain
+        // "no" only ever produces another round of guessing.
+        //
+        // A pause is normally exactly that kind of something -- except
+        // when it is the guide's own doing (see pauseForGuide/weHeldPause):
+        // opening any part of "How to play" quietly pauses a game you are
+        // allowed to pause, purely so nothing moves on behind the menu,
+        // and that self-imposed pause is not a reason to then call the
+        // tour unavailable. This is checked here, at the moment of asking,
+        // rather than by having every caller ask before pausing and hang
+        // onto the answer -- a rule like that only has to be forgotten
+        // once (a second door into the guide, a "back" link that reopens
+        // the picker while still paused from the step before it) to bring
+        // this exact bug back.
+        function blockedReason() {
+            if (!S || !ROOM || S.phase !== 'playing' || !myTurn()) return 'turn';
+            if (S.battle) return 'battle';
+            if (S.pending) return 'pending';
+            if (S.paused && !weHeldPause()) return 'paused';
+            if (tableHeld()) return 'busy';
+            return null;
         }
+
+        function eligible() { return blockedReason() === null; }
 
         function isOpen() { return !!layer || waiting; }
 
@@ -13855,7 +13871,10 @@ body.modal-cover #board * { animation-play-state: paused; }
             paint();
         }
 
-        return { open: open, close: close, eligible: eligible, isOpen: isOpen, recheck: recheck };
+        return {
+            open: open, close: close, eligible: eligible,
+            blockedReason: blockedReason, isOpen: isOpen, recheck: recheck
+        };
     })();
 
     /* ------------------------------------------------------------------ */
@@ -13872,13 +13891,23 @@ body.modal-cover #board * { animation-play-state: paused; }
     /* ------------------------------------------------------------------ */
 
     function openGuide() {
+        // Read once and reused below rather than re-asked per use -- not
+        // order-sensitive against pauseForGuide any more (blockedReason
+        // itself knows to look past a pause the guide is holding), but
+        // there is no reason to ask the same question of the game twice
+        // over for one render of one menu.
+        const walkBlocked = SPOTLIGHT.blockedReason();
         overlay = { key: 'guide-pick', draw: openGuide };
         try { localStorage.setItem(GUIDE_SEEN_KEY, '1'); } catch (e) { /* private mode */ }
         pauseForGuide();
-        showModal(guidePickHtml(), true, 'guide-pick');
+        showModal(guidePickHtml(walkBlocked), true, 'guide-pick');
         bind('guide-pick-rules', () => { closeOverlay(); openGuideRules(); });
         bind('guide-pick-walk', () => {
-            if (!SPOTLIGHT.eligible()) return;     // disabled; nothing to do
+            // Asked fresh rather than trusting the snapshot the menu was
+            // drawn with -- the button is disabled to match that snapshot,
+            // so a real browser will not even deliver this click when it
+            // was blocked, but the real state is what actually decides.
+            if (SPOTLIGHT.blockedReason()) return;
             closeOverlay();
             resumeAfterGuide();
             closeModal();
@@ -13891,12 +13920,25 @@ body.modal-cover #board * { animation-play-state: paused; }
         });
     }
 
-    function guidePickHtml() {
+    // One line for each reason blockedReason() can give, in the same order,
+    // so the menu says exactly what SPOTLIGHT itself would say if asked.
+    function walkBlockedLabel(reason) {
+        return ({
+            turn: 'Available on your own turn',
+            battle: 'Available once the battle is over',
+            pending: 'Available once you\u2019ve answered the board',
+            paused: 'Available once the game is unpaused',
+            busy: 'Available once the board settles'
+        })[reason] || 'Available on your own turn';
+    }
+
+    function guidePickHtml(walkBlocked) {
         // Real and live, so only offered when it would actually point at
         // something: your own turn, with nothing else already asking a
-        // question first. Shown either way -- disabled and explaining why,
-        // rather than simply missing, when it is not currently on offer.
-        const canSpotlight = SPOTLIGHT.eligible();
+        // question first. Shown either way -- disabled and saying exactly
+        // why, rather than simply missing, when it is not currently on
+        // offer.
+        const canSpotlight = !walkBlocked;
         return '' +
         '<div class="guide-pick">' +
             '<div class="guide-pick-head">' +
@@ -13914,7 +13956,7 @@ body.modal-cover #board * { animation-play-state: paused; }
                         'see what it does before the tour moves on.</span>' +
                     '<i class="guide-pick-tag">' + (canSpotlight
                         ? 'Live · press each button for real'
-                        : 'Available on your own turn') + '</i>' +
+                        : walkBlockedLabel(walkBlocked)) + '</i>' +
                 '</button>' +
                 '<button class="guide-pick-card" id="guide-pick-rules">' +
                     '<span class="guide-pick-icon">' + guideIcon('scroll') + '</span>' +
@@ -13991,10 +14033,13 @@ body.modal-cover #board * { animation-play-state: paused; }
             markGuideSeen();
             // This is usually the very first board a player sees -- often
             // still "roll for turn order", before anybody's turn proper has
-            // started -- so the live tour is not always on offer yet. Straight
-            // in when it is; otherwise the picker, open on the door that
-            // explains why and the rules in the meantime.
-            if (SPOTLIGHT.eligible()) {
+            // started -- so the live tour is not always on offer yet. Asked
+            // fresh here rather than whenever this modal first opened,
+            // since this button can sit on screen for a while before
+            // anybody actually presses it. Straight in when it is;
+            // otherwise the picker, open on the door that explains why and
+            // the rules in the meantime.
+            if (!SPOTLIGHT.blockedReason()) {
                 closeOverlay();
                 resumeAfterGuide();
                 closeModal();
