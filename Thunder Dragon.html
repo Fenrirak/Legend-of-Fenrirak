@@ -4285,10 +4285,18 @@ body.modal-cover #board * { animation-play-state: paused; }
    whichever real control is lit up. Nothing above the hole itself, so a
    real click still lands on the real thing underneath it. */
 
-.spot-layer { position: fixed; inset: 0; z-index: 5000; }
+/* The layer itself must never intercept a click -- it is a fixed box that
+   spans the whole viewport, hole included, and with no rule of its own it
+   would sit above the real button exactly like the shades do, just
+   invisibly. Only the pieces meant to catch a click (the shading around
+   the hole, and the card) turn pointer-events back on; the hole itself is
+   left to the layer's own "none" and a real click falls straight through
+   to whatever is really there. */
+.spot-layer { position: fixed; inset: 0; z-index: 5000; pointer-events: none; }
 .spot-shade {
     position: fixed;
     background: rgba(8, 7, 6, .74);
+    pointer-events: auto;
     transition: top .22s ease, left .22s ease, width .22s ease, height .22s ease;
 }
 .spot-ring {
@@ -4305,6 +4313,7 @@ body.modal-cover #board * { animation-play-state: paused; }
 }
 .spot-card {
     position: fixed;
+    pointer-events: auto;
     width: 300px; max-width: calc(100vw - 24px);
     background: linear-gradient(180deg, #201d19, #141210);
     border: 1px solid var(--gold);
