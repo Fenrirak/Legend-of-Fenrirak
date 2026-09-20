@@ -13508,10 +13508,32 @@ body.modal-cover #board * { animation-play-state: paused; }
         act('setPaused', { on: true });
     }
 
+    // Set for as long as resumeAfterGuide()'s own unpause call is in flight.
+    // That call goes through the same `act()` every real button uses, which
+    // sets ui.js's own `busy` flag before the request is even sent -- so for
+    // as long as it is set, tableHeld() reads true, exactly as it would for
+    // a real die throw or a real card being answered. In solo play that
+    // request resolves synchronously (see solo.js's act(): the Promise
+    // executor, and so emit(), run before `new Promise(...)` even returns),
+    // and often enough in an online one too -- so the fresh snapshot it
+    // produces reaches SPOTLIGHT.recheck() while `busy` is still true, on
+    // the very same tick SPOTLIGHT.open() was called from (see the note by
+    // that call in openGuide() and askAboutGuide()). recheck() had no way to
+    // tell that apart from the table genuinely being busy, read it as a real
+    // reason the tour was no longer eligible, and closed it -- before its
+    // first requestAnimationFrame(paint) ever ran, so nothing was ever seen
+    // on screen. All that was left behind was the pause/unpause pair this
+    // same call logs to the narrator. Excused here exactly the way a pause
+    // of the guide's own making already is, above, in blockedReason().
+    let guideResuming = false;
+
     function resumeAfterGuide() {
         if (!weHeldPause()) return;
         setWeHeldPause(false);
-        if (S && S.paused) act('setPaused', { on: false });
+        if (S && S.paused) {
+            guideResuming = true;
+            act('setPaused', { on: false }).finally(() => { guideResuming = false; });
+        }
     }
 
     // Called on every fresh snapshot (see onState). Only ever does anything
@@ -13622,7 +13644,10 @@ body.modal-cover #board * { animation-play-state: paused; }
             if (S.battle) return 'battle';
             if (S.pending) return 'pending';
             if (S.paused && !weHeldPause()) return 'paused';
-            if (tableHeld()) return 'busy';
+            // Not a real reason on its own: see guideResuming, above, for why
+            // tableHeld() can read true here as a side effect of the tour's
+            // own opening sequence rather than anything actually going on.
+            if (tableHeld() && !guideResuming) return 'busy';
             return null;
         }
 
