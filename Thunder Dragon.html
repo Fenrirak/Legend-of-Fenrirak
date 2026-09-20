@@ -4136,22 +4136,144 @@ body.modal-cover #board * { animation-play-state: paused; }
     .guide-pick-grid { grid-template-columns: 1fr; }
 }
 
-/* The walk-through card when it is not currently on offer -- shown rather
-   than hidden, so a player learns it exists and what would turn it on,
-   instead of a menu that mysteriously has one fewer option on it. */
-.guide-pick-card:disabled,
-.guide-pick-card.disabled {
-    cursor: not-allowed;
-    opacity: .5;
+/* ---- how to play: the walkthrough --------------------------------------
+
+   The spotlight tour. One step fills the modal at a time -- a badge, a
+   short line of copy, and a small reproduction of the real panel it is
+   describing, built from the exact same functions the game itself calls to
+   draw that panel. Progress is a row of dots rather than a percentage,
+   because "step 4 of 13" matters less than "getting there" does. */
+
+#modal-back[data-key="walk"] .modal { max-width: 560px; }
+.walk { font-family: 'Comfortaa', 'Trebuchet MS', 'Segoe UI', sans-serif; }
+.walk-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2px;
 }
-.guide-pick-card:disabled:hover,
-.guide-pick-card.disabled:hover {
-    border-color: var(--panel-edge);
-    transform: none;
-    box-shadow: none;
+.walk-head .guide-back-link { margin-bottom: 0; }
+.walk-step-n {
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-size: 11.5px;
+    color: #7d7972;
+    letter-spacing: .5px;
 }
+.walk-badge {
+    width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 6px auto 4px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 35% 30%, rgba(242,204,143,.22), rgba(217,163,92,.06));
+    border: 1px solid var(--panel-edge);
+    color: var(--gold-bright);
+}
+.walk-title {
+    text-align: center;
+    font-family: 'Cutive Mono', 'Courier New', monospace;
+    font-size: 19px;
+    letter-spacing: .3px;
+    margin: 0 0 8px;
+}
+.walk-body {
+    text-align: center;
+    color: #cfcbc4;
+    font-size: 14.5px;
+    line-height: 1.68;
+    max-width: 440px;
+    margin: 0 auto 18px;
+}
+.walk-body b { color: var(--cream); font-weight: 600; }
+
+/* The stage: a dark inset well the mockup sits inside, with a soft gold
+   spotlight glow breathing behind it so it reads as "the thing being shown
+   to you" rather than another block of the page. Nothing inside it is
+   interactive -- every button and tab in a mockup is disabled -- so a
+   stray click can never be mistaken for having pressed something real. */
+.walk-stage {
+    position: relative;
+    padding: 20px 16px 16px;
+    border-radius: 14px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(217,163,92,.10), transparent 65%),
+                linear-gradient(180deg, #161412, #100e0c);
+    border: 1px solid rgba(217, 163, 92, .35);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.4) inset, 0 0 32px -12px rgba(217,163,92,.35);
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+.walk-stage::before {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    border-radius: 14px;
+    box-shadow: 0 0 0 9999px transparent;
+    animation: walk-pulse 2.6s ease-in-out infinite;
+}
+@keyframes walk-pulse {
+    0%, 100% { box-shadow: inset 0 0 24px rgba(217,163,92,.08); }
+    50%      { box-shadow: inset 0 0 40px rgba(217,163,92,.20); }
+}
+.w-mock { pointer-events: none; user-select: none; }
+.w-mock .btn { cursor: default; }
+.w-mock .move { cursor: default; }
+.w-mock.w-mock-hero { max-width: 320px; margin: 0 auto; }
+.w-mock.w-mock-actions .actions { justify-content: center; }
+.w-mock .btn.w-hit {
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 0 3px rgba(242, 204, 143, .28), 0 0 18px -4px rgba(242,204,143,.6);
+    color: var(--gold-bright);
+}
+.w-mock-die { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.w-mock-battle .battle-top { max-width: 440px; margin: 0 auto; }
+.w-mock-battle h3 { text-align: left; font-size: 14px; }
+.w-mock-inv .inv-tabs { justify-content: center; flex-wrap: wrap; }
+.w-inv-row { display: flex; justify-content: center; margin-top: 10px; }
+.w-inv-row .paper { width: 160px; }
+
+/* A compact legend strip standing in for the board itself -- the real
+   board is hand-drawn SVG scenery and does not shrink well, so the
+   walkthrough shows the same seven square kinds as plain coloured chips,
+   in the same colours the real board paints them. */
+.w-mock-board {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+}
+.w-sq {
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,.12);
+    display: inline-block;
+}
+.w-sq.kind-start  { background: rgba(244, 230, 176, .62); border-width: 2px; }
+.w-sq.kind-plain  { background: rgba(255,255,255,.07); }
+.w-sq.kind-battle { background: rgba(226, 186, 166, .34); }
+.w-sq.kind-chest  { background: rgba(242, 226, 178, .38); }
+.w-sq.kind-heal   { background: rgba(212, 232, 206, .40); }
+.w-sq.kind-gate   { background: rgba(154, 122, 216, .38); }
+.w-sq.kind-arena  { background: rgba(226, 122, 108, .42); }
 
 .wicon { display: block; }
+
+.w-dots {
+    display: flex; justify-content: center; gap: 7px;
+    margin-bottom: 4px;
+}
+.w-dots i {
+    width: 7px; height: 7px; border-radius: 999px;
+    background: rgba(217, 163, 92, .25);
+    cursor: pointer;
+    transition: background .15s ease, transform .15s ease;
+}
+.w-dots i:hover { background: rgba(217, 163, 92, .55); }
+.w-dots i.done { background: rgba(217, 163, 92, .55); }
+.w-dots i.on {
+    background: var(--gold-bright);
+    transform: scale(1.35);
+}
+.walk-actions { align-items: center; }
+.walk-spacer { flex: 1; }
+
+@media (max-width: 560px) {
+    .walk-title { font-size: 17px; }
+    .walk-body { font-size: 14px; }
+}
 
 /* ---- how to play: the live spotlight ------------------------------------
 
@@ -4234,47 +4356,6 @@ body.modal-cover #board * { animation-play-state: paused; }
         width: auto; max-width: none;
     }
 }
-
-/* The quiet little marker shown while a real press is working itself out --
-   a battle, the Merchant, a die in the air. The main spot-layer is gone
-   completely at this point (nothing of it may sit over whatever that press
-   opened), so this is the only sign the tour is still there and not simply
-   abandoned. Fixed, small, out of the way, and never in the path of a
-   click -- it has nothing to say yes to. */
-.spot-wait-badge {
-    position: fixed;
-    left: 50%;
-    bottom: 18px;
-    transform: translate(-50%, 12px);
-    z-index: 5000;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    max-width: calc(100vw - 24px);
-    padding: 10px 10px 10px 16px;
-    background: linear-gradient(180deg, #201d19, #141210);
-    border: 1px solid var(--gold);
-    border-radius: 999px;
-    box-shadow: 0 16px 40px -16px #000;
-    font-family: 'Comfortaa', 'Trebuchet MS', 'Segoe UI', sans-serif;
-    font-size: 13px;
-    color: var(--gold-bright);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .2s ease, transform .2s ease;
-}
-.spot-wait-badge.show {
-    opacity: 1;
-    transform: translate(-50%, 0);
-    pointer-events: auto;
-}
-.spot-wait-badge span { line-height: 1.4; }
-.spot-wait-badge button {
-    flex: none;
-    background: none; border: 0; color: #9a958f; font-size: 18px; line-height: 1;
-    cursor: pointer; padding: 2px 4px;
-}
-.spot-wait-badge button:hover { color: var(--gold-bright); }
 
     </style>
 
@@ -13909,9 +13990,17 @@ body.modal-cover #board * { animation-play-state: paused; }
             // was blocked, but the real state is what actually decides.
             if (SPOTLIGHT.blockedReason()) return;
             closeOverlay();
-            resumeAfterGuide();
             closeModal();
+            // Opened *before* the pause is lifted, on purpose: blockedReason()
+            // only waves a pause through when weHeldPause() is still true, and
+            // resumeAfterGuide() clears that flag synchronously while the
+            // unpause itself is still an in-flight network/solo action. Doing
+            // this the other way round used to make open() read a snapshot
+            // that was still paused with nothing left to excuse it, and bail
+            // silently -- nothing on screen but the pause/unpause pair
+            // dropped into the narrator.
             SPOTLIGHT.open();
+            resumeAfterGuide();
         });
         bind('guide-pick-close', () => {
             closeOverlay();
@@ -14041,9 +14130,12 @@ body.modal-cover #board * { animation-play-state: paused; }
             // the rules in the meantime.
             if (!SPOTLIGHT.blockedReason()) {
                 closeOverlay();
-                resumeAfterGuide();
                 closeModal();
+                // Same ordering as the picker's own "Walk me through it": open
+                // while weHeldPause() still reads true, then let go of the
+                // pause -- see the note beside SPOTLIGHT.open() in openGuide().
                 SPOTLIGHT.open();
+                resumeAfterGuide();
             } else {
                 openGuide();
             }
