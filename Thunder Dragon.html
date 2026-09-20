@@ -13971,6 +13971,38 @@ body.modal-cover #board * { animation-play-state: paused; }
     /* currently under way.                                                 */
     /* ------------------------------------------------------------------ */
 
+    // The picker's "Walk me through it" card is disabled or not entirely on
+    // whatever SPOTLIGHT.blockedReason() says the moment the menu is drawn --
+    // and that moment is often the table still finishing up whatever brought
+    // the player here in the first place (most often the "Your Turn" card
+    // playing itself out, or a die still settling), so the very first render
+    // frequently catches it genuinely blocked. Without this, that one
+    // snapshot was final: the card was built once from it and never drawn
+    // again for as long as the menu stayed open, so a reason that stopped
+    // applying a second later -- the table going quiet, the turn becoming
+    // ours -- had no way back onto the screen, and the card sat there
+    // disabled for a tour that had in fact become available. This polls the
+    // same question the card was built from and redraws only the card's own
+    // markup -- not the whole modal -- when the answer changes, and it stops
+    // reaching for either the instant something else becomes the open
+    // overlay (the picker was left) or the picker closes outright.
+    let guidePickPoll = null;
+
+    function stopGuidePickPoll() {
+        clearTimeout(guidePickPoll);
+        guidePickPoll = null;
+    }
+
+    function pollGuidePick(lastBlocked) {
+        guidePickPoll = setTimeout(() => {
+            guidePickPoll = null;
+            if (!overlay || overlay.key !== 'guide-pick') return;   // left this door
+            const now = SPOTLIGHT.blockedReason();
+            if (now !== lastBlocked) { openGuide(); return; }        // redraw picks up the change
+            pollGuidePick(now);
+        }, 250);
+    }
+
     function openGuide() {
         // Read once and reused below rather than re-asked per use -- not
         // order-sensitive against pauseForGuide any more (blockedReason
@@ -13982,13 +14014,14 @@ body.modal-cover #board * { animation-play-state: paused; }
         try { localStorage.setItem(GUIDE_SEEN_KEY, '1'); } catch (e) { /* private mode */ }
         pauseForGuide();
         showModal(guidePickHtml(walkBlocked), true, 'guide-pick');
-        bind('guide-pick-rules', () => { closeOverlay(); openGuideRules(); });
+        bind('guide-pick-rules', () => { stopGuidePickPoll(); closeOverlay(); openGuideRules(); });
         bind('guide-pick-walk', () => {
             // Asked fresh rather than trusting the snapshot the menu was
             // drawn with -- the button is disabled to match that snapshot,
             // so a real browser will not even deliver this click when it
             // was blocked, but the real state is what actually decides.
             if (SPOTLIGHT.blockedReason()) return;
+            stopGuidePickPoll();
             closeOverlay();
             closeModal();
             // Opened *before* the pause is lifted, on purpose: blockedReason()
@@ -14003,10 +14036,12 @@ body.modal-cover #board * { animation-play-state: paused; }
             resumeAfterGuide();
         });
         bind('guide-pick-close', () => {
+            stopGuidePickPoll();
             closeOverlay();
             resumeAfterGuide();
             if (S && ROOM) renderModal(); else closeModal();
         });
+        if (walkBlocked) pollGuidePick(walkBlocked);
     }
 
     // One line for each reason blockedReason() can give, in the same order,
@@ -14085,13 +14120,38 @@ body.modal-cover #board * { animation-play-state: paused; }
        answer is taken either way.
 
        Never over the top of anything: if the table is busy, or a question is
-       already being asked, it waits and tries again on the next render. */
+       already being asked, it waits and tries again once the table is free.
+
+       "Tries again" used to mean "on the next render" -- this is only ever
+       called from onState, so that meant the next fresh state snapshot. On
+       the very first turn that is exactly the snapshot that starts the
+       "Your Turn" card, so this was checked, found the table held by that
+       card's own 2.6s animation, and gave up -- and nothing else was
+       necessarily going to change the state again soon enough to bring it
+       back. A solo game with nobody due to act until you roll, or an online
+       game where nobody else is mid-move, could sit there with the render
+       that would have shown this already behind it and no reason for
+       another one to come. So this schedules its own retry against the
+       clock rather than waiting on a snapshot that might not arrive -- the
+       same short poll HOLD already uses to wait out a card or a steak.
+
+       It also waits for the turn itself to be yours, not merely for
+       `state.phase` to say "playing" -- phase flips the moment turn order
+       is settled, which can easily be someone else's go first (you rolled
+       low, or joined a table already mid-order). Offered then, the "Show me
+       how to play" button led into a live tour that cannot run on anybody
+       else's turn, and SPOTLIGHT.blockedReason() would keep saying so for
+       as long as that remained true -- which on a bot's unhurried turn is
+       several real seconds, and on another person's is entirely up to them.
+       Waiting for myTurn() as well means the prompt lands right as the
+       first thing it is offering actually becomes possible. */
     function offerGuideOnce() {
         let seen = '1';
         try { seen = localStorage.getItem(GUIDE_SEEN_KEY); } catch (e) { seen = '1'; }
         if (seen) return;
         if (!S || S.phase !== 'playing') return;
-        if (overlay || S.battle || S.pending || tableHeld()) return;
+        if (overlay || S.battle || S.pending) return;
+        if (!myTurn() || tableHeld()) { setTimeout(offerGuideOnce, 200); return; }
         askAboutGuide();
     }
 
