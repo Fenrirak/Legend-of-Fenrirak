@@ -4606,7 +4606,7 @@ body.modal-cover #board * { animation-play-state: paused; }
 
    Everything in here comes from the photographs in
    "Legend of Fenrirak, The Thunder Dragon/".
-   Anything marked PLACEHOLDER or JUDGEMENT is called out in NOTES.md.
+   Every judgement call made along the way is written up in NOTES.md.
    ========================================================================= */
 
 (function (global) {
@@ -5084,7 +5084,6 @@ body.modal-cover #board * { animation-play-state: paused; }
             crest: { initials: 'SB', tint: '#6d5f8c' }, pic: 'bats',
             hp: 90,
             defence: 0,
-            placeholder: true,           // PLACEHOLDER — no profile card exists for this fight
             moves: [
                 { id: 'bite', name: 'Bite', damage: 30, energy: 1 },
                 { id: 'frenzy', name: 'Frenzy', damage: 75, energy: 5 }
@@ -6430,12 +6429,12 @@ body.modal-cover #board * { animation-play-state: paused; }
                        ' and the fight is lost.', 'death');
             const wasIllusion = b.illusion;
             state.battle = null;
-            sendToStart(state, p, true);
+            sendToStart(state, p);
             if (wasIllusion) advanceTurn(state);
             return ok();
         }
         log(state, p.name + ' collapses and returns to the Start.', 'death');
-        sendToStart(state, p, true);
+        sendToStart(state, p);
         return ok();
     }
 
@@ -6597,7 +6596,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         if (w.outcome === 'zapped') {
             zap(state, p);
             p.movesLeft = 0;
-            sendToStart(state, p, false);
+            sendToStart(state, p);
             p.path.push(p.pos);
             return ok();
         }
@@ -6744,7 +6743,7 @@ body.modal-cover #board * { animation-play-state: paused; }
                     log(state, p.name + ' turns three key fragments — the Gate grinds open!', 'system');
                 } else {
                     zap(state, p);
-                    sendToStart(state, p, false);
+                    sendToStart(state, p);
                 }
                 return ok();
 
@@ -6766,12 +6765,14 @@ body.modal-cover #board * { animation-play-state: paused; }
                    'whole way back to the Start.', 'death');
     }
 
-    function sendToStart(state, p, keepCoins) {
+    // Coins, items and power-ups are always kept — collapsing, losing a
+    // fight or being zapped by the Gate costs you the ground you had
+    // covered, never your pack.
+    function sendToStart(state, p) {
         p.pos = D.START_INDEX;
         p.hp = p.maxHp;
         p.energy = R.startingEnergy;
         p.buffs = [];
-        if (keepCoins === false) { /* items, coins and power-ups are always kept */ }
     }
 
     /* ------------------------------------------------------------------ */
@@ -7413,7 +7414,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const wasIllusion = b.illusion;
         noteBattleEnd(state, b, asEnemy(b.enemyId), asPlayer(p));
         state.battle = null;
-        sendToStart(state, p, true);
+        sendToStart(state, p);
         if (wasIllusion) advanceTurn(state);
         return ok();
     }
@@ -7428,7 +7429,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         noteBattleEnd(state, b, asPlayer(winner), asPlayer(loser));
         const fought = b ? b.squareIndex : winner.pos;
         state.battle = null;
-        sendToStart(state, loser, true);
+        sendToStart(state, loser);
         winner.energy = R.startingEnergy;
 
         /* The square is still owed.
