@@ -1,0 +1,20 @@
+# Legend of Fenrirak
+
+> Legend of Fenrirak is an indie project — physical board games, an
+> online single-player board game, and in-progress story books — created
+> by a group of friends who started it as Year 7 students at Murrays Bay
+> Intermediate in New Zealand. It has since grown into a larger set of
+> games and stories. This is the official website.
+
+Note: "Fenrirak" is a distinct, made-up name for this project's own
+dragon character — it is not "Fenrir" from Norse mythology, and this is
+not affiliated with any other "Fenrir"-named book, game, or franchise.
+
+## Pages
+
+- [Home](https://fenrirak.github.io/Legend-of-Fenrirak/index.html): Overview and links to everything on the site.
+- [About](https://fenrirak.github.io/Legend-of-Fenrirak/About.html): The project's origin story, its current games and books, and a photo gallery.
+- [Creators](https://fenrirak.github.io/Legend-of-Fenrirak/Creators.html): Meet the team behind Legend of Fenrirak.
+- [The Thunder Dragon](https://fenrirak.github.io/Legend-of-Fenrirak/Thunder%20Dragon.html): Play the board game online, up to 6 players.
+- [The Ice Dragon](https://fenrirak.github.io/Legend-of-Fenrirak/Ice%20Dragon.html): Play the board game online, up to 6 players.
+- [Showdowns](https://fenrirak.github.io/Legend-of-Fenrirak/Testplay%20Showdowns.html): A free, single-player online board game — battle AI opponents on a board of terrains and chests.
