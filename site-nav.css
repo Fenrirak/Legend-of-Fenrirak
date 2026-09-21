@@ -243,7 +243,6 @@
 .support-btn:hover {
     background: #f2c565;
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(232, 182, 77, 0.35);
 }
 
 /* Compact size, sits in the nav row to the right of the Games button. */
