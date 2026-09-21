@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://fenrirak.github.io/Legend-of-Fenrirak/index.html</loc>
+        <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>https://fenrirak.github.io/Legend-of-Fenrirak/About.html</loc>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Creators.html</loc>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Testplay%20Showdowns.html</loc>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Thunder%20Dragon.html</loc>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Ice%20Dragon.html</loc>
+        <priority>0.8</priority>
+    </url>
+</urlset>

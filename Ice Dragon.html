@@ -31,6 +31,12 @@
    One flat, quiet bar used by every page, plus a small set of reusable
    scroll-experience components (lightbox, progress bar, back-to-top)
    used by the longer story-style pages. Edit here, not in each page.
+
+   Also below: a further set of opt-in accents for story-style pages —
+   hover brighten, push-tilt, an ambient cursor light, a soothing drifting glow
+   border, scroll parallax, and a scroll-scrubbed text glow. Same rule as
+   everything above: nothing activates on a page unless that page adds
+   the matching class.
    ========================================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa&display=swap');
@@ -172,6 +178,23 @@
     color: #efe9de;
 }
 
+/* Small gold "pick" bubble next to an item in the Games dropdown.
+   Add <span class="nav-badge">…</span> after the link's <span> label. */
+.nav-menu .nav-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-family: Allegro, serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    line-height: 1.5;
+    color: #241a03;
+    background: #d2a236;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
 /* ---- narrow screens --------------------------------------------------- */
 
 @media (max-width: 760px) {
@@ -286,33 +309,14 @@
    ========================================================================= */
 
 /* ---- pop-in-as-you-scroll -----------------------------------------------
-   Self-contained: no external library, no CDN, no network request — this
-   works the instant the page's own JS runs, in any hosting environment or
-   preview sandbox, offline or on. site-nav.js watches each ".pop-group"
-   and, as it scrolls into view, adds ".is-visible" to its ".pop-in"
-   children one at a time (a few milliseconds apart), which is what makes
-   them cascade in rather than all fade together.
-
-   Gated behind html.js-ready so nothing is ever hidden unless the script
-   that will actually bring it back has already started running. With
-   JavaScript disabled, or before that class is added, .pop-in content is
-   simply visible — never permanently stuck invisible. */
-.js-ready .pop-in {
-    opacity: 0;
-    transform: translateY(30px) scale(0.97);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.js-ready .pop-in.is-visible {
-    opacity: 1;
-    transform: none;
-}
-@media (prefers-reduced-motion: reduce) {
-    .js-ready .pop-in {
-        opacity: 1;
-        transform: none;
-        transition: none;
-    }
-}
+   No CSS here hides anything. site-nav.js computes each ".pop-in"
+   element's opacity live, every scroll frame, from its position on
+   screen, and applies it as an inline style — so it stays perfectly in
+   sync with the scrollbar (scroll partway and content sits partway
+   revealed; scroll back up and it recedes again). Since only that
+   running script ever sets those styles, a page with JavaScript
+   disabled (or a blocked/broken script) simply shows this content
+   normally — it is never hidden by a stylesheet rule with no way back. */
 
 /* ---- top scroll-progress thread ---------------------------------------- */
 .scroll-progress {
@@ -414,6 +418,190 @@
 
 /* Any image opted into the lightbox gets an inviting little lift. */
 .lightbox-trigger { cursor: zoom-in; }
+
+/* =========================================================================
+   ABOUT-PAGE ACCENTS — hover brighten, push-tilt, ambient glow, drifting glow,
+   parallax, text glow. Opt-in via class name, exactly like the scroll-
+   experience kit above: add the class to an element in your HTML and
+   site-nav.js does the rest. Nothing here runs, or even queries the DOM,
+   unless its element exists.
+   ========================================================================= */
+
+/* ---- gentle whole-element brighten (hover) -------------------------------
+   Put .glow-hover on a card, portrait, or panel — NOT directly on an
+   <img>: browsers don't render ::after on replaced elements like img,
+   video or input, so this would silently do nothing. Wrap the image in
+   a plain <div class="glow-hover"> instead. A small, uniform lift across
+   the whole element, not a spotlight that chases the cursor — so there's
+   nothing for site-nav.js to track here, just a plain :hover/:focus-within. */
+.glow-hover {
+    position: relative;
+    isolation: isolate;
+}
+.glow-hover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Matches whatever rounding the element already has — a background is
+       always clipped to border-radius on its own, with no need for
+       overflow: hidden, which would otherwise risk clipping something
+       else on the same element (e.g. a hover shadow that's meant to
+       spill outside the box, as on the .book-cover art below). */
+    border-radius: inherit;
+    background: rgba(242, 204, 143, 0.08);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+.glow-hover:hover::after,
+.glow-hover:focus-within::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+    .glow-hover::after { transition: none; }
+}
+
+/* ---- cursor-tracked tilt / "push" (hover) --------------------------------
+   Put .tilt-hover directly on an image (this one's fine on <img> — it's a
+   real transform, not generated content) for a lean away from wherever
+   the cursor is pushing from, in either direction on both axes — push
+   from the left and it leans right, push from below and it leans up,
+   and so on. Pairs well with .glow-hover on a wrapping element. */
+.tilt-hover {
+    transform: perspective(600px) rotateX(0deg) rotateY(0deg);
+    transition: transform 0.12s ease-out;
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .tilt-hover { transition: none !important; transform: none !important; }
+}
+
+/* ---- grand wave glow (always on) ------------------------------------------
+   Put .dye-hover on a card for a wide, luminous band just outside its
+   edges, with one bright, hot "crest" that travels slowly and smoothly
+   all the way around that band — like a single wave circling the
+   border. The band itself is a conic-gradient (a dim base tint all the
+   way around, with one wide, much brighter hump near one angle) masked
+   down to a ring using the padding/content-box XOR trick: .dye-blob is
+   a fully solid box, its background painted corner-to-corner, but the
+   mask keeps only the padding-thick band around its own edge and cuts
+   the solid middle out entirely — so what survives already has the
+   card's own rounded-rectangle shape, not a circle. site-nav.js rotates
+   the gradient's start angle (the --dye-angle custom property, set
+   directly on .dye-blob) a tiny bit every frame, which is what makes
+   the crest crawl around the band. The outer .dye-layer then
+   blurs that ring and, on top of the blur, stacks two drop-shadows at
+   different reaches — this is what gives it a big, layered bloom
+   instead of a single soft edge, so it reads as grand rather than
+   understated. Sits at z-index -1, so it always paints behind the
+   card's own heading, copy and button. Under prefers-reduced-motion the
+   ring is still drawn (so it's still visible) but --dye-angle is never
+   updated, so the crest holds at one fixed spot. */
+.dye-hover {
+    position: relative;
+    isolation: isolate;
+}
+.dye-hover .dye-layer {
+    position: absolute;
+    inset: -54px;
+    pointer-events: none;
+    z-index: -1;
+    border-radius: 58px;
+    overflow: visible;
+    /* A single blur, not a blur-plus-two-drop-shadows stack. Every one
+       of these filters has to be recomputed from scratch each time the
+       gradient underneath repaints (see the note on .dye-blob below),
+       and drop-shadow is by far the priciest of the three — it renders
+       a whole separate blurred copy of the shape's alpha channel. Two
+       of them stacked on top of a moving gradient was the main source
+       of the lag; one blur, sized generously, gives most of the same
+       soft, wide glow for a fraction of the cost. */
+    filter: blur(26px);
+}
+.dye-hover .dye-blob {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-sizing: border-box;
+    padding: 34px;
+    /* This background repaints every frame (site-nav.js rotates
+       --dye-angle), and a changing background can't be handed off to
+       the compositor the way a transform or opacity change can — the
+       browser has to re-rasterize it, then re-run .dye-layer's filter
+       on the result, every single time. site-nav.js throttles how often
+       that happens instead of doing it on every animation frame. */
+    background: conic-gradient(
+        from var(--dye-angle, 0deg),
+        color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 0deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 45%, transparent) 55deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 100%, white 45%) 90deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 45%, transparent) 125deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 180deg,
+        color-mix(in srgb, var(--accent, #4a82c7) 22%, transparent) 360deg
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 1;
+}
+
+/* ---- ambient ember light ---------------------------------------------
+   Add one empty <div class="ember-field"></div>, once, right after the
+   opening <body> tag. It sits behind nothing in particular — it's a
+   fixed, page-wide layer — and casts a soft warm light that drifts
+   toward wherever the cursor currently is, for atmosphere rather than
+   as a UI control: pointer-events: none keeps it out of the way of every
+   click, and it's the one accent on this page that simply doesn't render
+   at all under prefers-reduced-motion rather than just holding still. */
+.ember-field {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+.ember-field::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 640px;
+    height: 640px;
+    margin: -320px 0 0 -320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(217, 163, 92, 0.16), transparent 70%);
+    mix-blend-mode: screen;
+    transform: translate(var(--ex, 0px), var(--ey, 0px));
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .ember-field { display: none; }
+}
+
+/* ---- scroll parallax drift ------------------------------------------
+   Add .parallax, plus an optional data-speed (default 0.2), to anything
+   you want drifting at a different rate than the page scrolls — a
+   background portrait, a decorative rune, a title sitting behind copy.
+   Keep values small (0.1–0.4); this is a drift, not a scene change. */
+.parallax {
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .parallax { transform: none !important; }
+}
+
+/* ---- scroll-scrubbed text glow ---------------------------------------
+   Add .reveal-text to a heading or paragraph of plain text (avoid nested
+   links or bold/italic spans — site-nav.js rebuilds the element word by
+   word). Words sit dim and brighten in sequence as the block travels
+   through the reveal band, scrubbed by the scrollbar exactly like
+   .pop-in above — scroll back up and they dim back down. */
+.reveal-text .word {
+    display: inline-block;
+    opacity: 0.25;
+}
+@media (prefers-reduced-motion: reduce) {
+    .reveal-text .word { opacity: 1; }
+}
 
     </style>
 
@@ -5164,6 +5352,26 @@ body {
     .action-log-row { grid-template-columns: 1fr; }
 }
     </style>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Game",
+        "name": "Legend of Fenrirak: The Ice Dragon",
+        "url": "https://fenrirak.github.io/Legend-of-Fenrirak/Ice%20Dragon.html",
+        "description": "Play Legend of Fenrirak™, The Ice Dragon online with up to 6 players.",
+        "genre": "Board Game",
+        "numberOfPlayers": {
+            "@type": "QuantitativeValue",
+            "maxValue": 6
+        },
+        "isPartOf": {
+            "@type": "WebSite",
+            "name": "Legend of Fenrirak",
+            "url": "https://fenrirak.github.io/Legend-of-Fenrirak/index.html"
+        }
+    }
+    </script>
 
 </head>
 
@@ -16541,10 +16749,21 @@ window.dispatchEvent(new Event('lof-net-ready'));
    so pages that don't use a feature (Home, AfterShowdowns) are completely
    unaffected — only About and Creators currently use the pop-in-on-scroll
    animation, progress thread, back-to-top and lightbox.
+
+   Further down: a matching set of opt-in accents — a hover brighten and
+   push-tilt, an ambient cursor light, a soothing drifting glow, scroll
+   parallax, and a scroll-scrubbed text glow — following the exact same
+   rule.
    ========================================================================= */
 
 (function () {
     'use strict';
+
+    // Quick sanity check for testing: open DevTools > Console. If this
+    // line isn't there, the browser is running a different site-nav.js
+    // than the one you think it is (almost always a caching issue) —
+    // nothing below matters until that's fixed first.
+    if (window.console) console.log('[site-nav.js] loaded — build 2026-09-02e');
 
     var reduceMotion = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -16603,56 +16822,103 @@ window.dispatchEvent(new Event('lof-net-ready'));
     }
 
     /* ---- pop-in-as-you-scroll ------------------------------------------
-       Real scrollytelling-style reveals — built entirely from this file
-       plus the CSS in site-nav.css, with no external library and no
-       network request, so it can never be silently broken by a blocked
-       or slow CDN in whatever environment the page is opened in.
+       True scroll-scrubbed reveal: every ".pop-in" element's opacity and
+       position are recalculated on every scroll frame, directly from how
+       far its GROUP (the whole chapter/topic it belongs to, e.g. one
+       game) has scrolled up through the viewport — not a fixed-duration
+       animation that gets triggered once and then plays on its own, and
+       not each item's own position either. Stop scrolling halfway and
+       everything sits at exactly that halfway point; scroll back up and
+       it fades back down together. It's driven by the scrollbar the same
+       way the word-by-word brightening on a page like Jesko Jets is.
 
-       Every ".pop-group" (a whole chapter / crew row) fires once, the
-       moment it scrolls into view: its ".pop-in" children get ".is-visible"
-       added one after another, a fraction of a second apart (via a small
-       per-item transition-delay), which is what makes them cascade in
-       rather than the whole block fading in as one flat rectangle.
+       Reveal is computed from the GROUP's top, shared by every item in
+       it (plus a small per-item pixel offset purely so a row cascades
+       left-to-right instead of popping in all at once), rather than each
+       item's own top. A chapter is routinely taller than the viewport —
+       heading and intro copy at the top, a button and a row of photos
+       at the bottom — and item-by-item reveal meant the bottom images
+       only finished fading in once you'd scrolled well past the top of
+       the chapter, so by the time everything was visible the heading
+       had already scrolled away. Tying reveal to the group's own
+       entrance means the whole chapter finishes fading in shortly after
+       it appears, all together — further scrolling into a tall chapter
+       is then just reading it, not still waiting on it to render.
 
-       Safety net: the hidden state only ever exists once html.js-ready is
-       set below, and only for the length of this function — every group
-       also gets a fallback timer that force-reveals it regardless, so
-       nothing can end up permanently invisible even in an odd edge case
-       (an unusually tall section, a browser quirk, and so on). --------- */
+       No CSS class or rule ever hides this content — the only thing that
+       ever sets its opacity is this function actually running. So if
+       this script is ever blocked entirely, nothing is hidden in the
+       first place; the page is simply static, not broken. ------------- */
     function initPopIn() {
         var groups = Array.prototype.slice.call(document.querySelectorAll('.pop-group'));
         if (!groups.length) return;
 
-        document.documentElement.classList.add('js-ready');
-
-        function revealGroup(group) {
-            if (group.dataset.popped) return;
-            group.dataset.popped = 'true';
-
+        var groupEntries = groups.map(function (group) {
             var items = Array.prototype.slice.call(group.querySelectorAll('.pop-in'));
-            items.forEach(function (el, i) {
-                el.style.transitionDelay = reduceMotion ? '0s' : (i * 0.1) + 's';
-                el.classList.add('is-visible');
-            });
-        }
+            return {
+                group: group,
+                items: items.map(function (el, i) { return { el: el, offset: i * 22 }; })
+            };
+        }).filter(function (g) { return g.items.length; });
+        if (!groupEntries.length) return;
 
-        if (reduceMotion || !('IntersectionObserver' in window)) {
-            groups.forEach(revealGroup);
+        if (reduceMotion) {
+            groupEntries.forEach(function (g) {
+                g.items.forEach(function (entry) { entry.el.style.opacity = 1; });
+            });
             return;
         }
 
-        var io = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    revealGroup(entry.target);
-                    io.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.12, rootMargin: '0px 0px -10% 0px' });
+        function update() {
+            var vh = window.innerHeight;
+            var startY = vh * 0.92;
+            var endY = vh * 0.50;
 
-        groups.forEach(function (group, gi) {
-            io.observe(group);
-            setTimeout(function () { revealGroup(group); }, 3000 + gi * 150);
+            groupEntries.forEach(function (g) {
+                // One rect read per GROUP, not per item — this is also
+                // cheaper than the old item-by-item version once a
+                // chapter has more than a couple of images in it.
+                var groupTop = g.group.getBoundingClientRect().top;
+
+                g.items.forEach(function (entry) {
+                    var top = groupTop + entry.offset;
+                    var progress = (startY - top) / (startY - endY);
+                    if (progress < 0) progress = 0;
+                    else if (progress > 1) progress = 1;
+
+                    if (progress >= 1) {
+                        /* Fully revealed: clear the inline styles rather than
+                           setting them to their "settled" values, so this
+                           element's own CSS (e.g. a :hover lift on a button)
+                           can take over again. An inline style always wins
+                           over a stylesheet rule, even one saying "none". */
+                        entry.el.style.opacity = '';
+                        entry.el.style.transform = '';
+                    } else {
+                        entry.el.style.opacity = progress;
+                        entry.el.style.transform = 'translateY(' + (26 * (1 - progress)) + 'px)';
+                    }
+                });
+            });
+        }
+
+        var ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(function () { update(); ticking = false; });
+                ticking = true;
+            }
+        }
+
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+
+        /* Images loading in changes page layout after the fact — re-run
+           once each one settles so positions (and thus reveal state)
+           stay accurate instead of drifting from what's on screen. */
+        document.querySelectorAll('img').forEach(function (img) {
+            if (!img.complete) img.addEventListener('load', onScroll, { once: true });
         });
     }
 
@@ -16742,6 +17008,234 @@ window.dispatchEvent(new Event('lof-net-ready'));
         });
     }
 
+    /* ---- cursor-tracked push-tilt (hover) --------------------------------
+       .tilt-hover computes a small perspective tilt from the pointer's
+       position inside the element and pushes the opposite way — hover
+       near the left edge and it leans right, near the bottom and it
+       leans up, so it reads as being "pushed" from wherever the cursor
+       is rather than tilting the same fixed way every time. rAF-
+       throttled so a fast mouse can't queue up more style writes than
+       the browser can paint. (.glow-hover has nothing to set up here —
+       it's a plain CSS :hover/:focus-within brighten now.) */
+    function initTiltHover() {
+        var tiltEls = Array.prototype.slice.call(document.querySelectorAll('.tilt-hover'));
+        if (reduceMotion || !tiltEls.length) return;
+
+        function bindTilt(el) {
+            var maxDeg = 9;
+            var frame = null, rotX = 0, rotY = 0;
+            function apply() {
+                el.style.transform = 'perspective(600px) rotateX(' + rotX.toFixed(2) +
+                    'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+                frame = null;
+            }
+            el.addEventListener('mousemove', function (e) {
+                var rect = el.getBoundingClientRect();
+                var px = (e.clientX - rect.left) / rect.width - 0.5;
+                var py = (e.clientY - rect.top) / rect.height - 0.5;
+                rotX = -py * maxDeg * 2;
+                rotY = px * maxDeg * 2;
+                if (!frame) frame = window.requestAnimationFrame(apply);
+            });
+            el.addEventListener('mouseleave', function () {
+                rotX = 0; rotY = 0;
+                el.style.transform = 'perspective(600px) rotateX(0deg) rotateY(0deg)';
+            });
+        }
+
+        tiltEls.forEach(bindTilt);
+    }
+
+    /* ---- soothing wave glow (always on) ------------------------------------
+       Builds one .dye-layer + .dye-blob pair per .dye-hover element. The
+       blob's ring shape and its bright crest both come from CSS (the
+       conic-gradient plus the mask that carves out a band the shape of
+       the card's own rounded rectangle); all this does is nudge the
+       gradient's --dye-angle custom property forward a small amount on
+       a slow timer, which is what makes the bright crest crawl smoothly
+       around that band rather than sit still. Updating --dye-angle
+       forces the browser to repaint .dye-blob's gradient and re-run
+       .dye-layer's blur on the result (a changing background can't ride
+       the compositor the way a transform can), so this deliberately
+       does that on a ~90ms timer rather than every animation frame —
+       at this rotation speed the jump between steps is far too small
+       to see, but it cuts the repaint work to a small fraction of what
+       60fps would cost. Under prefers-reduced-motion the ring is still
+       inserted (so it's still visible) but --dye-angle is left at its
+       CSS default and never updated, so the crest holds at one fixed
+       spot instead of travelling. */
+    function initDyeField() {
+        var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
+        if (!hosts.length) return;
+
+        var DEGREES_PER_MS = 360 / 16000; // one slow, smooth lap every ~16s
+        var STEP_MS = 90;                 // how often --dye-angle actually updates
+
+        hosts.forEach(function (host) {
+            var layer = document.createElement('div');
+            layer.className = 'dye-layer';
+            var blob = document.createElement('div');
+            blob.className = 'dye-blob';
+            layer.appendChild(blob);
+            // Behind the card's own in-flow content regardless of DOM
+            // order (see the z-index: -1 rule), but inserted first anyway
+            // so the source order matches the paint order for anyone
+            // reading the markup later.
+            host.insertBefore(layer, host.firstChild);
+            if (reduceMotion) return;
+
+            var angle = Math.random() * 360; // each card starts its crest at a different spot
+
+            window.setInterval(function () {
+                angle = (angle + STEP_MS * DEGREES_PER_MS) % 360;
+                blob.style.setProperty('--dye-angle', angle.toFixed(2) + 'deg');
+            }, STEP_MS);
+        });
+    }
+
+    /* ---- ambient ember light ---------------------------------------------
+       A single .ember-field div drifts a soft radial light toward the
+       cursor. Position eases toward the pointer each frame (a simple lerp)
+       rather than snapping straight to it, so it reads as something with
+       a little weight — an ember drifting on its own air currents, not a
+       spotlight glued to the mouse. */
+    function initEmberField() {
+        var field = document.querySelector('.ember-field');
+        if (!field || reduceMotion) return;
+
+        var targetX = 0, targetY = 0, curX = 0, curY = 0, raf = null;
+
+        function tick() {
+            curX += (targetX - curX) * 0.08;
+            curY += (targetY - curY) * 0.08;
+            field.style.setProperty('--ex', curX.toFixed(1) + 'px');
+            field.style.setProperty('--ey', curY.toFixed(1) + 'px');
+
+            if (Math.abs(targetX - curX) > 0.5 || Math.abs(targetY - curY) > 0.5) {
+                raf = window.requestAnimationFrame(tick);
+            } else {
+                raf = null;
+            }
+        }
+
+        window.addEventListener('mousemove', function (e) {
+            targetX = e.clientX - window.innerWidth / 2;
+            targetY = e.clientY - window.innerHeight / 2;
+            if (!raf) raf = window.requestAnimationFrame(tick);
+        }, { passive: true });
+    }
+
+    /* ---- scroll parallax drift --------------------------------------- */
+    function initParallax() {
+        var els = Array.prototype.slice.call(document.querySelectorAll('.parallax'));
+        if (!els.length || reduceMotion) return;
+
+        var items = els.map(function (el) {
+            var speed = parseFloat(el.getAttribute('data-speed'));
+            return { el: el, speed: isNaN(speed) ? 0.2 : speed };
+        });
+
+        function update() {
+            var mid = window.innerHeight / 2;
+            items.forEach(function (item) {
+                var rect = item.el.getBoundingClientRect();
+                var offset = (mid - (rect.top + rect.height / 2)) * item.speed;
+                item.el.style.transform = 'translateY(' + offset.toFixed(1) + 'px)';
+            });
+        }
+
+        var ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(function () { update(); ticking = false; });
+                ticking = true;
+            }
+        }
+
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+    }
+
+    /* ---- scroll-scrubbed text glow ----------------------------------------
+       Splits each .reveal-text element into one <span class="word"> per
+       word (plain text only — see the CSS comment for why) and brightens
+       them in sequence as the block travels through the reveal band. Same
+       scrub-not-trigger philosophy as initPopIn above: this is recomputed
+       from scratch every frame from the element's live position, never a
+       one-shot animation, so scrolling back up dims words back down. */
+    function initRevealText() {
+        var blocks = Array.prototype.slice.call(document.querySelectorAll('.reveal-text'));
+        if (!blocks.length) return;
+
+        var entries = blocks.map(function (block) {
+            var pieces = block.textContent.split(/(\s+)/);
+            block.textContent = '';
+            pieces.forEach(function (chunk) {
+                if (chunk === '') return;
+                if (/^\s+$/.test(chunk)) {
+                    block.appendChild(document.createTextNode(chunk));
+                } else {
+                    var span = document.createElement('span');
+                    span.className = 'word';
+                    span.textContent = chunk;
+                    block.appendChild(span);
+                }
+            });
+            return { el: block, words: Array.prototype.slice.call(block.querySelectorAll('.word')) };
+        });
+
+        if (reduceMotion) {
+            entries.forEach(function (entry) {
+                entry.words.forEach(function (w) { w.style.opacity = 1; });
+            });
+            return;
+        }
+
+        function update() {
+            var vh = window.innerHeight;
+            /* Band is 1/6 of the screen tall, and fully resolved once
+               the block's TOP reaches the bottom 1/4 of the screen
+               (i.e. 3/4 of the way down). This is deliberately based
+               only on screen position, not the block's own height —
+               tying it to rect.height instead (as an earlier version
+               did) made tall blocks finish revealing while still up
+               around the middle of the screen, since a lot of scroll
+               distance passes between a tall block's top and bottom. */
+            var revealEnd = vh * 0.75;
+            var revealStart = revealEnd + vh / 6;
+
+            entries.forEach(function (entry) {
+                var rect = entry.el.getBoundingClientRect();
+                var progress = (revealStart - rect.top) / (revealStart - revealEnd);
+                if (progress < 0) progress = 0;
+                else if (progress > 1) progress = 1;
+
+                var lit = progress * entry.words.length;
+                entry.words.forEach(function (word, i) {
+                    var diff = lit - i;
+                    var op;
+                    if (diff <= 0) op = 0.25;
+                    else if (diff >= 1) op = 1;
+                    else op = 0.25 + diff * 0.75;
+                    word.style.opacity = op;
+                });
+            });
+        }
+
+        var ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(function () { update(); ticking = false; });
+                ticking = true;
+            }
+        }
+
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+    }
+
     function init() {
         initGamesMenu();
         initStickyOffset();
@@ -16749,6 +17243,11 @@ window.dispatchEvent(new Event('lof-net-ready'));
         initProgress();
         initBackToTop();
         initLightbox();
+        initTiltHover();
+        initEmberField();
+        initDyeField();
+        initParallax();
+        initRevealText();
     }
 
     if (document.readyState === 'loading') {
