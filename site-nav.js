@@ -475,7 +475,6 @@
                     else if (diff >= 1) op = 1;
                     else op = 0.25 + diff * 0.75;
                     word.style.opacity = op;
-                    word.style.textShadow = op > 0.92 ? '0 0 10px rgba(242, 204, 143, 0.35)' : 'none';
                 });
             });
         }
