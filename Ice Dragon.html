@@ -16464,6 +16464,9 @@ import { initializeApp }
 import {
     getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, runTransaction
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {
+    getAuth, signInAnonymously, onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyB-97iZ8wtRynNvr678178hQdEtZSWrwwo",
@@ -16477,21 +16480,29 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 const E = window.LOF_ENGINE;
 
 /* ---------------------------------------------------------------------- */
-/* Local identity                                                          */
+/* Identity                                                                */
+/*                                                                         */
+/* A player's id used to be nothing more than a random string this        */
+/* browser made up and kept in localStorage -- which meant "proving" you   */
+/* owned a seat came down to a hash this same browser could compute for    */
+/* anybody's id, or a value you could paste over in DevTools and reload.   */
+/* Firestore Security Rules can only ever trust request.auth.uid -- an     */
+/* identity issued by Firebase itself, not a string the client invented -- */
+/* so PID is now that uid, from anonymous sign-in. It is still just "this  */
+/* browser" rather than a real account (no password, nothing to log into   */
+/* elsewhere), but it can no longer be copied or reassigned by editing     */
+/* storage: the rules on the server side check request.auth.uid directly,  */
+/* which nothing running in the page can forge.                            */
+/*                                                                         */
+/* Uses the same Firebase project (and so the same Anonymous sign-in) as   */
+/* The Thunder Dragon -- once Anonymous auth is enabled for the project,   */
+/* both games have it.                                                    */
 /* ---------------------------------------------------------------------- */
-
-function localId() {
-    let id = localStorage.getItem('lof_pid');
-    if (!id) {
-        id = 'p_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-        localStorage.setItem('lof_pid', id);
-    }
-    return id;
-}
 
 function localName() {
     return localStorage.getItem('lof_name') || '';
@@ -16501,7 +16512,13 @@ function setLocalName(n) {
     localStorage.setItem('lof_name', n);
 }
 
-const PID = localId();
+let PID = null;
+const ready = new Promise((resolve, reject) => {
+    onAuthStateChanged(auth, (user) => {
+        if (user) resolve(user.uid);
+    }, reject);
+    signInAnonymously(auth).catch(reject);
+});
 
 /* ---------------------------------------------------------------------- */
 /* Seat locks                                                              */
@@ -16627,6 +16644,7 @@ function clean(value) {
 }
 
 async function createRoom(name) {
+    await ready;
     setLocalName(name);
     for (let attempt = 0; attempt < 8; attempt++) {
         const code = E.makeRoomCode();
@@ -16643,6 +16661,7 @@ async function createRoom(name) {
 }
 
 async function joinRoom(code, name) {
+    await ready;
     setLocalName(name);
     code = String(code || '').trim().toUpperCase();
     if (!/^[A-Z]{5}$/.test(code)) throw new Error('Room codes are 5 letters, like ABCDE.');
@@ -16683,6 +16702,7 @@ async function roomExists(code) {
 /* ---------------------------------------------------------------------- */
 
 async function act(code, action, args) {
+    await ready;
     const fn = ACTIONS[action];
     if (!fn) throw new Error('Unknown action: ' + action);
     const ref = roomRef(code);
@@ -16732,11 +16752,22 @@ async function closeRoom(code) {
     await deleteDoc(roomRef(code));
 }
 
-window.LOF_NET = {
-    PID, localName, setLocalName,
-    createRoom, joinRoom, roomExists, act, subscribe, closeRoom
-};
-window.dispatchEvent(new Event('lof-net-ready'));
+// The rest of the page treats window.LOF_NET as all-or-nothing (see the
+// 'lof-net-ready' listener in ui.js), so it is not created -- and PID is not
+// read -- until sign-in has actually produced a uid. If sign-in fails (for
+// instance, Anonymous auth is not enabled for this project in the Firebase
+// console), LOF_NET is simply never exposed and the page's own "Firestore
+// never arrived" fallback handles it, the same as being offline.
+ready.then((uid) => {
+    PID = uid;
+    window.LOF_NET = {
+        PID, localName, setLocalName,
+        createRoom, joinRoom, roomExists, act, subscribe, closeRoom
+    };
+    window.dispatchEvent(new Event('lof-net-ready'));
+}).catch((err) => {
+    console.error('Legend of Fenrirak: anonymous sign-in failed, online play is unavailable.', err);
+});
 
     </script>
 
