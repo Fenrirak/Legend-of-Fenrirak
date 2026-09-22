@@ -270,6 +270,7 @@
 .support-btn:hover {
     background: #f2c565;
     transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(232, 182, 77, 0.35);
 }
 
 /* Compact size, sits in the nav row to the right of the Games button. */
@@ -1010,7 +1011,28 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 }
 .turn-banner.mine .whose { border-color: var(--gold); }
 .turn-banner .who { font-size: 25px; color: var(--cream); }
-.turn-banner .timer { margin-left: auto; font-size: 16px; color: #9a9a9a; }
+.turn-banner .timer { margin-left: 10px; font-size: 16px; color: #9a9a9a; }
+
+/* The game clock. Always in the banner, whoever's turn it is, so a player
+   never has to go looking for it -- and it is what claims the free space on
+   the row, so it (and the per-turn countdown beside it, online) sit together
+   flush right rather than each floating off on its own. */
+.turn-banner .game-clock {
+    display: inline-flex; align-items: center; gap: 7px;
+    margin-left: auto;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(217, 163, 92, .10);
+    border: 1px solid rgba(217, 163, 92, .28);
+    font-size: 15px; color: #d9c7a0;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.turn-banner .game-clock svg {
+    width: 15px; height: 15px;
+    stroke: currentColor; fill: none; stroke-width: 1.8;
+    flex: 0 0 auto;
+}
 
 /* What the game is waiting on, in words. There is no pace control, so a gap
    between two things has to explain itself: this line is never empty, and it
@@ -2431,6 +2453,22 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
     text-shadow: 0 0 34px rgba(217,163,92,.7);
 }
 .victory img { width: 200px; max-width: 55%; margin: 16px auto; display: block; }
+.victory .victory-time {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin: 2px 0 14px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: rgba(217, 163, 92, .12);
+    border: 1px solid rgba(217, 163, 92, .35);
+    color: var(--gold-bright);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+}
+.victory .victory-time svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none; stroke-width: 1.8;
+    flex: 0 0 auto;
+}
 
 /* ---- whose die is it ---------------------------------------------------
    One hit each, so the single most useful thing on screen during a fight is
@@ -3691,7 +3729,7 @@ body.modal-cover #board * { animation-play-state: paused; }
     box-shadow: 0 0 22px -8px rgba(215,161,60,.75);
 }
 .turn-banner.paused .who { color: #f0c374; }
-.turn-banner.paused .btn { margin-left: auto; }
+.turn-banner.paused .btn { margin-left: 12px; }
 
 /* ---- one stat block at a time ------------------------------------------
    Whoever is not open is a bar you can click. It lifts under the pointer so
@@ -4661,9 +4699,8 @@ body.modal-cover #board * { animation-play-state: paused; }
                 id: 'iron_body',
                 name: 'Iron Body',
                 // The only ability worth anything mid-fight, and the only one
-                // that makes sense there: Agile Footwork is a movement roll and
-                // an Illusion starts a battle, which is no use inside one. See
-                // useAbility() in engine.js.
+                // that makes sense there: Agile Footwork is a movement roll,
+                // which is no use inside one. See useAbility() in engine.js.
                 inBattle: true,
                 // Which buff kind this ability stands up, so the bot (and
                 // anything else checking for "is it already up") knows what
@@ -5119,7 +5156,6 @@ body.modal-cover #board * { animation-play-state: paused; }
             crest: { initials: 'S',  tint: '#7a8c4a' }, pic: 'seraphina',
             hp: 125,
             defence: 10,
-            noIllusion: true,
             moves: [
                 { id: 'poison_fang', name: 'Poison Fang', damage: 40, energy: 1 },
                 { id: 'tail_slam', name: 'Tail Slam', damage: 120, energy: 5 }
@@ -5131,7 +5167,6 @@ body.modal-cover #board * { animation-play-state: paused; }
             crest: { initials: 'GS', tint: '#8c6a3a' }, pic: 'goblins',
             hp: 100,
             defence: 5,
-            noIllusion: true,
             moves: [
                 { id: 'club_bash', name: 'Club Bash', damage: 40, energy: 1 },
                 { id: 'heavy_wack', name: 'Heavy Wack', damage: 80, energy: 5 }
@@ -5143,7 +5178,6 @@ body.modal-cover #board * { animation-play-state: paused; }
             crest: { initials: 'GH', tint: '#8c4a3a' }, pic: 'hideout',
             hp: 180,
             defence: 0,
-            noIllusion: true,
             moves: [
                 { id: 'charge', name: 'Charge', damage: 50, energy: 1 },
                 { id: 'all_out_wacks', name: 'All Out Wacks', damage: 120, energy: 5 }
@@ -5162,7 +5196,6 @@ body.modal-cover #board * { animation-play-state: paused; }
             hp: 375,
             defence: 25,
             boss: true,
-            noIllusion: true,
             moves: [
                 { id: 'thunder', name: 'Thunder', damage: 75, energy: 1 },
                 { id: 'electrocute', name: 'Electrocute', damage: 85, energy: 3 },
@@ -5806,11 +5839,6 @@ body.modal-cover #board * { animation-play-state: paused; }
         // round to the first player -- so this is 3 of *your* turns however
         // many people are at the table.
         abilityCooldownTurns: 3,
-        // A Mage's conjured swarm is not the real animal.
-        illusionDamageBoost: 10,
-        // The conjured swarm is worked out from the real one, so raising
-        // the swarm's health raises the illusion's with it.
-        illusionHpDrop: 20,
         startingEnergy: 1,
         // Every monster attack that connects deals at least this much damage,
         // even if defence would otherwise reduce it to 0.
@@ -6158,6 +6186,18 @@ body.modal-cover #board * { animation-play-state: paused; }
             createdAt: Date.now(),
             updatedAt: Date.now(),
             version: 1,
+            // The game clock. It starts once turn order is settled -- the
+            // lobby is not "playing" and nobody wants that counted -- and
+            // stands still for exactly as long as the host has the game
+            // paused. See playTimeMs() below for how the three of these are
+            // read together.
+            playStartedAt: null,
+            pausedMs: 0,
+            pausedAt: null,
+            // Stamped once, the moment Fenrirak falls, so the victory screen
+            // is showing the time the game actually took rather than
+            // whatever the clock has ticked on to since.
+            finishedPlayMs: null,
             // "The ORIGINAL Fenrirak" -- chosen once, here, by whoever opens
             // the room, and fixed for the rest of the game. See enemyStats().
             originalFenrirak: !!(opts && opts.originalFenrirak)
@@ -6212,7 +6252,6 @@ body.modal-cover #board * { animation-play-state: paused; }
             // The Gold Forged Armour Set, if they ever wear one: the whole of
             // each hit out of the purse, which is what the card describes.
             coinCap: null,
-            pendingIllusion: null,
             path: [],
             movesLeft: 0,
             hasMoved: false,
@@ -6313,6 +6352,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             state.turnIndex = 0;
             state.turnNo = 1;
             state.turnStartedAt = Date.now();
+            state.playStartedAt = Date.now();
             beginTurn(state);
         }
         return ok();
@@ -6330,21 +6370,18 @@ body.modal-cover #board * { animation-play-state: paused; }
     function beginTurn(state) {
         const p = currentPlayer(state);
         if (!p) return;
+        // Self-heals a game that was already under way the moment this
+        // field was added -- otherwise an in-progress room, online or
+        // saved to a browser, would carry no start time forward and its
+        // clock would never move. Every fresh game already has this set by
+        // rollForOrder, so this never fires for one.
+        if (!state.playStartedAt) state.playStartedAt = Date.now();
         p.hasMoved = false;
         p.movesLeft = 0;
         p.weaponSwaps = 0;    // one weapon change and one armour change a turn
         p.armourSwaps = 0;
         p.path = [];          // last turn's walk, cleared so it is not replayed
         state.turnStartedAt = Date.now();
-
-        // A Mage's illusion forces a fight before anything else.
-        if (p.pendingIllusion) {
-            const enemyId = p.pendingIllusion;
-            p.pendingIllusion = null;
-            log(state, p.name + ' is ambushed by an illusion of the ' +
-                       D.ENEMIES[enemyId].name + '!', 'battle');
-            startEnemyBattle(state, p, enemyId, p.pos, true);
-        }
     }
 
     function isMyTurn(state, pid) {
@@ -6422,9 +6459,8 @@ body.modal-cover #board * { animation-play-state: paused; }
             const p = player(state, b.aId);
             if (p) {
                 log(state, p.name + ' was away too long and flees the fight.', 'muted');
-                const wasIllusion = b.illusion;
                 losePve(state, p);
-                if (!wasIllusion) advanceTurn(state);
+                advanceTurn(state);
                 return true;
             }
             state.battle = null;
@@ -6450,10 +6486,8 @@ body.modal-cover #board * { animation-play-state: paused; }
         if (b && b.kind === 'pve' && b.aId === p.id) {
             log(state, p.name + ' collapses' + (reason ? ' from ' + reason : '') +
                        ' and the fight is lost.', 'death');
-            const wasIllusion = b.illusion;
             state.battle = null;
             sendToStart(state, p);
-            if (wasIllusion) advanceTurn(state);
             return ok();
         }
         log(state, p.name + ' collapses and returns to the Start.', 'death');
@@ -6499,15 +6533,27 @@ body.modal-cover #board * { animation-play-state: paused; }
             return walk(state, p, raw);
         }
 
+        const choosable = diceChoosable(p);
+        if (!choosable) {
+            // With nothing positive on the table, the whole of `offered` is
+            // a fixed cost -- Heavy Armour's -1, and nothing else has ever
+            // carried one -- not a bonus on offer. A minus is never "up to"
+            // the player, so there is no question to stop and ask: it is
+            // taken at once, the same as an offer of nothing at all above.
+            return takeMoveBonus(state, p, { raw: raw, offered: offered, choosable: 0 }, undefined);
+        }
+
         state.pending = {
             type: 'move_bonus',
             playerId: p.id,
             raw: raw,
             offered: offered,
             // How far down from `offered` the player may go. With every
-            // bonus an "up to", this reaches 0 whenever anything positive
-            // is on the table, so the buttons run the whole way down.
-            choosable: diceChoosable(p),
+            // bonus an "up to", this reaches down to whatever is left once a
+            // fixed cost such as Heavy Armour's -1 is taken out of it -- and
+            // never any lower than that, because that part was never a
+            // choice. See takeMoveBonus().
+            choosable: choosable,
             sources: bonusSources(p),
             prompt: 'You rolled a ' + raw + '.'
         };
@@ -6525,14 +6571,22 @@ body.modal-cover #board * { animation-play-state: paused; }
         return out;
     }
 
-    // The answer: false to refuse it outright, a number to take that much of
-    // it, anything else to take the lot.
+    // The answer: false to decline everything that was actually optional, a
+    // number to take that much of it, anything else to take the lot.
+    //
+    // Declining refuses the *offer* -- it can never undo a cost that was
+    // never part of it. Heavy Armour's -1 is the price of wearing it, not a
+    // bonus on the table, so it is left out of `choosable` entirely (see
+    // diceChoosable) and `floor` here is exactly that price and nothing
+    // more: 0 whenever nothing but bonuses are on offer, same as always, and
+    // never lower than the fixed cost when one applies.
     function takeMoveBonus(state, p, pend, useBonus) {
         const offered = pend.offered;
+        const floor = offered - (pend.choosable || 0);
         let mod;
-        if (useBonus === false) mod = 0;
+        if (useBonus === false) mod = floor;
         else if (typeof useBonus === 'number') {
-            mod = Math.max(Math.min(useBonus, offered), offered - (pend.choosable || 0));
+            mod = Math.max(Math.min(useBonus, offered), floor);
         } else mod = offered;
 
         const total = Math.max(1, pend.raw + mod);
@@ -6771,7 +6825,7 @@ body.modal-cover #board * { animation-play-state: paused; }
                 return ok();
 
             case 'battle':
-                return startEnemyBattle(state, p, sq.enemy, sq.i, false);
+                return startEnemyBattle(state, p, sq.enemy, sq.i);
 
             default:
                 return ok();
@@ -6802,22 +6856,17 @@ body.modal-cover #board * { animation-play-state: paused; }
     /* Battles                                                             */
     /* ------------------------------------------------------------------ */
 
-    function startEnemyBattle(state, p, enemyId, squareIndex, isIllusion) {
+    function startEnemyBattle(state, p, enemyId, squareIndex) {
         const e = enemyStats(state, enemyId);
         p.energy = R.startingEnergy;
         p.extraRun = null;              // a fresh fight, a fresh Triple Whack
-        // A Mage's conjuring is a nastier thing than the real animal: it hits
-        // for 10 more and there is 20 less of it. Both numbers are in RULES.
-        const conjuredHp = Math.max(1, e.hp - (isIllusion ? R.illusionHpDrop : 0));
         state.battle = {
             kind: 'pve',
             enemyId: enemyId,
-            enemyHp: conjuredHp,
-            enemyMaxHp: conjuredHp,
-            spite: isIllusion ? R.illusionDamageBoost : 0,
+            enemyHp: e.hp,
+            enemyMaxHp: e.hp,
             enemyEnergy: R.startingEnergy,
             squareIndex: (squareIndex === undefined || squareIndex === null) ? p.pos : squareIndex,
-            illusion: !!isIllusion,
             aId: p.id,
             turn: 'a',
             phase: 'roll',
@@ -7319,9 +7368,8 @@ body.modal-cover #board * { animation-play-state: paused; }
             return affordable.slice().sort((x, y) => y.damage - x.damage)[0];
         }
 
-        const spite = b.spite || 0;
         const defence = totalDefence(state, p);
-        const dealt = m => Math.max(R.enemyMinDamage, m.damage + spite - defence);
+        const dealt = m => Math.max(R.enemyMinDamage, m.damage - defence);
 
         const lethal = affordable.filter(m => dealt(m) >= p.hp)
             .sort((x, y) => x.energy - y.energy);
@@ -7343,7 +7391,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const p = player(state, b.aId);
 
         const move = chooseEnemyMove(state, b, e, p);
-        const dealt = damagePlayer(state, p, move.damage + (b.spite || 0), R.enemyMinDamage);
+        const dealt = damagePlayer(state, p, move.damage, R.enemyMinDamage);
         // A monster pays for a heavy move the same way a player does.
         if (move.energy > R.startingEnergy) b.enemyEnergy = R.startingEnergy;
         else b.enemyEnergy += 1;
@@ -7372,7 +7420,6 @@ body.modal-cover #board * { animation-play-state: paused; }
         state.lastBattle = {
             n: state.battleSeq,
             kind: b.kind,
-            illusion: !!b.illusion,
             winner: winner,
             loser: loser
         };
@@ -7399,6 +7446,11 @@ body.modal-cover #board * { animation-play-state: paused; }
             state.battle = null;
             state.phase = 'over';
             state.winner = p.id;
+            // Stamped now rather than worked out by whoever opens the
+            // victory screen, so it reads the same for every player in the
+            // room and does not keep counting up after the game is actually
+            // finished.
+            state.finishedPlayMs = playTimeMs(state, Date.now());
             log(state, '★ ' + p.name + ' has slain Fenrirak. The legend is theirs. ★', 'system');
             return ok();
         }
@@ -7407,26 +7459,22 @@ body.modal-cover #board * { animation-play-state: paused; }
             p.coins += sq.coins;
             log(state, p.name + ' claims ' + sq.coins + ' coins.', 'item');
         }
-        if (!b.illusion) {
-            if (sq.keyFragment) {
-                if (giveFragment(p, sq.keyFragment)) {
-                    log(state, p.name + ' recovers key fragment ' + sq.keyFragment +
-                               ' (' + p.keyFragments + '/3).', 'item');
-                } else {
-                    log(state, p.name + ' already carries key fragment ' + sq.keyFragment +
-                               ' — there is only one of each.', 'muted');
-                }
+        if (sq.keyFragment) {
+            if (giveFragment(p, sq.keyFragment)) {
+                log(state, p.name + ' recovers key fragment ' + sq.keyFragment +
+                           ' (' + p.keyFragments + '/3).', 'item');
+            } else {
+                log(state, p.name + ' already carries key fragment ' + sq.keyFragment +
+                           ' — there is only one of each.', 'muted');
             }
-            if (sq.chestKey) {
-                p.chestKeys += sq.chestKey;
-                log(state, p.name + ' recovers a chest key.', 'item');
-            }
-        } else { log(state, 'It was only an illusion — no key or chest key is left behind.', 'muted'); }
-        const wasIllusion = b.illusion;
+        }
+        if (sq.chestKey) {
+            p.chestKeys += sq.chestKey;
+            log(state, p.name + ' recovers a chest key.', 'item');
+        }
         noteBattleEnd(state, b, asPlayer(p), asEnemy(b.enemyId));
         state.battle = null;
         p.energy = R.startingEnergy;
-        if (wasIllusion) advanceTurn(state);
         return ok();
     }
 
@@ -7434,11 +7482,9 @@ body.modal-cover #board * { animation-play-state: paused; }
         const b = state.battle;
         const e = D.ENEMIES[b.enemyId];
         log(state, D.foeName(e, true) + ' strikes ' + p.name + ' down. Back to the Start.', 'death');
-        const wasIllusion = b.illusion;
         noteBattleEnd(state, b, asEnemy(b.enemyId), asPlayer(p));
         state.battle = null;
         sendToStart(state, p);
-        if (wasIllusion) advanceTurn(state);
         return ok();
     }
 
@@ -7641,7 +7687,7 @@ body.modal-cover #board * { animation-play-state: paused; }
        (or against) the blow about to be thrown. Waiting until after the roll
        would let you see whether you had connected first, which is not a
        decision anybody should be offered. */
-    function useAbility(state, pid, payload) {
+    function useAbility(state, pid) {
         const p = player(state, pid);
         if (!p) return fail('Unknown player.');
         const cls = D.CLASSES[p.cls];
@@ -7678,15 +7724,6 @@ body.modal-cover #board * { animation-play-state: paused; }
         } else if (cls.ability.id === 'runed_relic') {
             addBuff(p, 'damage', 15, 2, cls.ability.name);
             log(state, p.name + ' calls on the Runed Relic — +15 damage for 2 turns.', 'item');
-        } else if (cls.ability.id === 'illusion') {
-            const targetId = payload && payload.targetPlayerId;
-            const enemyId = payload && payload.enemyId;
-            const target = player(state, targetId);
-            if (!target || target.id === pid) return fail('Choose another player.');
-            if (!D.ENEMIES[enemyId] || D.ENEMIES[enemyId].noIllusion) { return fail('That enemy cannot be conjured.'); }
-            target.pendingIllusion = enemyId;
-            log(state, p.name + ' conjures an illusion of ' + D.foeName(D.ENEMIES[enemyId]) +
-                       ' to ambush ' + target.name + '!', 'system');
         }
         return ok();
     }
@@ -8077,10 +8114,36 @@ body.modal-cover #board * { animation-play-state: paused; }
         const want = !!on;
         if (!!state.paused === want) return { ok: false, error: 'no-change', silent: true };
         state.paused = want;
-        if (!want) state.turnStartedAt = Date.now();
+        if (want) {
+            // Marked rather than banked straight away, so the game clock can
+            // still be read while the pause is under way -- see playTimeMs().
+            state.pausedAt = Date.now();
+        } else {
+            state.turnStartedAt = Date.now();
+            if (state.pausedAt) {
+                state.pausedMs = (state.pausedMs || 0) + (Date.now() - state.pausedAt);
+                state.pausedAt = null;
+            }
+        }
         log(state, want ? 'The host paused the game.'
                         : 'The host resumed the game.', 'system');
         return ok();
+    }
+
+    /* How long the game has actually been played: from the moment turn order
+       was settled, less however long it has spent paused. While a pause is
+       under way this stands exactly still, at the instant the pause began --
+       it does not creep forward with everything else that has stopped, and
+       it does not need the pause to end before it can be read, which is what
+       lets the clock on screen freeze the moment the host stops the game
+       rather than jump backwards when it resumes.
+
+       `now` is passed in rather than read here so a client and the engine's
+       own callers always agree on what instant they mean by it. */
+    function playTimeMs(state, now) {
+        if (!state.playStartedAt) return 0;
+        const at = state.paused ? (state.pausedAt || now) : now;
+        return Math.max(0, at - state.playStartedAt - (state.pausedMs || 0));
     }
 
     // The host ending the game early. The room document is deleted by the
@@ -8133,7 +8196,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         eatSteak:      (s, pid, a) => eatSteak(s, pid, a.type),
         cookSteaks:    (s, pid, a) => cookSteaks(s, pid, a.count),
         equip:         (s, pid, a) => equip(s, pid, a.uid),
-        useAbility:    (s, pid, a) => useAbility(s, pid, a),
+        useAbility:    (s, pid)    => useAbility(s, pid),
         buy:           (s, pid, a) => buy(s, pid, a.kind, a.id),
         payInCoins:    (s, pid, a) => payInCoins(s, pid, a.on, a.cap),
         setPaused:     (s, pid, a) => setPaused(s, pid, a.on),
@@ -8190,7 +8253,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         battleRoll, battleAttack, battleAutoStrike, enemyRoll, enemyStrike,
         startEnemyBattle, startPvp, availableMoves, battleActorId,
         usePowerup, usePotion, eatSteak, cookSteaks, equip, useAbility, buy,
-        payInCoins, setPaused,
+        payInCoins, setPaused, playTimeMs,
         proposeTrade, respondTrade, cancelTrade, collapse, closeGame,
         fragmentsOf, suitsClass, turnLimit,
         totalDefence, totalAttackBonus, diceModifier, diceChoosable,
@@ -8882,20 +8945,6 @@ body.modal-cover #board * { animation-play-state: paused; }
         if (cls.ability.id === 'iron_body' || cls.ability.id === 'runed_relic') {
             return { action: 'useAbility', args: {} };
         }
-        if (cls.ability.id === 'illusion') {
-            // Send the bats at whoever is closest to winning: fragments first,
-            // then whoever is furthest up the track.
-            const rivals = state.players.filter(x => x.id !== p.id && x.cls && x.connected !== false);
-            if (!rivals.length) return null;
-            const mark = rivals.slice().sort((a, b) => {
-                const f = fragmentCount(b) - fragmentCount(a);
-                return f !== 0 ? f : b.pos - a.pos;
-            })[0];
-            return {
-                action: 'useAbility',
-                args: { targetPlayerId: mark.id, enemyId: 'swarm_of_bats' }
-            };
-        }
         return null;
     }
 
@@ -9503,8 +9552,8 @@ body.modal-cover #board * { animation-play-state: paused; }
     let openPanel = null;      // 'merchant' | 'trade' | 'purse' | null
 
     /* A small panel opened on top of whatever else is up: the power-up picker
-       in a fight, the Mage's illusion, the question asking whether you really
-       mean to end the game.
+       in a fight, the confirmation before calling on a class ability, the
+       question asking whether you really mean to end the game.
 
        These are things the player is halfway through answering, and they used
        to be swept away by the next state that arrived, because `renderModal`
@@ -9525,6 +9574,18 @@ body.modal-cover #board * { animation-play-state: paused; }
         return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         }[c]));
+    }
+
+    // m:ss under an hour, h:mm:ss once a game runs long -- the game clock and
+    // the victory screen both read a game's playing time this same way, so a
+    // long fight and a quick one are never shown to two different rules.
+    function fmtStopwatch(ms) {
+        const total = Math.floor(Math.max(0, ms || 0) / 1000);
+        const h = Math.floor(total / 3600);
+        const m = Math.floor((total % 3600) / 60);
+        const s = total % 60;
+        const pad = n => (n < 10 ? '0' : '') + n;
+        return h > 0 ? (h + ':' + pad(m) + ':' + pad(s)) : (m + ':' + pad(s));
     }
 
     function me() { return S ? E.player(S, NET.PID) : null; }
@@ -10569,11 +10630,9 @@ body.modal-cover #board * { animation-play-state: paused; }
     /* Both of them wait on the die before they start -- the card for it to */
     /* leave the screen, the steak for it to stop -- so asking "is the card */
     /* up?" is not enough. A die thrown in the gap between the turn         */
-    /* changing and the card appearing lands underneath it. That is exactly */
-    /* what went wrong when a Mage's illusion started a fight in the same   */
-    /* instant the turn changed hands: the fight was already rolling before */
-    /* the card had drawn breath. So each of them reports itself busy from  */
-    /* the moment it is owed, not from the moment it is seen.              */
+    /* changing and the card appearing lands underneath it. So each of them */
+    /* reports itself busy from the moment it is owed, not from the moment */
+    /* it is seen.                                                         */
     /* ------------------------------------------------------------------ */
 
     /* Every card in this game has a deadline, because a card that will not
@@ -11640,6 +11699,24 @@ body.modal-cover #board * { animation-play-state: paused; }
         renderModal();
     }
 
+    /* The game clock. It lives in the turn banner because that is the one
+       thing on screen throughout the whole game, whoever's turn it is and
+       whatever they are doing -- so wherever a player looks to see the state
+       of the game, the clock is already there rather than tucked away
+       somewhere that has to be sought out. Shown for both a solo game and an
+       online one; only the per-turn countdown beside it is online-only.
+
+       The number itself is ticked in place by tickGameClock() below rather
+       than redrawn from here every second, but this is what supplies it the
+       first time and whenever the rest of the banner is redrawn anyway. */
+    function gameClockHtml() {
+        return '<span class="game-clock" id="game-clock" title="Time played this game">' +
+            '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/>' +
+            '<path d="M12 7.5V12l3 2"/></svg>' +
+            '<span id="game-clock-time">' + fmtStopwatch(E.playTimeMs(S, Date.now())) + '</span>' +
+            '</span>';
+    }
+
     function renderBanner() {
         const banner = $('#turn-banner');
         if (S.phase === 'order') {
@@ -11660,6 +11737,7 @@ body.modal-cover #board * { animation-play-state: paused; }
                 '<span class="who">Paused</span>' +
                 '<span class="muted">The host has stopped the game' +
                     (cur ? ' on ' + esc(cur.name) + '\u2019s turn' : '') + '.</span>' +
+                gameClockHtml() +
                 (S.hostId === NET.PID
                     ? '<button class="btn small primary" id="banner-resume">Resume</button>'
                     : '');
@@ -11687,8 +11765,10 @@ body.modal-cover #board * { animation-play-state: paused; }
                 esc(doing.text) +
             '</span>' +
             '<span class="muted">Turn ' + S.turnNo + '</span>' +
-            // The clock only exists to stop an absent player stalling everyone
-            // else. On your own there is nobody to stall, so take your time.
+            gameClockHtml() +
+            // The countdown only exists to stop an absent player stalling
+            // everyone else. On your own there is nobody to stall, so take
+            // your time -- but the game clock above is shown either way.
             (S.solo ? '' : '<span class="timer" id="turn-timer"></span>');
     }
 
@@ -11798,6 +11878,18 @@ body.modal-cover #board * { animation-play-state: paused; }
         el.textContent = left > 0 ? Math.ceil(left / 1000) + 's left' : 'skipping…';
     }
     setInterval(tickTimer, 1000);
+
+    // The game clock ticks the same way: nudged along in place every second
+    // rather than earning the whole banner a redraw. While the game is
+    // paused this keeps "ticking" onto the same frozen figure, because
+    // playTimeMs() itself is what stands still -- there is nothing extra to
+    // check for here.
+    function tickGameClock() {
+        const el = $('#game-clock-time');
+        if (!el || !S || S.phase !== 'playing') return;
+        el.textContent = fmtStopwatch(E.playTimeMs(S, Date.now()));
+    }
+    setInterval(tickGameClock, 1000);
 
     /* ------------------------------------------------------------------ */
     /* Game — board                                                        */
@@ -13109,11 +13201,7 @@ body.modal-cover #board * { animation-play-state: paused; }
                             (bonus > 0 ? '+' : '') + bonus + ' once it lands.'
                           : 'One die. Move that many squares.');
         });
-        bind('a-ability', () => {
-            if (cls.ability.id === 'illusion') return openIllusion();
-            rollAct(cls.ability.name, 'useAbility', {},
-                    'An even number and it works.');
-        });
+        bind('a-ability', () => openAbilityConfirm(cls));
         bind('a-shop', () => { openPanel = 'merchant'; renderModal(); });
         bind('a-trade', () => { openPanel = 'trade'; renderModal(); });
         bind('a-steak-raw', () => rollAct('a Raw Steak', 'eatSteak',
@@ -14415,9 +14503,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const monsterWon = !!r.winner.enemyId;
         const mine = !r.winner.enemyId && me() &&
                      r.winner.cls === me().cls && r.winner.name === me().name;
-        const what = r.kind === 'pvp' ? 'Player battle'
-                   : r.illusion ? 'The illusion breaks'
-                   : 'Battle over';
+        const what = r.kind === 'pvp' ? 'Player battle' : 'Battle over';
 
         return '<div class="bo' + (monsterWon ? ' foe' : '') +
                    (mine ? ' mine' : '') + '">' +
@@ -14475,7 +14561,6 @@ body.modal-cover #board * { animation-play-state: paused; }
                         ? 'roll the die' : 'strike') +
             '</div>' +
             '<div class="sub">' +
-                (b.illusion ? 'A Mage’s illusion — you will earn coins only. ' : '') +
                 (involved ? (myMove ? 'One hit each: roll, strike, then it is their go.'
                                     : 'Waiting for the other side…')
                           : 'You are watching this battle.') +
@@ -14629,8 +14714,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         bind('b-roll', () => rollAct('an Attack', 'battleRoll', {}, missRule()));
         $$('#modal [data-move]').forEach(el =>
             el.addEventListener('click', () => act('battleAttack', { moveId: el.dataset.move })));
-        bind('b-ability', () => rollAct(D.CLASSES[p.cls].ability.name, 'useAbility', {},
-                                       'An even number and it works.'));
+        bind('b-ability', () => openAbilityConfirm(D.CLASSES[p.cls]));
         bind('b-purse', () => { openPanel = 'purse'; renderModal(); });
         bind('b-cooked', () => act('eatSteak', { type: 'cooked' }));
         bind('b-raw', () => rollAct('a Raw Steak', 'eatSteak',
@@ -15421,45 +15505,36 @@ body.modal-cover #board * { animation-play-state: paused; }
         bind('shop-close', () => { openPanel = null; renderModal(); });
     }
 
-    /* ---- illusion ---- */
+    /* ---- calling on a class ability ----------------------------------
+       Iron Body, Agile Footwork, Runed Relic: pressing the button used to
+       throw the die straight away, which meant finding out what an ability
+       even did meant using it and reading the log afterwards. Now the press
+       opens this instead -- what it does, straight from the card, and what
+       it takes to succeed -- and the die is not thrown until "Use it" is.
+       "Not now" costs nothing at all: the cooldown is only spent inside
+       useAbility() in engine.js, which this does not call until confirmed.
+       ------------------------------------------------------------------- */
 
-    function openIllusion() {
-        overlay = { key: 'illusion', draw: openIllusion };
-        const others = S.players.filter(x => x.id !== NET.PID && x.cls);
-        // Only the Swarm of Bats can be conjured now, so there is nothing to
-        // choose: the illusion is named rather than picked from a list.
-        const enemies = Object.keys(D.ENEMIES).filter(id => !D.ENEMIES[id].noIllusion);
-        const only = enemies.length === 1 ? D.ENEMIES[enemies[0]] : null;
-        showModal('<h2>Illusion</h2>' +
-            '<div class="sub">Conjure a ' + esc(only ? only.name : 'enemy') +
-            ' and set it on another player. They lose their turn to the fight ' +
-            'and keep only the coins.</div>' +
-            '<h3>What appears</h3>' +
-            (only
-                ? '<div class="paper stat" style="max-width:230px">' +
-                  '<div class="p-name">' + esc(only.name) + '</div>' +
-                  '<div class="p-stat">Health: ' + only.hp + '</div>' +
-                  '<div class="p-stat">Defence: ' + only.defence + '</div></div>' +
-                  '<input type="hidden" id="il-enemy" value="' + esc(enemies[0]) + '">'
-                : '<select id="il-enemy">' +
-                  enemies.map(id => '<option value="' + id + '">' + esc(D.ENEMIES[id].name) +
-                      ' — ' + D.ENEMIES[id].hp + ' HP</option>').join('') + '</select>') +
-            '<h3 style="margin-top:14px">Victim</h3><select id="il-target">' +
-                others.map(o => '<option value="' + esc(o.id) + '">' + esc(o.name) + ' (' +
-                    esc(D.CLASSES[o.cls].name) + ')</option>').join('') + '</select>' +
+    function openAbilityConfirm(cls) {
+        const ab = cls.ability;
+        overlay = { key: 'ability-confirm', draw: () => openAbilityConfirm(cls) };
+        showModal(
+            '<h2>' + esc(ab.name) + '</h2>' +
+            '<div class="sub">' + esc(ab.text) + '</div>' +
             '<div class="modal-actions">' +
-            '<button class="btn primary" id="il-go">Cast (roll even to succeed)</button>' +
-            '<button class="btn" id="il-cancel">Cancel</button></div>', true, 'illusion');
-
-        bind('il-go', () => {
-            const args = {
-                enemyId: $('#il-enemy').value,
-                targetPlayerId: $('#il-target').value
-            };
+            '<button class="btn primary" id="ab-use">Call on it \u2014 roll even to succeed</button>' +
+            '<button class="btn" id="ab-cancel">Not now</button>' +
+            '</div>', true, 'ability-confirm');
+        bind('ab-use', () => {
+            // Settled first, so the roll plays out over whatever is actually
+            // meant to be showing -- the bare board outside a fight, or the
+            // fight panel itself, which stays up across a roll same as any
+            // other -- rather than over this popup's own leftover backdrop.
             closeOverlay();
-            act('useAbility', args);
+            renderModal();
+            rollAct(ab.name, 'useAbility', {}, 'An even number and it works.');
         });
-        bind('il-cancel', () => { closeOverlay(); renderModal(); });
+        bind('ab-cancel', () => { closeOverlay(); renderModal(); });
     }
 
     /* ---- trading ---- */
@@ -15714,11 +15789,21 @@ body.modal-cover #board * { animation-play-state: paused; }
     function renderOver() {
         closeModal();
         const w = E.player(S, S.winner);
+        // Stamped by the engine the instant Fenrirak fell (see winPve in
+        // engine.js), so this is the time the game actually took rather than
+        // however long it has been since -- and it reads the same for
+        // everyone at the table, not just whoever opens this screen first.
+        const timeHtml = typeof S.finishedPlayMs === 'number'
+            ? '<div class="victory-time"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/>' +
+              '<path d="M12 7.5V12l3 2"/></svg>Time played — <b>' +
+              fmtStopwatch(S.finishedPlayMs) + '</b></div>'
+            : '';
         $('#over-body').innerHTML =
             '<div class="victory">' +
             '<div class="vtitle">Victory</div>' +
             '<img src="Fenrirak.png" alt="Fenrirak">' +
             '<h2>' + esc(w ? w.name : 'Someone') + ' has slain Fenrirak.</h2>' +
+            timeHtml +
             '<p class="muted">' + (w && w.id === NET.PID
                 ? 'The Thunder Dragon falls to you. The legend is yours.'
                 : 'The Thunder Dragon falls to another. Try again.') + '</p>' +
@@ -16077,518 +16162,399 @@ window.dispatchEvent(new Event('lof-net-ready'));
     <script>
 /* ==== site-nav.js ==== */
 /* =========================================================================
-   Legend of Fenrirak — nav bar behaviour + shared scroll-experience kit.
+   Legend of Fenrirak — shared site navigation & scroll-experience kit.
+   site-nav.js
 
-   Every feature below checks for its own element before doing anything,
-   so pages that don't use a feature (Home, AfterShowdowns) are completely
-   unaffected — only About and Creators currently use the pop-in-on-scroll
-   animation, progress thread, back-to-top and lightbox.
-
-   Further down: a matching set of opt-in accents — a hover brighten and
-   push-tilt, an ambient cursor light, a soothing drifting glow, scroll
-   parallax, and a scroll-scrubbed text glow — following the exact same
-   rule.
+   This file itself was lost; site-nav.css was not. It turned out to
+   document almost everything this needed to do -- property names
+   (--dye-angle, --ex/--ey), the markup each accent expects, even the
+   reasoning behind throttling the dye rotation -- closely enough to
+   rebuild against as a spec rather than a guess. Every section below is
+   independent and checks for its own element(s) before doing anything
+   else, so a page that only carries the plain nav bar (Home, the games
+   themselves) pays for none of the About/Creators accents, and a typo'd
+   class name simply leaves that one section inert rather than breaking
+   the rest of the page.
    ========================================================================= */
 
 (function () {
     'use strict';
 
-    // Quick sanity check for testing: open DevTools > Console. If this
-    // line isn't there, the browser is running a different site-nav.js
-    // than the one you think it is (almost always a caching issue) —
-    // nothing below matters until that's fixed first.
-    if (window.console) console.log('[site-nav.js] loaded — build 2026-09-02e');
+    const reduceMotion = !!(window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-    var reduceMotion = window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* ------------------------------------------------------------------ */
+    /* One shared scroll ticker                                            */
+    /*                                                                     */
+    /* Several sections below need to know about every scroll event, and a */
+    /* handful of separate listeners each running their own                */
+    /* requestAnimationFrame would mean redundant reads of the same         */
+    /* scroll position several times over. This collects them into one,    */
+    /* declared first so every section after it can register with it.      */
+    /* ------------------------------------------------------------------ */
+    const tickers = [];
+    let ticking = false;
+    function onScrollTick(fn) { tickers.push(fn); }
+    function runTickers() {
+        tickers.forEach(function (fn) { fn(); });
+        ticking = false;
+    }
+    function requestTick() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(runTickers);
+    }
+    window.addEventListener('scroll', requestTick, { passive: true });
+    window.addEventListener('resize', requestTick);
 
-    /* ---- Games dropdown (hover on desktop is CSS-only; this adds
-       tap/click toggling for touch screens, plus Escape to close) ------- */
-    function initGamesMenu() {
-        var groups = Array.prototype.slice.call(document.querySelectorAll('.nav-group'));
+    /* ------------------------------------------------------------------ */
+    /* Games dropdown                                                       */
+    /*                                                                     */
+    /* Hovering already opens it wherever hovering means something --      */
+    /* that's plain CSS (:hover) and needs nothing from here. This only     */
+    /* has to cover the two things CSS can't: a tap on a touch screen, and  */
+    /* keeping aria-expanded honest for anyone using a keyboard or a        */
+    /* screen reader. :focus-within already shows the menu on focus, so     */
+    /* this just tracks .open (the tap case) and the attribute alongside    */
+    /* it, and closes on an outside click, a menu link being followed, or   */
+    /* Escape.                                                              */
+    /* ------------------------------------------------------------------ */
+    (function navDropdown() {
+        const groups = Array.prototype.slice.call(document.querySelectorAll('.nav-group'));
         if (!groups.length) return;
 
-        function closeAll(except) {
+        function closeAll() {
             groups.forEach(function (g) {
-                if (g === except) return;
                 g.classList.remove('open');
-                var t = g.querySelector('.nav-trigger');
+                const t = g.querySelector('.nav-trigger');
                 if (t) t.setAttribute('aria-expanded', 'false');
             });
         }
 
         groups.forEach(function (group) {
-            var trigger = group.querySelector('.nav-trigger');
+            const trigger = group.querySelector('.nav-trigger');
             if (!trigger) return;
+            trigger.setAttribute('aria-expanded', 'false');
 
             trigger.addEventListener('click', function (e) {
-                e.preventDefault();
-                var willOpen = !group.classList.contains('open');
-                closeAll(group);
-                group.classList.toggle('open', willOpen);
-                trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                e.stopPropagation();
+                const willOpen = !group.classList.contains('open');
+                closeAll();
+                if (willOpen) {
+                    group.classList.add('open');
+                    trigger.setAttribute('aria-expanded', 'true');
+                }
+            });
+
+            group.querySelectorAll('.nav-menu a').forEach(function (a) {
+                a.addEventListener('click', closeAll);
             });
         });
 
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest || !e.target.closest('.nav-group')) closeAll(null);
-        });
-
+        document.addEventListener('click', closeAll);
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeAll(null);
+            if (e.key === 'Escape') closeAll();
         });
-    }
+    })();
 
-    /* ---- keep --topbar-h in sync, so each section's scroll-margin-top
-       clears the real bar height, whatever that is at the current
-       screen size ----------------------------------------------------- */
-    function initStickyOffset() {
-        var bar = document.querySelector('.topbar');
+    /* ------------------------------------------------------------------ */
+    /* Top scroll-progress thread                                          */
+    /* ------------------------------------------------------------------ */
+    (function scrollProgress() {
+        const bar = document.querySelector('.scroll-progress');
         if (!bar) return;
 
-        function measure() {
-            document.documentElement.style.setProperty('--topbar-h', bar.offsetHeight + 'px');
-        }
-
-        measure();
-        window.addEventListener('resize', measure);
-        if (window.ResizeObserver) new ResizeObserver(measure).observe(bar);
-    }
-
-    /* ---- pop-in-as-you-scroll ------------------------------------------
-       True scroll-scrubbed reveal: every ".pop-in" element's opacity and
-       position are recalculated on every scroll frame, directly from how
-       far its GROUP (the whole chapter/topic it belongs to, e.g. one
-       game) has scrolled up through the viewport — not a fixed-duration
-       animation that gets triggered once and then plays on its own, and
-       not each item's own position either. Stop scrolling halfway and
-       everything sits at exactly that halfway point; scroll back up and
-       it fades back down together. It's driven by the scrollbar the same
-       way the word-by-word brightening on a page like Jesko Jets is.
-
-       Reveal is computed from the GROUP's top, shared by every item in
-       it (plus a small per-item pixel offset purely so a row cascades
-       left-to-right instead of popping in all at once), rather than each
-       item's own top. A chapter is routinely taller than the viewport —
-       heading and intro copy at the top, a button and a row of photos
-       at the bottom — and item-by-item reveal meant the bottom images
-       only finished fading in once you'd scrolled well past the top of
-       the chapter, so by the time everything was visible the heading
-       had already scrolled away. Tying reveal to the group's own
-       entrance means the whole chapter finishes fading in shortly after
-       it appears, all together — further scrolling into a tall chapter
-       is then just reading it, not still waiting on it to render.
-
-       No CSS class or rule ever hides this content — the only thing that
-       ever sets its opacity is this function actually running. So if
-       this script is ever blocked entirely, nothing is hidden in the
-       first place; the page is simply static, not broken. ------------- */
-    function initPopIn() {
-        var groups = Array.prototype.slice.call(document.querySelectorAll('.pop-group'));
-        if (!groups.length) return;
-
-        var groupEntries = groups.map(function (group) {
-            var items = Array.prototype.slice.call(group.querySelectorAll('.pop-in'));
-            return {
-                group: group,
-                items: items.map(function (el, i) { return { el: el, offset: i * 22 }; })
-            };
-        }).filter(function (g) { return g.items.length; });
-        if (!groupEntries.length) return;
-
-        if (reduceMotion) {
-            groupEntries.forEach(function (g) {
-                g.items.forEach(function (entry) { entry.el.style.opacity = 1; });
-            });
-            return;
-        }
-
         function update() {
-            var vh = window.innerHeight;
-            var startY = vh * 0.92;
-            var endY = vh * 0.50;
-
-            groupEntries.forEach(function (g) {
-                // One rect read per GROUP, not per item — this is also
-                // cheaper than the old item-by-item version once a
-                // chapter has more than a couple of images in it.
-                var groupTop = g.group.getBoundingClientRect().top;
-
-                g.items.forEach(function (entry) {
-                    var top = groupTop + entry.offset;
-                    var progress = (startY - top) / (startY - endY);
-                    if (progress < 0) progress = 0;
-                    else if (progress > 1) progress = 1;
-
-                    if (progress >= 1) {
-                        /* Fully revealed: clear the inline styles rather than
-                           setting them to their "settled" values, so this
-                           element's own CSS (e.g. a :hover lift on a button)
-                           can take over again. An inline style always wins
-                           over a stylesheet rule, even one saying "none". */
-                        entry.el.style.opacity = '';
-                        entry.el.style.transform = '';
-                    } else {
-                        entry.el.style.opacity = progress;
-                        entry.el.style.transform = 'translateY(' + (26 * (1 - progress)) + 'px)';
-                    }
-                });
-            });
+            const doc = document.documentElement;
+            const scrollable = doc.scrollHeight - doc.clientHeight;
+            const y = window.scrollY || doc.scrollTop || 0;
+            bar.style.width = (scrollable > 0 ? Math.min(100, (y / scrollable) * 100) : 0) + '%';
         }
 
-        var ticking = false;
-        function onScroll() {
-            if (!ticking) {
-                window.requestAnimationFrame(function () { update(); ticking = false; });
-                ticking = true;
-            }
-        }
-
+        onScrollTick(update);
         update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
+    })();
 
-        /* Images loading in changes page layout after the fact — re-run
-           once each one settles so positions (and thus reveal state)
-           stay accurate instead of drifting from what's on screen. */
-        document.querySelectorAll('img').forEach(function (img) {
-            if (!img.complete) img.addEventListener('load', onScroll, { once: true });
-        });
-    }
-
-    /* ---- top scroll-progress thread ------------------------------------ */
-    function initProgress() {
-        var bar = document.querySelector('.scroll-progress');
-        if (!bar) return;
-
-        var ticking = false;
-        function update() {
-            var doc = document.documentElement;
-            var max = doc.scrollHeight - doc.clientHeight;
-            var pct = max > 0 ? (doc.scrollTop / max) * 100 : 0;
-            bar.style.width = pct + '%';
-            ticking = false;
-        }
-        function onScroll() {
-            if (!ticking) {
-                window.requestAnimationFrame(update);
-                ticking = true;
-            }
-        }
-        update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-    }
-
-    /* ---- floating back-to-top ------------------------------------------ */
-    function initBackToTop() {
-        var btn = document.querySelector('.back-to-top');
+    /* ------------------------------------------------------------------ */
+    /* Floating back-to-top                                                */
+    /* ------------------------------------------------------------------ */
+    (function backToTop() {
+        const btn = document.querySelector('.back-to-top');
         if (!btn) return;
+        const THRESHOLD = 480;
 
-        function onScroll() {
-            btn.classList.toggle('visible', window.scrollY > 500);
+        function update() {
+            btn.classList.toggle('visible', (window.scrollY || 0) > THRESHOLD);
         }
-        onScroll();
-        window.addEventListener('scroll', onScroll, { passive: true });
 
         btn.addEventListener('click', function (e) {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
         });
-    }
 
-    /* ---- lightbox -------------------------------------------------------
-       Any <img class="lightbox-trigger"> opens an enlarged view on click. */
-    function initLightbox() {
-        var triggers = Array.prototype.slice.call(document.querySelectorAll('.lightbox-trigger'));
+        onScrollTick(update);
+        update();
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* Lightbox                                                             */
+    /*                                                                     */
+    /* One shared overlay for the whole page, built the first time it's    */
+    /* needed rather than hand-written into every page that wants it -- a  */
+    /* page opts in purely by putting .lightbox-trigger on an image.        */
+    /* ------------------------------------------------------------------ */
+    (function lightbox() {
+        const triggers = document.querySelectorAll('.lightbox-trigger');
         if (!triggers.length) return;
 
-        var overlay = document.createElement('div');
-        overlay.className = 'lightbox-overlay';
-        overlay.innerHTML =
-            '<button type="button" class="lightbox-close" aria-label="Close image">&times;</button>' +
-            '<img alt="">';
-        document.body.appendChild(overlay);
-
-        var img = overlay.querySelector('img');
-        var closeBtn = overlay.querySelector('.lightbox-close');
-        var lastFocused = null;
+        let overlay = document.querySelector('.lightbox-overlay');
+        let img, closeBtn;
+        if (overlay) {
+            img = overlay.querySelector('img');
+            closeBtn = overlay.querySelector('.lightbox-close');
+        } else {
+            overlay = document.createElement('div');
+            overlay.className = 'lightbox-overlay';
+            img = document.createElement('img');
+            img.alt = '';
+            closeBtn = document.createElement('button');
+            closeBtn.className = 'lightbox-close';
+            closeBtn.type = 'button';
+            closeBtn.setAttribute('aria-label', 'Close');
+            closeBtn.textContent = '\u00D7';
+            overlay.appendChild(img);
+            overlay.appendChild(closeBtn);
+            document.body.appendChild(overlay);
+        }
 
         function open(src, alt) {
-            lastFocused = document.activeElement;
             img.src = src;
             img.alt = alt || '';
             overlay.classList.add('open');
-            closeBtn.focus();
+            document.body.style.overflow = 'hidden';
         }
         function close() {
             overlay.classList.remove('open');
-            img.src = '';
-            if (lastFocused && lastFocused.focus) lastFocused.focus();
+            document.body.style.overflow = '';
         }
 
         triggers.forEach(function (t) {
             t.addEventListener('click', function () {
-                open(t.currentSrc || t.src, t.alt);
+                // A trigger can point at a bigger version of itself via
+                // data-full (a thumbnail opening onto the full picture)
+                // without that data attribute, the image's own src is
+                // what opens.
+                const full = t.getAttribute('data-full') || t.src || t.getAttribute('href');
+                if (full) open(full, t.alt || '');
             });
         });
-
+        closeBtn.addEventListener('click', close);
         overlay.addEventListener('click', function (e) {
             if (e.target === overlay) close();
         });
-        closeBtn.addEventListener('click', close);
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && overlay.classList.contains('open')) close();
         });
-    }
+    })();
 
-    /* ---- cursor-tracked push-tilt (hover) --------------------------------
-       .tilt-hover computes a small perspective tilt from the pointer's
-       position inside the element and pushes the opposite way — hover
-       near the left edge and it leans right, near the bottom and it
-       leans up, so it reads as being "pushed" from wherever the cursor
-       is rather than tilting the same fixed way every time. rAF-
-       throttled so a fast mouse can't queue up more style writes than
-       the browser can paint. (.glow-hover has nothing to set up here —
-       it's a plain CSS :hover/:focus-within brighten now.) */
-    function initTiltHover() {
-        var tiltEls = Array.prototype.slice.call(document.querySelectorAll('.tilt-hover'));
-        if (reduceMotion || !tiltEls.length) return;
-
-        function bindTilt(el) {
-            var maxDeg = 9;
-            var frame = null, rotX = 0, rotY = 0;
-            function apply() {
-                el.style.transform = 'perspective(600px) rotateX(' + rotX.toFixed(2) +
-                    'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
-                frame = null;
-            }
-            el.addEventListener('mousemove', function (e) {
-                var rect = el.getBoundingClientRect();
-                var px = (e.clientX - rect.left) / rect.width - 0.5;
-                var py = (e.clientY - rect.top) / rect.height - 0.5;
-                rotX = -py * maxDeg * 2;
-                rotY = px * maxDeg * 2;
-                if (!frame) frame = window.requestAnimationFrame(apply);
-            });
-            el.addEventListener('mouseleave', function () {
-                rotX = 0; rotY = 0;
-                el.style.transform = 'perspective(600px) rotateX(0deg) rotateY(0deg)';
-            });
-        }
-
-        tiltEls.forEach(bindTilt);
-    }
-
-    /* ---- soothing wave glow (always on) ------------------------------------
-       Builds one .dye-layer + .dye-blob pair per .dye-hover element. The
-       blob's ring shape and its bright crest both come from CSS (the
-       conic-gradient plus the mask that carves out a band the shape of
-       the card's own rounded rectangle); all this does is nudge the
-       gradient's --dye-angle custom property forward a small amount on
-       a slow timer, which is what makes the bright crest crawl smoothly
-       around that band rather than sit still. Updating --dye-angle
-       forces the browser to repaint .dye-blob's gradient and re-run
-       .dye-layer's blur on the result (a changing background can't ride
-       the compositor the way a transform can), so this deliberately
-       does that on a ~90ms timer rather than every animation frame —
-       at this rotation speed the jump between steps is far too small
-       to see, but it cuts the repaint work to a small fraction of what
-       60fps would cost. Under prefers-reduced-motion the ring is still
-       inserted (so it's still visible) but --dye-angle is left at its
-       CSS default and never updated, so the crest holds at one fixed
-       spot instead of travelling. */
-    function initDyeField() {
-        var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
-        if (!hosts.length) return;
-
-        var DEGREES_PER_MS = 360 / 16000; // one slow, smooth lap every ~16s
-        var STEP_MS = 90;                 // how often --dye-angle actually updates
-
-        hosts.forEach(function (host) {
-            var layer = document.createElement('div');
-            layer.className = 'dye-layer';
-            var blob = document.createElement('div');
-            blob.className = 'dye-blob';
-            layer.appendChild(blob);
-            // Behind the card's own in-flow content regardless of DOM
-            // order (see the z-index: -1 rule), but inserted first anyway
-            // so the source order matches the paint order for anyone
-            // reading the markup later.
-            host.insertBefore(layer, host.firstChild);
-            if (reduceMotion) return;
-
-            var angle = Math.random() * 360; // each card starts its crest at a different spot
-
-            window.setInterval(function () {
-                angle = (angle + STEP_MS * DEGREES_PER_MS) % 360;
-                blob.style.setProperty('--dye-angle', angle.toFixed(2) + 'deg');
-            }, STEP_MS);
-        });
-    }
-
-    /* ---- ambient ember light ---------------------------------------------
-       A single .ember-field div drifts a soft radial light toward the
-       cursor. Position eases toward the pointer each frame (a simple lerp)
-       rather than snapping straight to it, so it reads as something with
-       a little weight — an ember drifting on its own air currents, not a
-       spotlight glued to the mouse. */
-    function initEmberField() {
-        var field = document.querySelector('.ember-field');
-        if (!field || reduceMotion) return;
-
-        var targetX = 0, targetY = 0, curX = 0, curY = 0, raf = null;
-
-        function tick() {
-            curX += (targetX - curX) * 0.08;
-            curY += (targetY - curY) * 0.08;
-            field.style.setProperty('--ex', curX.toFixed(1) + 'px');
-            field.style.setProperty('--ey', curY.toFixed(1) + 'px');
-
-            if (Math.abs(targetX - curX) > 0.5 || Math.abs(targetY - curY) > 0.5) {
-                raf = window.requestAnimationFrame(tick);
-            } else {
-                raf = null;
-            }
-        }
-
-        window.addEventListener('mousemove', function (e) {
-            targetX = e.clientX - window.innerWidth / 2;
-            targetY = e.clientY - window.innerHeight / 2;
-            if (!raf) raf = window.requestAnimationFrame(tick);
-        }, { passive: true });
-    }
-
-    /* ---- scroll parallax drift --------------------------------------- */
-    function initParallax() {
-        var els = Array.prototype.slice.call(document.querySelectorAll('.parallax'));
-        if (!els.length || reduceMotion) return;
-
-        var items = els.map(function (el) {
-            var speed = parseFloat(el.getAttribute('data-speed'));
-            return { el: el, speed: isNaN(speed) ? 0.2 : speed };
-        });
+    /* ------------------------------------------------------------------ */
+    /* pop-in-as-you-scroll                                                 */
+    /*                                                                     */
+    /* No class ever gets toggled here -- opacity is set directly, as a    */
+    /* live number recomputed from where the element actually sits on      */
+    /* screen right now, so it always matches the scrollbar exactly        */
+    /* instead of playing a fixed-length transition once and then          */
+    /* drifting out of sync with it.                                       */
+    /* ------------------------------------------------------------------ */
+    (function popIn() {
+        const els = document.querySelectorAll('.pop-in');
+        if (!els.length) return;
+        if (reduceMotion) { els.forEach(function (el) { el.style.opacity = '1'; }); return; }
 
         function update() {
-            var mid = window.innerHeight / 2;
-            items.forEach(function (item) {
-                var rect = item.el.getBoundingClientRect();
-                var offset = (mid - (rect.top + rect.height / 2)) * item.speed;
-                item.el.style.transform = 'translateY(' + offset.toFixed(1) + 'px)';
+            const vh = window.innerHeight;
+            els.forEach(function (el) {
+                const r = el.getBoundingClientRect();
+                // Dim below 88% of the viewport, fully in by 55% of it --
+                // a band comfortably above the fold rather than the very
+                // bottom edge, so it never sits invisible on a short page.
+                const bottom = vh * 0.88;
+                const top = vh * 0.55;
+                const t = (bottom - r.top) / (bottom - top);
+                el.style.opacity = String(Math.max(0, Math.min(1, t)));
             });
         }
 
-        var ticking = false;
-        function onScroll() {
-            if (!ticking) {
-                window.requestAnimationFrame(function () { update(); ticking = false; });
-                ticking = true;
-            }
-        }
-
+        onScrollTick(update);
         update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-    }
+    })();
 
-    /* ---- scroll-scrubbed text glow ----------------------------------------
-       Splits each .reveal-text element into one <span class="word"> per
-       word (plain text only — see the CSS comment for why) and brightens
-       them in sequence as the block travels through the reveal band. Same
-       scrub-not-trigger philosophy as initPopIn above: this is recomputed
-       from scratch every frame from the element's live position, never a
-       one-shot animation, so scrolling back up dims words back down. */
-    function initRevealText() {
-        var blocks = Array.prototype.slice.call(document.querySelectorAll('.reveal-text'));
+    /* ------------------------------------------------------------------ */
+    /* scroll-scrubbed text glow (.reveal-text)                             */
+    /*                                                                     */
+    /* Split once into one <span class="word"> per word, then scrubbed      */
+    /* exactly like .pop-in above -- each word's own position decides its   */
+    /* own opacity, so the sequence reads left-to-right, line-by-line,      */
+    /* purely because that is the order the words already sit in.           */
+    /* ------------------------------------------------------------------ */
+    (function revealText() {
+        const blocks = document.querySelectorAll('.reveal-text');
         if (!blocks.length) return;
 
-        var entries = blocks.map(function (block) {
-            var pieces = block.textContent.split(/(\s+)/);
+        const words = [];
+        blocks.forEach(function (block) {
+            if (block.dataset.revealSplit) return;
+            block.dataset.revealSplit = '1';
+            const text = block.textContent;
             block.textContent = '';
-            pieces.forEach(function (chunk) {
-                if (chunk === '') return;
-                if (/^\s+$/.test(chunk)) {
-                    block.appendChild(document.createTextNode(chunk));
-                } else {
-                    var span = document.createElement('span');
-                    span.className = 'word';
-                    span.textContent = chunk;
-                    block.appendChild(span);
-                }
+            text.split(/(\s+)/).forEach(function (piece) {
+                if (piece.trim() === '') { block.appendChild(document.createTextNode(piece)); return; }
+                const span = document.createElement('span');
+                span.className = 'word';
+                span.textContent = piece;
+                block.appendChild(span);
+                words.push(span);
             });
-            return { el: block, words: Array.prototype.slice.call(block.querySelectorAll('.word')) };
         });
-
-        if (reduceMotion) {
-            entries.forEach(function (entry) {
-                entry.words.forEach(function (w) { w.style.opacity = 1; });
-            });
-            return;
-        }
+        if (!words.length) return;
+        if (reduceMotion) { words.forEach(function (w) { w.style.opacity = '1'; }); return; }
 
         function update() {
-            var vh = window.innerHeight;
-            /* Band is 1/6 of the screen tall, and fully resolved once
-               the block's TOP reaches the bottom 1/4 of the screen
-               (i.e. 3/4 of the way down). This is deliberately based
-               only on screen position, not the block's own height —
-               tying it to rect.height instead (as an earlier version
-               did) made tall blocks finish revealing while still up
-               around the middle of the screen, since a lot of scroll
-               distance passes between a tall block's top and bottom. */
-            var revealEnd = vh * 0.75;
-            var revealStart = revealEnd + vh / 6;
-
-            entries.forEach(function (entry) {
-                var rect = entry.el.getBoundingClientRect();
-                var progress = (revealStart - rect.top) / (revealStart - revealEnd);
-                if (progress < 0) progress = 0;
-                else if (progress > 1) progress = 1;
-
-                var lit = progress * entry.words.length;
-                entry.words.forEach(function (word, i) {
-                    var diff = lit - i;
-                    var op;
-                    if (diff <= 0) op = 0.25;
-                    else if (diff >= 1) op = 1;
-                    else op = 0.25 + diff * 0.75;
-                    word.style.opacity = op;
-                });
+            const vh = window.innerHeight;
+            const bottom = vh * 0.88;
+            const top = vh * 0.4;
+            words.forEach(function (w) {
+                const r = w.getBoundingClientRect();
+                const t = (bottom - r.top) / (bottom - top);
+                w.style.opacity = String(0.25 + Math.max(0, Math.min(1, t)) * 0.75);
             });
         }
 
-        var ticking = false;
-        function onScroll() {
-            if (!ticking) {
-                window.requestAnimationFrame(function () { update(); ticking = false; });
-                ticking = true;
-            }
+        onScrollTick(update);
+        update();
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* scroll parallax drift (.parallax, optional data-speed)               */
+    /* ------------------------------------------------------------------ */
+    (function parallax() {
+        const els = document.querySelectorAll('.parallax');
+        if (!els.length || reduceMotion) return;
+
+        function update() {
+            const vh = window.innerHeight;
+            els.forEach(function (el) {
+                const speed = parseFloat(el.getAttribute('data-speed')) || 0.2;
+                const r = el.getBoundingClientRect();
+                const center = r.top + r.height / 2;
+                const offset = (center - vh / 2) * speed;
+                el.style.transform = 'translateY(' + offset.toFixed(1) + 'px)';
+            });
         }
 
+        onScrollTick(update);
         update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-    }
+    })();
 
-    function init() {
-        initGamesMenu();
-        initStickyOffset();
-        initPopIn();
-        initProgress();
-        initBackToTop();
-        initLightbox();
-        initTiltHover();
-        initEmberField();
-        initDyeField();
-        initParallax();
-        initRevealText();
-    }
+    /* ------------------------------------------------------------------ */
+    /* cursor-tracked tilt / "push" (.tilt-hover)                           */
+    /*                                                                     */
+    /* Per-element, and only while the cursor is actually over that        */
+    /* element -- a lean away from whichever side the cursor is pushing    */
+    /* from, on both axes at once.                                         */
+    /* ------------------------------------------------------------------ */
+    (function tiltHover() {
+        if (reduceMotion) return;
+        const els = document.querySelectorAll('.tilt-hover');
+        if (!els.length) return;
+        const MAX_DEG = 10;
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+        els.forEach(function (el) {
+            el.addEventListener('mousemove', function (e) {
+                const r = el.getBoundingClientRect();
+                const px = (e.clientX - r.left) / r.width;   // 0..1 across the element
+                const py = (e.clientY - r.top) / r.height;   // 0..1 down the element
+                // A push from the left (px near 0) leans the element right
+                // (positive rotateY); a push from below (py near 1) leans
+                // it up (positive rotateX).
+                const rotY = (px - 0.5) * 2 * MAX_DEG;
+                const rotX = (0.5 - py) * 2 * MAX_DEG;
+                el.style.transform =
+                    'perspective(600px) rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+            });
+            el.addEventListener('mouseleave', function () {
+                el.style.transform = 'perspective(600px) rotateX(0deg) rotateY(0deg)';
+            });
+        });
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* grand wave glow (.dye-hover)                                         */
+    /*                                                                     */
+    /* .dye-layer/.dye-blob are built here rather than hand-written per     */
+    /* card -- a page opts in with nothing but the one class. --dye-angle   */
+    /* is stepped on a timer rather than every animation frame: the         */
+    /* background it drives has to be fully repainted and re-blurred on     */
+    /* every change (see the stylesheet), so this is the throttle that      */
+    /* comment describes. Reduced motion draws the ring once, at a fixed    */
+    /* angle, and never steps it again.                                     */
+    /* ------------------------------------------------------------------ */
+    (function dyeHover() {
+        const els = document.querySelectorAll('.dye-hover');
+        if (!els.length) return;
+
+        const blobs = [];
+        els.forEach(function (el) {
+            let layer = el.querySelector('.dye-layer');
+            if (!layer) {
+                layer = document.createElement('div');
+                layer.className = 'dye-layer';
+                const blob = document.createElement('div');
+                blob.className = 'dye-blob';
+                layer.appendChild(blob);
+                el.insertBefore(layer, el.firstChild);
+            }
+            const blob = layer.querySelector('.dye-blob');
+            if (blob) blobs.push(blob);
+        });
+        if (!blobs.length || reduceMotion) return;
+
+        let angle = 0;
+        setInterval(function () {
+            angle = (angle + 2) % 360;
+            blobs.forEach(function (b) { b.style.setProperty('--dye-angle', angle + 'deg'); });
+        }, 90);
+    })();
+
+    /* ------------------------------------------------------------------ */
+    /* ambient ember light (.ember-field)                                   */
+    /*                                                                     */
+    /* A single page-wide field, drifting its glow toward wherever the     */
+    /* cursor currently is. Reduced motion is already handled entirely in   */
+    /* CSS (the field simply doesn't render), so there is nothing to guard  */
+    /* here beyond not bothering to track the cursor for nothing.           */
+    /* ------------------------------------------------------------------ */
+    (function emberField() {
+        const field = document.querySelector('.ember-field');
+        if (!field || reduceMotion) return;
+
+        let raf = null;
+        let tx = 0, ty = 0;
+        document.addEventListener('mousemove', function (e) {
+            // Drift toward the cursor's offset from the centre of the
+            // viewport, damped well short of a 1:1 follow -- an ambient
+            // pull, not a spotlight glued to the pointer.
+            tx = (e.clientX - window.innerWidth / 2) * 0.15;
+            ty = (e.clientY - window.innerHeight / 2) * 0.15;
+            if (raf) return;
+            raf = requestAnimationFrame(function () {
+                field.style.setProperty('--ex', tx.toFixed(1) + 'px');
+                field.style.setProperty('--ey', ty.toFixed(1) + 'px');
+                raf = null;
+            });
+        }, { passive: true });
+    })();
+
 })();
 
     </script>
