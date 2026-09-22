@@ -1781,11 +1781,26 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .hero-panel .hname { font-size: 18px; color: var(--cream); }
 .hero-panel .hsub { font-size: 13px; color: #9a9a9a; margin-top: 2px; }
 
-.bar { height: 12px; border-radius: 999px; background: #262626; overflow: hidden; margin-top: 7px; }
+.bar { position: relative; height: 12px; border-radius: 999px; background: #262626; overflow: hidden; margin-top: 7px; }
 .bar > i { display: block; height: 100%; border-radius: 999px; transition: width .35s ease; }
 .bar.hp > i { background: linear-gradient(90deg, #8c2f28, #d2635a); }
 .bar.enemy > i { background: linear-gradient(90deg, #5a3ea8, #9a7bff); }
 .barlabel { display: flex; justify-content: space-between; font-size: 12px; color: #9a9a9a; margin-top: 5px; }
+
+/* Bonus health -- a Health Up drunk at full health. It sits on top rather
+   than raising the max, so it is drawn on top too: a bright band laid over
+   the right-hand end of the same bar, gold against the hp bar's red, the
+   width it takes up shrinking as it is the first thing spent on the next
+   hit. Once it is gone the strip is gone and the bar underneath is exactly
+   the ordinary hp bar it always was. */
+.bar .bonus-fill {
+    position: absolute; top: 0; right: 0; height: 100%;
+    border-radius: 0 999px 999px 0;
+    background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
+    transition: width .35s ease;
+}
+.bonus-tag { color: var(--gold-bright); font-weight: 600; margin-left: 6px; white-space: nowrap; }
 
 .stat-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
 .chip {
@@ -2939,12 +2954,17 @@ body.holding .modal-back[data-key="pending"] .modal .btn {
 .mate .mname { flex: 1; min-width: 0; color: var(--cream, #efe6d4); }
 .mate.turn { border-color: var(--gold, #b8791f); }
 .mate .mbar {
+    position: relative;
     width: 54px; height: 6px; border-radius: 999px;
     background: #2a2320; overflow: hidden; flex: 0 0 auto;
 }
 .mate .mbar i {
     display: block; height: 100%;
     background: linear-gradient(90deg, #8c2f28, #d2635a);
+}
+.mate .mbar .bonus-fill {
+    position: absolute; top: 0; right: 0; height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-bright));
 }
 
 /* ---- the finish of a fight ---------------------------------------------
@@ -6203,7 +6223,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             cls: null,
             ready: false,
             pos: D.START_INDEX,
-            hp: 0, maxHp: 0,
+            hp: 0, maxHp: 0, bonusHp: 0,
             coins: R.startingCoins,
             energy: R.startingEnergy,
             inventory: [],
@@ -6275,6 +6295,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             const cls = D.CLASSES[p.cls];
             p.maxHp = cls.hp;
             p.hp = cls.hp;
+            p.bonusHp = 0;
             p.energy = R.startingEnergy;
 
             const w = { uid: uid('it'), id: cls.starterWeapon, uses: D.ITEMS[cls.starterWeapon].uses };
@@ -6823,6 +6844,7 @@ body.modal-cover #board * { animation-play-state: paused; }
     function sendToStart(state, p) {
         p.pos = D.START_INDEX;
         p.hp = p.maxHp;
+        p.bonusHp = 0;
         p.energy = R.startingEnergy;
         p.buffs = [];
     }
@@ -7211,6 +7233,19 @@ body.modal-cover #board * { animation-play-state: paused; }
        instead of their health, coin for point.
        -------------------------------------------------------------------- */
 
+    /* Bonus health -- the shield a Health Up grants when it is drunk at
+       full health -- sits on top of maxHp rather than raising it, so it
+       goes first: every point taken off a player comes out of bonusHp
+       before it touches hp. Once bonusHp is spent the player is exactly as
+       fragile as their card says, no better and no worse than before they
+       ever drank the potion. */
+    function loseHp(state, target, amount) {
+        if (amount <= 0) return;
+        const fromBonus = Math.min(target.bonusHp || 0, amount);
+        target.bonusHp = (target.bonusHp || 0) - fromBonus;
+        target.hp = Math.max(0, target.hp - (amount - fromBonus));
+    }
+
     function damagePlayer(state, target, raw, minDamage) {
         let dealt = Math.max(0, raw - totalDefence(state, target));
         if (minDamage && dealt < minDamage) dealt = minDamage;
@@ -7238,7 +7273,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             }
             const spill = dealt - paid;
             if (spill > 0) {
-                target.hp = Math.max(0, target.hp - spill);
+                loseHp(state, target, spill);
                 log(state, target.name + (paid > 0
                         ? (target.coins > 0
                             ? ' takes the other ' + spill + ' as damage.'
@@ -7248,7 +7283,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             return dealt;
         }
 
-        target.hp = Math.max(0, target.hp - dealt);
+        loseHp(state, target, dealt);
         return dealt;
     }
 
@@ -7346,7 +7381,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const defence = totalDefence(state, p);
         const dealt = m => Math.max(R.enemyMinDamage, m.damage - defence);
 
-        const lethal = affordable.filter(m => dealt(m) >= p.hp)
+        const lethal = affordable.filter(m => dealt(m) >= p.hp + (p.bonusHp || 0))
             .sort((x, y) => x.energy - y.energy);
         if (lethal.length) return lethal[0];
 
@@ -7526,9 +7561,9 @@ body.modal-cover #board * { animation-play-state: paused; }
                 break;
             case 'health': {
                 if (p.hp >= p.maxHp) {
-                    p.maxHp += def.value;
-                    p.hp += def.value;
-                    log(state, p.name + ' raises their maximum health to ' + p.maxHp + '.', 'heal');
+                    p.bonusHp = (p.bonusHp || 0) + def.value;
+                    log(state, p.name + ' gains ' + def.value + ' bonus health (' +
+                               p.bonusHp + ' on top of ' + p.maxHp + ').', 'heal');
                 } else {
                     const before = p.hp;
                     p.hp = Math.min(p.maxHp, p.hp + def.value);
@@ -7596,7 +7631,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             p.steaks.raw -= 1;
             const roll = throwDie(state, p.name, 'raw steak');
             if (roll === R.foodPoisoningRoll) {
-                p.hp = Math.max(0, p.hp - R.foodPoisoningLoss);
+                loseHp(state, p, R.foodPoisoningLoss);
                 log(state, p.name + ' rolled a 3 — food poisoning! −' +
                            R.foodPoisoningLoss + ' HP.', 'death');
                 if (p.hp <= 0) collapse(state, p, 'food poisoning');
@@ -8413,14 +8448,16 @@ body.modal-cover #board * { animation-play-state: paused; }
             : Math.max(0.05, 0.45 - res.margin * 0.4);
     }
 
-    // A character as the fight simulator wants them.
+    // A character as the fight simulator wants them. Bonus health already in
+    // hand counts here -- it is real health, just first in line to be spent
+    // -- even though a potion still sitting unused in the pack does not.
     function asFighter(state, p, hpOverride) {
         const cls = D.CLASSES[p.cls];
         const wDef = itemDef(E.equippedWeapon(p));
         const moves = cls.moves.slice();
         if (wDef && wDef.extraMove && wDef.extraMove.damage) moves.push(wDef.extraMove);
         return {
-            hp: hpOverride === undefined ? p.hp : hpOverride,
+            hp: hpOverride === undefined ? p.hp + (p.bonusHp || 0) : hpOverride,
             moves: moves,
             bonus: E.totalAttackBonus(p),
             defence: E.totalDefence(state, p),
@@ -8599,7 +8636,8 @@ body.modal-cover #board * { animation-play-state: paused; }
 
     // The biggest heal in hand, but only counted for what it can actually put
     // back -- a 50 card on a character missing 10 health is mostly wasted,
-    // though it does raise the ceiling when they are already full.
+    // though at full health it is never wasted at all: it becomes bonus
+    // health instead, worth every point.
     function bestHeal(p) {
         let best = null, bestV = 0;
         heldCards(p).forEach(c => {
@@ -8702,6 +8740,12 @@ body.modal-cover #board * { animation-play-state: paused; }
         return Math.max(0, move.damage + bonus - E.totalDefence(state, p));
     }
 
+    // Bonus health takes a hit before hp does, so anywhere the bot is
+    // asking "would this kill me" it has to count bonus health as real
+    // health -- a shielded player is not actually dying just because their
+    // raw hp looks low.
+    function effHp(p) { return p.hp + (p.bonusHp || 0); }
+
     function foeHealth(state, b) {
         if (b.kind === 'pve') return b.enemyHp;
         const other = E.player(state, b.turn === 'a' ? b.bId : b.aId);
@@ -8734,10 +8778,10 @@ body.modal-cover #board * { animation-play-state: paused; }
                 // next blow would finish you and the barrier would stop it;
                 // nothing at all if you would die anyway or were never in
                 // danger.
-                const fatal = threat >= p.hp;
-                const saves = threat - extra.shield < p.hp;
+                const fatal = threat >= effHp(p);
+                const saves = threat - extra.shield < effHp(p);
                 score = (fatal && saves) ? 900
-                      : (p.hp <= threat * 2 ? Math.min(extra.shield, threat) * 0.8 : 0);
+                      : (effHp(p) <= threat * 2 ? Math.min(extra.shield, threat) * 0.8 : 0);
             } else if (extra && extra.attackAgain) {
                 // Smoke Explosion hands the turn straight back, so it is worth
                 // its own damage plus half of whatever follows it.
@@ -8781,17 +8825,17 @@ body.modal-cover #board * { animation-play-state: paused; }
         if (b.phase === 'auto') return { action: 'battleAuto', args: {} };
 
         const threat = incomingBlow(state, b, p);
-        const dying = threat > 0 && p.hp <= threat;
+        const dying = threat > 0 && effHp(p) <= threat;
 
         // About to be knocked out: eat, drink, or put something in the way.
         if (dying) {
-            if (p.steaks.cooked > 0 && p.hp + D.RULES.searedSteakHeal > threat) {
+            if (p.steaks.cooked > 0 && effHp(p) + D.RULES.searedSteakHeal > threat) {
                 return { action: 'eatSteak', args: { type: 'cooked' } };
             }
             const heal = bestHeal(p);
-            if (heal && p.hp + heal.def.value > threat) return useCard(heal);
+            if (heal && effHp(p) + heal.def.value > threat) return useCard(heal);
             const guard = bestOf(p, 'defence');
-            if (guard && guard.def.value >= threat - p.hp) return useCard(guard);
+            if (guard && guard.def.value >= threat - effHp(p)) return useCard(guard);
         }
 
         if (b.phase === 'roll') return { action: 'battleRoll', args: {} };
@@ -11944,7 +11988,8 @@ body.modal-cover #board * { animation-play-state: paused; }
             return '<div class="token' + (p.id === NET.PID ? ' me' : '') +
                 (cur && cur.id === p.id ? ' turn' : '') +
                 (moving ? ' walking' : '') + '" title="' +
-                esc(p.name) + ' — ' + esc(c.name) + ' — ' + p.hp + '/' + p.maxHp + ' HP" ' +
+                esc(p.name) + ' — ' + esc(c.name) + ' — ' + p.hp + '/' + p.maxHp + ' HP' +
+                (p.bonusHp ? ' (+' + p.bonusHp + ' bonus)' : '') + '" ' +
                 'style="background-image:url(\'' + esc(c.art) + '\')"></div>';
         }).join('');
     }
@@ -12961,7 +13006,8 @@ body.modal-cover #board * { animation-play-state: paused; }
                         '<span class="mname">' + esc(x.name) +
                             (x.id === p.id ? ' (you)' : '') + '</span>' +
                         '<span class="mbar"><i style="width:' +
-                            Math.max(0, Math.round(x.hp / x.maxHp * 100)) + '%"></i></span>' +
+                            Math.max(0, Math.round(x.hp / x.maxHp * 100)) + '%"></i>' +
+                            bonusFillHtml(x.bonusHp, x.maxHp) + '</span>' +
                         '<span>' + x.keyFragments + '/3</span>' +
                     '</div>').join('') +
                 '</div>' +
@@ -12977,6 +13023,20 @@ body.modal-cover #board * { animation-play-state: paused; }
                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
             });
         });
+    }
+
+    // Bonus health -- a Health Up drunk at full health -- is drawn as a gold
+    // band laid over the right-hand end of the ordinary hp bar, sized off
+    // maxHp so it reads as "this much extra" rather than moving the red fill
+    // underneath it. It is the first thing a hit spends, so it is the first
+    // thing to shrink.
+    function bonusFillHtml(bonus, max) {
+        if (!bonus || !max) return '';
+        const pct = Math.min(100, Math.max(0, Math.round(bonus / max * 100)));
+        return '<i class="bonus-fill" style="width:' + pct + '%"></i>';
+    }
+    function bonusTagHtml(bonus) {
+        return bonus ? '<span class="bonus-tag">+' + bonus + ' bonus</span>' : '';
     }
 
     // The open block. Health, defence and everything carried -- the same for
@@ -13001,8 +13061,10 @@ body.modal-cover #board * { animation-play-state: paused; }
             '</div>' +
             '<div class="me-hp">' +
                 '<div class="bar hp"><i style="width:' +
-                    Math.max(0, Math.round(x.hp / x.maxHp * 100)) + '%"></i></div>' +
-                '<div class="barlabel"><span>' + x.hp + ' / ' + x.maxHp + ' HP</span>' +
+                    Math.max(0, Math.round(x.hp / x.maxHp * 100)) + '%"></i>' +
+                    bonusFillHtml(x.bonusHp, x.maxHp) + '</div>' +
+                '<div class="barlabel"><span>' + x.hp + ' / ' + x.maxHp + ' HP' +
+                    bonusTagHtml(x.bonusHp) + '</span>' +
                     '<span>Defence ' + E.totalDefence(S, x) + '</span></div>' +
             '</div>' +
             '<div class="me-stats">' +
@@ -14549,10 +14611,10 @@ body.modal-cover #board * { animation-play-state: paused; }
             '</div>' +
             '<div class="battle-top">' +
                 sideHtml('<img src="' + esc(D.CLASSES[a.cls].art) + '" alt="' + esc(a.name) +
-                         '">', a.hp, a.maxHp, a.name, 'hp', 'side-a', a.energy) +
+                         '">', a.hp, a.maxHp, a.name, 'hp', 'side-a', a.energy, a.bonusHp) +
                 '<div class="battle-vs">VS</div>' +
                 sideHtml(foePortrait, foeHp, foeMax, foe.name, isPvp ? 'hp' : 'enemy',
-                         'side-b', isPvp ? foe.energy : b.enemyEnergy) +
+                         'side-b', isPvp ? foe.energy : b.enemyEnergy, isPvp ? foe.bonusHp : 0) +
             '</div>' +
             // The monster's own stat card, as it is dealt on the table.
             (isPvp ? '' : '<div class="battle-statcard">' + statCardHtml({
@@ -14823,13 +14885,14 @@ body.modal-cover #board * { animation-play-state: paused; }
             '<span class="elabel" style="margin:0 0 0 5px">' + energy + '</span></div>';
     }
 
-    function sideHtml(portrait, hp, max, name, barClass, energyKey, energy) {
+    function sideHtml(portrait, hp, max, name, barClass, energyKey, energy, bonus) {
         return '<div class="battle-side">' +
             portrait +
             '<div class="bname">' + esc(name) + '</div>' +
             '<div class="bar ' + barClass + '"><i style="width:' +
-                Math.max(0, Math.round(hp / max * 100)) + '%"></i></div>' +
-            '<div class="barlabel"><span>' + hp + ' / ' + max + '</span></div>' +
+                Math.max(0, Math.round(hp / max * 100)) + '%"></i>' +
+                bonusFillHtml(bonus, max) + '</div>' +
+            '<div class="barlabel"><span>' + hp + ' / ' + max + bonusTagHtml(bonus) + '</span></div>' +
             (energy === undefined ? '' : energyHtml(energyKey, energy)) +
             '</div>';
     }
