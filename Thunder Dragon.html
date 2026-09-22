@@ -18,10 +18,6 @@
 
     <meta name="description"
         content="Play Legend of Fenrirak™, The Thunder Dragon online with up to 6 players.">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Legend of Fenrirak | The Thunder Dragon — Play Online">
-    <meta property="og:description" content="Play Legend of Fenrirak™, The Thunder Dragon online with up to 6 players.">
-    <meta property="og:image" content="Fenrirak.png">
 
     <style>
 /* ==== site-nav.css ==== */
@@ -270,7 +266,6 @@
 .support-btn:hover {
     background: #f2c565;
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(232, 182, 77, 0.35);
 }
 
 /* Compact size, sits in the nav row to the right of the Games button. */
@@ -4408,26 +4403,6 @@ body.modal-cover #board * { animation-play-state: paused; }
 }
 
     </style>
-
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Game",
-        "name": "Legend of Fenrirak: The Thunder Dragon",
-        "url": "https://fenrirak.github.io/Legend-of-Fenrirak/Thunder%20Dragon.html",
-        "description": "Play Legend of Fenrirak™, The Thunder Dragon online with up to 6 players.",
-        "genre": "Board Game",
-        "numberOfPlayers": {
-            "@type": "QuantitativeValue",
-            "maxValue": 6
-        },
-        "isPartOf": {
-            "@type": "WebSite",
-            "name": "Legend of Fenrirak",
-            "url": "https://fenrirak.github.io/Legend-of-Fenrirak/index.html"
-        }
-    }
-    </script>
 
 </head>
 
@@ -11684,7 +11659,14 @@ body.modal-cover #board * { animation-play-state: paused; }
             markHolding();
             if (!tableHeld()) { drawGame(); return; }
             retireAnsweredPanel();
-            renderActions();
+            // NOT renderActions() here. This tick's only job is to notice the
+            // moment the table settles; nothing about the buttons changes
+            // while it hasn't, since neither "mine" nor "blocked" can flip
+            // mid-hold. Rebuilding them anyway, every 120ms, used to tear out
+            // and replace the pause/leave/end-game/guide buttons faster than
+            // a click's mousedown-to-mouseup could land on the same element
+            // -- which on a long bot turn is most of the turn -- so hovering
+            // them just flickered and nothing you pressed ever registered.
             holdRender();
         }, 120);
     }
@@ -15899,6 +15881,9 @@ import { initializeApp }
 import {
     getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, runTransaction
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {
+    getAuth, signInAnonymously, onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyB-97iZ8wtRynNvr678178hQdEtZSWrwwo",
@@ -15912,25 +15897,36 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 const E = window.LOF_ENGINE;
 
 /* ---------------------------------------------------------------------- */
-/* Local identity                                                          */
+/* Identity                                                                */
+/*                                                                         */
+/* A player's id used to be nothing more than a random string this        */
+/* browser made up and kept in localStorage -- which meant "proving" you   */
+/* owned a seat came down to a hash this same browser could compute for    */
+/* anybody's id, or a value you could paste over in DevTools and reload.   */
+/* Firestore Security Rules can only ever trust request.auth.uid -- an     */
+/* identity issued by Firebase itself, not a string the client invented -- */
+/* so PID is now that uid, from anonymous sign-in. It is still just "this  */
+/* browser" rather than a real account (no password, nothing to log into   */
+/* elsewhere), but it can no longer be copied or reassigned by editing     */
+/* storage: the rules on the server side check request.auth.uid directly,  */
+/* which nothing running in the page can forge.                            */
 /* ---------------------------------------------------------------------- */
-
-function localId() {
-    let id = localStorage.getItem('lof_pid');
-    if (!id) {
-        id = 'p_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-        localStorage.setItem('lof_pid', id);
-    }
-    return id;
-}
 
 function localName() { return localStorage.getItem('lof_name') || ''; }
 function setLocalName(n) { localStorage.setItem('lof_name', n); }
-const PID = localId();
+
+let PID = null;
+const ready = new Promise((resolve, reject) => {
+    onAuthStateChanged(auth, (user) => {
+        if (user) resolve(user.uid);
+    }, reject);
+    signInAnonymously(auth).catch(reject);
+});
 
 /* ---------------------------------------------------------------------- */
 /* Seat locks                                                              */
@@ -16049,6 +16045,7 @@ function clean(value) {
 }
 
 async function createRoom(name, opts) {
+    await ready;
     setLocalName(name);
     for (let attempt = 0; attempt < 8; attempt++) {
         const code = E.makeRoomCode();
@@ -16065,6 +16062,7 @@ async function createRoom(name, opts) {
 }
 
 async function joinRoom(code, name) {
+    await ready;
     setLocalName(name);
     code = String(code || '').trim().toUpperCase();
     if (!/^[A-Z]{5}$/.test(code)) throw new Error('Room codes are 5 letters, like ABCDE.');
@@ -16105,6 +16103,7 @@ async function roomExists(code) {
 /* ---------------------------------------------------------------------- */
 
 async function act(code, action, args) {
+    await ready;
     const fn = ACTIONS[action];
     if (!fn) throw new Error('Unknown action: ' + action);
     const ref = roomRef(code);
@@ -16151,410 +16150,541 @@ function subscribe(code, onState, onError) {
 }
 
 async function closeRoom(code) { await deleteDoc(roomRef(code)); }
-window.LOF_NET = {
-    PID, localName, setLocalName,
-    createRoom, joinRoom, roomExists, act, subscribe, closeRoom
-};
-window.dispatchEvent(new Event('lof-net-ready'));
+
+// The rest of the page treats window.LOF_NET as all-or-nothing (see the
+// 'lof-net-ready' listener in ui.js), so it is not created -- and PID is not
+// read -- until sign-in has actually produced a uid. If sign-in fails (for
+// instance, Anonymous auth is not enabled for this project in the Firebase
+// console), LOF_NET is simply never exposed and the page's own "Firestore
+// never arrived" fallback handles it, the same as being offline.
+ready.then((uid) => {
+    PID = uid;
+    window.LOF_NET = {
+        PID, localName, setLocalName,
+        createRoom, joinRoom, roomExists, act, subscribe, closeRoom
+    };
+    window.dispatchEvent(new Event('lof-net-ready'));
+}).catch((err) => {
+    console.error('Legend of Fenrirak: anonymous sign-in failed, online play is unavailable.', err);
+});
 
     </script>
 
     <script>
 /* ==== site-nav.js ==== */
 /* =========================================================================
-   Legend of Fenrirak — shared site navigation & scroll-experience kit.
-   site-nav.js
+   Legend of Fenrirak — nav bar behaviour + shared scroll-experience kit.
 
-   This file itself was lost; site-nav.css was not. It turned out to
-   document almost everything this needed to do -- property names
-   (--dye-angle, --ex/--ey), the markup each accent expects, even the
-   reasoning behind throttling the dye rotation -- closely enough to
-   rebuild against as a spec rather than a guess. Every section below is
-   independent and checks for its own element(s) before doing anything
-   else, so a page that only carries the plain nav bar (Home, the games
-   themselves) pays for none of the About/Creators accents, and a typo'd
-   class name simply leaves that one section inert rather than breaking
-   the rest of the page.
+   Every feature below checks for its own element before doing anything,
+   so pages that don't use a feature (Home, AfterShowdowns) are completely
+   unaffected — only About and Creators currently use the pop-in-on-scroll
+   animation, progress thread, back-to-top and lightbox.
+
+   Further down: a matching set of opt-in accents — a hover brighten and
+   push-tilt, an ambient cursor light, a soothing drifting glow, scroll
+   parallax, and a scroll-scrubbed text glow — following the exact same
+   rule.
    ========================================================================= */
 
 (function () {
     'use strict';
 
-    const reduceMotion = !!(window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    // Quick sanity check for testing: open DevTools > Console. If this
+    // line isn't there, the browser is running a different site-nav.js
+    // than the one you think it is (almost always a caching issue) —
+    // nothing below matters until that's fixed first.
+    if (window.console) console.log('[site-nav.js] loaded — build 2026-09-02e');
 
-    /* ------------------------------------------------------------------ */
-    /* One shared scroll ticker                                            */
-    /*                                                                     */
-    /* Several sections below need to know about every scroll event, and a */
-    /* handful of separate listeners each running their own                */
-    /* requestAnimationFrame would mean redundant reads of the same         */
-    /* scroll position several times over. This collects them into one,    */
-    /* declared first so every section after it can register with it.      */
-    /* ------------------------------------------------------------------ */
-    const tickers = [];
-    let ticking = false;
-    function onScrollTick(fn) { tickers.push(fn); }
-    function runTickers() {
-        tickers.forEach(function (fn) { fn(); });
-        ticking = false;
-    }
-    function requestTick() {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(runTickers);
-    }
-    window.addEventListener('scroll', requestTick, { passive: true });
-    window.addEventListener('resize', requestTick);
+    var reduceMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    /* ------------------------------------------------------------------ */
-    /* Games dropdown                                                       */
-    /*                                                                     */
-    /* Hovering already opens it wherever hovering means something --      */
-    /* that's plain CSS (:hover) and needs nothing from here. This only     */
-    /* has to cover the two things CSS can't: a tap on a touch screen, and  */
-    /* keeping aria-expanded honest for anyone using a keyboard or a        */
-    /* screen reader. :focus-within already shows the menu on focus, so     */
-    /* this just tracks .open (the tap case) and the attribute alongside    */
-    /* it, and closes on an outside click, a menu link being followed, or   */
-    /* Escape.                                                              */
-    /* ------------------------------------------------------------------ */
-    (function navDropdown() {
-        const groups = Array.prototype.slice.call(document.querySelectorAll('.nav-group'));
+    /* ---- Games dropdown (hover on desktop is CSS-only; this adds
+       tap/click toggling for touch screens, plus Escape to close) ------- */
+    function initGamesMenu() {
+        var groups = Array.prototype.slice.call(document.querySelectorAll('.nav-group'));
         if (!groups.length) return;
 
-        function closeAll() {
+        function closeAll(except) {
             groups.forEach(function (g) {
+                if (g === except) return;
                 g.classList.remove('open');
-                const t = g.querySelector('.nav-trigger');
+                var t = g.querySelector('.nav-trigger');
                 if (t) t.setAttribute('aria-expanded', 'false');
             });
         }
 
         groups.forEach(function (group) {
-            const trigger = group.querySelector('.nav-trigger');
+            var trigger = group.querySelector('.nav-trigger');
             if (!trigger) return;
-            trigger.setAttribute('aria-expanded', 'false');
 
             trigger.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const willOpen = !group.classList.contains('open');
-                closeAll();
-                if (willOpen) {
-                    group.classList.add('open');
-                    trigger.setAttribute('aria-expanded', 'true');
-                }
-            });
-
-            group.querySelectorAll('.nav-menu a').forEach(function (a) {
-                a.addEventListener('click', closeAll);
+                e.preventDefault();
+                var willOpen = !group.classList.contains('open');
+                closeAll(group);
+                group.classList.toggle('open', willOpen);
+                trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
             });
         });
 
-        document.addEventListener('click', closeAll);
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest || !e.target.closest('.nav-group')) closeAll(null);
+        });
+
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeAll();
+            if (e.key === 'Escape') closeAll(null);
         });
-    })();
+    }
 
-    /* ------------------------------------------------------------------ */
-    /* Top scroll-progress thread                                          */
-    /* ------------------------------------------------------------------ */
-    (function scrollProgress() {
-        const bar = document.querySelector('.scroll-progress');
+    /* ---- keep --topbar-h in sync, so each section's scroll-margin-top
+       clears the real bar height, whatever that is at the current
+       screen size ----------------------------------------------------- */
+    function initStickyOffset() {
+        var bar = document.querySelector('.topbar');
         if (!bar) return;
 
-        function update() {
-            const doc = document.documentElement;
-            const scrollable = doc.scrollHeight - doc.clientHeight;
-            const y = window.scrollY || doc.scrollTop || 0;
-            bar.style.width = (scrollable > 0 ? Math.min(100, (y / scrollable) * 100) : 0) + '%';
+        function measure() {
+            document.documentElement.style.setProperty('--topbar-h', bar.offsetHeight + 'px');
         }
 
-        onScrollTick(update);
+        measure();
+        window.addEventListener('resize', measure);
+        if (window.ResizeObserver) new ResizeObserver(measure).observe(bar);
+    }
+
+    /* ---- pop-in-as-you-scroll ------------------------------------------
+       True scroll-scrubbed reveal: every ".pop-in" element's opacity and
+       position are recalculated on every scroll frame, directly from how
+       far its GROUP (the whole chapter/topic it belongs to, e.g. one
+       game) has scrolled up through the viewport — not a fixed-duration
+       animation that gets triggered once and then plays on its own, and
+       not each item's own position either. Stop scrolling halfway and
+       everything sits at exactly that halfway point; scroll back up and
+       it fades back down together. It's driven by the scrollbar the same
+       way the word-by-word brightening on a page like Jesko Jets is.
+
+       Reveal is computed from the GROUP's top, shared by every item in
+       it (plus a small per-item pixel offset purely so a row cascades
+       left-to-right instead of popping in all at once), rather than each
+       item's own top. A chapter is routinely taller than the viewport —
+       heading and intro copy at the top, a button and a row of photos
+       at the bottom — and item-by-item reveal meant the bottom images
+       only finished fading in once you'd scrolled well past the top of
+       the chapter, so by the time everything was visible the heading
+       had already scrolled away. Tying reveal to the group's own
+       entrance means the whole chapter finishes fading in shortly after
+       it appears, all together — further scrolling into a tall chapter
+       is then just reading it, not still waiting on it to render.
+
+       No CSS class or rule ever hides this content — the only thing that
+       ever sets its opacity is this function actually running. So if
+       this script is ever blocked entirely, nothing is hidden in the
+       first place; the page is simply static, not broken. ------------- */
+    function initPopIn() {
+        var groups = Array.prototype.slice.call(document.querySelectorAll('.pop-group'));
+        if (!groups.length) return;
+
+        var groupEntries = groups.map(function (group) {
+            var items = Array.prototype.slice.call(group.querySelectorAll('.pop-in'));
+            return {
+                group: group,
+                items: items.map(function (el, i) { return { el: el, offset: i * 22 }; })
+            };
+        }).filter(function (g) { return g.items.length; });
+        if (!groupEntries.length) return;
+
+        if (reduceMotion) {
+            groupEntries.forEach(function (g) {
+                g.items.forEach(function (entry) { entry.el.style.opacity = 1; });
+            });
+            return;
+        }
+
+        function update() {
+            var vh = window.innerHeight;
+            var startY = vh * 0.92;
+            var endY = vh * 0.50;
+
+            groupEntries.forEach(function (g) {
+                // One rect read per GROUP, not per item — this is also
+                // cheaper than the old item-by-item version once a
+                // chapter has more than a couple of images in it.
+                var groupTop = g.group.getBoundingClientRect().top;
+
+                g.items.forEach(function (entry) {
+                    var top = groupTop + entry.offset;
+                    var progress = (startY - top) / (startY - endY);
+                    if (progress < 0) progress = 0;
+                    else if (progress > 1) progress = 1;
+
+                    if (progress >= 1) {
+                        /* Fully revealed: clear the inline styles rather than
+                           setting them to their "settled" values, so this
+                           element's own CSS (e.g. a :hover lift on a button)
+                           can take over again. An inline style always wins
+                           over a stylesheet rule, even one saying "none". */
+                        entry.el.style.opacity = '';
+                        entry.el.style.transform = '';
+                    } else {
+                        entry.el.style.opacity = progress;
+                        entry.el.style.transform = 'translateY(' + (26 * (1 - progress)) + 'px)';
+                    }
+                });
+            });
+        }
+
+        var ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(function () { update(); ticking = false; });
+                ticking = true;
+            }
+        }
+
         update();
-    })();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
 
-    /* ------------------------------------------------------------------ */
-    /* Floating back-to-top                                                */
-    /* ------------------------------------------------------------------ */
-    (function backToTop() {
-        const btn = document.querySelector('.back-to-top');
-        if (!btn) return;
-        const THRESHOLD = 480;
+        /* Images loading in changes page layout after the fact — re-run
+           once each one settles so positions (and thus reveal state)
+           stay accurate instead of drifting from what's on screen. */
+        document.querySelectorAll('img').forEach(function (img) {
+            if (!img.complete) img.addEventListener('load', onScroll, { once: true });
+        });
+    }
 
+    /* ---- top scroll-progress thread ------------------------------------ */
+    function initProgress() {
+        var bar = document.querySelector('.scroll-progress');
+        if (!bar) return;
+
+        var ticking = false;
         function update() {
-            btn.classList.toggle('visible', (window.scrollY || 0) > THRESHOLD);
+            var doc = document.documentElement;
+            var max = doc.scrollHeight - doc.clientHeight;
+            var pct = max > 0 ? (doc.scrollTop / max) * 100 : 0;
+            bar.style.width = pct + '%';
+            ticking = false;
         }
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(update);
+                ticking = true;
+            }
+        }
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+    }
+
+    /* ---- floating back-to-top ------------------------------------------ */
+    function initBackToTop() {
+        var btn = document.querySelector('.back-to-top');
+        if (!btn) return;
+
+        function onScroll() {
+            btn.classList.toggle('visible', window.scrollY > 500);
+        }
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
 
         btn.addEventListener('click', function (e) {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
         });
+    }
 
-        onScrollTick(update);
-        update();
-    })();
-
-    /* ------------------------------------------------------------------ */
-    /* Lightbox                                                             */
-    /*                                                                     */
-    /* One shared overlay for the whole page, built the first time it's    */
-    /* needed rather than hand-written into every page that wants it -- a  */
-    /* page opts in purely by putting .lightbox-trigger on an image.        */
-    /* ------------------------------------------------------------------ */
-    (function lightbox() {
-        const triggers = document.querySelectorAll('.lightbox-trigger');
+    /* ---- lightbox -------------------------------------------------------
+       Any <img class="lightbox-trigger"> opens an enlarged view on click. */
+    function initLightbox() {
+        var triggers = Array.prototype.slice.call(document.querySelectorAll('.lightbox-trigger'));
         if (!triggers.length) return;
 
-        let overlay = document.querySelector('.lightbox-overlay');
-        let img, closeBtn;
-        if (overlay) {
-            img = overlay.querySelector('img');
-            closeBtn = overlay.querySelector('.lightbox-close');
-        } else {
-            overlay = document.createElement('div');
-            overlay.className = 'lightbox-overlay';
-            img = document.createElement('img');
-            img.alt = '';
-            closeBtn = document.createElement('button');
-            closeBtn.className = 'lightbox-close';
-            closeBtn.type = 'button';
-            closeBtn.setAttribute('aria-label', 'Close');
-            closeBtn.textContent = '\u00D7';
-            overlay.appendChild(img);
-            overlay.appendChild(closeBtn);
-            document.body.appendChild(overlay);
-        }
+        var overlay = document.createElement('div');
+        overlay.className = 'lightbox-overlay';
+        overlay.innerHTML =
+            '<button type="button" class="lightbox-close" aria-label="Close image">&times;</button>' +
+            '<img alt="">';
+        document.body.appendChild(overlay);
+
+        var img = overlay.querySelector('img');
+        var closeBtn = overlay.querySelector('.lightbox-close');
+        var lastFocused = null;
 
         function open(src, alt) {
+            lastFocused = document.activeElement;
             img.src = src;
             img.alt = alt || '';
             overlay.classList.add('open');
-            document.body.style.overflow = 'hidden';
+            closeBtn.focus();
         }
         function close() {
             overlay.classList.remove('open');
-            document.body.style.overflow = '';
+            img.src = '';
+            if (lastFocused && lastFocused.focus) lastFocused.focus();
         }
 
         triggers.forEach(function (t) {
             t.addEventListener('click', function () {
-                // A trigger can point at a bigger version of itself via
-                // data-full (a thumbnail opening onto the full picture)
-                // without that data attribute, the image's own src is
-                // what opens.
-                const full = t.getAttribute('data-full') || t.src || t.getAttribute('href');
-                if (full) open(full, t.alt || '');
+                open(t.currentSrc || t.src, t.alt);
             });
         });
-        closeBtn.addEventListener('click', close);
+
         overlay.addEventListener('click', function (e) {
             if (e.target === overlay) close();
         });
+        closeBtn.addEventListener('click', close);
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && overlay.classList.contains('open')) close();
         });
-    })();
+    }
 
-    /* ------------------------------------------------------------------ */
-    /* pop-in-as-you-scroll                                                 */
-    /*                                                                     */
-    /* No class ever gets toggled here -- opacity is set directly, as a    */
-    /* live number recomputed from where the element actually sits on      */
-    /* screen right now, so it always matches the scrollbar exactly        */
-    /* instead of playing a fixed-length transition once and then          */
-    /* drifting out of sync with it.                                       */
-    /* ------------------------------------------------------------------ */
-    (function popIn() {
-        const els = document.querySelectorAll('.pop-in');
-        if (!els.length) return;
-        if (reduceMotion) { els.forEach(function (el) { el.style.opacity = '1'; }); return; }
+    /* ---- cursor-tracked push-tilt (hover) --------------------------------
+       .tilt-hover computes a small perspective tilt from the pointer's
+       position inside the element and pushes the opposite way — hover
+       near the left edge and it leans right, near the bottom and it
+       leans up, so it reads as being "pushed" from wherever the cursor
+       is rather than tilting the same fixed way every time. rAF-
+       throttled so a fast mouse can't queue up more style writes than
+       the browser can paint. (.glow-hover has nothing to set up here —
+       it's a plain CSS :hover/:focus-within brighten now.) */
+    function initTiltHover() {
+        var tiltEls = Array.prototype.slice.call(document.querySelectorAll('.tilt-hover'));
+        if (reduceMotion || !tiltEls.length) return;
 
-        function update() {
-            const vh = window.innerHeight;
-            els.forEach(function (el) {
-                const r = el.getBoundingClientRect();
-                // Dim below 88% of the viewport, fully in by 55% of it --
-                // a band comfortably above the fold rather than the very
-                // bottom edge, so it never sits invisible on a short page.
-                const bottom = vh * 0.88;
-                const top = vh * 0.55;
-                const t = (bottom - r.top) / (bottom - top);
-                el.style.opacity = String(Math.max(0, Math.min(1, t)));
-            });
-        }
-
-        onScrollTick(update);
-        update();
-    })();
-
-    /* ------------------------------------------------------------------ */
-    /* scroll-scrubbed text glow (.reveal-text)                             */
-    /*                                                                     */
-    /* Split once into one <span class="word"> per word, then scrubbed      */
-    /* exactly like .pop-in above -- each word's own position decides its   */
-    /* own opacity, so the sequence reads left-to-right, line-by-line,      */
-    /* purely because that is the order the words already sit in.           */
-    /* ------------------------------------------------------------------ */
-    (function revealText() {
-        const blocks = document.querySelectorAll('.reveal-text');
-        if (!blocks.length) return;
-
-        const words = [];
-        blocks.forEach(function (block) {
-            if (block.dataset.revealSplit) return;
-            block.dataset.revealSplit = '1';
-            const text = block.textContent;
-            block.textContent = '';
-            text.split(/(\s+)/).forEach(function (piece) {
-                if (piece.trim() === '') { block.appendChild(document.createTextNode(piece)); return; }
-                const span = document.createElement('span');
-                span.className = 'word';
-                span.textContent = piece;
-                block.appendChild(span);
-                words.push(span);
-            });
-        });
-        if (!words.length) return;
-        if (reduceMotion) { words.forEach(function (w) { w.style.opacity = '1'; }); return; }
-
-        function update() {
-            const vh = window.innerHeight;
-            const bottom = vh * 0.88;
-            const top = vh * 0.4;
-            words.forEach(function (w) {
-                const r = w.getBoundingClientRect();
-                const t = (bottom - r.top) / (bottom - top);
-                w.style.opacity = String(0.25 + Math.max(0, Math.min(1, t)) * 0.75);
-            });
-        }
-
-        onScrollTick(update);
-        update();
-    })();
-
-    /* ------------------------------------------------------------------ */
-    /* scroll parallax drift (.parallax, optional data-speed)               */
-    /* ------------------------------------------------------------------ */
-    (function parallax() {
-        const els = document.querySelectorAll('.parallax');
-        if (!els.length || reduceMotion) return;
-
-        function update() {
-            const vh = window.innerHeight;
-            els.forEach(function (el) {
-                const speed = parseFloat(el.getAttribute('data-speed')) || 0.2;
-                const r = el.getBoundingClientRect();
-                const center = r.top + r.height / 2;
-                const offset = (center - vh / 2) * speed;
-                el.style.transform = 'translateY(' + offset.toFixed(1) + 'px)';
-            });
-        }
-
-        onScrollTick(update);
-        update();
-    })();
-
-    /* ------------------------------------------------------------------ */
-    /* cursor-tracked tilt / "push" (.tilt-hover)                           */
-    /*                                                                     */
-    /* Per-element, and only while the cursor is actually over that        */
-    /* element -- a lean away from whichever side the cursor is pushing    */
-    /* from, on both axes at once.                                         */
-    /* ------------------------------------------------------------------ */
-    (function tiltHover() {
-        if (reduceMotion) return;
-        const els = document.querySelectorAll('.tilt-hover');
-        if (!els.length) return;
-        const MAX_DEG = 10;
-
-        els.forEach(function (el) {
+        function bindTilt(el) {
+            var maxDeg = 9;
+            var frame = null, rotX = 0, rotY = 0;
+            function apply() {
+                el.style.transform = 'perspective(600px) rotateX(' + rotX.toFixed(2) +
+                    'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+                frame = null;
+            }
             el.addEventListener('mousemove', function (e) {
-                const r = el.getBoundingClientRect();
-                const px = (e.clientX - r.left) / r.width;   // 0..1 across the element
-                const py = (e.clientY - r.top) / r.height;   // 0..1 down the element
-                // A push from the left (px near 0) leans the element right
-                // (positive rotateY); a push from below (py near 1) leans
-                // it up (positive rotateX).
-                const rotY = (px - 0.5) * 2 * MAX_DEG;
-                const rotX = (0.5 - py) * 2 * MAX_DEG;
-                el.style.transform =
-                    'perspective(600px) rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+                var rect = el.getBoundingClientRect();
+                var px = (e.clientX - rect.left) / rect.width - 0.5;
+                var py = (e.clientY - rect.top) / rect.height - 0.5;
+                rotX = -py * maxDeg * 2;
+                rotY = px * maxDeg * 2;
+                if (!frame) frame = window.requestAnimationFrame(apply);
             });
             el.addEventListener('mouseleave', function () {
+                rotX = 0; rotY = 0;
                 el.style.transform = 'perspective(600px) rotateX(0deg) rotateY(0deg)';
             });
+        }
+
+        tiltEls.forEach(bindTilt);
+    }
+
+    /* ---- soothing wave glow (always on) ------------------------------------
+       Builds one .dye-layer + .dye-blob pair per .dye-hover element. The
+       blob's ring shape and its bright crest both come from CSS (the
+       conic-gradient plus the mask that carves out a band the shape of
+       the card's own rounded rectangle); all this does is nudge the
+       gradient's --dye-angle custom property forward a small amount on
+       a slow timer, which is what makes the bright crest crawl smoothly
+       around that band rather than sit still. Updating --dye-angle
+       forces the browser to repaint .dye-blob's gradient and re-run
+       .dye-layer's blur on the result (a changing background can't ride
+       the compositor the way a transform can), so this deliberately
+       does that on a ~90ms timer rather than every animation frame —
+       at this rotation speed the jump between steps is far too small
+       to see, but it cuts the repaint work to a small fraction of what
+       60fps would cost. Under prefers-reduced-motion the ring is still
+       inserted (so it's still visible) but --dye-angle is left at its
+       CSS default and never updated, so the crest holds at one fixed
+       spot instead of travelling. */
+    function initDyeField() {
+        var hosts = Array.prototype.slice.call(document.querySelectorAll('.dye-hover'));
+        if (!hosts.length) return;
+
+        var DEGREES_PER_MS = 360 / 16000; // one slow, smooth lap every ~16s
+        var STEP_MS = 90;                 // how often --dye-angle actually updates
+
+        hosts.forEach(function (host) {
+            var layer = document.createElement('div');
+            layer.className = 'dye-layer';
+            var blob = document.createElement('div');
+            blob.className = 'dye-blob';
+            layer.appendChild(blob);
+            // Behind the card's own in-flow content regardless of DOM
+            // order (see the z-index: -1 rule), but inserted first anyway
+            // so the source order matches the paint order for anyone
+            // reading the markup later.
+            host.insertBefore(layer, host.firstChild);
+            if (reduceMotion) return;
+
+            var angle = Math.random() * 360; // each card starts its crest at a different spot
+
+            window.setInterval(function () {
+                angle = (angle + STEP_MS * DEGREES_PER_MS) % 360;
+                blob.style.setProperty('--dye-angle', angle.toFixed(2) + 'deg');
+            }, STEP_MS);
         });
-    })();
+    }
 
-    /* ------------------------------------------------------------------ */
-    /* grand wave glow (.dye-hover)                                         */
-    /*                                                                     */
-    /* .dye-layer/.dye-blob are built here rather than hand-written per     */
-    /* card -- a page opts in with nothing but the one class. --dye-angle   */
-    /* is stepped on a timer rather than every animation frame: the         */
-    /* background it drives has to be fully repainted and re-blurred on     */
-    /* every change (see the stylesheet), so this is the throttle that      */
-    /* comment describes. Reduced motion draws the ring once, at a fixed    */
-    /* angle, and never steps it again.                                     */
-    /* ------------------------------------------------------------------ */
-    (function dyeHover() {
-        const els = document.querySelectorAll('.dye-hover');
-        if (!els.length) return;
-
-        const blobs = [];
-        els.forEach(function (el) {
-            let layer = el.querySelector('.dye-layer');
-            if (!layer) {
-                layer = document.createElement('div');
-                layer.className = 'dye-layer';
-                const blob = document.createElement('div');
-                blob.className = 'dye-blob';
-                layer.appendChild(blob);
-                el.insertBefore(layer, el.firstChild);
-            }
-            const blob = layer.querySelector('.dye-blob');
-            if (blob) blobs.push(blob);
-        });
-        if (!blobs.length || reduceMotion) return;
-
-        let angle = 0;
-        setInterval(function () {
-            angle = (angle + 2) % 360;
-            blobs.forEach(function (b) { b.style.setProperty('--dye-angle', angle + 'deg'); });
-        }, 90);
-    })();
-
-    /* ------------------------------------------------------------------ */
-    /* ambient ember light (.ember-field)                                   */
-    /*                                                                     */
-    /* A single page-wide field, drifting its glow toward wherever the     */
-    /* cursor currently is. Reduced motion is already handled entirely in   */
-    /* CSS (the field simply doesn't render), so there is nothing to guard  */
-    /* here beyond not bothering to track the cursor for nothing.           */
-    /* ------------------------------------------------------------------ */
-    (function emberField() {
-        const field = document.querySelector('.ember-field');
+    /* ---- ambient ember light ---------------------------------------------
+       A single .ember-field div drifts a soft radial light toward the
+       cursor. Position eases toward the pointer each frame (a simple lerp)
+       rather than snapping straight to it, so it reads as something with
+       a little weight — an ember drifting on its own air currents, not a
+       spotlight glued to the mouse. */
+    function initEmberField() {
+        var field = document.querySelector('.ember-field');
         if (!field || reduceMotion) return;
 
-        let raf = null;
-        let tx = 0, ty = 0;
-        document.addEventListener('mousemove', function (e) {
-            // Drift toward the cursor's offset from the centre of the
-            // viewport, damped well short of a 1:1 follow -- an ambient
-            // pull, not a spotlight glued to the pointer.
-            tx = (e.clientX - window.innerWidth / 2) * 0.15;
-            ty = (e.clientY - window.innerHeight / 2) * 0.15;
-            if (raf) return;
-            raf = requestAnimationFrame(function () {
-                field.style.setProperty('--ex', tx.toFixed(1) + 'px');
-                field.style.setProperty('--ey', ty.toFixed(1) + 'px');
-                raf = null;
-            });
-        }, { passive: true });
-    })();
+        var targetX = 0, targetY = 0, curX = 0, curY = 0, raf = null;
 
+        function tick() {
+            curX += (targetX - curX) * 0.08;
+            curY += (targetY - curY) * 0.08;
+            field.style.setProperty('--ex', curX.toFixed(1) + 'px');
+            field.style.setProperty('--ey', curY.toFixed(1) + 'px');
+
+            if (Math.abs(targetX - curX) > 0.5 || Math.abs(targetY - curY) > 0.5) {
+                raf = window.requestAnimationFrame(tick);
+            } else {
+                raf = null;
+            }
+        }
+
+        window.addEventListener('mousemove', function (e) {
+            targetX = e.clientX - window.innerWidth / 2;
+            targetY = e.clientY - window.innerHeight / 2;
+            if (!raf) raf = window.requestAnimationFrame(tick);
+        }, { passive: true });
+    }
+
+    /* ---- scroll parallax drift --------------------------------------- */
+    function initParallax() {
+        var els = Array.prototype.slice.call(document.querySelectorAll('.parallax'));
+        if (!els.length || reduceMotion) return;
+
+        var items = els.map(function (el) {
+            var speed = parseFloat(el.getAttribute('data-speed'));
+            return { el: el, speed: isNaN(speed) ? 0.2 : speed };
+        });
+
+        function update() {
+            var mid = window.innerHeight / 2;
+            items.forEach(function (item) {
+                var rect = item.el.getBoundingClientRect();
+                var offset = (mid - (rect.top + rect.height / 2)) * item.speed;
+                item.el.style.transform = 'translateY(' + offset.toFixed(1) + 'px)';
+            });
+        }
+
+        var ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(function () { update(); ticking = false; });
+                ticking = true;
+            }
+        }
+
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+    }
+
+    /* ---- scroll-scrubbed text glow ----------------------------------------
+       Splits each .reveal-text element into one <span class="word"> per
+       word (plain text only — see the CSS comment for why) and brightens
+       them in sequence as the block travels through the reveal band. Same
+       scrub-not-trigger philosophy as initPopIn above: this is recomputed
+       from scratch every frame from the element's live position, never a
+       one-shot animation, so scrolling back up dims words back down. */
+    function initRevealText() {
+        var blocks = Array.prototype.slice.call(document.querySelectorAll('.reveal-text'));
+        if (!blocks.length) return;
+
+        var entries = blocks.map(function (block) {
+            var pieces = block.textContent.split(/(\s+)/);
+            block.textContent = '';
+            pieces.forEach(function (chunk) {
+                if (chunk === '') return;
+                if (/^\s+$/.test(chunk)) {
+                    block.appendChild(document.createTextNode(chunk));
+                } else {
+                    var span = document.createElement('span');
+                    span.className = 'word';
+                    span.textContent = chunk;
+                    block.appendChild(span);
+                }
+            });
+            return { el: block, words: Array.prototype.slice.call(block.querySelectorAll('.word')) };
+        });
+
+        if (reduceMotion) {
+            entries.forEach(function (entry) {
+                entry.words.forEach(function (w) { w.style.opacity = 1; });
+            });
+            return;
+        }
+
+        function update() {
+            var vh = window.innerHeight;
+            /* Band is 1/6 of the screen tall, and fully resolved once
+               the block's TOP reaches the bottom 1/4 of the screen
+               (i.e. 3/4 of the way down). This is deliberately based
+               only on screen position, not the block's own height —
+               tying it to rect.height instead (as an earlier version
+               did) made tall blocks finish revealing while still up
+               around the middle of the screen, since a lot of scroll
+               distance passes between a tall block's top and bottom. */
+            var revealEnd = vh * 0.75;
+            var revealStart = revealEnd + vh / 6;
+
+            entries.forEach(function (entry) {
+                var rect = entry.el.getBoundingClientRect();
+                var progress = (revealStart - rect.top) / (revealStart - revealEnd);
+                if (progress < 0) progress = 0;
+                else if (progress > 1) progress = 1;
+
+                var lit = progress * entry.words.length;
+                entry.words.forEach(function (word, i) {
+                    var diff = lit - i;
+                    var op;
+                    if (diff <= 0) op = 0.25;
+                    else if (diff >= 1) op = 1;
+                    else op = 0.25 + diff * 0.75;
+                    word.style.opacity = op;
+                });
+            });
+        }
+
+        var ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(function () { update(); ticking = false; });
+                ticking = true;
+            }
+        }
+
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+    }
+
+    function init() {
+        initGamesMenu();
+        initStickyOffset();
+        initPopIn();
+        initProgress();
+        initBackToTop();
+        initLightbox();
+        initTiltHover();
+        initEmberField();
+        initDyeField();
+        initParallax();
+        initRevealText();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();
 
     </script>
