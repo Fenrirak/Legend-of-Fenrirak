@@ -848,6 +848,9 @@ input:focus, select:focus { outline: none; border-color: var(--gold); }
 .paper.pink   { --paper: #eec3cd; --paper-ink: #4d323a; }
 /* The chest cards are the orange stock. */
 .paper.orange { --paper: #f0955a; --paper-ink: #43220f; }
+/* The Crimson Keep's gold option isn't a card from the deck -- a distinct,
+   coin-toned stock keeps it from being mistaken for one of the two treasures. */
+.paper.gold   { --paper: #f2c94c; --paper-ink: #4a3a08; }
 
 /* The other half of a chest weapon's card: the move it lends you for as long
    as you are holding the weapon. It is folded under the card it is printed
@@ -6799,13 +6802,16 @@ body.modal-cover #board * { animation-play-state: paused; }
             case 'crimson_keep': {
                 // The Keep holds six, two to a class, and shows you only your
                 // own pair: a Knight chooses between the Flaming Arming
-                // Sword and the Dark Iron Armour and nothing else.
+                // Sword and the Dark Iron Armour and nothing else. There is
+                // also always a third way out, open to every class alike:
+                // walk off with 40 gold instead.
                 const cls = D.CLASSES[p.cls];
                 const options = D.TREASURE_POOL.filter(id => D.ITEMS[id].keep === p.cls);
+                options.push('gold');
                 state.pending = {
                     type: 'crimson_keep', playerId: p.id, options: options,
                     prompt: 'The Crimson Keep. Choose one of the two kept for a ' +
-                            cls.name + '.'
+                            cls.name + ' \u2014 or take the gold instead.'
                 };
                 return ok();
             }
@@ -7885,6 +7891,14 @@ body.modal-cover #board * { animation-play-state: paused; }
                     if (p.chestKeys < 1) return fail('You have no chest key.');
                     p.chestKeys -= 1;
                 }
+                // The Keep's third option isn't a card at all -- just gold,
+                // so it skips the inventory entirely.
+                if (pend.type === 'crimson_keep' && choice === 'gold') {
+                    p.coins += 40;
+                    log(state, p.name + ' takes 40 gold from the Crimson Keep instead.', 'item');
+                    state.pending = null;
+                    return ok();
+                }
                 const def = D.ITEMS[choice];
                 const inst = { uid: uid('it'), id: choice, uses: def.uses || null, fromChest: true };
                 p.inventory.push(inst);
@@ -8521,11 +8535,12 @@ body.modal-cover #board * { animation-play-state: paused; }
                 return p.chestKeys > 0 ? 34 : -1;
 
             case 'crimson_keep': {
-                // The Keep hands over one of two very strong cards. Worth
-                // rather less once you already carry one of them.
+                // The Keep hands over one of two very strong cards, or 40
+                // gold if neither is wanted -- so even once you already
+                // carry one of them, the square is never worthless.
                 const have = p.inventory.some(it => D.ITEMS[it.id] &&
                                                     D.ITEMS[it.id].keep === p.cls);
-                return have ? 8 : 40;
+                return have ? 20 : 40;
             }
 
             case 'sea_of_castout': {
@@ -8922,7 +8937,21 @@ body.modal-cover #board * { animation-play-state: paused; }
             case 'crimson_keep': {
                 let pick = pend.options[0], best = -Infinity;
                 pend.options.forEach(id => {
+                    // The Keep's gold option isn't gear to weigh against what
+                    // is already worn -- it's a flat, always-available value.
+                    if (id === 'gold') {
+                        const v = 20; // ~half of a fresh Chest's worth, in coins
+                        if (v > best) { best = v; pick = id; }
+                        return;
+                    }
                     const def = D.ITEMS[id];
+                    // Already holding this exact card -- a second one is dead
+                    // weight, not an upgrade, so it scores at nothing rather
+                    // than at a discount off its own value.
+                    if (p.inventory.some(it => it.id === id)) {
+                        if (0 > best) { best = 0; pick = id; }
+                        return;
+                    }
                     // Score it against what it would replace, not in a vacuum.
                     const have = bestOwned(state, p, def.kind);
                     const v = gearValue(def, p) - gearValue(itemDef(have), p) * 0.5;
@@ -15228,6 +15257,13 @@ body.modal-cover #board * { animation-play-state: paused; }
             body = '<h2>' + (pend.type === 'chest' ? 'A Chest' : 'The Crimson Keep') + '</h2>' +
                 '<div class="sub">' + esc(pend.prompt) + '</div>' +
                 '<div class="item-grid">' + pend.options.map(id => {
+                    // The Keep's third way out: 40 gold, open to every class,
+                    // shown as its own card rather than one from D.ITEMS.
+                    if (id === 'gold') {
+                        return '<div class="item treasure">' +
+                            paperCardHtml('gold', '40 Gold', 'Skip the treasure and take 40 gold instead.') +
+                            '<button class="btn small" data-choice="gold">Take it</button></div>';
+                    }
                     const d = D.ITEMS[id];
                     // A chest card is orange, the Keep's are yellow, which is
                     // the colour each one is in the box.
