@@ -5204,6 +5204,12 @@ body.modal-cover #board * { animation-play-state: paused; }
             moves: [
                 { id: 'thunder', name: 'Thunder', damage: 75, energy: 1 },
                 { id: 'electrocute', name: 'Electrocute', damage: 85, energy: 3 },
+                // Costs 5 energy like any other heavy move, but only 2 of it
+                // is actually spent -- the rest (3) stays banked, instead of
+                // the usual "heavy move burns the whole charge" reset back
+                // down to 1. See the energySpent handling in runEnemyTurn.
+                { id: 'draining_bite', name: 'Draining Bite', damage: 50, energy: 5,
+                  heal: 50, energySpent: 2 },
                 { id: 'discharge', name: 'Discharge', damage: 175, energy: 8 }
             ],
             // "The ORIGINAL Fenrirak" -- an optional, tougher fight, chosen
@@ -6254,6 +6260,10 @@ body.modal-cover #board * { animation-play-state: paused; }
             extraRun: null,       // a multi-turn Extra Move part way through
             payInCoins: true,     // Gold Forged Armour Set: pay in coins first
             lastAbilityTurn: -99,
+            // Whether a non-healing potion has already been drunk on this
+            // battle turn. Reset at the start of each battle and each time
+            // a fresh turn comes round to them; see usePotion().
+            battlePotionUsed: false,
             // The Gold Forged Armour Set, if they ever wear one: the whole of
             // each hit out of the purse, which is what the card describes.
             coinCap: null,
@@ -6792,16 +6802,21 @@ body.modal-cover #board * { animation-play-state: paused; }
                 }
                 // The chest holds its own seven cards. Any class may wear one
                 // of the four armour sets; the three special weapons still
-                // have to be ones you can hold.
-                state.pending = {
-                    type: 'chest', playerId: p.id,
-                    options: D.CHEST_POOL.filter(id => {
+                // have to be ones you can hold. There is also a way out open
+                // to every class alike: skip the cards and take 15 gold.
+                {
+                    const chestOptions = D.CHEST_POOL.filter(id => {
                         const it = D.ITEMS[id];
                         return it.kind === 'armour' || suitsClass(p, id);
-                    }),
-                    prompt: 'Spend a chest key and choose one. Any class may wear an ' +
-                            'armour set found in a chest.'
-                };
+                    });
+                    chestOptions.push('gold');
+                    state.pending = {
+                        type: 'chest', playerId: p.id,
+                        options: chestOptions,
+                        prompt: 'Spend a chest key and choose one. Any class may wear an ' +
+                                'armour set found in a chest \u2014 or take 15 gold instead.'
+                    };
+                }
                 return ok();
 
             case 'crimson_keep': {
@@ -6882,6 +6897,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const e = enemyStats(state, enemyId);
         p.energy = R.startingEnergy;
         p.extraRun = null;              // a fresh fight, a fresh Triple Whack
+        p.battlePotionUsed = false;
         state.battle = {
             kind: 'pve',
             enemyId: enemyId,
@@ -6915,6 +6931,8 @@ body.modal-cover #board * { animation-play-state: paused; }
         b.energy = R.startingEnergy;
         a.extraRun = null;              // a fresh fight, a fresh Triple Whack
         b.extraRun = null;
+        a.battlePotionUsed = false;
+        b.battlePotionUsed = false;
 
         // Dark Iron Armour always strikes first.
         const aArmour = defOf(equippedArmour(a));
@@ -7331,6 +7349,20 @@ body.modal-cover #board * { animation-play-state: paused; }
         // it is fighting, exactly as somebody has to throw it at the table --
         // one roll, one strike, then the turn comes back.
         b.phase = (b.kind === 'pve' && b.turn === 'b') ? 'enemy_roll' : battlePhaseFor(state);
+        resetBattleTurnPotion(state);
+    }
+
+    // A fresh go in a battle means a fresh potion allowance -- see usePotion.
+    // Only ever resets a player's own flag; the monster's "turn" in a pve
+    // fight has nobody to reset.
+    function resetBattleTurnPotion(state) {
+        const b = state.battle;
+        if (!b) return;
+        const pid = b.kind === 'pve'
+            ? (b.turn === 'a' ? b.aId : null)
+            : (b.turn === 'a' ? b.aId : b.bId);
+        const pl = pid && player(state, pid);
+        if (pl) pl.battlePotionUsed = false;
     }
 
     // A player's battle turn is normally a roll. It is not when they are part
@@ -7361,6 +7393,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             b.turn = 'a';
             b.phase = battlePhaseFor(state);
             state.turnStartedAt = Date.now();
+            resetBattleTurnPotion(state);
         }
         return ok();
     }
@@ -7378,15 +7411,16 @@ body.modal-cover #board * { animation-play-state: paused; }
        a heavy one at 5 -- so "the hardest one affordable" is already the
        only sensible choice for it: there is no middle rung to weigh up.
 
-       Fenrirak has three: Thunder (75 for 1), Electrocute (85 for 3) and
-       Discharge (175 for 8). Spending a heavy move resets the energy count
-       straight back down to 1 (see below), so cashing it in on Electrocute
-       the moment 3 energy is on hand is exactly what stood between him and
-       ever reaching Discharge at all -- three energy always arrives first,
-       and every time it does, "hardest affordable" spends it. So the
-       choice a boss actually has to make -- the one an ordinary monster
-       doesn't -- is whether a bigger attack sitting within reach is worth
-       cashing in now, or worth holding out for something bigger still.
+       Fenrirak has four: Thunder (75 for 1), Electrocute (85 for 3),
+       Draining Bite (50 for 5, and heals him 50) and Discharge (175 for 8).
+       Spending a heavy move resets the energy count straight back down to 1
+       (see below), so cashing it in on Electrocute the moment 3 energy is
+       on hand is exactly what stood between him and ever reaching Discharge
+       at all -- three energy always arrives first, and every time it does,
+       "hardest affordable" spends it. So the choice a boss actually has to
+       make -- the one an ordinary monster doesn't -- is whether a bigger
+       attack sitting within reach is worth cashing in now, or worth holding
+       out for something bigger still.
 
        Two rules cover it: never overkill (a blow that already finishes the
        fight is as good as a bigger one that also would, so take the
@@ -7427,10 +7461,29 @@ body.modal-cover #board * { animation-play-state: paused; }
 
         const move = chooseEnemyMove(state, b, e, p);
         const dealt = damagePlayer(state, p, move.damage, R.enemyMinDamage);
-        // A monster pays for a heavy move the same way a player does.
-        if (move.energy > R.startingEnergy) b.enemyEnergy = R.startingEnergy;
-        else b.enemyEnergy += 1;
+        // A monster pays for a heavy move the same way a player does --
+        // except a move can name its own price with energySpent, and pay
+        // only that much rather than burning the whole charge back to 1.
+        // Draining Bite is the one move that does: 5 to use, 2 actually
+        // spent, so 3 stays banked afterward instead of resetting.
+        if (move.energySpent) {
+            b.enemyEnergy = Math.max(R.startingEnergy, b.enemyEnergy - move.energySpent);
+        } else if (move.energy > R.startingEnergy) {
+            b.enemyEnergy = R.startingEnergy;
+        } else {
+            b.enemyEnergy += 1;
+        }
         log(state, D.foeName(e, true) + ' used ' + move.name + ' for ' + dealt + ' damage.', 'enemy');
+        // Draining Bite heals Fenrirak for what it deals, capped at his own
+        // max -- the bite lands regardless of the player's defence, but
+        // what it gives back is fixed on the card, not tied to `dealt`.
+        if (move.heal) {
+            const before = b.enemyHp;
+            b.enemyHp = Math.min(b.enemyMaxHp, b.enemyHp + move.heal);
+            if (b.enemyHp > before) {
+                log(state, D.foeName(e, true) + ' heals ' + (b.enemyHp - before) + ' HP.', 'heal');
+            }
+        }
         damageArmour(state, p);
 
         if (p.hp <= 0) { losePve(state, p); return ok(); }
@@ -7438,6 +7491,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         b.turn = 'a';
         b.phase = battlePhaseFor(state);
         state.turnStartedAt = Date.now();
+        resetBattleTurnPotion(state);
         return ok();
     }
 
@@ -7625,10 +7679,17 @@ body.modal-cover #board * { animation-play-state: paused; }
 
         const idx = p.potions.findIndex(c => c.uid === potionUid);
         if (idx < 0) return fail('You do not have that potion.');
+        const def = D.POWERUPS[p.potions[idx].id];
+        // In a battle, only one potion a turn -- except a Healing potion,
+        // which is never limited, so drinking one to catch up on HP is
+        // always on the table however many turns it has been.
+        if (inBattle && def.effect !== 'health' && p.battlePotionUsed) {
+            return fail('Only one potion a turn in a battle — Healing potions excepted.');
+        }
         const card = p.potions.splice(idx, 1)[0];   // potions are discarded, never resold
-        const def = D.POWERUPS[card.id];
         log(state, p.name + ' drinks ' + def.name + '.', 'item');
         applyEffect(state, p, def);
+        if (inBattle && def.effect !== 'health') p.battlePotionUsed = true;
         return ok();
     }
 
@@ -7896,11 +7957,15 @@ body.modal-cover #board * { animation-play-state: paused; }
                     if (p.chestKeys < 1) return fail('You have no chest key.');
                     p.chestKeys -= 1;
                 }
-                // The Keep's third option isn't a card at all -- just gold,
-                // so it skips the inventory entirely.
-                if (pend.type === 'crimson_keep' && choice === 'gold') {
-                    p.coins += 40;
-                    log(state, p.name + ' takes 40 gold from the Crimson Keep instead.', 'item');
+                // Neither chest's "gold" option is a card at all -- it skips
+                // the inventory entirely. The Keep pays out more because
+                // there's no key to spend getting to it.
+                if (choice === 'gold') {
+                    const amount = pend.type === 'crimson_keep' ? 40 : 15;
+                    p.coins += amount;
+                    log(state, p.name + ' takes ' + amount + ' gold from the ' +
+                               (pend.type === 'crimson_keep' ? 'Crimson Keep' : 'chest') +
+                               ' instead.', 'item');
                     state.pending = null;
                     return ok();
                 }
@@ -8942,10 +9007,12 @@ body.modal-cover #board * { animation-play-state: paused; }
             case 'crimson_keep': {
                 let pick = pend.options[0], best = -Infinity;
                 pend.options.forEach(id => {
-                    // The Keep's gold option isn't gear to weigh against what
-                    // is already worn -- it's a flat, always-available value.
+                    // The gold option isn't gear to weigh against what is
+                    // already worn -- it's a flat, always-available value.
+                    // Score it near, not at, the coins it actually pays out:
+                    // gear is still usually worth grabbing over cash.
                     if (id === 'gold') {
-                        const v = 20; // ~half of a fresh Chest's worth, in coins
+                        const v = (pend.type === 'crimson_keep' ? 40 : 15) * 0.5;
                         if (v > best) { best = v; pick = id; }
                         return;
                     }
@@ -14817,8 +14884,11 @@ body.modal-cover #board * { animation-play-state: paused; }
                 ({ id: c.uid, name: D.POWERUPS[c.id].name, text: D.POWERUPS[c.id].text })),
             uid => act('usePowerup', { uid: uid })));
         bind('b-po', () => pickFrom('Drink a potion',
-            () => (me() || p).potions.map(c =>
-                ({ id: c.uid, name: D.POWERUPS[c.id].name, text: D.POWERUPS[c.id].text })),
+            () => (me() || p).potions
+                // One non-healing potion a turn; a Healing potion is never
+                // limited, so it always stays on offer.
+                .filter(c => !(me() || p).battlePotionUsed || D.POWERUPS[c.id].effect === 'health')
+                .map(c => ({ id: c.uid, name: D.POWERUPS[c.id].name, text: D.POWERUPS[c.id].text })),
             uid => act('usePotion', { uid: uid })));
 
         driveEnemyTurn(b);
@@ -15263,11 +15333,14 @@ body.modal-cover #board * { animation-play-state: paused; }
             body = '<h2>' + (pend.type === 'chest' ? 'A Chest' : 'The Crimson Keep') + '</h2>' +
                 '<div class="sub">' + esc(pend.prompt) + '</div>' +
                 '<div class="item-grid">' + pend.options.map(id => {
-                    // The Keep's third way out: 40 gold, open to every class,
-                    // shown as its own card rather than one from D.ITEMS.
+                    // A way out open to every class, shown as its own card
+                    // rather than one from D.ITEMS: 40 gold from the Keep,
+                    // or 15 gold from a chest.
                     if (id === 'gold') {
+                        const amount = pend.type === 'crimson_keep' ? 40 : 15;
                         return '<div class="item treasure">' +
-                            paperCardHtml('gold', '40 Gold', 'Skip the treasure and take 40 gold instead.') +
+                            paperCardHtml('gold', amount + ' Gold',
+                                'Skip the treasure and take ' + amount + ' gold instead.') +
                             '<button class="btn small" data-choice="gold">Take it</button></div>';
                     }
                     const d = D.ITEMS[id];
