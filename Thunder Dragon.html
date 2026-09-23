@@ -5185,13 +5185,18 @@ body.modal-cover #board * { animation-play-state: paused; }
             id: 'fenrirak',
             name: 'Fenrirak',
             proper: true,
-            // The boss portrait. There is no `Fenrirak Boss.png` file
-            // shipped with the page, so this is left unset and enemyPic()
-            // falls back to the hand-drawn SVG dragon in ui.js, which was
-            // built specifically to be that fallback. Drop a real boss
-            // picture in beside the page and name it here under `art` to
-            // use it instead.
-            crest: { initials: 'F', tint: '#4a6a8c' },
+            // The boss portrait: Fenrirak Boss.png. enemyPic() (ui.js) uses
+            // this image whenever `art` is set here, in preference to the
+            // hand-drawn SVG dragon it falls back to for every other enemy
+            // -- that fallback is intentionally NOT used for Fenrirak.
+            //
+            // NOTE: there is no such file on this machine right now. Drop
+            // the actual painting in next to the other images before this
+            // page is built/deployed (build.py leaves images as separate
+            // files -- see its own top-of-file note), or this portrait will
+            // show as a broken image everywhere Fenrirak appears (battle
+            // modal, board token, stat card).
+            crest: { initials: 'F', tint: '#4a6a8c', art: 'Fenrirak Boss.png' },
             pic: 'fenrirak',
             hp: 375,
             defence: 25,
@@ -11475,11 +11480,12 @@ body.modal-cover #board * { animation-play-state: paused; }
            horned head in profile, the pale scaled belly down the front and
            the tail curling away underneath.
 
-           This is drawn from Fenrirak.png -- which is the wide title banner
-           and makes a poor square portrait -- because there is no
-           `Fenrirak Boss.png` file shipped with the page. Drop a real boss
-           picture in beside the page, name it under `crest.art` in data.js,
-           and it is used in place of this.
+           Not currently shown anywhere: data.js sets Fenrirak's own
+           `crest.art` to `Fenrirak Boss.png`, and enemyPic() always prefers
+           that over this SVG when it's set. This entry only takes over if
+           `art` is ever unset there again (see data.js's note on that
+           field for why the file needs to actually exist for `art` to be
+           worth keeping).
            ----------------------------------------------------------------- */
         fenrirak:
             // the storm he flies out of
