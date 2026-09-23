@@ -13,11 +13,20 @@
     <link rel="apple-touch-icon" href="Favicon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
+    <link rel="canonical" href="https://fenrirak.github.io/Legend-of-Fenrirak/Thunder%20Dragon.html">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta name="description"
         content="Play Legend of Fenrirak™, The Thunder Dragon online with up to 6 players.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Legend of Fenrirak | The Thunder Dragon — Play Online">
+    <meta property="og:description" content="Play Legend of Fenrirak™, The Thunder Dragon online with up to 6 players.">
+    <meta property="og:url" content="https://fenrirak.github.io/Legend-of-Fenrirak/Thunder%20Dragon.html">
+    <meta property="og:site_name" content="Legend of Fenrirak">
+    <meta property="og:image" content="https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png">
 
     <style>
 /* ==== site-nav.css ==== */
@@ -4427,6 +4436,20 @@ body.modal-cover #board * { animation-play-state: paused; }
 
     </style>
 
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Game",
+        "name": "Legend of Fenrirak: The Thunder Dragon",
+        "url": "https://fenrirak.github.io/Legend-of-Fenrirak/Thunder%20Dragon.html",
+        "description": "Play Legend of Fenrirak™, The Thunder Dragon online with up to 6 players. Pick a Knight, Archer or Mage, gather the three key fragments and bring down Fenrirak.",
+        "image": "https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png",
+        "genre": "Board Game",
+        "numberOfPlayers": {"@type": "QuantitativeValue", "minValue": 1, "maxValue": 6},
+        "isPartOf": {"@type": "WebSite", "name": "Legend of Fenrirak", "url": "https://fenrirak.github.io/Legend-of-Fenrirak/index.html"}
+    }
+    </script>
+
 </head>
 
 <body>
@@ -6629,8 +6652,9 @@ body.modal-cover #board * { animation-play-state: paused; }
     }
 
     // Step square by square. Only the squares that print STOP on the board --
-    // the Sea of Castout and the Goblin Hideout -- halt you where you stand.
-    // Everything else is either an offer or, in the Gate's case, a locked door.
+    // the Sea of Castout, and only the Sea of Castout -- halt you where you
+    // stand. Everything else is either an offer or, in the Gate's case, a
+    // locked door.
     //
     // Every square stepped through is recorded in p.path so the board can walk
     // the token along instead of teleporting it. It is cleared at the start of

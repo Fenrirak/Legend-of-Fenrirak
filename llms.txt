@@ -10,6 +10,10 @@ Note: "Fenrirak" is a distinct, made-up name for this project's own
 dragon character — it is not "Fenrir" from Norse mythology, and this is
 not affiliated with any other "Fenrir"-named book, game, or franchise.
 
+## Images
+
+Gallery photos (board games, cards, characters, book cover, timeline, Minecraft recreation) are on the About page, with descriptive alt text. Creator photos are on the Creators page. See sitemap.xml for the full image list.
+
 ## Pages
 
 - [Home](https://fenrirak.github.io/Legend-of-Fenrirak/index.html): Overview and links to everything on the site.
