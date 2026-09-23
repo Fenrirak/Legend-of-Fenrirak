@@ -5182,11 +5182,13 @@ body.modal-cover #board * { animation-play-state: paused; }
             id: 'fenrirak',
             name: 'Fenrirak',
             proper: true,
-            // The boss portrait. `Fenrirak Boss.png` is the painting of him
-            // on his own, with no title across it, so it is used wherever he
-            // appears. The drawing of him in ui.js is the fallback if the
-            // file is ever missing.
-            crest: { initials: 'F', tint: '#4a6a8c', art: 'Fenrirak Boss.png' },
+            // The boss portrait. There is no `Fenrirak Boss.png` file
+            // shipped with the page, so this is left unset and enemyPic()
+            // falls back to the hand-drawn SVG dragon in ui.js, which was
+            // built specifically to be that fallback. Drop a real boss
+            // picture in beside the page and name it here under `art` to
+            // use it instead.
+            crest: { initials: 'F', tint: '#4a6a8c' },
             pic: 'fenrirak',
             hp: 375,
             defence: 25,
@@ -6080,7 +6082,7 @@ body.modal-cover #board * { animation-play-state: paused; }
         const held = fragmentsOf(p);
         if (held.indexOf(which) >= 0) { syncFragments(p); return false; }
         held.push(which);
-        held.sort();
+        held.sort((x, y) => x - y);
         syncFragments(p);
         return true;
     }
@@ -6451,6 +6453,14 @@ body.modal-cover #board * { animation-play-state: paused; }
                     log(state, afk.name + ' was away too long and forfeits the duel.', 'muted');
                     return !!winPvp(state, other, afk);
                 }
+                // A duel is never settled as though it were a monster fight --
+                // if either side of it can no longer be found, there is
+                // nothing left to award. Clear it and move the turn on rather
+                // than falling into the PvE branch below.
+                state.battle = null;
+                state.pending = null;
+                advanceTurn(state);
+                return true;
             }
             const p = player(state, b.aId);
             if (p) {
@@ -6640,7 +6650,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             // without the three fragments -- walking past it is still walking
             // through it.
             if (remaining > 0 && sq.action === 'gate' &&
-                p.keyFragments < D.KEY_FRAGMENTS_NEEDED) {
+                fragmentsOf(p).length < D.KEY_FRAGMENTS_NEEDED) {
                 outcome = 'zapped';
                 break;
             }
@@ -6705,7 +6715,11 @@ body.modal-cover #board * { animation-play-state: paused; }
             const cloak = defOf(equippedArmour(p));
             const rivalCloak = defOf(equippedArmour(rival));
             if ((cloak && cloak.avoidPvp) || (rivalCloak && rivalCloak.avoidPvp)) {
-                const holder = (cloak && cloak.avoidPvp) ? p : rival;
+                // Avoiding a fight is the defender's call. That's automatic
+                // when only one side has the Cloak -- but when both do, it
+                // still has to go to whoever is *not* moving, not to
+                // whichever copy this check happens to look at first.
+                const holder = (rivalCloak && rivalCloak.avoidPvp) ? rival : p;
                 state.pending = {
                     type: 'pvp_avoid',
                     playerId: holder.id,
@@ -6812,7 +6826,7 @@ body.modal-cover #board * { animation-play-state: paused; }
             }
 
             case 'gate':
-                if (p.keyFragments >= D.KEY_FRAGMENTS_NEEDED) {
+                if (fragmentsOf(p).length >= D.KEY_FRAGMENTS_NEEDED) {
                     log(state, p.name + ' turns three key fragments — the Gate grinds open!', 'system');
                 } else {
                     zap(state, p);
@@ -11432,9 +11446,9 @@ body.modal-cover #board * { animation-play-state: paused; }
            horned head in profile, the pale scaled belly down the front and
            the tail curling away underneath.
 
-           You mentioned a "Fenrirak Boss.png". There is no such file on this
-           machine, so this is drawn from Fenrirak.png -- which is the wide
-           title banner and makes a poor square portrait. Drop a real boss
+           This is drawn from Fenrirak.png -- which is the wide title banner
+           and makes a poor square portrait -- because there is no
+           `Fenrirak Boss.png` file shipped with the page. Drop a real boss
            picture in beside the page, name it under `crest.art` in data.js,
            and it is used in place of this.
            ----------------------------------------------------------------- */
