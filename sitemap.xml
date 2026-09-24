@@ -4,6 +4,7 @@
   <url>
     <loc>https://fenrirak.github.io/Legend-of-Fenrirak/</loc>
     <priority>1.0</priority>
+    <lastmod>2026-09-24</lastmod>
     <image:image>
       <image:loc>https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png</image:loc>
       <image:caption>Fenrirak, the ocean-blue dragon of Legend of Fenrirak</image:caption>
@@ -12,6 +13,7 @@
   <url>
     <loc>https://fenrirak.github.io/Legend-of-Fenrirak/About.html</loc>
     <priority>0.8</priority>
+    <lastmod>2026-09-24</lastmod>
     <image:image>
       <image:loc>https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png</image:loc>
       <image:caption>Fenrirak, the ocean-blue dragon and final boss of The Thunder Dragon</image:caption>
@@ -96,6 +98,7 @@
   <url>
     <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Creators.html</loc>
     <priority>0.6</priority>
+    <lastmod>2026-09-24</lastmod>
     <image:image>
       <image:loc>https://fenrirak.github.io/Legend-of-Fenrirak/Nathan.jpg</image:loc>
       <image:caption>Nathan</image:caption>
@@ -124,6 +127,7 @@
   <url>
     <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Testplay%20Showdowns.html</loc>
     <priority>0.8</priority>
+    <lastmod>2026-09-24</lastmod>
     <image:image>
       <image:loc>https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png</image:loc>
       <image:caption>Fenrirak, the ocean-blue dragon</image:caption>
@@ -132,6 +136,7 @@
   <url>
     <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Thunder%20Dragon.html</loc>
     <priority>0.8</priority>
+    <lastmod>2026-09-24</lastmod>
     <image:image>
       <image:loc>https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png</image:loc>
       <image:caption>Fenrirak, final boss of The Thunder Dragon</image:caption>
@@ -140,9 +145,20 @@
   <url>
     <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Ice%20Dragon.html</loc>
     <priority>0.8</priority>
+    <lastmod>2026-09-24</lastmod>
     <image:image>
       <image:loc>https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png</image:loc>
       <image:caption>Fenrirak, the ocean-blue dragon</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Contact.html</loc>
+    <priority>0.3</priority>
+    <lastmod>2026-09-24</lastmod>
+  </url>
+  <url>
+    <loc>https://fenrirak.github.io/Legend-of-Fenrirak/Privacy.html</loc>
+    <priority>0.3</priority>
+    <lastmod>2026-09-24</lastmod>
   </url>
 </urlset>

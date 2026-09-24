@@ -2,29 +2,40 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
+    <script>document.documentElement.classList.add('js-ready');</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanks for Playing Showdowns! - Legend of Fenrirak</title>
+
+    <title>Contact - Legend of Fenrirak</title>
 
     <link rel="icon" type="image/png" href="Favicon.png">
     <link rel="apple-touch-icon" href="Favicon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
-    <meta name="robots" content="noindex">
-    <link rel="canonical" href="https://fenrirak.github.io/Legend-of-Fenrirak/AfterShowdowns.html">
+    <link rel="canonical" href="https://fenrirak.github.io/Legend-of-Fenrirak/Contact.html">
 
     <meta name="description"
-        content="Thanks for playing Legend of Fenrirak: Showdowns. Share feedback, or jump into the Thunder Dragon or Ice Dragon next.">
+        content="Get in touch with the Legend of Fenrirak team — questions, feedback, or press and media enquiries.">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Thanks for Playing Showdowns! - Legend of Fenrirak">
-    <meta property="og:description" content="Thanks for playing Legend of Fenrirak: Showdowns. Share feedback, or jump into the Thunder Dragon or Ice Dragon next.">
+    <meta property="og:title" content="Contact - Legend of Fenrirak">
+    <meta property="og:description" content="Get in touch with the Legend of Fenrirak team — questions, feedback, or press and media enquiries.">
     <meta property="og:image" content="https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png">
-    <meta property="og:url" content="https://fenrirak.github.io/Legend-of-Fenrirak/AfterShowdowns.html">
+    <meta property="og:url" content="https://fenrirak.github.io/Legend-of-Fenrirak/Contact.html">
     <meta property="og:site_name" content="Legend of Fenrirak">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="https://fenrirak.github.io/Legend-of-Fenrirak/Fenrirak.png">
 
     <link rel="stylesheet" href="site-nav.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ContactPage",
+        "name": "Contact - Legend of Fenrirak",
+        "url": "https://fenrirak.github.io/Legend-of-Fenrirak/Contact.html"
+    }
+    </script>
 
     <style>
         body {
@@ -33,41 +44,43 @@
             color: white;
             text-align: center;
             margin: 0;
-            padding-bottom: 100px;
+            padding-bottom: 40px;
         }
 
         h1 {
-            font-family: 'Allegro';
+            font-family: Allegro, serif;
             color: rgb(223, 165, 114);
             font-size: 35px;
-            margin-top: 75px;
+            margin-top: 60px;
         }
 
-        img {
-            margin-top: 30px;
+        h2 {
+            font-family: Allegro, serif;
+            color: rgb(255, 246, 230);
+            font-size: 22px;
+            margin-top: 50px;
         }
 
-        p{
-            max-width: 900px;
-            margin: 30px auto;
-            font-size: 20px;
-            line-height: 1.6;
+        p {
+            max-width: 640px;
+            margin: 20px auto;
+            font-size: 17px;
+            line-height: 1.7;
+            color: #f3f3f3;
+            padding: 0 20px;
         }
 
-        /* Button styling (same as Code 2) */
         .section {
-            display: block;
+            display: inline-block;
             margin: 10px auto;
-            padding: 15px;
-            width: 80%;
-            max-width:250px;
+            padding: 15px 26px;
             background: linear-gradient(180deg, #1e1e1e, #141414);
             color: white;
             text-decoration: none;
             border: 1px solid transparent;
             border-radius: 12px;
-            font-family: 'Allegro';
-            font-size: 25px;
+            font-family: Allegro, serif;
+            font-size: 20px;
             transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.25s ease, color 0.25s ease;
         }
 
@@ -76,37 +89,16 @@
             border-color: rgb(217, 163, 92);
             color: rgb(242, 204, 143);
             transform: translateY(-2px);
-            text-decoration: none;
         }
 
-        .links {
-            margin-top: 50px;
+        .links { margin-top: 20px; }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 28px; margin-top: 40px; }
+            p { font-size: 16px; }
         }
+    </style>
 
-        .explore-row {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin: 10px auto;
-        }
-
-        .explore-row .section {
-            margin: 0;
-        }
-
-        .support-gap {
-            margin-top: 40px;
-        }
-
-        /* Remove the hover glow on the Support button for this page only */
-        .support-btn:hover {
-            box-shadow: none;
-        }
-
-
-    @media (max-width:600px){h1{font-size:28px;margin-top:40px;}img{width:90%;height:auto;}p{font-size:16px;padding:0 15px;} .section{width:90%;font-size:20px;}}
-</style>
 </head>
 
 <body>
@@ -126,13 +118,13 @@
                 <span>Creators</span>
             </a>
             <div class="nav-group">
-                <button type="button" class="nav-trigger active" aria-haspopup="true" aria-expanded="false">
+                <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false">
                     <svg viewBox="0 0 24 24"><rect x="2" y="7.5" width="20" height="10" rx="5"/><path d="M7 12.5h3M8.5 11v3"/><circle cx="15.8" cy="11.6" r=".9" fill="currentColor" stroke="none"/><circle cx="17.9" cy="13.6" r=".9" fill="currentColor" stroke="none"/></svg>
                     <span>Games</span>
                     <svg class="caret" viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
                 </button>
                 <div class="nav-menu">
-                    <a href="Testplay Showdowns.html" class="active">
+                    <a href="Testplay Showdowns.html">
                         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg>
                         <span>Showdowns</span>
                     </a>
@@ -154,58 +146,32 @@
         </div>
     </nav>
 
-    <h1>Thank you for playing Legend of Fenrirak™, Showdowns!</h1>
-
-    <img src="Fenrirak.png" alt="Fenrirak" width="610">
+    <h1>Contact Us</h1>
 
     <p>
-        We hope you have enjoyed our game.
-        If you would like to provide feedback to help us improve
-        Legend of Fenrirak™, -Showdowns-, please fill in the Google Form below.
-        Thanks.
+        Got a question about Legend of Fenrirak, found a bug in one of the online games,
+        or just want to say hi? We'd love to hear from you.
     </p>
 
-    <!-- Buttons -->
     <div class="links">
-
-        <a href="https://forms.gle/QdJz57TnqNbqFvTN7"
-           target="_blank"
-           class="section">
-            Complete the Feedback Form!
-        </a>
-
-        <div class="explore-row">
-            <a href="index.html" class="section">
-                Back to Home Page
-            </a>
-        </div>
-
-        <div class="explore-row">
-            <a href="Creators.html" class="section">
-                Meet the Creators!
-            </a>
-            <a href="Testplay Showdowns.html" class="section">
-                Play Again!
-            </a>
-        </div>
-
-        <div class="explore-row">
-            <a href="Thunder Dragon.html" class="section">
-                The Thunder Dragon
-            </a>
-            <a href="Ice Dragon.html" class="section">
-                The Ice Dragon
-            </a>
-        </div>
-
-        <a href="https://buymeacoffee.com/29world" target="_blank" class="support-btn block support-gap">
-            <svg viewBox="0 0 24 24"><path d="M17 8h1.5a3.5 3.5 0 0 1 0 7H17"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg>
-            <span>Support the Creators</span>
-        </a>
-
+        <a href="mailto:Fenrirak.guy@gmail.com" class="section">Fenrirak.guy@gmail.com</a>
     </div>
 
-    <script src="site-nav.js" defer></script>
+    <h2>Press &amp; Media</h2>
+    <p>
+        Working on a review, article, or video about Legend of Fenrirak? Reach out at the
+        email above — we're happy to share logos, screenshots, and background on the project
+        and the team behind it.
+    </p>
+
+    <h2>Game Feedback</h2>
+    <p>
+        If your note is specifically about a play session of Showdowns, you can also use our
+        short feedback form instead.
+    </p>
+    <div class="links">
+        <a href="https://forms.gle/QdJz57TnqNbqFvTN7" target="_blank" class="section">Feedback Form</a>
+    </div>
 
 
     <footer class="site-footer">

@@ -608,6 +608,60 @@
     .reveal-text .word { opacity: 1; }
 }
 
+/* =========================================================================
+   Site-wide footer — used by every page. Edit here, not per-page.
+   ========================================================================= */
+
+.site-footer {
+    margin-top: 60px;
+    padding: 28px 20px 36px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    background: #16161a;
+    color: #9c9a95;
+}
+
+.site-footer .footer-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.site-footer .footer-brand {
+    margin: 0;
+    color: rgb(242, 204, 143);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+}
+
+.site-footer .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 18px;
+}
+
+.site-footer .footer-links a {
+    color: #9c9a95;
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s ease;
+}
+
+.site-footer .footer-links a:hover {
+    color: rgb(242, 204, 143);
+}
+
+.site-footer .footer-copy {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
     </style>
 
     <style>
@@ -16904,6 +16958,20 @@ ready.then((uid) => {
 })();
 
     </script>
+
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p class="footer-brand">Legend of Fenrirak&trade;</p>
+            <nav class="footer-links" aria-label="Footer">
+                <a href="About.html">About</a>
+                <a href="Creators.html">Creators</a>
+                <a href="Contact.html">Contact</a>
+                <a href="Privacy.html">Privacy Policy</a>
+            </nav>
+            <p class="footer-copy">&copy; 2026 Legend of Fenrirak &mdash; an indie project made by friends in New Zealand.</p>
+        </div>
+    </footer>
 
 </body>
 </html>
