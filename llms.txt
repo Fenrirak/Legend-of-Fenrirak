@@ -10,6 +10,12 @@ Note: "Fenrirak" is a distinct, made-up name for this project's own
 dragon character — it is not "Fenrir" from Norse mythology, and this is
 not affiliated with any other "Fenrir"-named book, game, or franchise.
 
+## Creators
+
+Legend of Fenrirak has two main creators: Nathan (original idea and
+story writer) and Ronald (co-creator). Full team bios are on the
+Creators page.
+
 ## Images
 
 Gallery photos (board games, cards, characters, book cover, timeline, Minecraft recreation) are on the About page, with descriptive alt text. Creator photos are on the Creators page. See sitemap.xml for the full image list.
