@@ -1664,6 +1664,7 @@ function fitGameScreen(){
   const screenEl = document.getElementById('screen-game');
   if(!inner || !screenEl || !screenEl.classList.contains('active')) return;
   inner.style.transform = 'none';
+  screenEl.style.minHeight = '';
   const naturalW = inner.offsetWidth;
   const naturalH = inner.offsetHeight;
   if(!naturalW || !naturalH) return;
@@ -1680,6 +1681,11 @@ function fitGameScreen(){
     if(naturalH * scale > maxOverflowH) scale = maxOverflowH / naturalH;
     scale = Math.max(0.4, Math.min(scale, 1.8));
     origin = 'top center';
+    /* transform:scale doesn't grow the box in normal flow, so on wide
+       screens (scale > 1) the scaled panels were visually overflowing
+       past #screen-game's box and bleeding into the footer below.
+       Reserve the real scaled height so the footer gets pushed down instead. */
+    screenEl.style.minHeight = Math.ceil(naturalH * scale) + 'px';
   }
   inner.style.transformOrigin = origin;
   inner.style.transform = `scale(${scale})`;
@@ -3139,7 +3145,7 @@ function triggerVictory(){
       G.tutorialMode = false;
       showScreen('screen-board');
     }
-    else { window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }
+    else { window.location.href='AfterShowdowns.html'; }
   }, 4500);
 }
 
@@ -3160,7 +3166,7 @@ function triggerDefeat(){
       G.tutorialMode = false;
       showScreen('screen-board');
     }
-    else { window.location.href='https://fenrirak.github.io/Legend-of-Fenrirak/After%20Showdowns.html'; }
+    else { window.location.href='AfterShowdowns.html'; }
   }, 4500);
 }
 
